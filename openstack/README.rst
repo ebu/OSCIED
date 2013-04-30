@@ -5,5 +5,4 @@ PATHS
 * ``files``   : files used by scripts (like patches, templates, ...)
 * ``scripts`` : our tools for the setup (a lot of bash scripts)
 
-David Fischer 2012
-david.fischer.ch@gmail.com
+David Fischer 2013 (david.fischer.ch at gmail dot com)
