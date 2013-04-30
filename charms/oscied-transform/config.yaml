@@ -1,0 +1,45 @@
+options:
+  verbose:
+    type: string
+    default: "false"
+    description: Set verbose logging.  Can be set to true or false
+  concurrency:
+    type: int
+    default: 1
+    description: Amount of tasks the worker can handle simultaneously.  Default value is conservative
+  rabbit_queues:
+    type: string
+    default: "transform_private"
+    description: Worker connect to queues to receive jobs.  (e.g. "transform_amazon" for amazon, "transform_private,transform_amazon" for both)
+  mongo_connection:
+    type: string
+    defaul: ""
+    description: Orchestrator database connection.  The 'connection' options override and disable transform relation.
+  rabbit_connection:
+    type: string
+    defaul: ""
+    description: Orchestrator message broker connection
+  api_nat_socket:
+    type: string
+    default: ""
+    description: Orchestrator API reacheable (public) address (ip:port) e.g. when orchestra is behind a NAT/FW.
+  storage_ip:
+    type: string
+    default: ""
+    description: Shared storage hostname / IP address (see interface mount of nfs charm).  The 'storage' options override and disable storage relation.
+  storage_nat_ip:
+    type: string
+    default: ""
+    description: Shared storage reacheable (public) address e.g. when storage is behind a NAT/FW.
+  storage_fstype:
+    type: string
+    default: ""
+    description: Shared storage filesystem type (e.g. nfs)
+  storage_mountpoint:
+    type: string
+    default: ""
+    description: Shared storage mountpoint (e.g. for nfs - /srv/data)
+  storage_options:
+    type: string
+    default: ""
+    description: Shared storage options (e.g. for nfs - rw,sync,no_subtree_check)

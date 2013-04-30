@@ -1,0 +1,15 @@
+ensemble: oscied
+name: oscied-webui
+summary: "EBU's OSCIED Web UI"
+maintainer: OSCIED Main Developper <david.fischer.ch@gmail.com>
+description: |
+  Installs the EBU's OSCIED web user interface.
+  Can be scaled to multiple instances.
+provides:
+  website:
+    interface: http
+requires:
+  api:
+    interface: orchestra
+  storage:
+    interface: mount

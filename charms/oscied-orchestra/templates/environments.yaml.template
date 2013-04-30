@@ -1,0 +1,7 @@
+environments:
+  sample:
+    type: local
+    control-bucket: BUCKET
+    admin-secret: SECRET
+    data-dir: STORAGE
+    default-series: RELEASE

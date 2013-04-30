@@ -1,0 +1,9 @@
+ensemble: oscied
+name: oscied-storage
+summary: "EBU's OSCIED Storage"
+maintainer: OSCIED Main Developper <david.fischer.ch@gmail.com>
+description: |
+  Installs the EBU's OSCIED shared storage based on glusterfs.
+provides:
+  storage:
+    interface: mount

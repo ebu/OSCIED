@@ -1,0 +1,5 @@
+options:
+  verbose:
+    type: string
+    default: "false"
+    description: Set verbose logging.  Can be set to true or false

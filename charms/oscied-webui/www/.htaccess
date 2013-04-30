@@ -1,0 +1,12 @@
+php_value upload_max_filesize 5000M
+php_value post_max_size 5000M
+php_value max_execution_time 200
+php_value max_input_time 200
+
+
+RewriteEngine on
+RewriteCond $1 !^(index\.php|images|robots\.txt)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-l
+RewriteRule ^(.*)$ index.php/$1 [L]

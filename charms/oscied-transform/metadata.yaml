@@ -1,0 +1,12 @@
+ensemble: oscied
+name: oscied-transform
+summary: "EBU's OSCIED Encoder"
+maintainer: OSCIED Main Developper <david.fischer.ch@gmail.com>
+description: |
+  Installs the EBU's OSCIED media transform. Contains ffmpeg & x264.
+  Can be scaled to multiple instances.
+requires:
+  transform:
+    interface: subordinate
+  storage:
+    interface: mount

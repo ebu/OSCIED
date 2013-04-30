@@ -1,0 +1,50 @@
+#! /usr/bin/env python
+# -*- coding: utf-8 -*-
+
+#**************************************************************************************************#
+#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : PUBLISHER
+#
+#  Authors   : David Fischer
+#  Contact   : david.fischer.ch@gmail.com / david.fischer@hesge.ch
+#  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
+#  Copyright : 2012 OSCIED Team. All rights reserved.
+#**************************************************************************************************#
+#
+# This file is part of EBU/UER OSCIED Project.
+#
+# This project is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License as published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along with this project.
+# If not, see <http://www.gnu.org/licenses/>
+#
+# Retrieved from:
+#   svn co https://claire-et-david.dyndns.org/prog/OSCIED
+
+import sys
+
+sys.path.append('.')
+
+BROKER_URL = 'RABBIT_CONNECTION'
+CELERY_RESULT_BACKEND = 'mongodb'
+CELERY_MONGODB_BACKEND_SETTINGS = {
+    'host': 'MONGO_HOST',
+    'port': 'MONGO_PORT',
+    'user': 'MONGO_USER',
+    'password': 'MONGO_PASSWORD',
+    'database': 'MONGO_DATABASE',
+    'taskmeta_collection': 'taskmeta',
+}
+
+CELERY_IMPORTS = ('lib.Publisher',)
+CELERYD_CONCURRENCY = THE_CONCURRENCY
+CELERY_IGNORE_RESULT = False
+CELERY_SEND_EVENTS = True
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TASK_COMPRESSION = 'zlib'
+CELERY_TRACK_STARTED = True

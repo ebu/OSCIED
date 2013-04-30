@@ -1,0 +1,92 @@
+/**
+ * All your custom CSS should go into this file
+ */
+
+/* For the main toolbar */
+/*body {
+   padding-top: 60px;
+   padding-bottom: 40px;
+}*/
+
+/*body > div.container {
+   background-image: url("../img/home-bg11.jpg");
+   background-repeat: no-repeat;
+}*/
+
+.table-vertical-middle th, .table-vertical-middle td {
+   vertical-align: middle;
+   text-align: center;
+}
+
+.margin-top {
+   margin-top: 30px;
+}
+
+h1 small.updated-on {
+   margin-left: 30px;
+   font-size: 18px;
+}
+
+table td.hour {
+   padding: 0px;
+   text-align: center;
+}
+
+table td.right {
+   text-align: center;
+}
+
+.center {
+   text-align: center;
+}
+
+
+/** MESSAGES **/
+.message h2, .message h3 {
+   margin-top: 0px;
+   /*margin-bottom: 15px;
+   font-size: 18px;
+   line-height: 18px;*/
+	margin-bottom: 0px;
+	font-size: 18px;
+	line-height: 27px;
+}
+.message h2 small {
+	font-size: 14px;
+}
+.message hr {
+	margin: 5px 0px 10px 0px;
+}
+hr.message {
+   margin: 20px 0px 30px 0px;
+}
+.message .date {
+	margin-bottom: 5px;
+}
+/** END OF MESSAGES **/
+
+
+h1 small, h2 small, h3 small, h4 small, h5 small, h6 small {
+	margin-left: 10px;
+}
+.well {
+   margin-bottom: 0px;
+}
+
+.margin-bottom5 {
+   margin-bottom: 5px;
+}
+
+
+blockquote small {
+   font-size: 120%;
+}
+
+.justify {
+   text-align: justify;
+}
+
+.center {
+   margin: 0px auto;
+   text-align: center;
+}

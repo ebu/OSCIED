@@ -1,0 +1,15 @@
+ensemble: oscied
+name: oscied-publisher
+summary: "EBU's OSCIED Publisher"
+maintainer: OSCIED Main Developper <david.fischer.ch@gmail.com>
+description: |
+  Installs the EBU's OSCIED media publisher. Contains apache & mod streaming.
+  Can be scaled to multiple instances.
+provides:
+  streaming:
+    interface: http
+requires:
+  publisher:
+    interface: subordinate
+  storage:
+    interface: mount

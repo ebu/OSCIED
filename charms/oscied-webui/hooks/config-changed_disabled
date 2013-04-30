@@ -1,0 +1,4 @@
+#!/bin/bash
+
+. hooks_lib/common.sh
+hook_config_changed
