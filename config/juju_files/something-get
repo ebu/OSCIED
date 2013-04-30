@@ -1,0 +1,22 @@
+#!/bin/bash
+
+TXT_RED=$(tput setaf 1)
+TXT_RESET=$(tput sgr0)
+
+if echo "\n" | grep -q 'n'
+then e_='-e'
+else e_=''
+fi
+
+xecho() # message (error)
+{
+  echo $e_ "${TXT_RED}[ERROR] $1$TXT_RESET" >&2
+  exit 1
+}
+
+values='/tmp/something-get.list'
+line=$(grep "^$1=" "$values")
+if [ ! "$line" ]; then
+  xecho "Unable to read value $1 from $values"
+fi
+echo "$line" | cut -d'=' -f2

@@ -1,0 +1,23 @@
+oscied-publisher:
+  verbose: "true"
+  concurrency: 2
+  rabbit_queues: "publisher_private"
+  max_upload_size: 4294967296
+  max_execution_time: 180
+  max_input_time: 600
+  mongo_connection: "mongodb://nodes:M2qlif8rdtKtBYil@OSCIED-Node01.localdomain:27017/celery"
+  rabbit_connection: "amqp://nodes:OZy23iO0D4UpYS2k@OSCIED-Node01.localdomain:5672/celery"
+  storage_ip: "OSCIED-Node02.localdomain"
+  storage_fstype: "glusterfs"
+  storage_mountpoint: "medias_volume"
+  storage_options: ""
+oscied-transform:
+  verbose: "true"
+  concurrency: 1
+  rabbit_queues: "transform_private"
+  mongo_connection: "mongodb://nodes:M2qlif8rdtKtBYil@OSCIED-Node01.localdomain:27017/celery"
+  rabbit_connection: "amqp://nodes:OZy23iO0D4UpYS2k@OSCIED-Node01.localdomain:5672/celery"
+  storage_ip: "OSCIED-Node02.localdomain"
+  storage_fstype: "glusterfs"
+  storage_mountpoint: "medias_volume"
+  storage_options: ""

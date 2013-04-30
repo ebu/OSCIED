@@ -1,0 +1,16 @@
+default: local
+environments:
+  local:
+    type: local
+    control-bucket: juju-a14dfaec23c4995999395c3830142d9a278
+    admin-secret: 6608267b8c90b2a2949997934167bbd6b44
+    data-dir: STORAGE_PATH
+    default-series: precise
+  amazon:
+    type: ec2
+    access-key: AKIAIADEYC6IBHCMCTZQ
+    secret-key: Vl5g/QLi********************************
+    control-bucket: juju-****************.s3-website-us-east-1.amazonaws.com
+    admin-secret: d29e6847c81a1e7441fa759134946594
+    default-series: precise
+    juju-origin: ppa

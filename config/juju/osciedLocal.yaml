@@ -1,0 +1,53 @@
+oscied-orchestra:
+  verbose: "true"
+  root_secret: "5FrvHcm7oyF4WQFW"
+  nodes_secret: "bdZccPuG9fibjwCS"
+  repositories_user: "oscied"
+  repositories_pass: "41nVGq07GmSgK9Ud"
+  webui_repository: "https://claire-et-david.dyndns.org/prog/OSCIED/components/webui/source"
+  transform_repository: "https://claire-et-david.dyndns.org/prog/OSCIED/components/transform/source"
+  publisher_repository: "https://claire-et-david.dyndns.org/prog/OSCIED/components/publisher/source"
+  mongo_admin_password: "Iz85QVjdCJugEosz"
+  mongo_nodes_password: "M2qlif8rdtKtBYil"
+  rabbit_password: "OZy23iO0D4UpYS2k"
+  storage_ip: ""
+  storage_fstype: ""
+  storage_mountpoint: ""
+  storage_options: ""
+oscied-publisher:
+  verbose: "true"
+  concurrency: 2
+  rabbit_queues: "publisher_private"
+  max_upload_size: 4294967296
+  max_execution_time: 180
+  max_input_time: 600
+  mongo_connection: ""
+  rabbit_connection: ""
+  storage_ip: ""
+  storage_fstype: ""
+  storage_mountpoint: ""
+  storage_options: ""
+oscied-storage:
+  verbose: "true"
+oscied-transform:
+  verbose: "true"
+  concurrency: 1
+  rabbit_queues: "transform_private"
+  mongo_connection: ""
+  rabbit_connection: ""
+  storage_ip: ""
+  storage_fstype: ""
+  storage_mountpoint: ""
+  storage_options: ""
+oscied-webui:
+  verbose: "true"
+  max_upload_size: 4294967296
+  max_execution_time: 180
+  max_input_time: 600
+  mysql_my_password: "OKDvS0B3DCZIJKcX"
+  mysql_root_password: "OKDvS0B3DCZIJKcX"
+  mysql_user_password: "HydI1iM6Dfh3vuls"
+  storage_ip: ""
+  storage_fstype: ""
+  storage_mountpoint: ""
+  storage_options: ""
