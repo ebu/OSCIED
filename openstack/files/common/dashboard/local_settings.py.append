@@ -1,0 +1,11 @@
+# PATCHED_BY_OSCIED
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'dashboard',
+        'USER': 'DASH_USER',
+        'PASSWORD': 'DASH_PASSWORD',
+        'HOST': 'CONTROLLER_PRIVATE_IP',
+        'default-character-set': 'utf8'
+    },
+}

@@ -1,0 +1,10 @@
+# Name Password E-Mail Description
+on;admin;IMh70Cf1Ry155ACM;david.fischer.ch@gmail.com;OSCIED Administrator
+on;demo;5Si4ioGRQr7DyUHd;;OSCIED Demo User
+on;cinder;P9c0oC3duT6HNVMw;;Block Storage Service User
+off;dashboard;1owNPP3mYXUbYKbX;Dashboard Service User (Only for MySQL)
+on;glance;O2SakqjhaJ8cdt2p;;Image Service User
+off;keystone;2FeCJ95Mm434Io5k;;Identity Service User (Only for MySQL)
+on;nova;Nzseo3CYI28uuIBo;;Compute Service User
+on;swift;97TWEdM8vEKA2HAU;;Object Storage Service User
+on;quantum;3OYd7FVp87hEqrTZ;;Network Service User

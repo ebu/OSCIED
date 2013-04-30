@@ -1,0 +1,8 @@
+# Region Service Public Internal Admin
+RegionOne;identity;5000/v2.0;5000/v2.0;35357/v2.0
+RegionOne;compute;8774/v2/%(tenant_id)s;8774/v2/%(tenant_id)s;8774/v2/%(tenant_id)s
+RegionOne;image;9292/v1;9292/v1;9292/v1
+RegionOne;object-store;8080/v1/AUTH_%(tenant_id)s;8080/v1/AUTH_%(tenant_id)s;8080/v1
+RegionOne;volume;8776/v1/%(tenant_id)s;8776/v1/%(tenant_id)s;8776/v1/%(tenant_id)s
+RegionOne;network;9696/;9696/;9696/
+RegionOne;ec2;8773/services/Cloud;8773/services/Cloud;8773/services/Admin

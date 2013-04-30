@@ -1,0 +1,8 @@
+# Service Type Description
+keystone;identity;Identity Service
+nova;compute;Nova Compute Service
+glance;image;Image Service
+swift;object-store;Object Store Service
+cinder;volume;Block Storage Service
+quantum;network;Network Service
+ec2;ec2;EC2 Compatibility Layer

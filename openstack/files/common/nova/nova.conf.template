@@ -1,0 +1,84 @@
+[DEFAULT]
+
+# Miscellaneous
+logdir=/var/log/nova
+state_path=/var/lib/nova
+lock_path=/var/lock/nova
+root_helper=sudo nova-rootwrap /etc/nova/rootwrap.conf
+allow_admin_api=True
+allow_resize_to_same_host=True
+verbose=True
+enabled_apis=ec2,osapi_compute,metadata
+osapi_compute_extension=nova.api.openstack.compute.contrib.standard_extensions
+
+# Database (MySQL)
+sql_connection=mysql://nova:password@CONTROLLER_PRIVATE_IP/nova?charset=utf8
+
+# Message Queue (RabbitMQ)
+rabbit_host=CONTROLLER_PRIVATE_IP
+rabbit_password=password
+
+# VM Console -> Browser (novnc)
+novnc_enable=True
+novncproxy_base_url=http://CONTROLLER_PUBLIC_IP:6080/vnc_auto.html
+xvpvncproxy_base_url=http://CONTROLLER_PUBLIC_IP:6081/console
+novncproxy_port=6080
+vncserver_proxyclient_address=HOST_PRIVATE_IP
+vncserver_listen=HOST_PRIVATE_IP
+my_ip=HOST_PRIVATE_IP
+
+# Authentication
+use_deprecated_auth=False
+auth_strategy=keystone
+keystone_ec2_url=http://CONTROLLER_PRIVATE_IP:5000/v2.0/ec2tokens
+
+# OpenStack APIs
+cc_host=CONTROLLER_PRIVATE_IP
+s3_host=CONTROLLER_PRIVATE_IP
+ec2_host=CONTROLLER_PRIVATE_IP
+nova_url=http://CONTROLLER_PRIVATE_IP:8774/v1.1/
+ec2_url=http://CONTROLLER_PRIVATE_IP:8773/services/Cloud
+ec2_private_dns_show_ip=True
+dmz_cidr=169.254.169.254/32
+ec2_dmz_host=CONTROLLER_PRIVATE_IP
+metadata_host=CONTROLLER_PRIVATE_IP
+metadata_listen=0.0.0.0
+
+# Scheduler (nova-scheduler)
+scheduler_driver=nova.scheduler.simple.SimpleScheduler
+
+# Compute Service (nova-compute->libvirt->kvm)
+compute_driver=nova.virt.libvirt.LibvirtDriver
+libvirt_type=kvm
+libvirt_cpu_mode=none
+instance_name_template=instance-%08x
+instances_path=/var/lib/nova/instances
+api_paste_config=/etc/nova/api-paste.ini
+libvirt_use_virtio_for_bridges=True
+
+# Image Service (Glance)
+glance_api_servers=CONTROLLER_PRIVATE_IP:9292
+image_service=nova.image.glance.GlanceImageService
+
+# Volume Service (Cinder)
+volume_api_class=nova.volume.cinder.API
+osapi_volume_listen=CONTROLLER_PRIVATE_IP
+osapi_volume_listen_port=9000
+
+# Network Service (quantum)
+network_api_class=nova.network.quantumv2.api.API
+quantum_url=http://CONTROLLER_PRIVATE_IP:9696
+quantum_auth_strategy=keystone
+quantum_admin_tenant_name=service
+quantum_admin_username=quantum
+quantum_admin_password=password
+quantum_admin_auth_url=http://CONTROLLER_PRIVATE_IP:35357/v2.0
+force_dhcp_release=True
+linuxnet_interface_driver=nova.network.linux_net.LinuxOVSInterfaceDriver
+firewall_driver=nova.virt.libvirt.firewall.IptablesFirewallDriver
+
+# Vif-plugging, using Nova Security Groups
+libvirt_vif_driver=nova.virt.libvirt.vif.LibvirtHybridOVSBridgeDriver
+
+# Restore VMs on boot
+resume_guests_state_on_host_boot=True

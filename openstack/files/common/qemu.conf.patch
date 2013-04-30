@@ -1,0 +1,29 @@
+*** qemu.conf.orig	2012-11-23 00:31:58.299027206 +0100
+--- qemu.conf	2012-11-23 00:32:17.391516012 +0100
+***************
+*** 199,210 ****
+  # This will only need setting if newer QEMU suddenly
+  # wants some device we don't already know about.
+  #
+! #cgroup_device_acl = [
+! #    "/dev/null", "/dev/full", "/dev/zero",
+! #    "/dev/random", "/dev/urandom",
+! #    "/dev/ptmx", "/dev/kvm", "/dev/kqemu",
+! #    "/dev/rtc","/dev/hpet"
+! #]
+  
+  
+  # The default format for Qemu/KVM guest save images is raw; that is, the
+--- 199,210 ----
+  # This will only need setting if newer QEMU suddenly
+  # wants some device we don't already know about.
+  # PATCHED_BY_OSCIED
+! cgroup_device_acl = [
+!     "/dev/null", "/dev/full", "/dev/zero",
+!     "/dev/random", "/dev/urandom",
+!     "/dev/ptmx", "/dev/kvm", "/dev/kqemu",
+!     "/dev/rtc","/dev/hpet", "/dev/net/tun"
+! ]
+  
+  
+  # The default format for Qemu/KVM guest save images is raw; that is, the

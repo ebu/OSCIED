@@ -1,0 +1,8 @@
+# Tenant User Role Comment
+demo;admin;admin;
+demo;demo;Member;
+service;cinder;admin;
+service;glance;admin;
+service;nova;admin;
+service;quantum;admin;
+service;swift;admin;

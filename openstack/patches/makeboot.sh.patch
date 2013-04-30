@@ -1,0 +1,57 @@
+*** b	2012-11-09 12:18:42.000000000 +0100
+--- makeboot.sh	2012-11-09 12:20:13.000000000 +0100
+***************
+*** 73,79 ****
+  export LANG=C
+  
+  #
+! check_if_root
+  target_part="$1"
+  
+  #
+--- 73,79 ----
+  export LANG=C
+  
+  #
+! #check_if_root
+  target_part="$1"
+  
+  #
+***************
+*** 82,88 ****
+    USAGE
+    exit 1
+  fi
+! if ! type parted &>/dev/null; then
+    echo "Parted was not found on this GNU/Linux system. Please install it."
+    echo "Program terminated!"
+    exit 1
+--- 82,88 ----
+    USAGE
+    exit 1
+  fi
+! if false; then #if ! type parted &>/dev/null; then
+    echo "Parted was not found on this GNU/Linux system. Please install it."
+    echo "Program terminated!"
+    exit 1
+***************
+*** 99,107 ****
+  
+  #
+  pt_dev="$(basename $target_part)"  # e.g. sdc1
+! hd_dev="${pt_dev:0:3}"   # e.g. sdc
+  target_disk="/dev/$hd_dev"  # e.g. /dev/sdc
+! pt_dev_no="${pt_dev/$hd_dev}"  # e.g. 1
+  
+  # Get machine info:
+  on_this_machine=""
+--- 99,107 ----
+  
+  #
+  pt_dev="$(basename $target_part)"  # e.g. sdc1
+! hd_dev=`echo $pt_dev | sed "s:[0-9]::g"` #hd_dev="${pt_dev:0:3}"   # e.g. sdc
+  target_disk="/dev/$hd_dev"  # e.g. /dev/sdc
+! pt_dev_no=`echo $pt_dev | sed "s:$hd_dev::"` #pt_dev_no="${pt_dev/$hd_dev}"  # e.g. 1
+  
+  # Get machine info:
+  on_this_machine=""
