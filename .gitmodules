@@ -4,3 +4,15 @@
 [submodule "tools/openstack-scripts"]
 	path = tools/openstack-scripts
 	url = https://github.com/neophilo/openstack-scripts/
+[submodule "tools/celery-source"]
+	path = tools/celery-source
+	url = git://github.com/celery/celery.git
+[submodule "tools/celery-examples"]
+	path = tools/celery-examples
+	url = git://github.com/larsbutler/celery-examples.git
+[submodule "tools/flask-source"]
+	path = tools/flask-source
+	url = git://github.com/mitsuhiko/flask.git
+[submodule "tools/rabbitmq-tutorials"]
+	path = tools/rabbitmq-tutorials
+	url = git://github.com/rabbitmq/rabbitmq-tutorials.git
