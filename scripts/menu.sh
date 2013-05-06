@@ -106,6 +106,7 @@ install()
     texlive-latex-extra texlive-fonts-recommended || xecho 'Unable to install prerequisites'
 
   pecho 'Update submodules'
+  cd "$BASE_PATH" || xecho "Unable to find path $BASE_PATH"
   git submodule foreach git pull
 
   pecho 'Update sublime text configuration'
