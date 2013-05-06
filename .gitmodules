@@ -1,0 +1,3 @@
+[submodule "docs/references/openstack-folsom-guide"]
+	path = docs/references/openstack-folsom-guide
+	url = git://github.com/EmilienM/openstack-folsom-guide.git
