@@ -1,0 +1,728 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"virtual",
+				"virtual_filename"
+			],
+			[
+				"virtu",
+				"virtual_filename"
+			],
+			[
+				"is",
+				"is_valid"
+			],
+			[
+				"CONFIG_",
+				"CONFIG_JUJU_PATH"
+			],
+			[
+				"NotIm",
+				"NotImplementedError	(builtin, class)"
+			],
+			[
+				"UPLOADS",
+				"UPLOADS_SSH_PATH"
+			],
+			[
+				"upla",
+				"uploads_ssh_path"
+			],
+			[
+				"medias_",
+				"medias_ssh_path"
+			],
+			[
+				"use2",
+				"user2_auth"
+			],
+			[
+				"tprofile",
+				"tprofile1_id"
+			],
+			[
+				"transform",
+				"transform_jobs"
+			],
+			[
+				"enc",
+				"encoder_string	(attribute, instance)"
+			],
+			[
+				"encoder",
+				"encoder_string"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "/home/david/David/git/OSCIED-master/scripts/menu.sh",
+			"settings":
+			{
+				"buffer_size": 29751,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "/home/david/David/git/OSCIED-master/scripts/common.sh.lu-dep",
+			"settings":
+			{
+				"buffer_size": 12184,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 392.0,
+		"selected_items":
+		[
+			[
+				"sett",
+				"Preferences: Settings - Default"
+			],
+			[
+				"python",
+				"Set Syntax: Python"
+			],
+			[
+				"pack",
+				"Preferences: Browse Packages"
+			],
+			[
+				"snip",
+				"Snippet: if __name__ == '__main__'"
+			],
+			[
+				"pyth",
+				"Set Syntax: Python"
+			]
+		],
+		"width": 449.0
+	},
+	"console":
+	{
+		"height": 139.0
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/views/publisher/show_jobs.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/views/transform/show_jobs.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/orchestra/charm/hooks_lib/common.sh.lu-dep",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/appendices-api.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/orchestra/charm/orchestra.py",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/index.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/orchestra/charm/lib/FFmpeg.py",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/uml/sequence-medias-crud.txt",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/uml/component-application.txt",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/demonstrator-application-introduction.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/uml/state-media.txt",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/demonstrator-application-orchestra.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/demonstrator-application-transform.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/demonstrator-application-publisher.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/demonstrator-application-webui.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/demonstrator-faq.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/demonstrator-scenarios.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/results.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/future.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/conclusion.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/demonstrator-application-storage.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/uml/sequence-users-crud.txt",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/uml/sequence-pjobs-crud.txt",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/uml/sequence-tprofiles-crud.txt",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/uml/sequence-tjobs-crud.txt",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/appendices-webui.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/introduction.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/common.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/uml/activity-orchestra-install.txt",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/uml/component-application_inside.txt",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/uml/component-application_simple.txt",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/acknowledgments.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/definitions.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/demonstrator-cloud.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/demonstrator-layers.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/demonstrator-orchestrator.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/specifications.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/summary.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/appendices.rst",
+		"/home/david/.config/sublime-text-2/Packages/Default/Preferences.sublime-settings",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/annexes-references.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/demonstrator-server.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/abbreviations.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/state_of_art.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/annexes-licensing.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/about.rst.template",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/annexes.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/demonstrator.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/annexes-publisher.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/conf.py",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/annexes-api.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/annexes-juju.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/specifications_bill.rst.disabled",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/annexes-orchestra.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/demonstrator-application.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/annexes-config.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/annexes-faq.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/orchestra/charm/lib/Storage.py",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/orchestra/charm/lib/Orchestra.py",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/orchestra/charm/lib/TransformJob.py",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/orchestra/charm/lib/PublishJob.py",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/annexes-fims.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/components.csv",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/orchestra/charm/lib/Callback.py",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/orchestra/charm/lib/Media.py",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/uml/activity-orchestra-config-changed.txt",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/uml/activity-orchestra-stop.txt",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/uml/activity-orchestra-start.txt",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/orchestra/charm/hooks_lib/common.sh",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/orchestra/charm/lib/Publisher.py",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/orchestra/charm/lib/Transform.py",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/uml/state-pjob.txt",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/uml/state-charm.txt",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/uml/state-tjob.txt",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/uml/sequence-tjobs-workers_success.txt",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/uml/sequence-pjobs-workers_success.txt",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/about.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/annexes-bibliography.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/annexes-webui.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/generate-report.sh",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/scripts/common.sh.lu-dep",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/scripts/juju-menu.sh",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/scripts/menu.sh",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/cloud/nodes/scripts/configure.bootstrap.sh",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/cloud/nodes/scripts/install.prerequisities.sh",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/cloud/nodes/scripts/keystone.sh",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/cloud/nodes/scripts/mysql.sh",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/cloud/nodes/scripts/nova.sh",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/cloud/nodes/scripts/quantum.sh",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/cloud/nodes/scripts/tests.sh",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/annexes-stack.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/annexes-storage.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/source/annexes-transform.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/transform/charm/config.json",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/OSCIED-Report_draft.rst.template",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/lib/introduction.rst.template",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/draft/OSCIED-Report_draft.rst.template",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/MA/OSCIED-Report_draft.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/draft/OSCIED-Report_draft.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/draft/t.rst",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/controllers/publisher.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/controllers/transform.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/views/transform/show.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/views/media/show.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/views/transform/launch_transform_form.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/report/david/draft/generate-report.py",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/views/layouts/default_header.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/views/profile/add_profile_form.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/controllers/media.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/controllers/profile.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/controllers/users.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/views/users/add_user_form.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/views/users/show.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/views/media/add_media_form.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/views/media/edit_media_form.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/views/profile/show.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/helpers/index.html",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/controllers/user.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/controllers/medias.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/views/medias/show.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/controllers/misc.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/views/profile/edit_profile_form.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/config/routes.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/controllers/manage.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/controllers/upload_files.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/www/application/views/user/show.php",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/orchestra/charm/lib/Utilities.py",
+		"/mnt/DavidRUG/david/David/prog/OSCIED/components/webui/charm/hooks_lib/common.sh.lu-dep"
+	],
+	"find":
+	{
+		"height": 35.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"MEDIAS_TEST_",
+			"glusterfs://<address>/medias_volume/medias/<us",
+			"Corres",
+			"<publ",
+			"POST /transform/call",
+			"10.3",
+			"Floatin",
+			"cancell",
+			"ea9",
+			"48c",
+			"(...)",
+			"c31",
+			"b8b(",
+			"965(...)",
+			"965",
+			"129(...)f11b",
+			"a8a(...)049",
+			"4e8(...)e0b",
+			"c69(...)c5d",
+			"c69",
+			"(...)",
+			"c4d",
+			"PATCH",
+			"has been update",
+			"thing",
+			"52e(",
+			"55d(",
+			"4e8(",
+			"73a",
+			"2c1",
+			"c313",
+			"c313(",
+			"transcending",
+			"openstack_folsom_conceptual_arch",
+			"h265",
+			"h264",
+			"**",
+			":path:",
+			"json",
+			"Source : LS",
+			"chose",
+			"choosed",
+			"ProxmoxVE",
+			"art5",
+			"David Fischer",
+			"openstack_software",
+			"component_appl",
+			"state_media",
+			"state_charm",
+			"activity_orchestra_hooks",
+			"juju_status",
+			"oscied_deployment_local",
+			"oscied_storage",
+			"oscied_servers",
+			"oscied_layers",
+			"Management",
+			"\"-\"",
+			"f7",
+			"from ",
+			"_openstack_folsom_gre_2nic",
+			"_openst",
+			";",
+			"8bda",
+			":statuscode 403:.*",
+			":statuscode 401:.*",
+			" eg. ",
+			"Celery",
+			"MPEG-DASH",
+			"Cloud Infra",
+			"deployemen",
+			"1350px",
+			"90 %",
+			"1200px",
+			"80 %",
+			"only:: latex",
+			"<",
+			"config.json",
+			"common head",
+			"29-",
+			"WEBUI_SVN",
+			"profile",
+			"media",
+			"edit",
+			"media",
+			"TEMP_PATH",
+			"SYS_TEMP",
+			"get_",
+			"get",
+			"get_",
+			"Error",
+			"url",
+			"root",
+			".json",
+			"decode",
+			"get_json",
+			"get_id",
+			"save_json",
+			"save_id",
+			"save_auth",
+			"quantal",
+			"JUJU_SCENARIO",
+			"SCRIPTS_PATH",
+			"return dum",
+			"json.",
+			"return my_abort",
+			" abort",
+			"root_secret"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"1298f206-74f8-11e2-9b82-3085a9acc11b",
+			"a8a165b8-74f7-11e2-a59e-3085a9acc049",
+			"4e8ec55e-74f7-11e2-8451-3085a9acc8e0b",
+			"c697f528-74f7-11e2-96a3-3085a9accc5d",
+			"transcoding",
+			"",
+			"\"--\"",
+			":statuscode 403: Authentication Failed.",
+			":statuscode 401: Authenticate.",
+			"\\t",
+			"1275px",
+			"85 %",
+			"1350px",
+			"90 %",
+			"28-",
+			"job",
+			"user",
+			"profile",
+			"$RELEASE",
+			"SCENARIO",
+			" abort",
+			" return my_abort"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "/home/david/David/git/OSCIED-master/scripts/menu.sh",
+					"settings":
+					{
+						"buffer_size": 29751,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4271,
+								4271
+							]
+						],
+						"settings":
+						{
+							"annotations":
+							[
+								"TODO",
+								"README",
+								"FIXME"
+							],
+							"csslint_options":
+							{
+								"adjoining-classes": "warning",
+								"box-model": true,
+								"box-sizing": "warning",
+								"compatible-vendor-prefixes": "warning",
+								"display-property-grouping": true,
+								"duplicate-background-images": "warning",
+								"duplicate-properties": true,
+								"empty-rules": true,
+								"errors": true,
+								"fallback-colors": "warning",
+								"floats": "warning",
+								"font-faces": "warning",
+								"font-sizes": "warning",
+								"gradients": "warning",
+								"ids": "warning",
+								"import": "warning",
+								"important": "warning",
+								"known-properties": true,
+								"outline-none": "warning",
+								"overqualified-elements": "warning",
+								"qualified-headings": "warning",
+								"regex-selectors": "warning",
+								"rules-count": "warning",
+								"shorthand": "warning",
+								"star-property-hack": "warning",
+								"text-indent": "warning",
+								"underscore-property-hack": "warning",
+								"unique-headings": "warning",
+								"universal-selector": "warning",
+								"vendor-prefix": true,
+								"zero-units": "warning"
+							},
+							"gjslint_ignore":
+							[
+								110
+							],
+							"gjslint_options":
+							[
+							],
+							"javascript_linter": "jshint",
+							"jshint_options":
+							{
+								"browser": true,
+								"evil": true,
+								"regexdash": true,
+								"sub": true,
+								"trailing": true,
+								"wsh": true
+							},
+							"pep8": true,
+							"pep8_ignore":
+							[
+								"E501"
+							],
+							"perl_linter": "perlcritic",
+							"pyflakes_ignore":
+							[
+							],
+							"pyflakes_ignore_import_*": true,
+							"sublimelinter": true,
+							"sublimelinter_delay": 2,
+							"sublimelinter_disable":
+							[
+							],
+							"sublimelinter_executable_map":
+							{
+							},
+							"sublimelinter_fill_outlines": false,
+							"sublimelinter_gutter_marks": false,
+							"sublimelinter_mark_style": "outline",
+							"sublimelinter_notes": false,
+							"sublimelinter_objj_check_ascii": false,
+							"sublimelinter_popup_errors_on_save": false,
+							"sublimelinter_syntax_map":
+							{
+								"C++": "c",
+								"Python Django": "python",
+								"Ruby on Rails": "ruby"
+							},
+							"sublimelinter_wrap_find": true,
+							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1608.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				}
+			]
+		},
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 1,
+					"file": "/home/david/David/git/OSCIED-master/scripts/common.sh.lu-dep",
+					"settings":
+					{
+						"buffer_size": 12184,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2028,
+								2028
+							]
+						],
+						"settings":
+						{
+							"annotations":
+							[
+								"TODO",
+								"README",
+								"FIXME"
+							],
+							"csslint_options":
+							{
+								"adjoining-classes": "warning",
+								"box-model": true,
+								"box-sizing": "warning",
+								"compatible-vendor-prefixes": "warning",
+								"display-property-grouping": true,
+								"duplicate-background-images": "warning",
+								"duplicate-properties": true,
+								"empty-rules": true,
+								"errors": true,
+								"fallback-colors": "warning",
+								"floats": "warning",
+								"font-faces": "warning",
+								"font-sizes": "warning",
+								"gradients": "warning",
+								"ids": "warning",
+								"import": "warning",
+								"important": "warning",
+								"known-properties": true,
+								"outline-none": "warning",
+								"overqualified-elements": "warning",
+								"qualified-headings": "warning",
+								"regex-selectors": "warning",
+								"rules-count": "warning",
+								"shorthand": "warning",
+								"star-property-hack": "warning",
+								"text-indent": "warning",
+								"underscore-property-hack": "warning",
+								"unique-headings": "warning",
+								"universal-selector": "warning",
+								"vendor-prefix": true,
+								"zero-units": "warning"
+							},
+							"gjslint_ignore":
+							[
+								110
+							],
+							"gjslint_options":
+							[
+							],
+							"javascript_linter": "jshint",
+							"jshint_options":
+							{
+								"browser": true,
+								"evil": true,
+								"regexdash": true,
+								"sub": true,
+								"trailing": true,
+								"wsh": true
+							},
+							"pep8": true,
+							"pep8_ignore":
+							[
+								"E501"
+							],
+							"perl_linter": "perlcritic",
+							"pyflakes_ignore":
+							[
+							],
+							"pyflakes_ignore_import_*": true,
+							"sublimelinter": true,
+							"sublimelinter_delay": 2,
+							"sublimelinter_disable":
+							[
+							],
+							"sublimelinter_executable_map":
+							{
+							},
+							"sublimelinter_fill_outlines": false,
+							"sublimelinter_gutter_marks": false,
+							"sublimelinter_mark_style": "outline",
+							"sublimelinter_notes": false,
+							"sublimelinter_objj_check_ascii": false,
+							"sublimelinter_popup_errors_on_save": false,
+							"sublimelinter_syntax_map":
+							{
+								"C++": "c",
+								"Python Django": "python",
+								"Ruby on Rails": "ruby"
+							},
+							"sublimelinter_wrap_find": true,
+							"syntax": "Packages/ShellScript/Shell-Unix-Generic.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 416.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 34.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			],
+			[
+				1,
+				0,
+				2,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			0.626003705991,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 132.0
+	},
+	"replace":
+	{
+		"height": 64.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 236.0,
+	"status_bar_visible": true
+}
