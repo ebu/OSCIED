@@ -101,19 +101,32 @@ install()
   fi
   ok=$true
 
-  pecho 'Install prerequisites'
-  eval $install bzr git-core python-pip rst2pdf texlive-latex-recommended \
-    texlive-latex-extra texlive-fonts-recommended || xecho 'Unable to install prerequisites'
-
   pecho 'Update submodules'
   cd "$BASE_PATH" || xecho "Unable to find path $BASE_PATH"
   git submodule foreach git pull
+
+  pecho 'Import logicielsUbuntu'
+  if ! which lu-importUtils > /dev/null; then
+    cd "$TOOLS_PATH/logicielsUbuntu" || xecho "Unable to find path $TOOLS_PATH/logicielsUbuntu"
+    sh logicielsUbuntuExports
+    recho 'Please restart this script once from a new terminal'
+    recho 'or after having executed the following:'
+    cecho 'source ~/.bashrc'
+    pause
+    exit 0
+  else
+    cd "$SCRIPTS_PATH" || xecho "Unable to find path $SCRIPTS_PATH"
+    lu-importUtils . || xecho 'Unable to import utilities of logicielsUbuntu'
+  fi
+
+  pecho 'Install prerequisites'
+  eval $install bzr git-core python-pip rst2pdf texlive-latex-recommended \
+    texlive-latex-extra texlive-fonts-recommended || xecho 'Unable to install prerequisites'
 
   pecho 'Update sublime text configuration'
   find "$SUBLIME_PATH" -type f -exec sed -i "s:BASE_PATH:$BASE_PATH:g" {} \;
 
   pecho 'Download references'
-
   cd "$REFERENCES_PATH"|| xecho "Unable to find path $REFERENCES_PATH"
   openstack='http://docs.openstack.org'
   wget -N $openstack/trunk/openstack-compute/install/apt/openstack-install-guide-apt-trunk.pdf
