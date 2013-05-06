@@ -16,3 +16,6 @@
 [submodule "tools/rabbitmq-tutorials"]
 	path = tools/rabbitmq-tutorials
 	url = git://github.com/rabbitmq/rabbitmq-tutorials.git
+[submodule "tools/logicielsUbuntu"]
+	path = tools/logicielsUbuntu
+	url = git://github.com/davidfischer-ch/logicielsUbuntu
