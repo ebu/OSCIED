@@ -27,6 +27,8 @@
 
 . ./common.sh
 
+xecho 'FIXME issue #1'
+
 main()
 {
   revision=$(svn info | grep -m 1 '.*vision.*: *[0-9]*$')

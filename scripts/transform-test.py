@@ -43,6 +43,8 @@ from lib.User import USER_TEST
 #    for i in results:
 #        print i
 
+raise ValueError('FIXME issue #6')
+
 if __name__ == '__main__':
     user = USER_TEST
     media_in = MEDIA_TEST
