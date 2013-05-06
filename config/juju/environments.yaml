@@ -18,6 +18,6 @@ environments:
     type: local
     control-bucket: juju-a14dfaec23c4995999395c3830142d9a278
     admin-secret: 6608267b8c90b2a2949997934167bbd6b44
-    data-dir: /home/david/.juju/storage
-    default-series: precise
+    data-dir: /home/famille/.juju/storage
+    default-series: raring
     juju-origin: ppa
