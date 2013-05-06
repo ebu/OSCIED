@@ -22,13 +22,12 @@
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
 #
-# Retrieved from:
-#   svn co https://claire-et-david.dyndns.org/prog/OSCIED
+# Retrieved from https://github.com/EBU-TI/OSCIED
 
 osciedDemoDescription='Launch oscied demo setup (MaaS Cluster, Local, Amazon)'
 osciedDemoScenario()
 {
-  cd "$COMPONENTS_PATH/juju" || xecho "Unable to find path $COMPONENTS_PATH/juju"
+  cd "$CHARMS_DEPLOY_PATH/.." || xecho "Unable to find path $CHARMS_DEPLOY_PATH/.."
   cfg_maas="$CONFIG_JUJU_PATH/osciedDemo_maas.yaml"
   cfg_local="$CONFIG_JUJU_PATH/osciedDemo_local.yaml"
   cfg_amazon="$CONFIG_JUJU_PATH/osciedDemo_amazon.yaml"
@@ -65,7 +64,7 @@ osciedDemoScenario_maas()
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
     juju deploy --environment 'maas' --config "$cfg_maas" \
-      --repository=charms/ local:$RELEASE/oscied-orchestra || xecho '1'
+      --repository=. local:$RELEASE/oscied-orchestra || xecho '1'
     juju expose --environment 'maas' oscied-orchestra || xecho '2'
   fi
 
@@ -79,7 +78,7 @@ osciedDemoScenario_maas()
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
     jitsu deploy-to "$id1" --environment 'maas' --config "$cfg_maas" \
-      --repository=charms/ local:$RELEASE/oscied-webui || xecho '1'
+      --repository=. local:$RELEASE/oscied-webui || xecho '1'
     juju expose --environment 'maas' oscied-webui || xecho '2'
   fi
 
@@ -88,7 +87,7 @@ osciedDemoScenario_maas()
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
     juju deploy --environment 'maas' --config "$cfg_maas" \
-      --repository=charms/ local:$RELEASE/oscied-storage || xecho '1'
+      --repository=. local:$RELEASE/oscied-storage || xecho '1'
     juju expose --environment 'maas' oscied-storage || xecho '2'
   fi
 
@@ -102,7 +101,7 @@ osciedDemoScenario_maas()
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
     jitsu deploy-to "$id2" --environment 'maas' --config "$cfg_maas" \
-      --repository=charms/ local:$RELEASE/oscied-transform || xecho '1'
+      --repository=. local:$RELEASE/oscied-transform || xecho '1'
   fi
 
   pecho 'Deploy Publisher (1 instance)'
@@ -110,7 +109,7 @@ osciedDemoScenario_maas()
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
     jitsu deploy-to "$id2" --environment 'maas' --config "$cfg_maas" \
-      --repository=charms/ local:$RELEASE/oscied-publisher || xecho '1'
+      --repository=. local:$RELEASE/oscied-publisher || xecho '1'
     juju expose --environment 'maas' oscied-publisher || xecho '2'
   fi
 

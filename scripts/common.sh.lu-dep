@@ -22,8 +22,7 @@
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
 #
-# Retrieved from:
-#   svn co https://claire-et-david.dyndns.org/prog/OSCIED
+# Retrieved from https://github.com/EBU-TI/OSCIED
 
 set -o nounset # will exit if an unitialized variable is used
 
@@ -36,23 +35,30 @@ if ! osciedCommonImported 2>/dev/null; then
 STORAGE_PRIVATE_IP=''
 
 # Common
-RELEASE='precise'
+RELEASE='precise'     # FIXME this is hardcoded
 NETWORK_IFACE='eth0'  # FIXME this is hardcoded
 
 SCRIPTS_PATH=$(pwd)
 BASE_PATH=$(dirname "$SCRIPTS_PATH")
+CHARMS_PATH="$BASE_PATH/charms"
+CHARMS_DEPLOY_PATH="$CHARMS_PATH/deploy/$RELEASE"
 CONFIG_PATH="$BASE_PATH/config"
+DOCS_PATH="$BASE_PATH/docs"
+MEDIAS_PATH="$BASE_PATH/medias"
+SUBLIME_PATH="$BASE_PATH/sublime"
+TOOLS_PATH="$BASE_PATH/tools"
+REFERENCES_PATH="$DOCS_PATH/references"
 
 # Reports related configuration (e.g. listing of components)
-REPORT_TOOLS_PATH="$BASE_PATH/report/tools"
-REPORT_TOOLS_PLANTUML_BINARY="$REPORT_TOOLS_PATH/plantuml.jar"
-DAVID_MA_REPORT_PATH="$BASE_PATH/report/david/MA"
-DAVID_MA_REPORT_BUILD_PATH="$DAVID_MA_REPORT_PATH/build"
-DAVID_MA_REPORT_RELEASES_PATH="$DAVID_MA_REPORT_PATH/releases"
-DAVID_MA_REPORT_UML_PATH="$DAVID_MA_REPORT_PATH/uml"
-DAVID_MA_REPORT_COMPONENTS_FILE="$DAVID_MA_REPORT_PATH/source/components.csv"
+# REPORT_TOOLS_PATH="$BASE_PATH/report/tools"
+# REPORT_TOOLS_PLANTUML_BINARY="$REPORT_TOOLS_PATH/plantuml.jar"
+# DAVID_MA_REPORT_PATH="$BASE_PATH/report/david/MA"
+# DAVID_MA_REPORT_BUILD_PATH="$DAVID_MA_REPORT_PATH/build"
+# DAVID_MA_REPORT_RELEASES_PATH="$DAVID_MA_REPORT_PATH/releases"
+# DAVID_MA_REPORT_UML_PATH="$DAVID_MA_REPORT_PATH/uml"
+# DAVID_MA_REPORT_COMPONENTS_FILE="$DAVID_MA_REPORT_PATH/source/components.csv"
 
-# Generated configuration
+# # Generated configuration
 CONFIG_GEN_PATH="$CONFIG_PATH/generated"
 CONFIG_GEN_AUTHS_FILE="$CONFIG_GEN_PATH/auths.list"
 CONFIG_GEN_IDS_FILE="$CONFIG_GEN_PATH/ids.list"
@@ -60,13 +66,13 @@ CONFIG_GEN_JSON_FILE="$CONFIG_GEN_PATH/json.list"
 CONFIG_GEN_UNITS_FILE="$CONFIG_GEN_PATH/units.list"
 CONFIG_GEN_CONFIG_FILE="$CONFIG_GEN_PATH/config.yaml"
 
-# Orchestra related configuration (e.g. initial setup)
+# # Orchestra related configuration (e.g. initial setup)
 CONFIG_API_PATH="$CONFIG_PATH/api"
 CONFIG_API_USERS_FILE="$CONFIG_API_PATH/users.csv"
 CONFIG_API_MEDIAS_FILE="$CONFIG_API_PATH/medias.csv"
 CONFIG_API_TPROFILES_FILE="$CONFIG_API_PATH/tprofiles.csv"
 
-# JuJu related configuration (e.g. environments)
+# # JuJu related configuration (e.g. environments)
 CONFIG_JUJU_PATH="$CONFIG_PATH/juju"
 CONFIG_JUJU_ID_RSA="$CONFIG_JUJU_PATH/id_rsa"
 CONFIG_JUJU_ID_RSA_PUB="$CONFIG_JUJU_PATH/id_rsa.pub"
@@ -76,47 +82,13 @@ CONFIG_JUJU_TEMPL_FILE="$CONFIG_JUJU_FILES_PATH/environments.yaml.template"
 
 CONFIG_SCENARIOS_PATH="$CONFIG_PATH/scenarios"
 
-# TODO
-MEDIAS_PATH="$BASE_PATH/medias"
-MEDIAS_TEST_PATH="$MEDIAS_PATH/Test"
-SUBLIME_PATH="$BASE_PATH/sublime"
-COMPONENTS_PATH="$BASE_PATH/components"
-
-CLOUD_REFERENCES_PATH="$COMPONENTS_PATH/cloud/references"
-CLOUD_TOOLS_PATH="$COMPONENTS_PATH/cloud/tools"
-JUJU_CHARMS_PATH="$COMPONENTS_PATH/juju/charms"
-JUJU_TOOLS_PATH="$COMPONENTS_PATH/juju/tools"
-
 JUJU_PATH="$HOME/.juju"
 JUJU_STORAGE_PATH="$JUJU_PATH/storage/"
 JUJU_ENVS_FILE="$JUJU_PATH/environments.yaml"
 
-ORCHESTRA_CHARM_PATH="$COMPONENTS_PATH/orchestra/charm"
-ORCHESTRA_LIB_PATH="$COMPONENTS_PATH/orchestra/charm/lib"
-ORCHESTRA_TOOLS_PATH="$COMPONENTS_PATH/orchestra/tools"
-PUBLISHER_CHARM_PATH="$COMPONENTS_PATH/publisher/charm"
-TRANSFORM_CHARM_PATH="$COMPONENTS_PATH/transform/charm"
-WEBUI_CHARM_HOOKS_LIB_PATH="$COMPONENTS_PATH/webui/charm/hooks_lib"
-WEBUI_CHARM_WWW_PATH="$COMPONENTS_PATH/webui/charm/www"
-
 BAD_AUTH='charlie@hacker.com:challenge_accepted'
 
 # Utilities ========================================================================================
-
-# Checkout or update a clone of a git repository ---------------------------------------------------
-
-git_co()
-{
-  if [ $# -ne 2 ]; then
-    xecho "Usage: $(basename $0).git_co dir repository"
-  fi
-  dir=$1
-  repository=$2
-  if [ -d "$dir" ]
-  then cd "$dir" && git reset --hard && git pull && cd ..
-  else cd "$(dirname "$dir")" && git clone "$repository"
-  fi
-}
 
 # Parse config.json of a actually running charm instance ! -----------------------------------------
 

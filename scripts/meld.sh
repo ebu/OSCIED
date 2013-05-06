@@ -22,17 +22,15 @@
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
 #
-# Retrieved from:
-#   svn co https://claire-et-david.dyndns.org/prog/OSCIED
+# Retrieved from https://github.com/EBU-TI/OSCIED
 
 . ./common.sh
 
 techo 'Compare hook scripts of two charms'
 
 if [ $# -ne 2 ]; then
-  xecho "Usage: $(basename $0) charm1_name charm2_name"
+  xecho "Usage: $(basename $0) charm1_name charm2_name (e.g. orchestra publisher)"
 fi
 
-cd "$COMPONENTS_PATH" || xecho "Unable to find path $COMPONENTS_PATH"
-
-meld "$1/charm/hooks_lib/common.sh.lu-dep" "$2/charm/hooks_lib/common.sh.lu-dep"
+cd "$CHARMS_PATH" || xecho "Unable to find path $CHARMS_PATH"
+meld "oscied-$1/hooks_lib/common.sh.lu-dep" "oscied-$2/hooks_lib/common.sh.lu-dep"

@@ -22,13 +22,12 @@
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
 #
-# Retrieved from:
-#   svn co https://claire-et-david.dyndns.org/prog/OSCIED
+# Retrieved from https://github.com/EBU-TI/OSCIED
 
 osciedLocalDescription='Launch oscied (minimal setup) locally (LXC provider)'
 osciedLocalScenario()
 {
-  cd "$COMPONENTS_PATH/juju" || xecho "Unable to find path $COMPONENTS_PATH/juju"
+  cd "$CHARMS_DEPLOY_PATH/.." || xecho "Unable to find path $CHARMS_DEPLOY_PATH/.."
   cfg="$CONFIG_JUJU_PATH/osciedLocal.yaml"
   cp -f "$cfg" "$CONFIG_GEN_CONFIG_FILE"
 
@@ -45,11 +44,11 @@ osciedLocalScenario()
     if [ -f "$cfg" ]; then
       mecho "Using user define Orchestra configuration : $cfg"
       juju deploy --environment 'local' --config "$cfg" \
-        --repository=charms/ local:$RELEASE/oscied-orchestra || xecho '1'
+        --repository=. local:$RELEASE/oscied-orchestra || xecho '1'
     else
       mecho 'Using default Orchestra configuration'
       juju deploy --environment 'local' \
-        --repository=charms/ local:$RELEASE/oscied-orchestra || xecho '1'
+        --repository=. local:$RELEASE/oscied-orchestra || xecho '1'
     fi
     juju expose --environment 'local' oscied-orchestra || xecho '2'
   fi
@@ -60,11 +59,11 @@ osciedLocalScenario()
     if [ -f "$cfg" ]; then
       mecho "Using user define Web UI configuration : $cfg"
       juju deploy --environment 'local' --config "$cfg" \
-        --repository=charms/ local:$RELEASE/oscied-webui || xecho '1'
+        --repository=. local:$RELEASE/oscied-webui || xecho '1'
     else
       mecho 'Using default Web UI configuration'
       juju deploy --environment 'local' \
-        --repository=charms/ local:$RELEASE/oscied-webui || xecho '1'
+        --repository=. local:$RELEASE/oscied-webui || xecho '1'
     fi
     juju expose --environment 'local' oscied-webui || xecho '2'
   fi
@@ -75,11 +74,11 @@ osciedLocalScenario()
     if [ -f "$cfg" ]; then
       mecho "Using user define Storage configuration : $cfg"
       juju deploy --environment 'local' --config "$cfg" \
-        --repository=charms/ local:$RELEASE/oscied-storage || xecho '1'
+        --repository=. local:$RELEASE/oscied-storage || xecho '1'
     else
       mecho 'Using default Storage configuration'
       juju deploy --environment 'local' \
-        --repository=charms/ local:$RELEASE/oscied-storage || xecho '1'
+        --repository=. local:$RELEASE/oscied-storage || xecho '1'
     fi
     juju expose --environment 'local' oscied-storage || xecho '2'
   fi
@@ -90,11 +89,11 @@ osciedLocalScenario()
     if [ -f "$cfg" ]; then
       mecho "Using user define Transform configuration : $cfg"
       juju deploy --environment 'local' --config "$cfg" \
-        --repository=charms/ local:$RELEASE/oscied-transform || xecho '1'
+        --repository=. local:$RELEASE/oscied-transform || xecho '1'
     else
       mecho 'Using default Transform configuration'
       juju deploy --environment 'local' \
-        --repository=charms/ local:$RELEASE/oscied-transform || xecho '1'
+        --repository=. local:$RELEASE/oscied-transform || xecho '1'
     fi
   fi
 
@@ -104,11 +103,11 @@ osciedLocalScenario()
     if [ -f "$cfg" ]; then
       mecho "Using user define Publisher configuration : $cfg"
       juju deploy --environment 'local' --config "$cfg" \
-        --repository=charms/ local:$RELEASE/oscied-publisher || xecho '1'
+        --repository=. local:$RELEASE/oscied-publisher || xecho '1'
     else
       mecho 'Using default Publisher configuration'
       juju deploy --environment 'local' \
-        --repository=charms/ local:$RELEASE/oscied-publisher || xecho '1'
+        --repository=. local:$RELEASE/oscied-publisher || xecho '1'
     fi
     juju expose --environment 'local' oscied-publisher || xecho '2'
   fi

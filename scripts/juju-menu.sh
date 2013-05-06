@@ -22,8 +22,7 @@
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
 #
-# Retrieved from:
-#   svn co https://claire-et-david.dyndns.org/prog/OSCIED
+# Retrieved from https://github.com/EBU-TI/OSCIED
 
 . ./common.sh
 
@@ -68,18 +67,18 @@ main()
     do
       $DIALOG --backtitle 'OSCIED Operations with JuJu' \
               --menu 'Please select an operation' 0 0 0 \
-              overwrite       'Overwrite charms in juju path'           \
-              update          'Update code of charms in juju path'      \
-              deploy          'Launch a deployment scenario'            \
-              destroy         'Destroy a deployed environment'          \
-              standalone      'Play with a charm locally (yes, really)' \
-              status          'Display juju status'                     \
-              status_svg      'Display juju status as a SVG graphic'    \
-              log             'Launch juju debug log in a screen'       \
-              config          'Update units public url listing file'    \
-              unit_ssh        'Access to units with secure shell'       \
-              unit_add        'Add a new unit to a running service'     \
-              unit_remove     'Remove an unit from a running service'   \
+              overwrite       'Overwrite charms in deployment path'      \
+              update          'Update code of charms in deployment path' \
+              deploy          'Launch a deployment scenario'             \
+              destroy         'Destroy a deployed environment'           \
+              standalone      'Play with a charm locally (yes, really)'  \
+              status          'Display juju status'                      \
+              status_svg      'Display juju status as a SVG graphic'     \
+              log             'Launch juju debug log in a screen'        \
+              config          'Update units public url listing file'     \
+              unit_ssh        'Access to units with secure shell'        \
+              unit_add        'Add a new unit to a running service'      \
+              unit_remove     'Remove an unit from a running service'    \
               service_destroy 'Destroy a running service'  2> $tmpfile
 
       retval=$?
@@ -99,20 +98,20 @@ overwrite()
   fi
   ok=$true
 
-  overwrite_helper 'orchestra' || xecho 'Unable to overwrite Orchestra charm'
-  overwrite_helper 'publisher' || xecho 'Unable to overwrite Publisher charm'
-  overwrite_helper 'storage'   || xecho 'Unable to overwrite Storage charm'
-  overwrite_helper 'transform' || xecho 'Unable to overwrite Transform charm'
-  overwrite_helper 'webui'     || xecho 'Unable to overwrite Web UI charm'
+  overwrite_helper 'oscied-orchestra' || xecho 'Unable to overwrite Orchestra charm'
+  overwrite_helper 'oscied-publisher' || xecho 'Unable to overwrite Publisher charm'
+  overwrite_helper 'oscied-storage'   || xecho 'Unable to overwrite Storage charm'
+  overwrite_helper 'oscied-transform' || xecho 'Unable to overwrite Transform charm'
+  overwrite_helper 'oscied-webui'     || xecho 'Unable to overwrite Web UI charm'
 }
 
 overwrite_helper()
 {
   [ $# -ne 1 ] && xecho 'OUPS !'
-  rm   -rf "$JUJU_CHARMS_PATH/$RELEASE/oscied-$1" 2>/dev/null
-  mkdir -p "$JUJU_CHARMS_PATH/$RELEASE" 2>/dev/null
-  rsync -rtvh -LH --delete --progress --exclude='.svn' --exclude='*.log' --exclude='*.pyc' \
-    --exclude='celeryconfig.py' "$COMPONENTS_PATH/$1/charm/" "$JUJU_CHARMS_PATH/$RELEASE/oscied-$1/"
+  mkdir -p "$CHARMS_DEPLOY_PATH" 2>/dev/null
+  rm   -rf "$CHARMS_DEPLOY_PATH/$1" 2>/dev/null
+  rsync -rtvh -LH --delete --progress --exclude='.git' --exclude='*.log' --exclude='*.pyc' \
+    --exclude='celeryconfig.py' "$CHARMS_PATH/$1/" "$CHARMS_DEPLOY_PATH/$1/"
 }
 
 update()
@@ -122,18 +121,18 @@ update()
   fi
   ok=$true
 
-  update_helper 'orchestra' || xecho 'Unable to overwrite Orchestra charm'
-  update_helper 'publisher' || xecho 'Unable to overwrite Publisher charm'
-  update_helper 'storage'   || xecho 'Unable to overwrite Storage charm'
-  update_helper 'transform' || xecho 'Unable to overwrite Transform charm'
-  update_helper 'webui'     || xecho 'Unable to overwrite Web UI charm'
+  update_helper 'oscied-orchestra' || xecho 'Unable to overwrite Orchestra charm'
+  update_helper 'oscied-publisher' || xecho 'Unable to overwrite Publisher charm'
+  update_helper 'oscied-storage'   || xecho 'Unable to overwrite Storage charm'
+  update_helper 'oscied-transform' || xecho 'Unable to overwrite Transform charm'
+  update_helper 'oscied-webui'     || xecho 'Unable to overwrite Web UI charm'
 }
 
 update_helper()
 {
   [ $# -ne 1 ] && xecho 'OUPS !'
-  rsync -rtvh -LH --progress --exclude='.svn' --exclude='*.log' --exclude='*.pyc' \
-    --exclude='config.*' "$COMPONENTS_PATH/$1/charm/" "$JUJU_CHARMS_PATH/$RELEASE/oscied-$1/"
+  rsync -rtvh -LH --progress --exclude='.git' --exclude='*.log' --exclude='*.pyc' \
+    --exclude='config.*' "$CHARMS_PATH/$1/" "$CHARMS_DEPLOY_PATH/$1/"
 }
 
 deploy()
@@ -160,7 +159,7 @@ deploy()
     sed "s:STORAGE_PATH:$JUJU_STORAGE_PATH:g" "$CONFIG_JUJU_TEMPL_FILE" > "$JUJU_ENVS_FILE" || \
       xecho "Unable to generate juju's configuration file"
   fi
-  $udo ufw disable # Fix Ticket #80 - Juju stuck in pending when using LXC
+  $udo ufw disable # Fix master thesis ticket #80 - Juju stuck in pending when using LXC
 
   cd "$CONFIG_SCENARIOS_PATH" || xecho "Unable to find path $CONFIG_SCENARIOS_PATH"
 
@@ -203,8 +202,18 @@ destroy()
   fi
   ok=$true
 
-  xecho 'FIXME TODO MENU'
-  juju destroy-environment
+  # Environments menu
+  while true
+  do
+    $DIALOG --backtitle 'OSCIED Operations with JuJu > Destroy Environment' \
+            --menu 'Please select an environment' 0 0 0 \
+            'amazon' '-' 'local' '-' 'maas' '-' 2> $tmpfile
+
+    retval=$?
+    environment=$(cat $tmpfile)
+    [ $retval -ne 0 -o ! "$environment" ] && break
+    juju destroy-environment --environment "$environment"
+  done
 }
 
 standalone()
@@ -220,17 +229,17 @@ standalone()
   fi
   ok=$true
 
-  cd "$JUJU_CHARMS_PATH" || xecho "Unable to find path $JUJU_CHARMS_PATH"
+  cd "$CHARMS_DEPLOY_PATH" || xecho "Unable to find path $CHARMS_DEPLOY_PATH"
 
   find .
 
   if [ "$charm_auto" -a "$hook_auto" ]; then
     techo 'OSCIED Operations with JuJu > Charms Standalone [AUTO]'
     mecho "Charm is $charm_auto, hook is $hook_auto"
-    standalone_execute_hook "$JUJU_CHARMS_PATH/$charm_auto" "$hook_auto"
+    standalone_execute_hook "$CHARMS_DEPLOY_PATH/$charm_auto" "$hook_auto"
   else
     # Initialize charms menu
-    find . -mindepth 2 -maxdepth 2 -type d | sort > $listing
+    find . -mindepth 1 -maxdepth 1 -type d | sort > $listing
     charmsList=''
     while read charm
     do
@@ -245,7 +254,7 @@ standalone()
               $charmsList 2> $tmpfile
 
       retval=$?
-      charm="$JUJU_CHARMS_PATH/$(cat $tmpfile)"
+      charm="$CHARMS_DEPLOY_PATH/$(cat $tmpfile)"
       [ $retval -ne 0 -o ! "$charm" ] && break
       cd "$charm" || xecho "Unable to find path $charm"
 
@@ -307,17 +316,10 @@ status()
   fi
   ok=$true
 
-  techo 'Status of default environment'
-  juju status
-
-  techo 'Status of amazon environment'
-  juju status --environment amazon
-
-  techo 'Status of local environment'
-  juju status --environment local
-
-  techo 'Status of maas environment'
-  juju status --environment maas
+  techo 'Status of default environment'; juju status
+  techo 'Status of amazon environment';  juju status --environment amazon
+  techo 'Status of local environment';   juju status --environment local
+  techo 'Status of maas environment';    juju status --environment maas
 }
 
 status_svg()
@@ -327,10 +329,13 @@ status_svg()
   fi
   ok=$true
 
-  juju status --format svg --output default_status.svg
-  juju status --environment amazon --format svg --output amazon_status.svg
-  juju status --environment local  --format svg --output local_status.svg
-  juju status --environment maas   --format svg --output maas_status.svg
+  cd $HOME
+  e='--environment'
+  f='--format'
+  techo 'Status of default environment'; juju status $f svg --output default_status.svg
+  techo 'Status of amazon environment';  juju status $e amazon $f svg --output amazon_status.svg
+  techo 'Status of local environment';   juju status $e local  $f svg --output local_status.svg
+  techo 'Status of maas environment';    juju status $e maas   $f svg --output maas_status.svg
   eog *_status.svg
 }
 

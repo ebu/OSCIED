@@ -22,8 +22,7 @@
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
 #
-# Retrieved from:
-#   svn co https://claire-et-david.dyndns.org/prog/OSCIED
+# Retrieved from https://github.com/EBU-TI/OSCIED
 
 . ./common.sh
 
@@ -44,9 +43,7 @@ main()
   get_node_secret;   NODE_AUTH="node:$REPLY"
   get_orchestra_url; ORCHESTRA_URL=$REPLY
 
-  mkdir -p "$MEDIAS_TEST_PATH" 2>/dev/null
-  get_storage_uploads_url; UPLOADS_URL=$REPLY
-  get_storage_medias_url;  MEDIAS_URL=$REPLY
+  mkdir -p "$MEDIAS_PATH" 2>/dev/null
 
   listing=/tmp/$$.list
   tmpfile=/tmp/$$
@@ -66,10 +63,9 @@ main()
     do
       $DIALOG --backtitle 'OSCIED General Operations' \
               --menu 'Please select an operation' 0 0 0 \
-              install              'Download/update documents & tools, add symlinks' \
-              cleanup              'Cleanup configuration of charms'                 \
+              install              'Download / update documents and tools'           \
+              cleanup              'Cleanup configuration of charms (deploy path)'   \
               revup                "Increment all charm's revision (+1)"             \
-              statistics           'Update statistics about this repository'         \
               api_init_setup       'Initialize demo setup with Orchestra API'        \
               api_launch_transform 'Launch a transform job with Orchestra API'       \
               api_revoke_transform 'Revoke a transform job with Orchestra API'       \
@@ -105,19 +101,19 @@ install()
   fi
   ok=$true
 
-  autoInstall git-core git
-  autoInstall bzr      bzr
+  pecho 'Install prerequisites'
+  eval $install bzr git-core python-pip rst2pdf texlive-latex-recommended \
+    texlive-latex-extra texlive-fonts-recommended || xecho 'Unable to install prerequisites'
 
-  ln -s "$COMPONENTS_PATH/orchestra/charm/lib" 2>/dev/null
-  cp -f "$JUJU_CHARMS_PATH/$RELEASE/orchestra/celeryconfig.py" . 2>/dev/null
+  pecho 'Update submodules'
+  git submodule foreach git pull
 
-  pecho 'Update Sublime Text configuration'
+  pecho 'Update sublime text configuration'
   find "$SUBLIME_PATH" -type f -exec sed -i "s:BASE_PATH:$BASE_PATH:g" {} \;
 
-  pecho 'Component Cloud'
+  pecho 'Download references'
 
-  cd "$CLOUD_REFERENCES_PATH"|| xecho "Unable to find path $CLOUD_REFERENCES_PATH"
-  git_co 'openstack-folsom-guide' 'git://github.com/EmilienM/openstack-folsom-guide.git'
+  cd "$REFERENCES_PATH"|| xecho "Unable to find path $REFERENCES_PATH"
   openstack='http://docs.openstack.org'
   wget -N $openstack/trunk/openstack-compute/install/apt/openstack-install-guide-apt-trunk.pdf
   wget -N $openstack/cli/quick-start/content/cli-guide.pdf
@@ -126,70 +122,51 @@ install()
   wget -N $openstack/folsom/openstack-network/admin/bk-quantum-admin-guide-folsom.pdf
   wget -N $openstack/folsom/openstack-object-storage/admin/os-objectstorage-adminguide-folsom.pdf
 
-  cd "$CLOUD_TOOLS_PATH"|| xecho "Unable to find path $CLOUD_TOOLS_PATH"
+  pecho 'Download tools'
+
+  cd "$TOOLS_PATH"|| xecho "Unable to find path $TOOLS_PATH"
   clonezilla='http://switch.dl.sourceforge.net/project/clonezilla'
-  wget -N $clonezilla/clonezilla_live_stable/1.2.12-67/clonezilla-live-1.2.12-67-amd64.zip
-  git_co 'openstack-scripts' 'https://github.com/neophilo/openstack-scripts/'
+  wget -N $clonezilla/clonezilla_live_stable/2.1.1-25/clonezilla-live-2.1.1-25-amd64.zip
 
-  pecho 'Component JuJu'
-
-  cd "$JUJU_TOOLS_PATH" || xecho "Unable to find path $JUJU_TOOLS_PATH"
-  if [ -d 'juju' ]; then cd 'juju' && bzr merge && cd ..
-  else bzr branch lp:juju 'juju'
+  if [ -d 'juju-source' ]; then cd 'juju-source' && bzr merge && cd ..
+  else bzr branch lp:juju 'juju-source'
   fi
 
-  addAptPpaRepo ppa:juju/pkgs juju || xecho 'Unable to add juju ppa repository'
-  eval $install --reinstall lxc apt-cacher-ng libzookeeper-java zookeeper juju juju-jitsu charm-tools || \
-    xecho 'Unable to install juju orchestrator'
+  addAptPpaRepo ppa:juju/pkgs juju || xecho 'Unable to add juju PPA repository'
+  eval $install --reinstall lxc apt-cacher-ng libzookeeper-java zookeeper juju juju-jitsu \
+    charm-tools || xecho 'Unable to install JuJu orchestrator'
 
   #cat \
   # /var/lib/apt/lists/ppa.launchpad.net_juju_pkgs_ubuntu_dists_quantal_main_binary-amd64_Packages \
   # | grep Package
   #Package: python-txzookeeper
-  #Package: juju
-  #Package: charm-tools
-  #Package: charm-helper-sh
-  #Package: juju-jitsu
-  #Package: python-charmhelpers
-
-  pecho 'Component Orchestra'
-
-  cd "$ORCHESTRA_TOOLS_PATH" || xecho "Unable to find path $ORCHESTRA_TOOLS_PATH"
-  git_co 'celery'             'git://github.com/celery/celery.git'
-  git_co 'celery-examples'    'git://github.com/larsbutler/celery-examples.git'
-  git_co 'flask'              'git://github.com/mitsuhiko/flask.git'
-  git_co 'rabbitmq-tutorials' 'git://github.com/rabbitmq/rabbitmq-tutorials.git'
-
-  cd 'rabbitmq-tutorials' || xecho 'Unable to find RabbitMQ tutorials path'
-  readLine 'Please enter local RabbitMQ guest user password'
-  pass=$CHOICE
-  a='amqp://.*localhost/'
-  b="amqp://guest:$pass@localhost/"
-  find . -type f -exec sed -i "s#$a#$b#g" {} \;
-  git status
-
-  pecho 'Component Report'
-
-  cd "$REPORT_TOOLS_PATH" || xecho "Unable to find path $REPORT_TOOLS_PATH"
+  #Package: ...
 
   plantuml=http://downloads.sourceforge.net/project/plantuml
   wget -N $plantuml/plantuml.jar
   wget -N $plantuml/PlantUML%20Language%20Reference%20Guide.pdf
 
-  #addAptPpaRepo ppa:phobie/ppa phobie || xecho 'Unable to add phobie ppa repository'
-  #autoInstall openproj   openproj
-  eval $install texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended
-  autoInstall python-pip pip
-  autoInstall rst2pdf    rst2pdf
+  if cd "$TOOLS_PATH/rabbitmq-tutorials"; then
+    readLine 'Please enter local RabbitMQ guest user password [default=guest]'
+    [ "$CHOICE" ] && pass=$CHOICE || pass='guest'
+    a='amqp://.*localhost/'
+    b="amqp://guest:$pass@localhost/"
+    find . -type f -exec sed -i "s#$a#$b#g" {} \;
+    git status
+  else
+    recho 'Unable to find RabbitMQ tutorials path'
+  fi
 
-  # FIX https://github.com/martinkou/bson/issues/19, bson not installed
+  pecho 'Fix https://github.com/martinkou/bson/issues/19, bson not installed'
   $udo pip install --upgrade docutils pygments sphinx sphinxcontrib-email \
-    sphinxcontrib-googlechart sphinxcontrib-httpdomain flask celery requests
-  $udo easy_install pymongo
+    sphinxcontrib-googlechart sphinxcontrib-httpdomain flask celery pymongo requests
 
-  #Fix https://bitbucket.org/birkenfeld/sphinx/pull-request/98/fixes-typeerror-raised-from/diff
+  pecho 'Fix https://bitbucket.org/birkenfeld/sphinx/pull-request/98/fixes-typeerror-raised-from/diff'
   $udo find /usr/local/lib/ -type f -name latex.py -path "*/sphinx/writers/*" -exec \
     sed -i 's:letter.translate(tex_escape_map)):unicode(letter).translate(tex_escape_map)):g' {} \;
+
+  pecho 'Fixes #7 - https://github.com/EBU-TI/OSCIED/issues/7'
+  $udo sed -i 's:#!/usr/bin/python3.*:#!/usr/bin/python3 -Es:' /usr/bin/lxc-ls
 }
 
 cleanup()
@@ -199,59 +176,25 @@ cleanup()
   fi
   ok=$true
 
-  find "$COMPONENTS_PATH" -maxdepth 3 -type d -name 'charm' | while read path
-  do
-    rm -f "$path/celeryconfig.py" 2>/dev/null
-    [ -f "$path/config.json" ] && svn revert "$path/config.json"
-  done
+  cd "$CHARMS_DEPLOY_PATH" || xecho "Unable to find path $CHARMS_DEPLOY_PATH"
+  git reset --hard  # Revert changes to modified files
+  git clean -fd     # Remove all untracked files and directories
 }
 
 revup()
 {
-  if [ $# -ne 0 ]; then
+  if [ $# -eq 0 ]; then
     xecho "Usage: $(basename $0) revup"
   fi
   ok=$true
 
-  cd "$COMPONENTS_PATH" || xecho "Unable to find path $COMPONENTS_PATH"
-
-  find . -type f -not -path "*oscied-*" -name revision | while read revision
+  cd "$CHARMS_PATH" || xecho "Unable to find path $CHARMS_PATH"
+  find . -maxdepth 2 -type f -path "*/oscied-*/*" -name revision | while read revision
   do
     value=$(cat "$revision")
     echo $((value+1)) > "$revision"
     mecho "$(basename $(dirname $(dirname $revision))) is not at revision $(cat $revision)"
   done
-}
-
-statistics()
-{
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) statistics"
-  fi
-  ok=$true
-
-  inc='components/**:scripts/**'
-  exc='**/*.ova:**/*.pdf:**/*.jpg:**/*.png:**/*.mpd:**/*.svg:**/*.od*'
-  #exc='administration/**:**/build/**:medias/**:**/references/**:statistics/**:todo/**:**/*.ova:**/
-  #*.pdf:**/*.jpg:**/*.png:**/*.mpd:**/*.svg:**/*.od*'
-
-  cd "$BASE_PATH" || xecho "Unable to find path $BASE_PATH"
-
-  yesOrNo $false 'update OSCIED project statistics'
-  if [ $REPLY -eq $true ]; then
-    autoInstall statsvn statsvn
-
-    tmpFilename=/tmp/$$
-    trap "rm -f '$tmpFilename' 2>/dev/null" INT TERM EXIT
-
-    pecho '1/2 getting repository verbose log ...'
-    url=`svn status | grep ^URL | sed 's/URL.*: //'`
-    svn log -v --xml > $tmpFilename
-
-    pecho '2/2 using statsvn to generate statistics ...'
-    rm -f "statistics/*" 2>/dev/null
-    statsvn -threads 10 $tmpFilename -include $inc -exclude $exc . -output-dir statistics/
-  fi
 }
 
 api_init_setup()
@@ -299,7 +242,7 @@ api_init_setup()
     if [ ! "$uri" -o ! "$vfilename" -o ! "$title" ]; then
       xecho "Line $count : Bad line format !"
     fi
-    media="$MEDIAS_TEST_PATH/$uri"
+    media="$MEDIAS_PATH/$uri"
     if [ ! -f "$media" ]; then
       recho "[WARNING] Unable to find media file $media"
       continue
@@ -418,7 +361,8 @@ api_test_all()
   fi
   ok=$true
 
-  cd "$ORCHESTRA_LIB_PATH" || xecho "Unable to find path $ORCHESTRA_LIB_PATH"
+  cd "$CHARMS_PATH/oscied-orchestra/lib" || \
+    xecho "Unable to find path $CHARMS_PATH/oscied-orchestra/lib"
 
   techo '1/4 Test source code'
 
@@ -464,12 +408,12 @@ api_test_main()
 {
   pecho 'Test main API'
   test_api 401 POST $ORCHESTRA_URL/flush ''            ''
-  test_api 401 POST $ORCHESTRA_URL/flush "$bad_auth"   ''
+  test_api 401 POST $ORCHESTRA_URL/flush "$BAD_AUTH"   ''
   test_api 403 POST $ORCHESTRA_URL/flush "$user2_auth" ''
   test_api 200 GET  $ORCHESTRA_URL       ''            ''
   test_api 200 GET  $ORCHESTRA_URL/index ''            ''
-  test_api 200 GET  $ORCHESTRA_URL       "$bad_auth"   ''
-  test_api 200 GET  $ORCHESTRA_URL/index "$bad_auth"   ''
+  test_api 200 GET  $ORCHESTRA_URL       "$BAD_AUTH"   ''
+  test_api 200 GET  $ORCHESTRA_URL/index "$BAD_AUTH"   ''
   test_api 200 GET  $ORCHESTRA_URL       "$ROOT_AUTH"  ''
   test_api 200 GET  $ORCHESTRA_URL/index "$ROOT_AUTH"  ''
   test_api 200 GET  $ORCHESTRA_URL       "$NODE_AUTH"  ''
@@ -493,12 +437,12 @@ api_test_user()
   test_api 401 GET $ORCHESTRA_URL/user              '' ''
   test_api 401 GET $ORCHESTRA_URL/user/id/$user1_id '' ''
   mecho 'Charlie can get nothing except one'
-  test_api 200 GET $ORCHESTRA_URL                   "$bad_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/index             "$bad_auth" ''
-  test_api 401 GET $ORCHESTRA_URL/user/login        "$bad_auth" ''
-  test_api 401 GET $ORCHESTRA_URL/user/count        "$bad_auth" ''
-  test_api 401 GET $ORCHESTRA_URL/user              "$bad_auth" ''
-  test_api 401 GET $ORCHESTRA_URL/user/id/$user1_id "$bad_auth" ''
+  test_api 200 GET $ORCHESTRA_URL                   "$BAD_AUTH" ''
+  test_api 200 GET $ORCHESTRA_URL/index             "$BAD_AUTH" ''
+  test_api 401 GET $ORCHESTRA_URL/user/login        "$BAD_AUTH" ''
+  test_api 401 GET $ORCHESTRA_URL/user/count        "$BAD_AUTH" ''
+  test_api 401 GET $ORCHESTRA_URL/user              "$BAD_AUTH" ''
+  test_api 401 GET $ORCHESTRA_URL/user/id/$user1_id "$BAD_AUTH" ''
   mecho 'Root can get a lot of things'
   test_api 200 GET $ORCHESTRA_URL                   "$ROOT_AUTH" ''
   test_api 200 GET $ORCHESTRA_URL/index             "$ROOT_AUTH" ''
@@ -579,9 +523,9 @@ api_test_tprofile()
   test_api 401 GET $ORCHESTRA_URL/transform/profile                  '' ''
   test_api 401 GET $ORCHESTRA_URL/transform/profile/id/$tprofile1_id '' ''
   mecho 'Charlie can get nothing'
-  test_api 401 GET $ORCHESTRA_URL/transform/profile/count            "$bad_auth" ''
-  test_api 401 GET $ORCHESTRA_URL/transform/profile                  "$bad_auth" ''
-  test_api 401 GET $ORCHESTRA_URL/transform/profile/id/$tprofile1_id "$bad_auth" ''
+  test_api 401 GET $ORCHESTRA_URL/transform/profile/count            "$BAD_AUTH" ''
+  test_api 401 GET $ORCHESTRA_URL/transform/profile                  "$BAD_AUTH" ''
+  test_api 401 GET $ORCHESTRA_URL/transform/profile/id/$tprofile1_id "$BAD_AUTH" ''
   mecho 'Root can get nothing'
   test_api 403 GET $ORCHESTRA_URL/transform/profile/count            "$ROOT_AUTH" ''
   test_api 403 GET $ORCHESTRA_URL/transform/profile                  "$ROOT_AUTH" ''
@@ -662,7 +606,7 @@ webui_test_common()
   fi
   ok=$true
 
-  . "$WEBUI_CHARM_HOOKS_LIB_PATH/common.sh"
+  . "$CHARMS_PATH/oscied-webui/hooks_lib/common.sh"
 
   ip1='10.10.4.3'
   ip2='10.10.0.7'
@@ -695,8 +639,8 @@ rsync_orchestra()
   host="ubuntu@$REPLY"
   dest='/var/lib/juju/units/oscied-orchestra-0/charm'
   ssh -i "$certif" "$host" -n "sudo chown 1000:1000 $dest -R"
-  rsync -avh --progress --delete -e "ssh -i '$certif'" --exclude=.svn --exclude=config.json \
-    --exclude=celeryconfig.py --exclude=*.pyc "$ORCHESTRA_CHARM_PATH/" "$host:$dest/"
+  rsync -avhL --progress --delete -e "ssh -i '$certif'" --exclude=.git --exclude=config.json \
+    --exclude=celeryconfig.py --exclude=*.pyc "$CHARMS_PATH/oscied-orchestra/" "$host:$dest/"
   ssh -i "$certif" "$host" -n "sudo chown root:root $dest -R"
 }
 
@@ -714,8 +658,8 @@ rsync_publisher()
   host="ubuntu@$REPLY"
   dest='/var/lib/juju/units/oscied-publisher-0/charm/lib/'
   ssh -i "$certif" "$host" -n "sudo chown 1000:1000 $dest -R"
-  rsync -avh --progress --delete -e "ssh -i '$certif'" --exclude=.svn \
-    --exclude=*.pyc "$PUBLISHER_CHARM_PATH/lib/" "$host:$dest/"
+  rsync -avh --progress --delete -e "ssh -i '$certif'" --exclude=.git \
+    --exclude=*.pyc "$CHARMS_PATH/lib/" "$host:$dest/"
   ssh -i "$certif" "$host" -n "sudo chown root:root $dest -R"
 }
 
@@ -733,8 +677,8 @@ rsync_transform()
   host="ubuntu@$REPLY"
   dest='/var/lib/juju/units/oscied-transform-0/charm/lib/'
   ssh -i "$certif" "$host" -n "sudo chown 1000:1000 $dest -R"
-  rsync -avh --progress --delete -e "ssh -i '$certif'" --exclude=.svn \
-    --exclude=*.pyc "$TRANSFORM_CHARM_PATH/lib/" "$host:$dest/"
+  rsync -avh --progress --delete -e "ssh -i '$certif'" --exclude=.git \
+    --exclude=*.pyc "$CHARMS_PATH/lib/" "$host:$dest/"
   ssh -i "$certif" "$host" -n "sudo chown root:root $dest -R"
 }
 
@@ -752,10 +696,10 @@ rsync_webui()
   host="ubuntu@$REPLY"
   dest='/var/www'
   ssh -i "$certif" "$host" -n "sudo chown 1000:1000 $dest -R"
-  rsync -avh --progress -e "ssh -i '$certif'" --exclude=.svn --exclude=.htaccess \
+  rsync -avh --progress -e "ssh -i '$certif'" --exclude=.git --exclude=.htaccess \
     --exclude=application/config/config.php --exclude=application/config/database.php \
     --exclude=medias --exclude=uploads --exclude=orchestra_relation_ok --delete \
-    "$WEBUI_CHARM_WWW_PATH/" "$host:$dest/"
+    "$CHARMS_PATH/oscied-webui/www/" "$host:$dest/"
   ssh -i "$certif" "$host" -n "sudo chown www-data:www-data $dest -R"
 }
 
