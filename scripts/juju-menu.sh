@@ -373,6 +373,18 @@ config()
         last_name=''
       fi
       count=$((count+1))
+
+      if echo $name | grep -q 'oscied-orchestra'; then
+        number=$(expr match "$name" '.*/\([0-9]*\)')
+        pecho "Auto-detect storage internal IP address by parsing $name unit configuration"
+        get_unit_config 'oscied-orchestra' "$number" 'storage_ip'
+        if [ ! "$REPLY" ]; then
+          xecho 'Unable to detect storage internal IP address'
+        else
+          mecho "Updating common.sh with detected storage internal IP = $REPLY"
+          sed -i "s#STORAGE_PRIVATE_IP=.*#STORAGE_PRIVATE_IP='$REPLY'#" common.sh
+        fi
+      fi
     done
 
     if [ "$content" ]; then
