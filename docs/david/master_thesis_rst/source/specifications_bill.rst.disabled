@@ -1,0 +1,32 @@
+.. include:: common.rst
+
+**2012 CAPEX of project cycle 1**
+
+==================== ============= ===================
+Description          Price in CHF  Total price in CHF
+==================== ============= ===================
+Dell PowerEdge R415  4'000.-       16'000.-
+Total CAPEX                        **16'000.-**
+==================== ============= ===================
+
+**2013 Capex of project cycle 1 with extra options**
+
+============================ ============== ===================
+Description                   Price in CHF  Total price in CHF
+============================ ============== ===================
+HbbTV, Android, iOS devices     600.-       3'000.-
+Open Broadcast Encoder        4'000.-       4'000.-
+SDI generator                 2'000.-       2'000.-
+Total CAPEX 2013                            **9'000.-**
+============================ ============== ===================
+
+**2013 OPEX of project cycle 1**
+
+====================== ======================= ===================
+Description            Price per month in CHF  Total price in CHF
+====================== ======================= ===================
+Amazon Cloud             250.-                  3'000.-
+Administration system  2'000.-                 24'000.-
+(personnel)
+Total OPEX 2013        2'250.-                 **27'000.-**
+====================== ======================= ===================

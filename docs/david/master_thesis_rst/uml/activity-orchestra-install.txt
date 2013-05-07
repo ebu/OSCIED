@@ -1,0 +1,52 @@
+@startuml
+
+skinparam activity {
+    FontColor          white
+    AttributeFontColor white
+    FontSize           17
+    AttributeFontSize  15
+    AttributeFontname  Droid Sans Mono
+    BackgroundColor    #527BC6
+    BorderColor        black
+    ArrowColor         #222266
+}
+
+partition install {
+note right: <b>BOLD</b> actions are\nmethods calls
+(*) --> "add FFmpeg & juju\nPPA repositories"
+if "ok" then
+    -right-> [No] "exit 1-2"
+    --> (*)
+else
+    --> "upgrade system"
+    --> "install JuJu, FFmpeg, x264"
+    if "ok" then
+        -right-> [No] "exit 3"
+        --> (*)
+    else
+        --> "install python, MongoDB,\nRabbitMQ, GlusterFS client"
+        if "ok" then
+            -right-> [No] "exit 4"
+            --> (*)
+        else
+            --> "install Flask, Celery"
+            if "ok" then
+                -right-> [No] "exit 6"
+                --> (*)
+            else
+                --> "install pyMongo"
+                if "ok" then
+                    -right-> [No] "exit 7"
+                    --> (*)
+                else
+                    --> "expose API, MongoDB, RabbitMQ"
+                    --> "<b>CONFIG-CHANGED</b>"
+                    -right-> (*)
+                endif
+            endif
+        endif
+    endif
+endif
+}
+
+@enduml

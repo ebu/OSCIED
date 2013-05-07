@@ -1,0 +1,171 @@
+.. include:: common.rst
+
+OSCIED-Publisher : The Publication Point
+----------------------------------------
+
+.. seealso::
+
+    You can |browse_publisher|_
+
+OSS Tools
+^^^^^^^^^
+
+* Celery_ Distributed Task Queue
+* `Apache 2`_ HTTP Server from the Apache Software Foundation
+* `H264 Streaming Module`_ from CodeShop
+
+Introduction
+^^^^^^^^^^^^
+
+This component is the worker specialized in handling publication jobs. In fact this is *celeryd* daemon that handles the requests and maps jobs to publisher functions calls. This charm's start hook will launch and connect the daemon to the message broker's queue(s) specified in configuration [#pub1]_.
+
+For example, one can choose that the workers running on `Amazon AWS`_ cloud will handle *public* & *low priority* publication requests by setting worker's *rabbit_queues* option to "t_pub,t_low". Then one only need to launch jobs of such kind in one of the defined queues (*t_pub*, *t_low*) and that's it !
+
+Moreover, one can choose to explicitly target a unique worker (e.g. *myWorker2*) by sending jobs to the queue *myWorker2*, this is another interesting feature offered by the application.
+
+.. |components_p| replace:: Architecture of the Publication Point
+
+.. only:: html
+
+    .. figure:: ../schematics/OSCIED-Components_publisher.png
+        :width: 1200px
+        :align: center
+        :alt: |components_p|
+
+        |components_p|
+
+.. only:: latex
+
+    .. figure:: ../schematics/OSCIED-Components_publisher.png
+        :scale: 80 %
+        :alt: |components_p|
+
+        |components_p|
+
+Charm's Configuration
+^^^^^^^^^^^^^^^^^^^^^
+
+You can start the charm without specifying any configuration (default values will be used, see :doc:`appendices-publisher`) but I strongly recommend to specify your own values in production !
+
+* **verbose** Set verbose logging
+* **concurrency** Amount of tasks the worker can handle simultaneously
+* **rabbit_queues** Worker connect to queues to receive jobs
+* **max_upload_size** Maximum size for file uploads
+* **max_execution_time** Maximum time for PHP scripts
+* **max_input_time** Maximum time for HTTP post
+* **mongo_connection** Orchestrator database connection [#pub2]_
+* **rabbit_connection** Orchestrator message broker connection [#pub2]_
+* **storage_ip** Shared storage hostname / IP address (see interface mount of NFS charm) [#pub3]_
+* **storage_fstype** Shared storage filesystem type (e.g. NFS) [#pub3]_
+* **storage_mountpoint** Shared storage mount point (e.g. for NFS - /srv/data) [#pub3]_
+* **storage_options** Shared storage options (e.g. for NFS - rw,sync,no_subtree_check)
+
+.. [#pub1] Add worker's name to queues list, this make possible to launch jobs to this specific worker
+.. [#pub2] If all options are set this will override and disable publisher relation
+.. [#pub3] If all options are set this will override and disable storage relation
+
+Charm's Hooks Activity Diagrams
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. |activity_publisher_hooks| replace:: Activity diagram of Publisher unit life-cycle hooks
+
+.. only:: html
+
+    .. figure:: ../uml/activity-publisher-hooks.png
+        :width: 1299px
+        :align: center
+        :target: juju_unit_startup_
+        :alt: |activity_publisher_hooks|
+
+        |activity_publisher_hooks|
+
+.. only:: latex
+
+    .. figure:: ../uml/activity-publisher-hooks.png
+        :scale: 100 %
+        :target: juju_unit_startup_
+        :alt: |activity_publisher_hooks|
+
+        |activity_publisher_hooks|
+
+Charm's Relations
+^^^^^^^^^^^^^^^^^
+
+* Provides : (nothing)
+* Requires : Storage [Mount], Publisher [Subordinate]
+
+.. warning::
+
+    The unit's daemon will not start until both conditions are fulfilled :
+
+    * A shared storage is mounted (via the storage relation or by specifying it into configuration)
+    * An orchestrator is registered (via the publisher relation or by specifying it into configuration)
+
+Job State Machine
+^^^^^^^^^^^^^^^^^
+
+The orchestrator stores informations about the publication jobs into database in parallel to the informations that Celery_ also stores in. It may seem as duplicate however I choose to do as such for good reasons :
+
+* Additional informations about the jobs can be stored.
+* One can choose to replace Celery_ to use any other task queuing technology.
+* Listing of jobs is easy to implement, no needs of Celery_'s inspect & filtering.
+
+Celery_'s keep track of jobs and stores informations about jobs into a *backend*, the orchestrator's database (MongoDB_).
+
+    " During its lifetime a task will transition through several possible states, and each state may have arbitrary metadata attached to it. When a task moves into a new state the previous state is forgotten about, but some transitions can be deducted, (e.g. a task now in the FAILED state, is implied to have been in the STARTED state at some point). " [#pub4]_
+
+So, the publication jobs stored in database has a *statistic* field that is filled with values mainly generated by the orchestrator such as *add_date*. The state machine diagram shows what is store in this field plus the values that are appended to job's state metadata.
+
+**Remark:** The orchestrator RESTful API publication methods responses contains job's metadata, appended into *statistic* field.
+
+.. |state_pjob| replace:: State machine of a publication job (publisher -> publish)
+
+.. only:: html
+
+    .. figure:: ../uml/state-pjob.png
+        :width: 924px
+        :align: center
+        :target: Celery_Tasks_
+        :alt: |state_pjob|
+
+        |state_pjob|
+
+.. only:: latex
+
+    .. figure:: ../uml/state-pjob.png
+        :scale: 100 %
+        :target: Celery_Tasks_
+        :alt: |state_pjob|
+
+        |state_pjob|
+
+.. [#pub4] Celery Tasks Page -- http://docs.celeryproject.org/en/latest/userguide/tasks.html
+
+Job Sequence Diagrams
+^^^^^^^^^^^^^^^^^^^^^
+
+A Successful Job
+++++++++++++++++
+
+.. |sequence_pjobs_workers_success| replace:: Sequence diagram of a successful publication job (publisher -> publish)
+
+.. only:: html
+
+    .. figure:: ../uml/sequence-pjobs-workers_success.png
+        :width: 1202px
+        :align: center
+        :alt: |sequence_pjobs_workers_success|
+
+        |sequence_pjobs_workers_success|
+
+.. only:: latex
+
+    .. figure:: ../uml/sequence-pjobs-workers_success.png
+        :scale: 100 %
+        :alt: |sequence_pjobs_workers_success|
+
+        |sequence_pjobs_workers_success|
+
+.. raw:: latex
+
+    \newpage

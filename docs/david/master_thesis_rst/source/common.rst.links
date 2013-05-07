@@ -1,0 +1,247 @@
+.. include:: common.rst
+
+References
+==========
+
+OSCIED;Open-Source Cloud Infrastructure for Encoding and Distribution;
+
+OSCIED TRAC Management
+----------------------
+
+trac_home;OSCIED Project's TRAC Environment;http://claire-et-david.dyndns.org/OSCIED/
+trac_roadmap;OSCIED Project's Roadmap;http://claire-et-david.dyndns.org/OSCIED/milestone
+trac_source;OSCIED Project's Source Browser;http://claire-et-david.dyndns.org/OSCIED/browser
+trac_source_diff;OSCIED Project's Source Diff Tool;
+trac_tickets_active;OSCIED Project's Active Tasks Tickets;http://claire-et-david.dyndns.org/OSCIED/report/3
+trac_tickets_all;OSCIED Project's All Tasks Tickets;http://claire-et-david.dyndns.org/OSCIED/report/6
+trac_tickets_references;OSCIED Project's All Reference Tickets;http://claire-et-david.dyndns.org/OSCIED/report/10
+trac_tickets_references_120;OSCIED Project's Reference Ticket #120;
+
+OSCIED TRAC Source-Code Browser
+-------------------------------
+
+browse_orchestra;browse the source of the Orchestrator;http://claire-et-david.dyndns.org/OSCIED/browser/components/orchestra
+browse_publisher;browse the source of the Publication Point;http://claire-et-david.dyndns.org/OSCIED/browser/components/publisher
+browse_storage;browse the source of the Medias Storage;http://claire-et-david.dyndns.org/OSCIED/browser/components/storage
+browse_transform;browse the source of the Transcoder;http://claire-et-david.dyndns.org/OSCIED/browser/components/transform
+browse_webui;browse the source of the Web User Interface;http://claire-et-david.dyndns.org/OSCIED/browser/components/webui
+
+OSCIED TRAC Tickets
+-------------------
+
+Ticket 25;;http://claire-et-david.dyndns.org/OSCIED/ticket/25
+Ticket 36;;http://claire-et-david.dyndns.org/OSCIED/ticket/36
+Ticket 37;;http://claire-et-david.dyndns.org/OSCIED/ticket/37
+Ticket 40;;http://claire-et-david.dyndns.org/OSCIED/ticket/40
+Ticket 117;;http://claire-et-david.dyndns.org/OSCIED/ticket/117
+Ticket 120;;http://claire-et-david.dyndns.org/OSCIED/ticket/120
+Ticket 122;;http://claire-et-david.dyndns.org/OSCIED/ticket/122
+Ticket 131;;http://claire-et-david.dyndns.org/OSCIED/ticket/131
+Ticket 141;;http://claire-et-david.dyndns.org/OSCIED/ticket/141
+
+Entreprises & Institutions
+--------------------------
+
+Akamai;;http://www.akamai.com/
+Amazon AWS;;http://aws.amazon.com/
+AmazonCDN;Amazon Cloud Front;http://aws.amazon.com/fr/cloudfront/
+AmazonEC2;Amazon Elastic Clod Compute (EC2);http://aws.amazon.com/fr/ec2/
+AmazonS3;Amazon Simple Storage Service (S3);http://aws.amazon.com/fr/s3/
+Canonical;;http://www.canonical.com/
+EBU;European Broadcasting Union (EBU/UER);http://www.ebu.ch/fr/
+EBU_TECH;EBU Technology & Innovation;http://tech.ebu.ch/
+EBU_Cloud;EBU Cloud Workshop 2012;http://tech.ebu.ch/cloudworkshop
+HbbTV;Hybrid Broadcast Broadband Television;http://www.hbbtv.org/
+hepia;hepia : Haute école du Paysage d'Ingénierie et d'Architecture;http://hepia.hesge.ch/
+HP Cloud;;https://www.hpcloud.com/
+IEEE;Institute of Electronical and Electronics Engineers;http://www.ieee.org/index.html
+IETF;Internet Engineering Task Force;http://www.ietf.org/
+MPEG;Motion Picture Experts Group;http://mpeg.chiariglione.org/
+MSE;HES-SO Master of Science in Engineering;http://www.hes-so.ch/en/master-engineering.html
+NASA;;http://www.nasa.gov/
+OIPF;Open IPTV Forum;http://www.oipf.tv/
+Rackspace;;http://www.rackspace.com/
+VCEG;Video Coding Experts Group;
+W3C;World Wide Web Consortium;http://www.w3.org/
+Zencoder;;http://zencoder.com/en/
+
+Open-Source Licenses
+--------------------
+
+AGPL;GNU Affero GPLv3;http://www.gnu.org/licenses/agpl-3.0.html
+CC;Creative Commons;http://creativecommons.org/
+GPL;GNU GPLv3;http://www.gnu.org/licenses/gpl.html
+LGPL;GNU LGPLv3;http://www.gnu.org/copyleft/lesser.html
+MIT;MIT License;http://en.wikipedia.org/wiki/MIT_License
+OSS;Open-Source;http://en.wikipedia.org/wiki/Open_source
+
+Codecs, Formats & Protocols
+---------------------------
+
+BSON;;http://bsonspec.org/
+DASH;MPEG-DASH;http://dashif.org/mpeg-dash/
+FIMS;Framework for Interchangeable Media Services;
+MPEG_DASH;Dynamic Adaptive Streaming over HTTP;
+FLV;Flash Video;http://en.wikipedia.org/wiki/Flash_Video
+H264;Advanced Video Coding;http://fr.wikipedia.org/wiki/H.264
+H265;High Efficiency Video Coding;http://en.wikipedia.org/wiki/High_Efficiency_Video_Coding
+HLS;HTTP Live Streaming;http://en.wikipedia.org/wiki/HTTP_Live_Streaming
+HTML;Hypertext Mark-up Language;http://en.wikipedia.org/wiki/HTML
+HTTP;Hypertext Transfer Protocol;http://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol
+IP;Internet Protocol;http://en.wikipedia.org/wiki/Internet_Protocol
+JSON;;http://www.json.org/
+JSONLint;;http://jsonlint.com/
+MMS;Microsoft Media Services;http://fr.wikipedia.org/wiki/Microsoft_Media_Services
+MP4;MPEG-4 File Format;http://en.wikipedia.org/wiki/MPEG-4_Part_14
+MSS;Microsoft Smooth Streaming;http://www.iis.net/downloads/microsoft/smooth-streaming
+RDT;Real Data Transport;http://en.wikipedia.org/wiki/Real_Data_Transport
+rst;reStructuredText;http://docs.python.org/3.0/documenting/rest.html
+RTCP;Real-Time Control Protocol;http://en.wikipedia.org/wiki/RTP_Control_Protocol
+RTMP;Real-Time Messaging Protocol;http://en.wikipedia.org/wiki/Real_Time_Messaging_Protocol
+RTP;Real-Time Transport Protocol;http://en.wikipedia.org/wiki/Real-time_Transport_Protocol
+RTSP;Real-Time Streaming Protocol;http://en.wikipedia.org/wiki/Rtsp
+TCP;Transmission Control Protocol;http://en.wikipedia.org/wiki/Transmission_Control_Protocol
+TS;Transport Stream (e.g. MPEG-2 TS);http://en.wikipedia.org/wiki/Transport_stream
+UDP;User Datagram Protocol;http://en.wikipedia.org/wiki/User_Datagram_Protocol
+XML;Extensible Markup Language;http://en.wikipedia.org/wiki/XML
+
+Database & Storage
+------------------
+
+Ceph;;http://ceph.com/ceph-storage/
+GlusterFS;;http://www.gluster.org/
+GlusterFS_admin_guide;Gluster File System 3.3.0 Administration Guide;http://www.gluster.org/wp-content/uploads/2012/05/Gluster_File_System-3.3.0-Administration_Guide-en-US.pdf
+LS4;;http://ls4.sourceforge.net/
+LVM;;http://en.wikipedia.org/wiki/Logical_Volume_Manager_%28Linux%29
+MongoDB;;http://www.mongodb.org/
+MySQL;;http://www.mysql.com/
+NFS;;http://en.wikipedia.org/wiki/Network_File_System
+
+Multimedia
+----------
+
+Distribution;;http://en.wikipedia.org/wiki/Digital_distribution
+FFmpeg;;http://ffmpeg.org/
+OBE;Open Broadcast Encoder;http://www.ob-encoder.com/index.html
+QoE;Quality of Experience;http://en.wikipedia.org/wiki/Quality_of_experience
+QoS;Quality of Service;http://en.wikipedia.org/wiki/Quality_of_service
+SDI;Serial Digital Interface;http://en.wikipedia.org/wiki/Serial_digital_interface
+STB;Set-Top Box;http://en.wikipedia.org/wiki/Set-top_box
+Transcoding;;http://en.wikipedia.org/wiki/Transcoding
+TV;Television;http://en.wikipedia.org/wiki/Television
+VoD;Video On Demand;http://en.wikipedia.org/wiki/Video_on_demand
+
+Networking
+----------
+
+CDN;Content Delivery Network;http://en.wikipedia.org/wiki/Content_delivery_network
+DNS;Domain Name System;http://en.wikipedia.org/wiki/Domain_Name_System
+ISP;Internet Service Provider;http://en.wikipedia.org/wiki/Internet_service_provider
+LAN;Local Area Network;http://en.wikipedia.org/wiki/Local_area_network
+
+Operational & Cloud
+-------------------
+
+Cloud computing;;http://en.wikipedia.org/wiki/Cloud_computing
+PXE;Preboot Execution Environment;http://fr.wikipedia.org/wiki/Preboot_Execution_Environment
+SLA;Service-Level Agreement;http://en.wikipedia.org/wiki/Service-level_agreement
+MAAS;Metal as a Service;http://www.ubuntu.com/cloud/orchestration/deployment
+IaaS;Infrastructure as a Service;http://en.wikipedia.org/wiki/Infrastructure_as_a_service
+PaaS;Platform as a Service;http://en.wikipedia.org/wiki/Platform_as_a_service
+SaaS;Software as a Service;http://en.wikipedia.org/wiki/Software_as_a_service
+
+JuJu
+----
+
+JuJu;;https://juju.ubuntu.com/
+JuJu_stoftware;;http://en.wikipedia.org/wiki/Juju_%28software%29
+juju_charms_store;JuJu Charms Store;http://jujucharms.com/charms
+juju_unit_startup;;https://juju.ubuntu.com/docs/internals/unit-agent-startup.html
+juju_local_provider;Local;https://juju.ubuntu.com/get-started/local/
+juju_maas_provider;MAAS;https://juju.ubuntu.com/get-started/maas/
+juju_openstack_provider;OpenStack;https://juju.ubuntu.com/get-started/openstack/
+juju_amazon_provider;Amazon AWS;https://juju.ubuntu.com/get-started/amazon/
+juju_hpcloud_provider;HP Cloud;https://juju.ubuntu.com/get-started/hp-cloud/
+juju_rackspace_provider;Rackspace;https://juju.ubuntu.com/get-started/rackspace/
+Nginx Charm;;http://jujucharms.com/~imbrandon/precise/nginx
+
+OpenStack
+---------
+
+OpenStack;;http://www.openstack.org/
+OpenStack Foundation;;https://www.openstack.org/join
+OpenStack Documentation;;http://docs.openstack.org/
+OpenStack_IaaS;;http://en.wikipedia.org/wiki/OpenStack
+Cinder;;http://docs.openstack.org/developer/cinder/
+Glance;;http://docs.openstack.org/developer/glance/
+Horizon;;http://docs.openstack.org/developer/horizon/
+Keystone;;http://docs.openstack.org/developer/keystone/
+Nova;Nova-Compute;http://docs.openstack.org/developer/nova/
+Quantum;;http://docs.openstack.org/developer/quantum/
+Swift;;http://docs.openstack.org/developer/swift/
+openstack_folsom_gre_2nic;This multi-node setup separate the critical services, the compute service and the network GW;https://github.com/mseknibilel/OpenStack-Folsom-Install-guide
+OS_folsom_install_guide;A full installation guide for OpenStack Folsom with Quantum;https://github.com/mseknibilel/OpenStack-Folsom-Install-guide
+OS_folsom_gre_2nics;A full guide for OpenStack Folsom with Quantum (GRE 2NICs);https://github.com/mseknibilel/OpenStack-Folsom-Install-guide/blob/GRE/2NICs/OpenStack_Folsom_Install_Guide_WebVersion.rst
+DevStack;;http://devstack.org/
+TryStack;;http://trystack.org/
+
+Programming
+-----------
+
+API;Application Programming Interface;http://en.wikipedia.org/wiki/Application_programming_interface
+GIT;Git (version control system);http://git-scm.com/
+GitHub;;https://github.com/
+IDE;Integrated Development Environment;http://en.wikipedia.org/wiki/Integrated_development_environment
+Launchpad;;https://launchpad.net/
+snippets;;http://en.wikipedia.org/wiki/Snippet_(programming)
+SourceForge;;http://sourceforge.net/
+Subversion;;http://subversion.apache.org/
+SVN;Subversion (version control system);http://subversion.apache.org/
+StatSVN;;http://www.statsvn.org/
+TRAC;;http://trac.edgewall.org/             
+TRACP;plugins;http://trac.edgewall.org/wiki/TracPlugins
+VCS;Version Control System;http://en.wikipedia.org/wiki/Revision_control
+
+Python and Sphinx
+-----------------
+
+docstrings;;http://www.python.org/dev/peps/pep-0257/
+PyMongo;;http://api.mongodb.org/python/current/
+Python;;http://www.python.org/
+Sphinx_autodoc;;http://sphinx-doc.org/ext/autodoc.html
+Sphinx_autoflask;;http://packages.python.org/sphinxcontrib-httpdomain/
+Sphinx;;http://sphinx-doc.org/
+
+Virtualization
+--------------
+
+BridgeUtils;Bridge-Utils;http://www.linuxfromscratch.org/blfs/view/svn/basicnet/bridge-utils.html
+KVM;;http://www.linux-kvm.org/page/Main_Page
+LXC;;http://lxc.sourceforge.net/
+OpenVZ;;http://openvz.org/Main_Page
+vSwitch;Open-vSwitch;http://openvswitch.org/
+YahyaNursalim;;http://www.yahyanursalim.com/linux/cloud-computing-with-proxmox-ve.html
+
+Web Development
+---------------
+
+Apache 2;;http://httpd.apache.org/
+Celery;;http://celeryproject.org/
+Celery_Tasks;Celery Tasks;http://docs.celeryproject.org/en/latest/userguide/tasks.html
+CodeIgniter;;http://ellislab.com/codeigniter
+CSS Bootstrap;;http://twitter.github.com/bootstrap/
+cURL;;http://en.wikipedia.org/wiki/CURL
+Flask;;http://flask.pocoo.org/
+H264 Streaming Module;;http://h264.code-shop.com/trac/wiki/Mod-H264-Streaming-Apache-Version2
+RabbitMQ;;http://www.rabbitmq.com/
+
+Miscellaneous
+-------------
+
+KISS;;http://en.wikipedia.org/wiki/KISS_principle
+Linux;GNU/Linux;http://www.gnu.org/gnu/linux-and-gnu.html
+SSH;;http://en.wikipedia.org/wiki/Secure_Shell
+Ubuntu;;http://www.ubuntu.com/
+UbuntuOS;;http://en.wikipedia.org/wiki/Ubuntu_%28operating_system%29
+Ubuntu Quantal Server;;http://www.canonical.com/content/ubuntu-server-1210-all-you-need-cloud
+Wiki;;http://en.wikipedia.org/wiki/Wiki
