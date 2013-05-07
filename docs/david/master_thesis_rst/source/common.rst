@@ -38,8 +38,8 @@
 .. _browse_transform: http://claire-et-david.dyndns.org/OSCIED/browser/components/transform
 .. |browse_transform_link| replace:: [browse_transform] http://claire-et-david.dyndns.org/OSCIED/browser/components/transform
 .. |browse_webui| replace:: browse the source of the Web User Interface
-.. _browse_webui: http://claire-et-david.dyndns.org/OSCIED/browser/charms/oscied-webui
-.. |browse_webui_link| replace:: [browse_webui] http://claire-et-david.dyndns.org/OSCIED/browser/charms/oscied-webui
+.. _browse_webui: http://claire-et-david.dyndns.org/OSCIED/browser/components/webui
+.. |browse_webui_link| replace:: [browse_webui] http://claire-et-david.dyndns.org/OSCIED/browser/components/webui
 .. _Ticket 25: http://claire-et-david.dyndns.org/OSCIED/ticket/25
 .. |Ticket 25_link| replace:: [Ticket 25] http://claire-et-david.dyndns.org/OSCIED/ticket/25
 .. _Ticket 36: http://claire-et-david.dyndns.org/OSCIED/ticket/36
