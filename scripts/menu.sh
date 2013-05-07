@@ -122,6 +122,8 @@ install()
   pecho 'Install prerequisites'
   eval $install bzr git-core python-pip rst2pdf texlive-latex-recommended \
     texlive-latex-extra texlive-fonts-recommended || xecho 'Unable to install prerequisites'
+  $udo pip install --upgrade celery docutils flask ipaddr pygments pymongo requests sphinx \
+    sphinxcontrib-email sphinxcontrib-googlechart sphinxcontrib-httpdomain
 
   pecho 'Update sublime text configuration'
   find "$SUBLIME_PATH" -type f -exec sed -i "s:BASE_PATH:$BASE_PATH:g" {} \;
@@ -171,11 +173,7 @@ install()
     recho 'Unable to find RabbitMQ tutorials path'
   fi
 
-  pecho 'Fix https://github.com/martinkou/bson/issues/19, bson not installed'
-  $udo pip install --upgrade docutils pygments sphinx sphinxcontrib-email \
-    sphinxcontrib-googlechart sphinxcontrib-httpdomain flask celery pymongo requests
-
-  pecho 'Fix https://bitbucket.org/birkenfeld/sphinx/pull-request/98/fixes-typeerror-raised-from/diff'
+  pecho 'Fixes bitbucket.org/birkenfeld/sphinx/pull-request/98/fixes-typeerror-raised-from/diff'
   $udo find /usr/local/lib/ -type f -name latex.py -path "*/sphinx/writers/*" -exec \
     sed -i 's:letter.translate(tex_escape_map)):unicode(letter).translate(tex_escape_map)):g' {} \;
 
