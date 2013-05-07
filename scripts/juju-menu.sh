@@ -156,8 +156,8 @@ deploy()
       xecho "Unable to copy juju's configuration file"
   else
     mecho 'Using default template to generate environment'
-    sed "s:STORAGE_PATH:$JUJU_STORAGE_PATH:g" "$CONFIG_JUJU_TEMPL_FILE" > "$JUJU_ENVS_FILE" || \
-      xecho "Unable to generate juju's configuration file"
+    sed "s:RELEASE:$RELEASE:g;s:STORAGE_PATH:$JUJU_STORAGE_PATH:g" "$CONFIG_JUJU_TEMPL_FILE" > \
+      "$JUJU_ENVS_FILE" || xecho "Unable to generate juju's configuration file"
   fi
   $udo ufw disable # Fix master thesis ticket #80 - Juju stuck in pending when using LXC
 

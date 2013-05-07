@@ -380,14 +380,7 @@ api_test_all()
 
   techo '1/4 Test source code'
 
-  test_code Callback.py
-  test_code Media.py
-  test_code OrchestraConfig.py
-  test_code PublisherConfig.py
-  test_code TransformConfig.py
-  test_code TransformProfile.py
-  test_code User.py
-  test_code Utilities.py
+  recho 'FIXME Not Implemented'
 
   techo '2/4 Initialize Orchestra database'
 

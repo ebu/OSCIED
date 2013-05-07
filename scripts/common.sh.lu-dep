@@ -31,12 +31,11 @@ if ! osciedCommonImported 2>/dev/null; then
 
 # Constants ========================================================================================
 
-# FIXME the actual orchestrator doesn't accept external IP, the private is hardcoded here
+# FIXME Current implementation of orchestra doesn't accept external IP, you must execute
+# autodetect-storage-ip.sh to update storage's private IP address automatically
 STORAGE_PRIVATE_IP=''
-
-# Common
-RELEASE='precise'     # FIXME this is hardcoded
-NETWORK_IFACE='eth0'  # FIXME this is hardcoded
+RELEASE='raring'      # Update this according to your needs
+NETWORK_IFACE='eth0'  # Update this according to your needs
 
 SCRIPTS_PATH=$(pwd)
 BASE_PATH=$(dirname "$SCRIPTS_PATH")
@@ -322,22 +321,7 @@ json_pjob()
   JSON="{\"media_id\":\"$1\",\"queue\":\"$2\",\"priority\":\"$3\"}"
 }
 
-# Used to test project's Python source code or to call/test Orchestra REST API ---------------------
-
-test_code()
-{
-  if [ $# -ne 1 ]; then
-    xecho "Usage: $(basename $0).test_code python_filename"
-  fi
-
-  echo "[RUN] $1"
-  python $1
-  if [ $? -ne 0 ]; then
-    echo "[ERROR] $1" >&2
-    exit 1
-  fi
-  echo
-}
+# Used to call / test Orchestra REST API -----------------------------------------------------------
 
 test_api()
 {
