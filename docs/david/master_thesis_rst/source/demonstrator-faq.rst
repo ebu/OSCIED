@@ -10,16 +10,15 @@ Demonstrator FAQ
 How to get a copy of the project ?
 ----------------------------------
 
-At time of writing this documentation (26 January 2013) the project is hosted at home and keep safe on my personal NAS.
-I installed a Subversion_ server, an `Apache 2`_ module for SVN_ and a ticket management system called TRAC_ to host my projects.
+At time of writing this documentation (7 May 2013) the project is hosted on GitHub.
 
 So, to get a development copy of the project, you only need to open a terminal and run the following:
 
 .. code-block:: bash
 
     >>> ~$ cd
-    >>> ~$ sudo apt-get install subversion
-    >>> ~$ svn co https://claire-et-david.dyndns.org/prog/OSCIED
+    >>> ~$ sudo apt-get install git
+    >>> ~$ git clone https://github.com/EBU-TI/OSCIED
 
 Then, I invite you to open a terminal and run the nice old-fashioned project's main menu and select **install**:
 
@@ -44,6 +43,8 @@ Then, I invite you to open a terminal and run the nice old-fashioned project's m
             :alt: On the left : OSCIED Main Menu // On the right : OSCIED JuJu Menu
 
             On the left : OSCIED Main Menu // On the right : OSCIED JuJu Menu
+
+.. warning:: TODO update screenshots
 
 This will install required packages, update some reference documents, populate :file:`tools/` paths with |OSS|_ tools source-code (e.g. Celery_'s one), ...
 
@@ -224,18 +225,11 @@ When all services are hopefully up and running you can setup the Orchestrator by
 
 * Select **config** to update generated configuration files used by scripts ;
 
-.. warning::
+.. note::
 
-    The actual Orchestrator can't understand that the storage's public/private IP are linked to the same host. This is a known limitation that will be fixed in a future release.
+    The actual Orchestrator can't understand that the storage's public/private IP are linked to the same host. This is a known limitation that will be fixed in a future release. It means that the private IP of the storage unit is hardcoded in :file:`common.sh`. The **config** function update it automatically.
 
-    It means that the private IP of the storage unit is hardcoded in :file:`common.sh`. A dedicated utility script help you to update it easily.
-
-    .. code-block:: bash
-
-        >>> ~$ cd $HOME/OSCIED/scripts/
-        >>> ~/OSCIED/scripts$ sh autodetect-storage-ip.sh
-
-    This utility will connect to the orchestrator, grep the configuration file :file:`/var/lib/.../charm/config.json` and extract *storage_ip* value. Last but not least, :file:`common.sh` is then updated with auto-detected value.
+    The function will connect to the orchestrator, grep the configuration file :file:`/var/lib/.../charm/config.json` and extract *storage_ip* value. Last but not least, :file:`common.sh` is then updated with auto-detected value.
 
 * Start another script ;-)
 
