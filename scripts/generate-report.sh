@@ -35,24 +35,24 @@ main()
     xecho 'Unable to detect local copy revision number !'
   fi
 
-  # # Generate images from textual UMLs
-  # java -jar "$REPORT_TOOLS_PLANTUML_BINARY" "$DAVID_REPORT_UML_PATH" \
-  #   -failonerror || xecho 'Unable to generate images from UML diagrams'
+  # Generate images from textual UMLs
+  java -jar "$REPORT_TOOLS_PLANTUML_BINARY" "$DAVID_REPORT_UML_PATH" \
+    -failonerror || xecho 'Unable to generate images from UML diagrams'
 
-  # cd "$DAVID_REPORT_UML_PATH" || xecho "Unable to find path $DAVID_REPORT_UML_PATH"
+  cd "$DAVID_REPORT_UML_PATH" || xecho "Unable to find path $DAVID_REPORT_UML_PATH"
 
-  # # Append hooks UMLs images together !
-  # for name in 'orchestra' 'webui' 'storage' 'transform' 'publisher'
-  # do
-  #   a="activity-$name-install.png"
-  #   b="activity-$name-config-changed.png"
-  #   c="activity-$name-start.png"
-  #   d="activity-$name-stop.png"
-  #   e="activity-$name-hooks.png"
-  #   convert $a $b $c $d +append $e || convert $a $c $d +append $e || \
-  #     xecho "Unable to append $name's hooks UMLs images"
-  #   rm $a $b $c $d 2>/dev/null
-  # done
+  # Append hooks UMLs images together !
+  for name in 'orchestra' 'webui' 'storage' 'transform' 'publisher'
+  do
+    a="activity-$name-install.png"
+    b="activity-$name-config-changed.png"
+    c="activity-$name-start.png"
+    d="activity-$name-stop.png"
+    e="activity-$name-hooks.png"
+    convert $a $b $c $d +append $e || convert $a $c $d +append $e || \
+      xecho "Unable to append $name's hooks UMLs images"
+    rm $a $b $c $d 2>/dev/null
+  done
 
   cd "$DAVID_REPORT_PATH" || xecho "Unable to find path $DAVID_REPORT_PATH"
 
@@ -99,61 +99,21 @@ main()
   # FIXME echo about.rst -> index.rst for html version at least
   $udo rm -rf build/* 2>/dev/null
   make html || xecho 'Unable to generate HTML version of the report'
-  #make latexpdf || xecho 'Unable to generate PDF version of the report'
+  make latexpdf || xecho 'Unable to generate PDF version of the report'
 
-  #find "$DAVID_REPORT_BUILD_PATH" -type f -name "*.pdf" -exec mv {} "$DAVID_REPORT_RELEASE_PATH" \;
+  find "$DAVID_REPORT_BUILD_PATH" -type f -name "*.pdf" -exec mv {} "$DAVID_REPORT_RELEASE_PATH" \;
 
   # Compress report
   #cd "$DAVID_REPORT_RELEASE_PATH" || xecho "Unable to find path $DAVID_REPORT_RELEASE_PATH"
   #gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook -dNOPAUSE -dQUIET -dBATCH \
   #  -sOutputFile=MA_DavidFischer_OSCIED_compressed.pdf MA_DavidFischer_OSCIED.pdf
+
+  # Remove intermediate files
+  #find "$DAVID_REPORT_UML_PATH" -type f -name "*.png" -exec rm -f {} \;
+  #find "$DAVID_REPORT_PATH" -type f -name "*.rst.template" | while read template
+  #do
+  #  rm -f "$(dirname "$template")/$(basename "$template" .template)"
+  #done
 }
-
-# old()
-# {
-#   notes='--inline-footnotes'
-#   report='OSCIED-Report_draft'
-#   rst2html "$report.rst" > "$report.html"
-#   rst2pdf  "$report.rst" -s stylesheet.txt -b1 $notes
-#   evince "$report.pdf"
-# }
-
-# svn_dates()
-# {
-#   svn log "$1" | grep david.fischer | cut -d' ' -f5 | uniq
-# }
-
-# svn_filter()
-# {
-#   echo "$1" | sed 's: :\n:g' | grep "$2" | wc -l
-# }
-
-# svn_months()
-# {
-#   dates=$(svn_dates "$1")
-#   d1209=$(svn_filter "$dates" '2012-09')
-#   d1210=$(svn_filter "$dates" '2012-10')
-#   d1211=$(svn_filter "$dates" '2012-11')
-#   d1212=$(svn_filter "$dates" '2012-12')
-#   d1301=$(svn_filter "$dates" '2013-01')
-#   d1302=$(svn_filter "$dates" '2013-02')
-#   echo "$d1209, $d1210, $d1211, $d1212, $d1301, $d1302"
-# }
-
-# svn_components()
-# {
-#   content=''
-#   savedIFS=$IFS
-#   IFS=';'
-#   while read name path
-#   do
-#     mecho "Gathering days per month for $name ..."
-#     [ ! "$content" ] && content="    $name.axis: y\n"
-#     content="$content    $name: $(svn_months "$path")\n"
-#   done < "$DAVID_REPORT_COMPONENTS_FILE"
-
-#   content=".. vertical_barchart::\n\n$content"
-#   echo $e_ $content
-# }
 
 main "$@"
