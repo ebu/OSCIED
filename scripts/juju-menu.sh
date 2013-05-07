@@ -359,6 +359,7 @@ config()
   content=''
   count=1
   last_name=''
+  orchestra=''
   juju status 2>/dev/null | \
   {
     while read line
@@ -375,15 +376,7 @@ config()
       count=$((count+1))
 
       if echo $name | grep -q 'oscied-orchestra'; then
-        number=$(expr match "$name" '.*/\([0-9]*\)')
-        pecho "Auto-detect storage internal IP address by parsing $name unit configuration"
-        get_unit_config 'oscied-orchestra' "$number" 'storage_ip'
-        if [ ! "$REPLY" ]; then
-          xecho 'Unable to detect storage internal IP address'
-        else
-          mecho "Updating common.sh with detected storage internal IP = $REPLY"
-          sed -i "s#STORAGE_PRIVATE_IP=.*#STORAGE_PRIVATE_IP='$REPLY'#" common.sh
-        fi
+        orchestra=$name
       fi
     done
 
@@ -392,6 +385,20 @@ config()
       recho "Charms's units public URLs listing file updated"
     else
       xecho "Unable to detect charms's units public URLs"
+    fi
+
+    if [ "$orchestra" ]; then
+      pecho "Auto-detect storage internal IP address by parsing $orchestra unit configuration"
+      number=$(expr match "$orchestra" '.*/\([0-9]*\)')
+      get_unit_config 'oscied-orchestra' "$number" 'storage_ip'
+      if [ ! "$REPLY" ]; then
+        xecho 'Unable to detect storage internal IP address'
+      else
+        mecho "Updating common.sh with detected storage internal IP = $REPLY"
+        sed -i "s#STORAGE_PRIVATE_IP=.*#STORAGE_PRIVATE_IP='$REPLY'#" common.sh
+      fi
+    else
+      xecho 'Unable to detect orchestrator unit name'
     fi
   }
 }
