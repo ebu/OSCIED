@@ -5,20 +5,20 @@ FFmpeg Documentation
 Available Codecs
 ----------------
 
-.. literalinclude:: ../../../../docs/references/ffmpeg-codecs.txt
-    :language: bash
+.. literalinclude:: ../../../../docs/references/transform/ffmpeg-codecs.txt
+    :language: text
     :linenos:
 
 Available Filters
 -----------------
 
-.. literalinclude:: ../../../../docs/references/ffmpeg-filters.txt
-    :language: bash
+.. literalinclude:: ../../../../docs/references/transform/ffmpeg-filters.txt
+    :language: text
     :linenos:
 
 Available Formats
 -----------------
 
-.. literalinclude:: ../../../../docs/references/ffmpeg-formats.txt
-    :language: bash
+.. literalinclude:: ../../../../docs/references/transform/ffmpeg-formats.txt
+    :language: text
     :linenos:
