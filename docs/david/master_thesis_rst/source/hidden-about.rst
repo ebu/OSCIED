@@ -60,4 +60,4 @@
 :main developer: David Fischer
 :license: |GPL|_
 :release: Basic V1.0
-:revision: 68da8c1ba0d6da1e31e3bcfaecbf27f2ba0bfd89
+:revision: 4a6b7d9cae9e49db3670b011c889bc6f65038d6c
