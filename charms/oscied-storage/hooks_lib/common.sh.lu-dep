@@ -50,26 +50,25 @@ hook_install()
 {
   techo ' Storage - install'
 
-  # Fix memtest86+ : https://bugs.launchpad.net/ubuntu/+source/grub2/+bug/1069856
-  #eval $purge grub-pc grub-common
-  #eval $install grub-common grub-pc
+  apt-add-repository -y ppa:charmers/charm-helpers || \
+    xecho 'Unable to add charms helpers repository' 1
 
   eval $update
   eval $upgrade
 
   pecho 'Install and configure Network Time Protocol'
-  eval $install ntp || xecho 'Unable to install ntp' 1
-  eval $service ntp restart || xecho 'Unable to restart ntp service' 2
+  eval $install ntp || xecho 'Unable to install ntp' 2
+  eval $service ntp restart || xecho 'Unable to restart ntp service' 3
 
-  pecho 'Install GlusterFS Server'
-  eval $install glusterfs-server nfs-common || xecho 'Unable to install packages' 3
+  pecho 'Install Charms helpers and GlusterFS Server'
+  eval $install charm-helper-sh glusterfs-server nfs-common || xecho 'Unable to install packages' 4
 
   pecho "Create medias volume $MEDIAS_VOLUME"
   ip=$(unit-get private-address)
   gluster volume create "$MEDIAS_VOLUME" "$ip:/$MEDIAS_BRICK" || \
-    xecho "Unable to create medias volume $MEDIAS_VOLUME on brick $ip:/$MEDIAS_BRICK" 4
+    xecho "Unable to create medias volume $MEDIAS_VOLUME on brick $ip:/$MEDIAS_BRICK" 5
 
-  gluster volume start "$MEDIAS_VOLUME" || xecho "Unable to start volume $MEDIAS_VOLUME" 5
+  gluster volume start "$MEDIAS_VOLUME" || xecho "Unable to start volume $MEDIAS_VOLUME" 6
   gluster volume info
 
   juju-log 'Expose GlusterFS Server service'

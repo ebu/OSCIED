@@ -257,10 +257,6 @@ hook_install()
   # Remark : You must get dependencies into this charm by executing get-dependencies.sh
   # FIXME share variables with get-dependencies.sh
 
-  # Fix memtest86+ : https://bugs.launchpad.net/ubuntu/+source/grub2/+bug/1069856
-  #eval $purge grub-pc grub-common
-  #eval $install grub-common grub-pc
-
   eval $update
   eval $upgrade
 
