@@ -18,4 +18,4 @@
 	url = git://github.com/rabbitmq/rabbitmq-tutorials.git
 [submodule "tools/logicielsUbuntu"]
 	path = tools/logicielsUbuntu
-	url = git://github.com/davidfischer-ch/logicielsUbuntu
+	url = git://github.com/davidfischer-ch/logicielsUbuntu.git

@@ -101,6 +101,8 @@ install()
   fi
   ok=$true
 
+  autoInstall git-core git
+
   pecho 'Update submodules'
   cd "$BASE_PATH" || xecho "Unable to find path $BASE_PATH"
   git submodule foreach git pull
@@ -108,7 +110,7 @@ install()
   pecho 'Import logicielsUbuntu'
   if ! which lu-importUtils > /dev/null; then
     cd "$TOOLS_PATH/logicielsUbuntu" || xecho "Unable to find path $TOOLS_PATH/logicielsUbuntu"
-    sh logicielsUbuntuExports
+    sh ./logicielsUbuntuExports || xecho 'Unable to export logicielsUbuntu'
     recho 'Please restart this script once from a new terminal'
     recho 'or after having executed the following:'
     cecho 'source ~/.bashrc'
@@ -120,7 +122,7 @@ install()
   fi
 
   pecho 'Install prerequisites'
-  eval $install bzr git-core python-pip rst2pdf texlive-latex-recommended \
+  eval $install bzr python-pip rst2pdf texlive-latex-recommended \
     texlive-latex-extra texlive-fonts-recommended || xecho 'Unable to install prerequisites'
   $udo pip install --upgrade celery docutils flask ipaddr pygments pymongo requests sphinx \
     sphinxcontrib-email sphinxcontrib-googlechart sphinxcontrib-httpdomain
