@@ -308,10 +308,6 @@ hook_install()
 {
   techo 'Web UI - install'
 
-  # Fix memtest86+ : https://bugs.launchpad.net/ubuntu/+source/grub2/+bug/1069856
-  #eval $purge grub-pc grub-common
-  #eval $install grub-common grub-pc
-
   eval $update
   eval $upgrade
 
