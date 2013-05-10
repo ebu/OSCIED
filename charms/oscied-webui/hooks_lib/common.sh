@@ -308,10 +308,6 @@ hook_install()
 {
   techo 'Web UI - install'
 
-  # Fix memtest86+ : https://bugs.launchpad.net/ubuntu/+source/grub2/+bug/1069856
-  #eval $purge grub-pc grub-common
-  #eval $install grub-common grub-pc
-
   eval $update
   eval $upgrade
 
@@ -596,7 +592,7 @@ hook_website_relation_broken()
 }
 # START OF LOGICIELS UBUNTU UTILS (licencing : LogicielsUbuntu project's licence)
 # Retrieved from:
-#   svn co https://claire-et-david.dyndns.org/prog/LogicielsUbuntu/public
+#   git clone https://github.com/davidfischer-ch/logicielsUbuntu.git
 
 # Prevent importing N times the following (like C++ .h : #ifndef ... #endif)
 if ! logicielsUbuntuUtilsImported 2>/dev/null; then

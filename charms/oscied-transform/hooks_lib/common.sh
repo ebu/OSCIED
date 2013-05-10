@@ -243,10 +243,6 @@ hook_install()
 {
   techo 'Transform - install'
 
-  # Fix memtest86+ : https://bugs.launchpad.net/ubuntu/+source/grub2/+bug/1069856
-  #eval $purge grub-pc grub-common
-  #eval $install grub-common grub-pc
-
   # I decidec to use the real ffmpeg, not the libav version :
   # http://blog.pkh.me/p/13-the-ffmpeg-libav-situation.html
   # http://doc.ubuntu-fr.org/ffmpeg
@@ -408,7 +404,7 @@ hook_transform_relation_broken()
 }
 # START OF LOGICIELS UBUNTU UTILS (licencing : LogicielsUbuntu project's licence)
 # Retrieved from:
-#   svn co https://claire-et-david.dyndns.org/prog/LogicielsUbuntu/public
+#   git clone https://github.com/davidfischer-ch/logicielsUbuntu.git
 
 # Prevent importing N times the following (like C++ .h : #ifndef ... #endif)
 if ! logicielsUbuntuUtilsImported 2>/dev/null; then
