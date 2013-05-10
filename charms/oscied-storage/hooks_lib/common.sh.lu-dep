@@ -63,6 +63,8 @@ hook_install()
   pecho 'Install Charms helpers and GlusterFS Server'
   eval $install charm-helper-sh glusterfs-server nfs-common || xecho 'Unable to install packages' 4
 
+  # FIXME todo to handle clustering, if not leader then do not create/start volume
+
   pecho "Create medias volume $MEDIAS_VOLUME"
   ip=$(unit-get private-address)
   gluster volume create "$MEDIAS_VOLUME" "$ip:/$MEDIAS_BRICK" || \
@@ -120,4 +122,33 @@ hook_storage_relation_joined()
 
   # Send filesystem type, mount point & options
   relation-set fstype='glusterfs' mountpoint="$MEDIAS_VOLUME" options=''
+}
+
+# HOOKS : Handle Clustering of Storage =============================================================
+
+hook_peer_relation_joined()
+{
+  techo 'Storage - peer relation joined'
+
+  recho 'FIXME NOT IMPLEMENTED'
+  # Send something if necessary
+}
+
+hook_peer_relation_changed()
+{
+  techo 'Storage - peer relation changed'
+
+  recho 'FIXME NOT IMPLEMENTED'
+  # Receive something if necessary
+  # If this is the leader:
+    # gluster peer probe (remote_ip)
+    # gluster volume add-brick medias_volume remote_ip:/exp1
+    # Change volume mode to chosen mode (config)
+}
+
+hook_peer_relation_broken()
+{
+  techo 'Storage - peer relation broken'
+
+  recho 'FIXME NOT IMPLEMENTED'
 }
