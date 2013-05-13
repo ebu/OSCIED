@@ -78,7 +78,7 @@ hook_install()
     gluster volume start "$VOLUME_NAME" || xecho "Unable to start volume $VOLUME_NAME" 6
     gluster volume info
   else
-    mecho "Waiting for $((REPLICA_COUNT-1)) peers to create and start medias volume $VOLUME_NAME"
+    recho "Waiting for $((REPLICA_COUNT-1)) peers to create and start medias volume $VOLUME_NAME"
   fi
 
   juju-log 'Expose GlusterFS Server service'
@@ -187,7 +187,7 @@ hook_peer_relation_changed()
     gluster peer probe "$ip" || xecho "Unable to probe peer $ip" 1
 
     if [ $count -lt $REPLICA_COUNT ]; then
-      mecho "Waiting for $((REPLICA_COUNT-1)) peers to create and start medias volume $VOLUME_NAME"
+      recho "Waiting for $((REPLICA_COUNT-1)) peers to create and start medias volume $VOLUME_NAME"
     else
       pecho "Create and start medias volume $VOLUME_NAME with $count bricks"
       mecho "Bricks are $bricks"
