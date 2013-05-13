@@ -28,7 +28,8 @@ oscied-publisher:
   storage_mountpoint: ""
   storage_options: ""
 oscied-storage:
-  verbose: "true"
+  verbose: "false"
+  replica_count: 2
 oscied-transform:
   verbose: "true"
   concurrency: 1
