@@ -30,8 +30,6 @@ set -o nounset # will exit if an unitialized variable is used
 # Constants ========================================================================================
 
 ECHO='juju-log' # Used by logicielsUbuntuUtils
-MEDIAS_VOLUME='medias_volume'
-MEDIAS_BRICK='exp1'
 
 # Configuration ====================================================================================
 
@@ -42,7 +40,17 @@ else
   VERBOSE=1 # false
 fi
 
+UNIT_ID="${JUJU_UNIT_NAME##*/}"
+PRIVATE_IP=$(unit-get private-address)
+VOLUME_NAME="medias_volume_$UNIT_ID"
+REPLICA_COUNT=$(config-get replica_count)
+
 # Utilities ========================================================================================
+
+PEER_HELPER='/usr/share/charm-helper/sh/peer.sh'
+if [ -f "$PEER_HELPER" ]; then
+  . "$PEER_HELPER"
+fi
 
 # HOOKS : Charm Setup ==============================================================================
 
@@ -63,23 +71,24 @@ hook_install()
   pecho 'Install Charms helpers and GlusterFS Server'
   eval $install charm-helper-sh glusterfs-server nfs-common || xecho 'Unable to install packages' 4
 
-  pecho "Create medias volume $MEDIAS_VOLUME"
-  ip=$(unit-get private-address)
-  gluster volume create "$MEDIAS_VOLUME" "$ip:/$MEDIAS_BRICK" || \
-    xecho "Unable to create medias volume $MEDIAS_VOLUME on brick $ip:/$MEDIAS_BRICK" 5
-
-  gluster volume start "$MEDIAS_VOLUME" || xecho "Unable to start volume $MEDIAS_VOLUME" 6
-  gluster volume info
+  if [ $REPLICA_COUNT -eq 1 ]; then
+    pecho "Create and start medias volume $VOLUME_NAME with 1 brick (no redudancy at all)"
+    gluster volume create "$VOLUME_NAME" "$PRIVATE_IP:/exp1" || \
+      xecho "Unable to create medias volume $VOLUME_NAME on brick $PRIVATE_IP:/exp1" 5
+    gluster volume start "$VOLUME_NAME" || xecho "Unable to start volume $VOLUME_NAME" 6
+    gluster volume info
+  else
+    mecho "Waiting for $((REPLICA_COUNT-1)) peers to create and start medias volume $VOLUME_NAME"
+  fi
 
   juju-log 'Expose GlusterFS Server service'
-  open-port 111/tcp    #  is used for portmapper, and should have both TCP and UDP open
-  open-port 24007/tcp  # for the Gluster Daemon
-  #open-port 24008/tcp # Infiniband management (optional unless you are using IB)
-  open-port 24009/tcp  # We have only 1 storage brick (24009-24009)
-  # For NFS (not used)
-  #open-port 38465/tcp
-  #open-port 38466/tcp
-  #open-port 38467/tcp
+  open-port 111/tcp     # Is used for portmapper, and should have both TCP and UDP open
+  open-port 24007/tcp   # For the Gluster Daemon
+  #open-port 24008/tcp  # Infiniband management (optional unless you are using IB)
+  open-port 24009/tcp   # We have only 1 storage brick (24009-24009)
+  #open-port 38465/tcp  # For NFS (not used)
+  #open-port 38466/tcp  # For NFS (not used)
+  #open-port 38467/tcp  # For NFS (not used)
 }
 
 hook_uninstall()
@@ -119,7 +128,86 @@ hook_storage_relation_joined()
   techo 'Storage - storage relation joined'
 
   # Send filesystem type, mount point & options
-  relation-set fstype='glusterfs' mountpoint="$MEDIAS_VOLUME" options=''
+  relation-set fstype='glusterfs' mountpoint="$VOLUME_NAME" options=''
+  # FIXME if volume is not ready (created & started) -> what to do ?
+}
+
+# HOOKS : Handle Clustering of Storage =============================================================
+
+debug_peer_relation()
+{
+  if [ $VERBOSE -eq 0 ]; then
+    mecho '[DEBUG] Peer relation settings:'; relation-get
+    mecho '[DEBUG] Peer relation members:';  relation-list
+  fi
+}
+
+hook_peer_relation_joined()
+{
+  techo 'Storage - peer relation joined'
+  debug_peer_relation
+
+  if ! ch_peer_i_am_leader; then
+    pecho "As slave, stop and delete my own volume $VOLUME_NAME"
+    if gluster volume info  "$VOLUME_NAME" > /dev/null; then
+      gluster volume stop   "$VOLUME_NAME" || xecho "Unable to stop volume $VOLUME_NAME"  1
+      gluster volume delete "$VOLUME_NAME" || xecho "Unable to delete volume VOLUME_NAME" 2
+    fi
+  fi
+}
+
+hook_peer_relation_changed()
+{
+  techo 'Storage - peer relation changed'
+  debug_peer_relation
+
+  # Get configuration from the relation
+  ip=$(relation-get private-address)
+
+  mecho "Peer IP is $ip"
+  if [ ! "$ip" ]; then
+    recho 'Waiting for complete setup'
+    exit 0
+  fi
+
+  # FIXME close previously opened ports if some bricks leaved ...
+  pecho 'Open required ports'
+  count=1
+  bricks="$PRIVATE_IP:/exp1"
+  for peer in $(relation-list)
+  do
+    open-port $((24009+count))/tcp  # Open required
+    peer_ip=$(relation-get private-address "$peer")
+    bricks="$bricks $peer_ip:/exp1"
+    count=$((count+1))
+  done
+
+  if ch_peer_i_am_leader; then
+    pecho "As leader, probe remote peer $ip"
+    gluster peer probe "$ip" || xecho "Unable to probe peer $ip" 1
+
+    if [ $count -lt $REPLICA_COUNT ]; then
+      mecho "Waiting for $((REPLICA_COUNT-1)) peers to create and start medias volume $VOLUME_NAME"
+    else
+      pecho "Create and start medias volume $VOLUME_NAME with $count bricks"
+      mecho "Bricks are $bricks"
+      gluster volume create "$VOLUME_NAME" replica "$REPLICA_COUNT" transport tcp $bricks || \
+        xecho "Unable to create medias volume $VOLUME_NAME" 2
+      gluster volume start "$VOLUME_NAME" || xecho "Unable to start volume $VOLUME_NAME" 3
+      gluster volume info
+    fi
+    # FIXME handle addition of more peers when volume is already created and started !
+    #gluster volume add-brick "$VOLUME_NAME" "$ip:/$BRICK_NAME" || \
+    #  xecho 'Unable to add remote peer brick to medias volume' 4
+  fi
+}
+
+hook_peer_relation_broken()
+{
+  techo 'Storage - peer relation broken'
+  debug_peer_relation
+
+  recho 'FIXME NOT IMPLEMENTED'
 }
 # START OF LOGICIELS UBUNTU UTILS (licencing : LogicielsUbuntu project's licence)
 # Retrieved from:

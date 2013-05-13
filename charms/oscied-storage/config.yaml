@@ -3,3 +3,7 @@ options:
     type: string
     default: "false"
     description: Set verbose logging.  Can be set to true or false
+  replica_count:
+    type: int
+    default: 1
+    description: Set replica count.  Medias volume is not created (and started) until N nodes are connected.  Default means no redundancy at all.

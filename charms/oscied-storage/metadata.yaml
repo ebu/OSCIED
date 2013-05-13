@@ -7,3 +7,6 @@ description: |
 provides:
   storage:
     interface: mount
+peers:
+  peer:
+    interface: glusterfs-peers

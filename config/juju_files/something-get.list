@@ -11,6 +11,7 @@ publisher_repository=https://claire-et-david.dyndns.org/prog/OSCIED/components/p
 rabbit_connection=amqp://nodes:Alice_in_wonderland@127.0.0.1:5672/celery
 rabbit_password=Alice_in_wonderland
 rabbit_queues=transform_private
+replica_count=1
 repositories_pass=
 repositories_user=oscied
 root_secret=toto
