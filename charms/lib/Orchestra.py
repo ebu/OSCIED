@@ -238,9 +238,6 @@ class Orchestra(object):
             job.append_async_result()
         return job
 
-    def update_transform_job(self, job):
-        raise NotImplementedError('maybe in a near future.')
-
     def revoke_transform_job(self, job, terminate=False, remove=False, delete_media=False):
         """ This do not delete jobs from jobs database (if remove=False) but set revoked attribute
         in jobs database and broadcast revoke request to transform units with Celery. If the job is
