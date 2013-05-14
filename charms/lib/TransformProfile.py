@@ -29,15 +29,18 @@
 import uuid
 from Utilities import json2object, object2json, valid_uuid
 
+ENCODERS_NAMES = ('copy', 'ffmpeg', 'dashcast')
+
 
 class TransformProfile(object):
 
-    def __init__(self, _id, title, description, encoder_string):
+    def __init__(self, _id, title, description, encoder_name, encoder_string):
         if not _id:
             _id = str(uuid.uuid4())
         self._id = _id
         self.title = title
         self.description = description
+        self.encoder_name = encoder_name
         self.encoder_string = encoder_string
 
     # FIXME test other fields
@@ -46,16 +49,20 @@ class TransformProfile(object):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : _id is not a valid uuid string')
             return False
+        if not self.encoder_name in ENCODERS_NAMES:
+            if raise_exception:
+                raise TypeError(self.__class__.__name__ + ' : encoder_name is not a valid encoder')
+            return False
         return True
 
     @staticmethod
     def load(json):
-        profile = TransformProfile(None, None, None, None)
+        profile = TransformProfile(None, None, None, None, None)
         json2object(json, profile)
         return profile
 
-TRANSFORM_PROFILE_TEST = TransformProfile(None, 'HD 1080p', 'MP4 H.264 1080p, audio copy',
-                                          'ffmpeg -c:a copy ...')
+TRANSFORM_PROFILE_TEST = TransformProfile(None, 'HD 1080p', 'MP4 H.264 1080p, audio copy', 'ffmpeg',
+                                          '-c:a copy ...')
 
 # --------------------------------------------------------------------------------------------------
 

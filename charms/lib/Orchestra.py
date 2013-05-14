@@ -39,7 +39,7 @@ from celery.task.control import revoke
 from Callback import Callback
 from Media import Media
 from PublishJob import PublishJob
-from TransformProfile import TransformProfile
+from TransformProfile import TransformProfile, ENCODERS_NAMES
 from TransformJob import TransformJob
 from User import User
 from Utilities import object2json, datetime_now, UUID_ZERO, valid_uuid
@@ -155,10 +155,13 @@ class Orchestra(object):
 
     # ----------------------------------------------------------------------------------------------
 
+    def get_transform_profile_encoders(self):
+        return ENCODERS_NAMES
+
     def save_transform_profile(self, profile):
         profile.is_valid(True)
         if self.get_transform_profile(
-            {'title': profile.title, '_id': {'$ne': profile._id}}, {'_id': 1}):
+                {'title': profile.title, '_id': {'$ne': profile._id}}, {'_id': 1}):
             raise ValueError('Duplicate transform profile title ' + profile.title + '.')
         self._db.transform_profiles.save(profile.__dict__)
 
@@ -301,12 +304,12 @@ class Orchestra(object):
         other = self.get_publish_job({'media_id': media._id})
         if other and other.status not in states.READY_STATES and not other.revoked:
             raise NotImplementedError('Cannot launch the job, input media will be published by '
-                + 'another job with id ' + other._id + '.')
+                                      + 'another job with id ' + other._id + '.')
         # FIXME create a one-time password to avoid fixed secret authentication ...
         callback = Callback(self.config.api_url + callback_url, 'node', self.config.nodes_secret)
         result = Publisher.publish_job.apply_async(
-            args=(
-                object2json(user, False), object2json(media, False), object2json(callback, False)),
+            args=(object2json(user, False), object2json(media, False),
+                  object2json(callback, False)),
             queue=queue)
         if not result.id:
             raise ValueError('Unable to transmit job to workers of queue ' + queue + '.')
@@ -410,4 +413,3 @@ class Orchestra(object):
             self._db.publish_jobs.save(job.__dict__)
             logging.info('%s Error: %s' % (job_id, status))
             logging.info('%s Media %s is not modified' % (job_id, media.virtual_filename))
-

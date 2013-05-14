@@ -95,7 +95,7 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
         media_in_duration = get_media_duration(media_in_path)
 
         # NOT A REAL TRANSFORM : FILE COPY ---------------------------------------------------------
-        if profile.encoder_string == 'copy':
+        if profile.encoder_name == 'copy':
             block_size = 1024 * 1024
             media_in_file = open(media_in_path, "rb")
             media_out_file = open(media_out_path, "wb")
@@ -132,7 +132,7 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
                               (media_in_size, media_out_size))
 
         # A REAL TRANSFORM : TRANSCODE WITH FFMPEG -------------------------------------------------
-        else:
+        elif profile.encoder_name == 'ffmpeg':
             # Create FFmpeg subprocess
             cmd = 'ffmpeg -y -i "%s" %s "%s"' % (
                 media_in_path, profile.encoder_string, media_out_path)
@@ -191,6 +191,10 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
 #            media_out_duration = get_media_duration(media_out_path)
 #            if duration2secs(media_out_duration) / duration2secs(media_in_duration) > 1.5 or < 0.8:
 #                salut
+
+        # A REAL TRANSFORM : TRANSCODE WITH DASHCAST -----------------------------------------------
+        elif profile.encoder_name == 'dashcast':
+            raise NotImplementedError('FIXME Encoding with DashCast not yet implemented')
 
         # Here all seem okay -----------------------------------------------------------------------
         media_out_size = os.stat(media_out_path).st_size

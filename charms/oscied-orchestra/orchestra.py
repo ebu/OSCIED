@@ -1111,6 +1111,42 @@ def api_media_id_delete(id):
 
 # Transform profiles management --------------------------------------------------------------------
 
+@app.route('/transform/profile/encoder', methods=['GET'])
+def api_transform_profile_encoder():
+    """
+    Return an array containing the names of the transform profile encoders.
+
+    **Example request**:
+
+    .. sourcecode:: http
+
+        GET /transform/profile/encoder HTTP/1.1
+        Host: somewhere.com
+        Header: martin@oscied.org:oscied
+        Accept: application/json
+
+    **Example response**:
+
+    .. sourcecode:: http
+
+        HTTP/1.1 200 OK
+        Vary: Accept
+        Content-Type: application/json
+
+        {
+          "status": 200,
+          "value": ["copy", "ffmpeg", "dashcast"]
+        }
+
+    :Allowed: Any user
+    :statuscode 200: OK
+    :statuscode 401: Authenticate.
+    :statuscode 403: Authentication Failed.
+    """
+    requires_auth(request=request, allow_any=True)
+    return ok_200(orchestra.get_transform_profile_encoders(), True)
+
+
 @app.route('/transform/profile/count', methods=['GET'])
 def api_transform_profile_count():
     """
@@ -1184,10 +1220,11 @@ def api_transform_profile_post():
     """
     Add a transform profile.
 
-    The transform profile's ``encoder_string`` attribute can be a keyword like :
+    The transform profile's ``encoder_name`` attribute can be the following :
 
     * **copy** to bypass FFmpeg and do a simple file block copy ;
-    * ... or it can be a valid string containing FFmpeg options (see example) ;
+    * **ffmpeg** to transcode a media to another with FFMpeg ;
+    * **dashcast** to transcode a media to MPEG-DASH with DashCast ;
 
     **Example request**:
 
@@ -1202,6 +1239,7 @@ def api_transform_profile_post():
         {
           "title": "To MP4",
           "description": "Convert to MP4 (container)",
+          "encoder_name": "ffmpeg",
           "encoder_string": "-acodec copy -vcodec copy -f mp4"
         }
 
@@ -1219,6 +1257,7 @@ def api_transform_profile_post():
             "_id": "c316ff1a-74f8-11e2-82d4-3085a9accd33",
             "title": "To MP4",
             "description": "Convert to MP4 (container)",
+            "encoder_name": "ffmpeg",
             "encoder_string": "-acodec copy -vcodec copy -f mp4"
           }
         }
@@ -1226,7 +1265,8 @@ def api_transform_profile_post():
     :Allowed: Any user
     :query title: New profile's title (required)
     :query description: New profile's description (required)
-    :query encoder_string: New profile's (FFmpeg) encoder string (required)
+    :query encoder_name: New profile's encoder name (required)
+    :query encoder_string: New profile's encoder-specific string (required)
     :statuscode 200: OK
     :statuscode 400: Key ``key`` not found. *or* on type or value error
     :statuscode 400: Duplicate transform profile title ``profile``.
@@ -1242,7 +1282,8 @@ def api_transform_profile_post():
     if not data:
         abort(415, 'Requires json content-type.')
     try:
-        profile = TransformProfile(None, data['title'], data['description'], data['encoder_string'])
+        profile = TransformProfile(None, data['title'], data['description'], data['encoder_name'],
+                                   data['encoder_string'])
         orchestra.save_transform_profile(profile)
     except (ValueError, TypeError) as error:
         print str(error)
@@ -1281,6 +1322,7 @@ def api_transform_profile_id_get(id):
             "_id": "c316ff1a-74f8-11e2-82d4-3085a9accd33",
             "title": "To MP4",
             "description": "Convert to MP4 (container)",
+            "encoder_name": "ffmpeg",
             "encoder_string": "-acodec copy -vcodec copy -f mp4"
           }
         }
@@ -1746,6 +1788,7 @@ def api_transform_job_id_get(id):
               "title": "To MP2",
               "description":
                 "Convert video track to MPEG-2 format, copy audio track",
+              "encoder_name": "ffmpeg",
               "encoder_string":
                 "-acodec copy -vcodec mpeg2video -f mpeg2video"
             },
