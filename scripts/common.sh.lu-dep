@@ -287,11 +287,11 @@ json_media()
 
 json_tprofile()
 {
-  if [ $# -ne 3 ]; then
-    xecho "Usage: $(basename $0).json_tprofile title description encoder_string"
+  if [ $# -ne 4 ]; then
+    xecho "Usage: $(basename $0).json_tprofile title description encoder_name encoder_string"
   fi
 
-  JSON="{\"title\":\"$1\",\"description\":\"$2\",\"encoder_string\":\"$3\"}"
+  JSON="{\"title\":\"$1\",\"description\":\"$2\",\"encoder_name\":\"$3\",\"encoder_string\":\"$4\"}"
 }
 
 json_tjob()

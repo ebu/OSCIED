@@ -276,12 +276,12 @@ api_init_setup()
   count=1
   savedIFS=$IFS
   IFS=';'
-  while read title description encoder_string
+  while read title description encoder_name encoder_string
   do
-    if [ ! "$title" -o ! "$description" -o ! "$encoder_string" ]; then
+    if [ ! "$title" -o ! "$description" -o ! "encoder_name" -o ! "$encoder_string" ]; then
       xecho "Line $count : Bad line format !"
     fi
-    json_tprofile "$title" "$description" "$encoder_string"
+    json_tprofile "$title" "$description" "$encoder_name" "$encoder_string"
     echo "$JSON"
     test_api 200 POST $ORCHESTRA_URL/transform/profile "$user1_auth" "$JSON"
     save_json "tprofile$count" "$JSON"
