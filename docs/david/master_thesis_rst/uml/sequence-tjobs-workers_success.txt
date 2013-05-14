@@ -18,7 +18,7 @@ T -> O: << get next transform job from queue >>
 O --> T: << next transform job is ... >>
 
 note right: <b>concurrency_value</b> jobs can be threated\nsimultaneously (multithreading)
-alt if job encoder_string is 'copy'
+alt if job encoder_name is 'copy'
     T -> T: Launch new block copy
     T -> S: << read input media from medias path >>
     activate S
@@ -32,17 +32,17 @@ alt if job encoder_string is 'copy'
     S --> T: << end of file >>
     deactivate S    
     T --> O: << update job status & statistics ... >>
-else
-    T -> T: Launch new FFmpeg instance
+else job encoder_name is 'ffmpeg' or 'dashcast'
+    T -> T: Launch new FFmpeg / DashCast instance
     T -> S: << read input media from medias path >>
     activate S
-    S --> T: << FFmpeg read input media >>
-    T --> S: << FFmpeg write output media >>
+    S --> T: << FFmpeg / DashCast read input media >>
+    T --> S: << FFmpeg / DashCast write output media >>
     T --> O: << update job status & statistics ... >>
-    S --> T: << FFmpeg read input media >>
-    T --> S: << FFmpeg write output media >>
-    S --> T: << FFmpeg read input media >>
-    T --> S: << FFmpeg write output media >>
+    S --> T: << FFmpeg / DashCast read input media >>
+    T --> S: << FFmpeg / DashCast write output media >>
+    S --> T: << FFmpeg / DashCast read input media >>
+    T --> S: << FFmpeg / DashCast write output media >>
     S --> T: << end of file >>
     deactivate S
     T --> O: << update job status & statistics ... >>

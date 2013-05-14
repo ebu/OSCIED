@@ -27,7 +27,7 @@ loop every N seconds (AJAX)
     W -> O: GET /transform/profile (auth m@f.com:pass)
     activate O
     O -> O: Get profiles from MongoDB
-    O --> W: <b>OK 200</b> {"status"=200,\n  "value"=[{"_id": "<uuid>", "encoder_string": "-acodec ...", ...}, ...]}
+    O --> W: <b>OK 200</b> {"status"=200,\n  "value"=[{"_id": "<uuid>", "encoder_name": "ffmpeg", ...}, ...]}
     deactivate O
     W --> User: << Show/update profiles list >>
 end
