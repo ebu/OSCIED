@@ -28,6 +28,16 @@ class Profile extends MY_Controller
          exit;
       }
       $data['profiles'] = $response->value;
+      // Get the encoders for the dropdown
+      $response = $this->rest->get('transform/profile/encoder');
+      if ($response->status != 200) {
+         print_r($response->value);
+         exit;
+      }
+      $data['encoders'] = array();
+      foreach ($response->value as $encoder) {
+         $data['encoders'][$encoder] = $encoder;
+      }
 
    	$this->add_content('page_title', 'OSCIED - Transform Profiles');
       $this->add_view('main', 'profile/show', $data);
@@ -92,6 +102,7 @@ class Profile extends MY_Controller
 
       $this->form_validation->set_rules('title', 'Title', 'required');
       $this->form_validation->set_rules('description', 'Description', 'required');
+      $this->form_validation->set_rules('encoder_name', 'Encoder name', 'required');
       $this->form_validation->set_rules('encoder_string', 'Encoder string', 'required');
 
       if ($this->form_validation->run() === FALSE) {
@@ -111,6 +122,7 @@ class Profile extends MY_Controller
             array(
                'title' => $this->input->post('title'),
                'description' => $this->input->post('description'),
+               'encoder_name' => $this->input->post('encoder_name'),
                'encoder_string' => $this->input->post('encoder_string')
             )
          );
@@ -133,7 +145,7 @@ class Profile extends MY_Controller
     */
    /*public function edit_profile($id) {
       $this->load->library('form_validation');
-      
+
       $this->form_validation->set_rules('title', 'Title', 'required');
 
       if ($this->form_validation->run() === FALSE) {
