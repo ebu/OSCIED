@@ -40,6 +40,12 @@ else
   VERBOSE=1 # false
 fi
 
+# Charms paths
+BASE_PATH=$(pwd)
+
+# Charms files
+VOLUME_FLAG="$BASE_PATH/volume_ok"
+
 UNIT_ID="${JUJU_UNIT_NAME##*/}"
 PRIVATE_IP=$(unit-get private-address)
 VOLUME_NAME="medias_volume_$UNIT_ID"
@@ -77,6 +83,7 @@ hook_install()
       xecho "Unable to create medias volume $VOLUME_NAME on brick $PRIVATE_IP:/exp1" 5
     gluster volume start "$VOLUME_NAME" || xecho "Unable to start volume $VOLUME_NAME" 6
     gluster volume info
+    touch "$VOLUME_FLAG" || xecho 'Unable to create flag' 7
   else
     recho "Waiting for $((REPLICA_COUNT-1)) peers to create and start medias volume $VOLUME_NAME"
   fi
@@ -127,9 +134,11 @@ hook_storage_relation_joined()
 {
   techo 'Storage - storage relation joined'
 
-  # Send filesystem type, mount point & options
-  relation-set fstype='glusterfs' mountpoint="$VOLUME_NAME" options=''
-  # FIXME if volume is not ready (created & started) -> what to do ?
+  # Send filesystem type, mount point & options only if volume is created and started
+  if [ -f "$VOLUME_FLAG" ]
+  then relation-set fstype='glusterfs' mountpoint="$VOLUME_NAME" options=''
+  else relation-set fstype='' mountpoint='' options=''
+  fi
 }
 
 # HOOKS : Handle Clustering of Storage =============================================================
@@ -152,6 +161,7 @@ hook_peer_relation_joined()
     if gluster volume info  "$VOLUME_NAME" > /dev/null; then
       gluster volume stop   "$VOLUME_NAME" || xecho "Unable to stop volume $VOLUME_NAME"  1
       gluster volume delete "$VOLUME_NAME" || xecho "Unable to delete volume VOLUME_NAME" 2
+      rm -f "$VOLUME_FLAG" || xecho 'Unable to remove flag' 3
     fi
   fi
 }
@@ -195,6 +205,7 @@ hook_peer_relation_changed()
         xecho "Unable to create medias volume $VOLUME_NAME" 2
       gluster volume start "$VOLUME_NAME" || xecho "Unable to start volume $VOLUME_NAME" 3
       gluster volume info
+      touch "$VOLUME_FLAG" || xecho 'Unable to create flag' 4
     fi
     # FIXME handle addition of more peers when volume is already created and started !
     #gluster volume add-brick "$VOLUME_NAME" "$ip:/$BRICK_NAME" || \
