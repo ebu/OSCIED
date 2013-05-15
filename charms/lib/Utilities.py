@@ -26,23 +26,49 @@
 # Retrieved from:
 #   svn co https://claire-et-david.dyndns.org/prog/OSCIED
 
-import datetime
 import inspect
-from ipaddr import IPAddress
 import json
 import logging
 import logging.handlers
 import re
+import sys
 import uuid
 from bson.json_util import dumps, loads
+from datetime import datetime
+from ipaddr import IPAddress
 
 
 class ForbiddenError(Exception):
     pass
 
 
-def datetime_now():
-    return datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+def str2datetime(date, format='%Y-%m-%d %H:%M:%S'):
+    return datetime.strptime(date, format)
+
+
+def datetime_now(offset=None, format='%Y-%m-%d %H:%M:%S'):
+    u"""
+    Return the current UTC date and time.
+    If format is not None, the date will be returned in a formatted string.
+
+    :param offset: Offset added to datetime.utcnow() if set
+    :type offset: datetime.timedelta
+    :param format: Output date string formatting
+    :type format: str
+
+    **Example usage**:
+
+    >>> from datetime import timedelta
+    >>> now = datetime_now(format=None)
+    >>> future = datetime_now(offset=timedelta(hours=2, minutes=10), format=None)
+    >>> print future - now  # doctest: +ELLIPSIS
+    2:10:00...
+    >>> assert(isinstance(datetime_now(), str))
+    """
+    now = datetime.utcnow()
+    if offset:
+        now += offset
+    return now.strftime(format) if format else now
 
 
 ## http://stackoverflow.com/questions/6255387/mongodb-object-serialized-as-json
@@ -64,11 +90,20 @@ class SmartJSONEncoderV2(json.JSONEncoder):
 
 
 def json2object(json, something):
-    something.__dict__ = loads(json)
+    something.__dict__.update(loads(json))
 
 
-def jsonfile2object(filename, something):
-    something.__dict__ = json.load(open(filename))
+def jsonfile2object(filename_or_file, something=None):
+    if something is None:
+        try:
+            return json.load(open(filename_or_file))
+        except TypeError:
+            return json.load(filename_or_file)
+    else:
+        try:
+            something.__dict__.update(json.load(open(filename_or_file)))
+        except TypeError:
+            something.__dict__.update(json.load(filename_or_file))
 
 
 def object2json(something, include_properties):
@@ -99,7 +134,7 @@ def valid_filename(filename):
 
 def valid_secret(secret):
     try:
-        return re.match(r'[A-Za-z0-9@#$%^&+=]{8,}', secret)
+        return re.match(r'[A-Za-z0-9@#$%^&+=-_]{8,}', secret)
     except:
         return False
 
@@ -128,12 +163,73 @@ def valid_uuid(id, none_allowed):
     return True
 
 
-def setup_logging(filename, level, format='%(asctime)s %(levelname)-8s - %(message)s',
-                  datefmt='%d/%m/%Y %H:%M:%S'):
-    logging.basicConfig(filename=filename, level=level, format=format, datefmt=datefmt)
-    console = logging.StreamHandler()
-    console.setLevel(level)
-    console.setFormatter(logging.Formatter(format))
-    logging.getLogger('').addHandler(console)
+def setup_logging(name='', reset=False, filename=None, console=False, level=logging.DEBUG,
+                  fmt='%(asctime)s %(levelname)-8s - %(message)s', datefmt='%d/%m/%Y %H:%M:%S'):
+    u"""
+    Setup logging (TODO).
+
+    :param name: TODO
+    :type name: str
+    :param reset: Unregister all previously registered handlers ?
+    :type reset: bool
+    :param filename: TODO
+    :type name: str
+    :param console: Toggle console output (stdout)
+    :type console: bool
+    :param level: TODO
+    :type level: int
+    :param fmt: TODO
+    :type fmt: str
+    :param datefmt: TODO
+    :type datefmt: str
+
+    **Example usage**
+
+    Setup a console output for logger with name *test*:
+
+    >>> setup_logging(name='test', reset=True, console=True, fmt=None, datefmt=None)
+    >>> log = logging.getLogger('test')
+    >>> log.info('this is my info')
+    this is my info
+    >>> log.debug('this is my debug')
+    this is my debug
+    >>> log.setLevel(logging.INFO)
+    >>> log.debug('this is my hidden debug')
+    >>> log.handlers = []  # Remove handlers manually: pas de bras, pas de chocolat !
+    >>> log.debug('no handlers, no messages ;-)')
+
+    Show how to reset handlers of the logger to avoid duplicated messages (e.g. in doctest):
+
+    >>> setup_logging(name='test', console=True, fmt=None, datefmt=None)
+    >>> setup_logging(name='test', console=True, fmt=None, datefmt=None)
+    >>> log.info('double message')
+    double message
+    double message
+    >>> setup_logging(name='test', reset=True, console=True, fmt=None, datefmt=None)
+    >>> log.info('single message')
+    single message
+    """
+    if reset:
+        logging.getLogger(name).handlers = []
+    if filename:
+        log = logging.getLogger(name)
+        log.setLevel(level)
+        handler = logging.FileHandler(filename)
+        handler.setFormatter(logging.Formatter(fmt=fmt, datefmt=datefmt))
+        log.addHandler(handler)
+    if console:
+        log = logging.getLogger(name)
+        log.setLevel(level)
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setFormatter(logging.Formatter(fmt=fmt, datefmt=datefmt))
+        log.addHandler(handler)
 
 UUID_ZERO = str(uuid.UUID('{00000000-0000-0000-0000-000000000000}'))
+
+# Main ---------------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+    print('Testing Utilities with doctest')
+    import doctest
+    doctest.testmod(verbose=False)
+    print('OK')
