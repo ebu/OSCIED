@@ -259,9 +259,21 @@ hook_install()
   eval $install ffmpeg x264 python python-dev python-pip glusterfs-client nfs-common || \
     xecho 'Unable to install packages' 3
 
+  pecho 'Install DashCash dependencies'
+  eval $install libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libavdevice-dev \
+    libavcodec-extra-53 zlib1g-dev || xecho 'Unable to install packages' 4
+
   pecho 'Install BSON Binary JSON, Celery Distributed Task Queue, MongoDB API and Requests'
   pip install --upgrade bson celery ipaddr passlib pymongo requests || \
-    xecho 'Unable to install packages' 4
+    xecho 'Unable to install packages' 5
+
+  pecho 'Install GPAC/DashCast'
+  lib='gpac'
+  tar="$lib.tar.bz2"
+  rm -rf $lib 2>/dev/null; mkdir $lib; tar -xjf $tar -C $lib
+  cd $lib || xecho "Unable to find directory $lib" 6
+  ./configure; make -j$(threadsCount) && make install || xecho 'Unable to compile GPAC/DashCast' 7
+  cd ..; rm -rf $lib
 
   # FIXME this call is not necessary, but config-changed may create an infinite loop, so WE call it
   hook_config_changed
