@@ -31,9 +31,10 @@ if ! osciedCommonImported 2>/dev/null; then
 
 # Constants ========================================================================================
 
-# FIXME Current implementation of orchestra doesn't accept external IP, you must execute
-# autodetect-storage-ip.sh to update storage's private IP address automatically
+# FIXME Current implementation of orchestra doesn't accept external IP you must execute juju-menu.sh
+# -> config to update storage's related constants automatically
 STORAGE_PRIVATE_IP=''
+STORAGE_MOUNTPOINT=''
 RELEASE='raring'      # Update this according to your needs
 NETWORK_IFACE='eth0'  # Update this according to your needs
 
@@ -171,13 +172,13 @@ get_orchestra_url()
 
 get_storage_uploads_url()
 {
-  REPLY="glusterfs://$STORAGE_PRIVATE_IP/medias_volume/uploads"
+  REPLY="glusterfs://$STORAGE_PRIVATE_IP/$STORAGE_MOUNTPOINT/uploads"
 
 }
 
 get_storage_medias_url()
 {
-  REPLY="glusterfs://$STORAGE_PRIVATE_IP/medias_volume/medias"
+  REPLY="glusterfs://$STORAGE_PRIVATE_IP/$STORAGE_MOUNTPOINT/medias"
 }
 
 storage_upload_media()
@@ -287,11 +288,11 @@ json_media()
 
 json_tprofile()
 {
-  if [ $# -ne 3 ]; then
-    xecho "Usage: $(basename $0).json_tprofile title description encoder_string"
+  if [ $# -ne 4 ]; then
+    xecho "Usage: $(basename $0).json_tprofile title description encoder_name encoder_string"
   fi
 
-  JSON="{\"title\":\"$1\",\"description\":\"$2\",\"encoder_string\":\"$3\"}"
+  JSON="{\"title\":\"$1\",\"description\":\"$2\",\"encoder_name\":\"$3\",\"encoder_string\":\"$4\"}"
 }
 
 json_tjob()
