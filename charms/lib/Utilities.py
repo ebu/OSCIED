@@ -134,27 +134,69 @@ def duration2secs(duration):
 
 
 def valid_mail(mail):
+    u"""
+    Returns True if ``mail`` is a valid e-mail address.
+
+    **Example usage**:
+
+    >>> valid_mail('Tabby@croquetes')
+    False
+    >>> valid_mail('Tabby@bernex.ch')
+    True
+    """
     try:
-        return re.match(r'[^@]+@[^@]+\.[^@]+', mail)
+        return True if re.match(r'[^@]+@[^@]+\.[^@]+', mail) else False
     except:
         return False
 
 
 def valid_filename(filename):
+    u"""
+    Returns True if ``filename`` is a valid filename.
+
+    **Example usage**:
+
+    >>> valid_filename('my_file_without_extension')
+    False
+    >>> valid_filename('my_file_with_extension.mp4')
+    True
+    """
     try:
-        return re.match(r'[^\.]+\.[^\.]+', filename)
+        return True if re.match(r'[^\.]+\.[^\.]+', filename) else False
     except:
         return False
 
 
 def valid_secret(secret):
+    u"""
+    Returns True if ``secret`` is a valid secret.
+
+    A valid secret contains at least 8 alpha-numeric characters.
+
+    **Example usage**:
+
+    >>> valid_secret('1234')
+    False
+    >>> valid_secret('my_password')
+    True
+    """
     try:
-        return re.match(r'[A-Za-z0-9@#$%^&+=-_]{8,}', secret)
+        return True if re.match(r'[A-Za-z0-9@#$%^&+=-_]{8,}', secret) else False
     except:
         return False
 
 
 def valid_ip(ip):
+    u"""
+    Returns True if ``ip`` is a valid IP address.
+
+    **Example usage**:
+
+    >>> valid_ip('123.0.0.')
+    False
+    >>> valid_ip('239.232.0.222')
+    True
+    """
     try:
         IPAddress(ip)
         return True
@@ -169,6 +211,18 @@ def valid_port(port):
 
 
 def valid_uuid(id, none_allowed):
+    u"""
+    Returns True if ``id`` is a valid UUID.
+
+    **Example usage**:
+
+    >>> valid_uuid('gaga-gogo-gaga-gogo', False)
+    False
+    >>> valid_uuid(None, True)
+    True
+    >>> valid_uuid(uuid.uuid4(), False)
+    True
+    """
     if not id and none_allowed:
         return True
     try:
