@@ -9,6 +9,7 @@
       <tr>
          <th>Title</th>
          <th>Description</th>
+         <th>Encoder</th>
          <th>Encoder string</th>
          <th></th>
       </tr>
@@ -18,6 +19,7 @@
       <tr>
          <td><?= (isset($profile->title)?$profile->title:'') ?></td>
          <td><?= (isset($profile->description)?$profile->description:'') ?></td>
+         <td><?= (isset($profile->encoder_name)?$profile->encoder_name:'') ?></td>
          <td><?= (isset($profile->encoder_string)?$profile->encoder_string:'') ?></td>
          <td>
             <a class="delete" title="<?= $profile->title ?>" href="<?= site_url('profile/delete/'.$profile->_id) ?>"><button class="btn btn-mini btn-danger">Delete</button></a>
