@@ -64,7 +64,7 @@ class User(object):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : mail is not a valid email address')
             return False
-        if not valid_secret(self.secret, True):
+        if not self.is_secret_hashed and not valid_secret(self.secret, True):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ +
                     ' : secret is not safe (8+ characters, upper/lower + numbers eg. StrongP6s)')
