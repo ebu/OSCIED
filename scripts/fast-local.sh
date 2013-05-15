@@ -48,6 +48,7 @@ if [ $REPLY -eq $true ]; then
   $udo cp -a "$(basename $cloud_image_url)" "$lxc_cache/"
 fi
 
+cd "$SCRIPTS_PATH" || xecho "Unable to find path $SCRIPTS_PATH"
 lu-importUtils ../charms/
 sh juju-menu.sh overwrite
 sh juju-menu.sh
