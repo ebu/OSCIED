@@ -73,11 +73,11 @@ osciedLocalScenario()
   if [ $REPLY -eq $true ]; then
     if [ -f "$cfg" ]; then
       mecho "Using user define Storage configuration : $cfg"
-      juju deploy --environment 'local' --config "$cfg" \
+      juju deploy -n 2 --environment 'local' --config "$cfg" \
         --repository=. local:$RELEASE/oscied-storage || xecho '1'
     else
       mecho 'Using default Storage configuration'
-      juju deploy --environment 'local' \
+      juju deploy -n 2 --environment 'local' \
         --repository=. local:$RELEASE/oscied-storage || xecho '1'
     fi
     juju expose --environment 'local' oscied-storage || xecho '2'
