@@ -167,7 +167,7 @@ def valid_filename(filename):
         return False
 
 
-def valid_secret(secret):
+def valid_secret(secret, none_allowed):
     u"""
     Returns True if ``secret`` is a valid secret.
 
@@ -175,11 +175,17 @@ def valid_secret(secret):
 
     **Example usage**:
 
-    >>> valid_secret('1234')
+    >>> valid_secret('1234', False)
     False
-    >>> valid_secret('my_password')
+    >>> valid_secret(None, True)
+    True
+    >>> valid_secret(None, False)
+    False
+    >>> valid_secret('my_password', False)
     True
     """
+    if secret is None and none_allowed:
+        return True
     try:
         return True if re.match(r'[A-Za-z0-9@#$%^&+=-_]{8,}', secret) else False
     except:
@@ -223,7 +229,7 @@ def valid_uuid(id, none_allowed):
     >>> valid_uuid(uuid.uuid4(), False)
     True
     """
-    if not id and none_allowed:
+    if id is None and none_allowed:
         return True
     try:
         uuid.UUID('{' + str(id) + '}')

@@ -283,7 +283,7 @@ hook_install()
     glusterfs-client nfs-common || xecho 'Unable to install packages' 6
 
   pecho 'Install BSON, Celery Distrib. Task Queue, Flask Python Web Framework, PyMongo MongoDB API'
-  pip install --upgrade bson celery flask ipaddr pymongo requests || \
+  pip install --upgrade bson celery flask ipaddr passlib pymongo requests || \
     xecho 'Unable to install packages' 7
 
   pecho 'Expose RESTful API, MongoDB & RabbitMQ service'

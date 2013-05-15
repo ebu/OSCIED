@@ -27,7 +27,9 @@
 #   svn co https://claire-et-david.dyndns.org/prog/OSCIED
 
 import uuid
-from Utilities import json2object, object2json, valid_mail, valid_secret, valid_uuid
+from passlib.hash import pbkdf2_sha512
+from passlib.utils import consteq
+from Utilities import json2object, valid_mail, valid_secret, valid_uuid
 
 
 class User(object):
@@ -48,6 +50,10 @@ class User(object):
             return self.first_name + ' ' + self.last_name
         return 'anonymous'
 
+    @property
+    def is_secret_hashed(self):
+        return self.secret is not None and self.secret.startswith('$pbkdf2-sha512$')
+
     # FIXME test other fields
     def is_valid(self, raise_exception):
         if not valid_uuid(self._id, False):
@@ -58,24 +64,82 @@ class User(object):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : mail is not a valid email address')
             return False
-        if self.secret is not None and not valid_secret(self.secret):
+        if not valid_secret(self.secret, True):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ +
                     ' : secret is not safe (8+ characters, upper/lower + numbers eg. StrongP6s)')
             return False
         return True
 
+    def hash_secret(self, rounds=12000, salt=None, salt_size=16):
+        u"""
+        Hashes user's secret if it is not already hashed.
+
+        **Example usage**:
+
+        >>> from copy import copy
+        >>> user = copy(USER_TEST)
+        >>> user.is_secret_hashed
+        False
+        >>> len(user.secret)
+        8
+        >>> user.hash_secret()
+        >>> user.is_secret_hashed
+        True
+        >>> len(user.secret)
+        130
+        >>> secret = user.secret
+        >>> user.hash_secret()
+        >>> assert(user.secret == secret)
+        """
+        if not self.is_secret_hashed:
+            self.secret = pbkdf2_sha512.encrypt(
+                self.secret, rounds=rounds, salt=salt, salt_size=salt_size)
+
+    def verify_secret(self, secret):
+        u"""
+        Returns True if secret is equal to user's secret.
+
+        **Example usage**:
+
+        >>> from copy import copy
+        >>> user = copy(USER_TEST)
+        >>> user.verify_secret('bad_secret')
+        False
+        >>> user.verify_secret('Secr4taB')
+        True
+        >>> user.hash_secret()
+        >>> user.verify_secret('bad_secret')
+        False
+        >>> user.verify_secret('Secr4taB')
+        True
+        """
+        if self.is_secret_hashed:
+            return pbkdf2_sha512.verify(secret, self.secret)
+        return consteq(secret, self.secret)
+
     @staticmethod
     def load(json):
+        u"""
+        Returns a new user with attributes loaded from a source JSON string.
+
+        **Example usage**:
+
+        >>> from Utilities import object2json
+        >>> user = User.load(object2json(USER_TEST, False))
+        >>> assert(user.__dict__ == USER_TEST.__dict__)
+        >>> assert(user.is_valid(False))
+        """
         user = User(None, None, None, None, None)
         json2object(json, user)
         return user
 
 USER_TEST = User(None, 'David', 'Fischer', 'david.fischer.ch@gmail.com', 'Secr4taB', True)
 
-# --------------------------------------------------------------------------------------------------
+# Main ---------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    print object2json(USER_TEST, True)
-    USER_TEST.is_valid(True)
-    print str(User.load(object2json(USER_TEST, False)))
+    print('Testing User with doctest')
+    import doctest
+    doctest.testmod(verbose=False)
+    print('OK')
