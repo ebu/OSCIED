@@ -114,8 +114,23 @@ def object2json(something, include_properties):
 
 
 def duration2secs(duration):
-    hours, minutes, seconds = duration.split(':')
-    return int(hours) * 3600 + int(minutes) * 60 + float(seconds)
+    u"""
+    Returns the duration converted in seconds.
+
+    **Example usage**:
+
+    >>> duration2secs('00:10:00')
+    600.0
+    >>> duration2secs('01:54:17')
+    6857.0
+    >>> duration2secs('16.40')
+    16.4
+    """
+    try:
+        hours, minutes, seconds = duration.split(':')
+        return int(hours) * 3600 + int(minutes) * 60 + float(seconds)
+    except ValueError:
+        return float(duration)
 
 
 def valid_mail(mail):
