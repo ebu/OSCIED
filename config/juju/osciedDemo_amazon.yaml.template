@@ -1,5 +1,5 @@
 oscied-publisher-demo:
-  verbose: "true"
+  verbose: "false"
   concurrency: 2
   rabbit_queues: "publisher_amazon"
   max_upload_size: 4294967296
@@ -14,7 +14,7 @@ oscied-publisher-demo:
   storage_mountpoint: "medias_volume"
   storage_options: ""
 oscied-transform-demo:
-  verbose: "true"
+  verbose: "false"
   concurrency: 1
   rabbit_queues: "transform_amazon"
   mongo_connection: "MONGO"
