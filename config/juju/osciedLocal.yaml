@@ -1,5 +1,5 @@
 oscied-orchestra:
-  verbose: "true"
+  verbose: "false"
   root_secret: "5FrvHcm7oyF4WQFW"
   nodes_secret: "bdZccPuG9fibjwCS"
   repositories_user: "oscied"
@@ -15,7 +15,7 @@ oscied-orchestra:
   storage_mountpoint: ""
   storage_options: ""
 oscied-publisher:
-  verbose: "true"
+  verbose: "false"
   concurrency: 2
   rabbit_queues: "publisher_private"
   max_upload_size: 4294967296
@@ -31,7 +31,7 @@ oscied-storage:
   verbose: "false"
   replica_count: 2
 oscied-transform:
-  verbose: "true"
+  verbose: "false"
   concurrency: 1
   rabbit_queues: "transform_private"
   mongo_connection: ""
@@ -41,7 +41,7 @@ oscied-transform:
   storage_mountpoint: ""
   storage_options: ""
 oscied-webui:
-  verbose: "true"
+  verbose: "false"
   max_upload_size: 4294967296
   max_execution_time: 180
   max_input_time: 600

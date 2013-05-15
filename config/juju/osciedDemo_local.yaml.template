@@ -1,5 +1,5 @@
 oscied-publisher:
-  verbose: "true"
+  verbose: "false"
   concurrency: 2
   rabbit_queues: "publisher_private"
   max_upload_size: 4294967296
@@ -12,7 +12,7 @@ oscied-publisher:
   storage_mountpoint: "medias_volume"
   storage_options: ""
 oscied-transform:
-  verbose: "true"
+  verbose: "false"
   concurrency: 1
   rabbit_queues: "transform_private"
   mongo_connection: "MONGO"
