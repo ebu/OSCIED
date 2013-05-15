@@ -59,6 +59,10 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
         start_time = time.time()
         print('%s Transform job started' % (request.id))
 
+        # Read current configuration to translate files uri to local paths
+        config = TransformConfig.read('config.json')
+        print object2json(config, True)
+
         # Load and check task parameters
         user = User.load(user_json)
         media_in = Media.load(media_in_json)
@@ -70,10 +74,6 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
         media_out.is_valid(True)
         profile.is_valid(True)
         callback.is_valid(True)
-
-        # Read current configuration to translate files uri to local paths
-        config = TransformConfig.read('config.json')
-        print object2json(config, True)
 
         # Update callback socket according to configuration
         if config.api_nat_socket and len(config.api_nat_socket) > 0:
