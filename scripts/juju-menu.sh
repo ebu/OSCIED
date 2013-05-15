@@ -103,6 +103,7 @@ overwrite()
   overwrite_helper 'oscied-storage'   || xecho 'Unable to overwrite Storage charm'
   overwrite_helper 'oscied-transform' || xecho 'Unable to overwrite Transform charm'
   overwrite_helper 'oscied-webui'     || xecho 'Unable to overwrite Web UI charm'
+  lu-importUtils "$CHARMS_DEPLOY_PATH"
 }
 
 overwrite_helper()
@@ -126,6 +127,7 @@ update()
   update_helper 'oscied-storage'   || xecho 'Unable to overwrite Storage charm'
   update_helper 'oscied-transform' || xecho 'Unable to overwrite Transform charm'
   update_helper 'oscied-webui'     || xecho 'Unable to overwrite Web UI charm'
+  lu-importUtils "$CHARMS_DEPLOY_PATH"
 }
 
 update_helper()
