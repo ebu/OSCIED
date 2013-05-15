@@ -58,7 +58,7 @@ class User(object):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : mail is not a valid email address')
             return False
-        if hasattr(self, 'secret') and not valid_secret(self.secret):
+        if self.secret is not None and not valid_secret(self.secret):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ +
                     ' : secret is not safe (8+ characters, upper/lower + numbers eg. StrongP6s)')
@@ -71,7 +71,7 @@ class User(object):
         json2object(json, user)
         return user
 
-USER_TEST = User(None, 'David', 'Fischer', 'david.fischer.ch@gmail.com', 'secret', True)
+USER_TEST = User(None, 'David', 'Fischer', 'david.fischer.ch@gmail.com', 'Secr4taB', True)
 
 # --------------------------------------------------------------------------------------------------
 
