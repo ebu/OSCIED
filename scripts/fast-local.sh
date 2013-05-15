@@ -49,6 +49,5 @@ if [ $REPLY -eq $true ]; then
 fi
 
 cd "$SCRIPTS_PATH" || xecho "Unable to find path $SCRIPTS_PATH"
-lu-importUtils ../charms/
-sh juju-menu.sh overwrite
+sh juju-menu.sh update
 sh juju-menu.sh
