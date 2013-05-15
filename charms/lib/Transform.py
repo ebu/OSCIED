@@ -233,4 +233,4 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
             'status': 'ERROR\n%s\n\nOUTPUT\n%s' % (str(error), encoder_out,)}, False)
         result = callback.post(data_json)
         print('%s Code %s %s : %s' % (request.id, result.status_code, result.reason, result._content))
-        raise error
+        raise
