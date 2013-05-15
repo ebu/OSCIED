@@ -68,17 +68,20 @@ class Orchestra(object):
 
     # ----------------------------------------------------------------------------------------------
 
-    def save_user(self, user):
+    def save_user(self, user, hash_secret):
         user.is_valid(True)
         if self.get_user({'mail': user.mail, '_id': {'$ne': user._id}}, {'_id': 1}):
             raise ValueError('The email address ' + user.mail + ' is already used by another user.')
+        if hash_secret:
+            user.hash_secret()
         self._db.users.save(user.__dict__)
 
-    def get_user(self, specs, fields=None):
+    def get_user(self, specs, fields=None, secret=None):
         entity = self._db.users.find_one(specs, fields)
         if not entity:
             return None
-        return User.load(object2json(entity, False))
+        user = User.load(object2json(entity, False))
+        return user if secret is None or user.verify_secret(secret) else None
 
     def delete_user(self, user):
         if valid_uuid(user, False):

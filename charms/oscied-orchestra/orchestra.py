@@ -92,15 +92,15 @@ def requires_auth(request, allow_root=False, allow_node=False, allow_any=False, 
                 return ok_200('my return value', True)
     """
     auth = request.authorization
-    if not auth:
-        abort(401, 'Authenticate.')
+    if not auth or auth.username is None or auth.password is None:
+        abort(401, 'Authenticate.')  # Testing for None is maybe too much ... Security is like that
     username = auth.username
     password = auth.password
     root = (username == 'root' and password == orchestra.config.root_secret)
     node = (username == 'node' and password == orchestra.config.nodes_secret)
     user = None
     if not root and not node:
-        user = orchestra.get_user({'mail': username, 'secret': password})
+        user = orchestra.get_user({'mail': username}, secret=password)
         username = user.name if user else None
     if not root and not user and not node:
         abort(401, 'Authentication Failed.')
@@ -452,7 +452,7 @@ def api_user_post():
     try:
         user = User(None, data['first_name'], data['last_name'], data['mail'], data['secret'],
                           data['admin_platform'])
-        orchestra.save_user(user)
+        orchestra.save_user(user, hash_secret=True)
     except (ValueError, TypeError) as error:
         abort(400, str(error))
     except KeyError as error:
@@ -586,7 +586,7 @@ def api_user_id_patch(id):
         if auth_user.admin_platform and 'admin_platform' in data:
             ap = data['admin_platform']
         new_user = User(id, first_name, last_name, mail, secret, ap)
-        orchestra.save_user(new_user)
+        orchestra.save_user(new_user, hash_secret=True)
     except (ValueError, TypeError) as error:
         abort(400, str(error))
     except KeyError as error:
