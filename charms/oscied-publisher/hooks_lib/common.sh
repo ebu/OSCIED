@@ -288,7 +288,8 @@ hook_install()
   fi
 
   pecho 'Install BSON Binary JSON, Celery Distributed Task Queue, MongoDB API and Requests'
-  pip install --upgrade bson celery ipaddr pymongo requests || xecho 'Unable to install packages' 6
+  pip install --upgrade bson celery ipaddr passlib pymongo requests || \
+    xecho 'Unable to install packages' 6
 
   pecho 'Expose Apache 2 service'
   open-port 80/tcp

@@ -260,7 +260,8 @@ hook_install()
     xecho 'Unable to install packages' 3
 
   pecho 'Install BSON Binary JSON, Celery Distributed Task Queue, MongoDB API and Requests'
-  pip install --upgrade bson celery ipaddr pymongo requests || xecho 'Unable to install packages' 4
+  pip install --upgrade bson celery ipaddr passlib pymongo requests || \
+    xecho 'Unable to install packages' 4
 
   # FIXME this call is not necessary, but config-changed may create an infinite loop, so WE call it
   hook_config_changed
