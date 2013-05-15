@@ -31,9 +31,10 @@ if ! osciedCommonImported 2>/dev/null; then
 
 # Constants ========================================================================================
 
-# FIXME Current implementation of orchestra doesn't accept external IP, you must execute
-# autodetect-storage-ip.sh to update storage's private IP address automatically
+# FIXME Current implementation of orchestra doesn't accept external IP you must execute juju-menu.sh
+# -> config to update storage's related constants automatically
 STORAGE_PRIVATE_IP=''
+STORAGE_MOUNTPOINT=''
 RELEASE='raring'      # Update this according to your needs
 NETWORK_IFACE='eth0'  # Update this according to your needs
 
@@ -171,13 +172,13 @@ get_orchestra_url()
 
 get_storage_uploads_url()
 {
-  REPLY="glusterfs://$STORAGE_PRIVATE_IP/medias_volume/uploads"
+  REPLY="glusterfs://$STORAGE_PRIVATE_IP/$STORAGE_MOUNTPOINT/uploads"
 
 }
 
 get_storage_medias_url()
 {
-  REPLY="glusterfs://$STORAGE_PRIVATE_IP/medias_volume/medias"
+  REPLY="glusterfs://$STORAGE_PRIVATE_IP/$STORAGE_MOUNTPOINT/medias"
 }
 
 storage_upload_media()
