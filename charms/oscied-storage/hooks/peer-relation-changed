@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
 
-. hooks_lib/common.sh
-hook_peer_relation_changed
+import hooks, lib.hooks_utils
+hooks_utils.main(hooks.hook_peer_relation_changed)
+
