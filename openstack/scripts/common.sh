@@ -22,8 +22,7 @@
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
 #
-# Retrieved from:
-#   svn co https://claire-et-david.dyndns.org/prog/OSCIED
+# Retrieved from https://github.com/EBU-TI/OSCIED
 
 set -o nounset # will exit if an unitialized variable is used
 
@@ -347,7 +346,7 @@ cloudCommonImported()
 }
 fi
 # START OF LOGICIELS UBUNTU UTILS (licencing : LogicielsUbuntu project's licence)
-# Retrieved from:
+# Retrieved from https://github.com/EBU-TI/OSCIED
 #   git clone https://github.com/davidfischer-ch/logicielsUbuntu.git
 
 # Prevent importing N times the following (like C++ .h : #ifndef ... #endif)

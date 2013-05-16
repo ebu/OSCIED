@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
 #**************************************************************************************************#
@@ -23,8 +23,7 @@
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
 #
-# Retrieved from:
-#   svn co https://claire-et-david.dyndns.org/prog/OSCIED
+# Retrieved from https://github.com/EBU-TI/OSCIED
 
 import puka, sys
 from TransformJob import TransformJob
