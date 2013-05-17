@@ -105,7 +105,7 @@ install()
 
   pecho 'Update submodules'
   cd "$BASE_PATH" || xecho "Unable to find path $BASE_PATH"
-  git submodule foreach git pull
+  git submodule init && git submodule update && git submodule status
 
   pecho 'Import logicielsUbuntu'
   if ! which lu-importUtils > /dev/null; then
