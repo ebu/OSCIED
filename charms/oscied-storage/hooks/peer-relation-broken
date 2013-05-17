@@ -1,6 +1,2 @@
-#!/usr/bin/env python2
-# -*- coding: utf-8 -*-
-
-import hooks, lib.hooks_utils
-hooks_utils.main(hooks.hook_peer_relation_broken)
-
+#!/usr/bin/env bash
+python hooks.py peer-relation-broken
