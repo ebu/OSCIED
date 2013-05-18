@@ -80,7 +80,7 @@ class StorageHooks(CharmHooks):
         elif len(bricks) % replica == 0:
             self.info('Expand replica=%s volume %s with new bricks' % (replica, volume))
             vol_bricks = self.volume_bricks
-            self.debug('Volume bricks:' + vol_bricks)
+            self.debug('Volume bricks: %s' % vol_bricks)
             for brick in bricks:  # FIXME remove bricks with set remove ...
                 if brick not in vol_bricks:
                     self.info('Add brick %s to volume %s' % (brick, volume))
