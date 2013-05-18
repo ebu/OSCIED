@@ -60,7 +60,7 @@ class StorageHooks(CharmHooks):
         if bricks is None:
             bricks = [self.brick]
         if replica is None:
-            replica = self.replica_count
+            replica = self.config.replica_count
         if replica % len(bricks) != 0:
             raise ValueError('Cannot create a replica=%s volume with %s bricks' %
                              (replica, len(bricks)))
@@ -83,7 +83,7 @@ class StorageHooks(CharmHooks):
         self.info('Restart network time protocol service')
         self.cmd('service ntp restart')
 
-        if self.replica_count == 1:
+        if self.config.replica_count == 1:
             for volume in self.volumes:
                 self.info('Remove previously created medias volume %s' % volume)
                 self.volume_do('delete', volume=volume, cli_input='y\n')
@@ -94,7 +94,7 @@ class StorageHooks(CharmHooks):
             open(self.volume_flag, 'w').close()
         else:
             self.remark("Waiting for %s peers to create and start medias volume %s" %
-                        (self.replica_count - 1, self.volume))
+                        (self.config.replica_count - 1, self.volume))
             os.remove(self.volume_flag)
 
         self.info('Expose GlusterFS Server service')
@@ -127,9 +127,8 @@ class StorageHooks(CharmHooks):
             self.relation_set(fstype='', mountpoint='', options='')
 
     def debug_peer_relation(self):
-        if self.verbose:
-            self.debug('Peer relation settings:'); self.debug(self.relation_get())
-            self.debug('Peer relation members:');  self.debug(self.relation_list())
+        self.debug('Peer relation settings:'); self.debug(self.relation_get())
+        self.debug('Peer relation members:');  self.debug(self.relation_list())
 
     def hook_peer_relation_joined(self):
         self.debug_peer_relation()
@@ -163,9 +162,9 @@ class StorageHooks(CharmHooks):
         if self.peer_i_am_leader():
             self.info('As leader, probe remote peer %s' % peer_address)
             self.peer_probe(peer_address)
-            if len(bricks) < self.replica_count:
+            if len(bricks) < self.config.replica_count:
                 self.remark('Waiting for %s peers to create and start medias volume %s' %
-                            (self.replica_count - 1, self.volume))
+                            (self.config.replica_count - 1, self.volume))
             else:
                 self.info('Create and start medias volume %s with %s bricks' %
                           (self.volume, len(bricks)))

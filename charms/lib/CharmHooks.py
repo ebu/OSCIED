@@ -88,7 +88,8 @@ class CharmHooks(object):
     """
 
     def __init__(self, default_config, default_os_env):
-        self.verbose = False
+        self.config = lambda: None
+        setattr(self.config, 'verbose', False)
         try:
             self.juju_ok = True
             self.juju_log = command('juju-log')
@@ -152,6 +153,11 @@ class CharmHooks(object):
             return charmhelpers.relation_get(attribute, unit, rid)
         raise NotImplementedError('FIXME relation_get not yet implemented')
 
+    def relation_ids(self, relation_name):
+        if self.juju_ok:
+            return charmhelpers.relation_ids(relation_name)
+        raise NotImplementedError('FIXME relation_ids not yet implemented')
+
     def relation_list(self, rid=None):
         if self.juju_ok:
             return charmhelpers.relation_list
@@ -172,7 +178,7 @@ class CharmHooks(object):
         u"""
         Convenience method for logging a debug-related message.
         """
-        if self.verbose:
+        if self.config.verbose:
             return self.log('[DEBUG] %s' % message)
 
     def info(self, message):
@@ -197,7 +203,7 @@ class CharmHooks(object):
 
     def load_config(self, config):
         u"""
-        Update object dictionary with give configuration, ``config`` can be:
+        Updates ``config`` attribute with given configuration, ``config`` can be:
 
         * The filename of a charm configuration file (e.g. ``config.yaml``)
         * A dictionary containing the options names as keys and options values as values.
@@ -205,17 +211,17 @@ class CharmHooks(object):
         **Example usage**:
 
         >>> hooks = CharmHooks(None, DEFAULT_OS_ENV)
-        >>> hasattr(hooks, 'pingu') or hasattr(hooks, 'rabbit_password')
+        >>> hasattr(hooks.config, 'pingu') or hasattr(hooks.config, 'rabbit_password')
         False
         >>> hooks.load_config({'pingu': 'bi bi'})
-        >>> print(hooks.pingu)
+        >>> print(hooks.config.pingu)
         bi bi
-        >>> hooks.verbose = True
+        >>> hooks.config.verbose = True
         >>> hooks.load_config('../oscied-orchestra/config.yaml')  # doctest: +ELLIPSIS
         [DEBUG] Load config from file ../oscied-orchestra/config.yaml
         [DEBUG] Convert boolean option verbose false -> False
         [DEBUG] Config is ...
-        >>> hasattr(hooks, 'rabbit_password')
+        >>> hasattr(hooks.config, 'rabbit_password')
         True
         """
         if isinstance(config, str):
@@ -230,7 +236,7 @@ class CharmHooks(object):
                 config[option] = True if str(value).lower() == 'true' else False
                 self.debug('Convert boolean option %s %s -> %s' % (option, value, config[option]))
         self.debug('Config is %s' % config)
-        self.__dict__.update(config)
+        self.config.__dict__.update(config)
 
     # ----------------------------------------------------------------------------------------------
 
