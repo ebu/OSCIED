@@ -27,14 +27,14 @@
 
 import os
 import re
-from lib.CharmHooks import CharmHooks
+from lib.CharmHooks import CharmHooks, DEFAULT_OS_ENV
 from shelltoolbox import apt_get_install
 
 
 class StorageHooks(CharmHooks):
 
-    def __init__(self, default_config):
-        super(StorageHooks, self).__init__(default_config)
+    def __init__(self, metadata, default_config, default_os_env):
+        super(StorageHooks, self).__init__(metadata, default_config, default_os_env)
         self.volume_flag = os.path.join(os.getcwd(), 'volume_ok')
 
     @property
@@ -126,13 +126,8 @@ class StorageHooks(CharmHooks):
         else:
             self.relation_set(fstype='', mountpoint='', options='')
 
-    def debug_peer_relation(self):
-        self.debug('Peer relation settings:'); self.debug(self.relation_get())
-        self.debug('Peer relation members:');  self.debug(self.relation_list())
-
     def hook_peer_relation_joined(self):
-        self.debug_peer_relation()
-        if not self.peer_i_am_leader():
+        if not self.is_leader():
             self.info('As slave, stop and delete my own volume %s' % self.volume)
             if self.volume_exist():
                 self.volume_do('stop', cli_input='y\n')
@@ -140,8 +135,6 @@ class StorageHooks(CharmHooks):
                 os.remove(self.volume_flag)
 
     def hook_peer_relation_changed(self):
-        self.debug_peer_relation()
-
         # Get configuration from the relation
         peer_address = self.relation_get('private-address')
         self.info('Peer address is %s' % peer_address)
@@ -159,7 +152,7 @@ class StorageHooks(CharmHooks):
             bricks.append('%s:/exp1' % peer_address)
             count += 1
 
-        if self.peer_i_am_leader():
+        if self.is_leader():
             self.info('As leader, probe remote peer %s' % peer_address)
             self.peer_probe(peer_address)
             if len(bricks) < self.config.replica_count:
@@ -178,8 +171,7 @@ class StorageHooks(CharmHooks):
             #  xecho 'Unable to add remote peer brick to medias volume' 4
 
     def hook_peer_relation_broken(self):
-        self.debug_peer_relation()
         self.remark('FIXME NOT IMPLEMENTED')
 
 if __name__ == '__main__':
-    StorageHooks('config.yaml', CharmHooks.DEFAULT_OS_ENV).trigger()
+    StorageHooks('metadata.yaml', 'config.yaml', DEFAULT_OS_ENV).trigger()

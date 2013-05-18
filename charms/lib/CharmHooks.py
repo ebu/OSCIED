@@ -87,7 +87,7 @@ class CharmHooks(object):
     TODO
     """
 
-    def __init__(self, default_config, default_os_env):
+    def __init__(self, metadata, default_config, default_os_env):
         self.config = lambda: None
         setattr(self.config, 'verbose', False)
         try:
@@ -105,7 +105,10 @@ class CharmHooks(object):
             self.env_uuid = default_os_env['JUJU_ENV_UUID']
             self.name = default_os_env['JUJU_UNIT_NAME']
             self.private_address = get_ip()
+        self.load_metadata(metadata)
         self.debug('My __dict__ is %s' % self.__dict__)
+        #self.debug('Relation settings: %s, members: %s, ids: %s' %
+        #           (self.relation_get(), self.relation_list(), self.relation_ids()))
 
     # ----------------------------------------------------------------------------------------------
 
@@ -116,7 +119,7 @@ class CharmHooks(object):
 
         **Example usage**:
 
-        >>> hooks = CharmHooks(None, DEFAULT_OS_ENV)
+        >>> hooks = CharmHooks(None, None, DEFAULT_OS_ENV)
         >>> hooks.name = 'oscied-storage/3'
         >>> hooks.id
         3
@@ -169,7 +172,10 @@ class CharmHooks(object):
         else:
             raise NotImplementedError('FIXME relation_set not yet implemented')
 
-    def peer_i_am_leader(self):
+    def is_leader(self):
+        u"""
+        Returns True if current unit is the leader.
+        """
         return True  # FIXME not implemented
 
     # Convenience methods for logging --------------------------------------------------------------
@@ -210,7 +216,7 @@ class CharmHooks(object):
 
         **Example usage**:
 
-        >>> hooks = CharmHooks(None, DEFAULT_OS_ENV)
+        >>> hooks = CharmHooks(None, None, DEFAULT_OS_ENV)
         >>> hasattr(hooks.config, 'pingu') or hasattr(hooks.config, 'rabbit_password')
         False
         >>> hooks.load_config({'pingu': 'bi bi'})
@@ -238,6 +244,34 @@ class CharmHooks(object):
         self.debug('Config is %s' % config)
         self.config.__dict__.update(config)
 
+    def load_metadata(self, metadata):
+        u"""
+        Set ``metadata`` attribute with given metadatas, ``metadata`` can be:
+
+        * The filename of a charm metadata file (e.g. ``metadata.yaml``)
+        * A dictionary containing the metadatas.
+
+        **Example usage**:
+
+        >>> hooks = CharmHooks(None, None, DEFAULT_OS_ENV)
+        >>> hooks.metadata
+        >>> hooks.load_metadata({'ensemble': 'oscied'})
+        >>> hooks.metadata
+        {'ensemble': 'oscied'}
+        >>> hooks.config.verbose = True
+        >>> hooks.load_metadata('../oscied-orchestra/metadata.yaml')  # doctest: +ELLIPSIS
+        [DEBUG] Load metadatas from file ../oscied-orchestra/metadata.yaml
+        [DEBUG] Metadata is ...
+        >>> print(hooks.metadata['maintainer'])
+        OSCIED Main Developper <david.fischer.ch@gmail.com>
+        """
+        if isinstance(metadata, str):
+            self.debug('Load metadatas from file %s' % metadata)
+            with open(metadata) as f:
+                metadata = yaml.load(f)
+        self.debug('Metadata is %s' % metadata)
+        self.metadata = metadata
+
     # ----------------------------------------------------------------------------------------------
 
     def cmd(self, command, input=None, cli_input=None, fail=True):
@@ -250,7 +284,7 @@ class CharmHooks(object):
 
         **Example usage**:
 
-        >>> hooks = CharmHooks(None, DEFAULT_OS_ENV)
+        >>> hooks = CharmHooks(None, None, DEFAULT_OS_ENV)
         >>> print(hooks.cmd(['echo', 'it seem to work'])['stdout'])
         it seem to work
         <BLANKLINE>
