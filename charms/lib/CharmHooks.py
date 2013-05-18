@@ -134,11 +134,11 @@ class CharmHooks(object):
         By convention, the leader is the unit with the *smallest* id (the *oldest* unit).
         """
         try:
-            ids = self.relation_ids('peer')
-            assert(self.id in ids)
-            return len(ids) < 2 or self.id == min(ids)
+            ids = [int(i.split('/')[1]) for i in self.relation_list(None)]
+            self.debug('id=%s ids=%s' % (self.id, ids))
+            return len(ids) == 0 or self.id <= min(ids)
         except Exception as e:
-            self.debug('Is leader bug %s' % repr(e))
+            self.debug('Bug during leader detection: %s' % repr(e))
             return True
 
     # Maps calls to charm helpers methods and replace them if called in standalone -----------------
@@ -178,7 +178,7 @@ class CharmHooks(object):
 
     def relation_list(self, rid=None):
         if self.juju_ok:
-            return charmhelpers.relation_list
+            return charmhelpers.relation_list(rid)
         raise NotImplementedError('FIXME relation_list not yet implemented')
 
     def relation_set(self, **kwargs):
@@ -193,8 +193,8 @@ class CharmHooks(object):
         u"""
         Convenience method for logging a debug-related message.
         """
-        if self.config.verbose:
-            return self.log('[DEBUG] %s' % message)
+        #if self.config.verbose:
+        return self.log('[DEBUG] %s' % message)
 
     def info(self, message):
         u"""
@@ -235,7 +235,6 @@ class CharmHooks(object):
         >>> hooks.load_config('../oscied-orchestra/config.yaml')  # doctest: +ELLIPSIS
         [DEBUG] Load config from file ../oscied-orchestra/config.yaml
         [DEBUG] Convert boolean option verbose false -> False
-        [DEBUG] Config is ...
         >>> hasattr(hooks.config, 'rabbit_password')
         True
         """
@@ -250,7 +249,6 @@ class CharmHooks(object):
             if str(value).lower() in ('false', 'true'):
                 config[option] = True if str(value).lower() == 'true' else False
                 self.debug('Convert boolean option %s %s -> %s' % (option, value, config[option]))
-        self.debug('Config is %s' % config)
         self.config.__dict__.update(config)
 
     def load_metadata(self, metadata):
@@ -270,7 +268,6 @@ class CharmHooks(object):
         >>> hooks.config.verbose = True
         >>> hooks.load_metadata('../oscied-orchestra/metadata.yaml')  # doctest: +ELLIPSIS
         [DEBUG] Load metadatas from file ../oscied-orchestra/metadata.yaml
-        [DEBUG] Metadata is ...
         >>> print(hooks.metadata['maintainer'])
         OSCIED Main Developper <david.fischer.ch@gmail.com>
         """
@@ -278,7 +275,6 @@ class CharmHooks(object):
             self.debug('Load metadatas from file %s' % metadata)
             with open(metadata) as f:
                 metadata = yaml.load(f)
-        self.debug('Metadata is %s' % metadata)
         self.metadata = metadata
 
     # ----------------------------------------------------------------------------------------------

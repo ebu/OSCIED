@@ -27,6 +27,7 @@
 
 import os
 import re
+import shutil
 from lib.CharmHooks import CharmHooks, DEFAULT_OS_ENV
 from shelltoolbox import apt_get_install
 
@@ -39,11 +40,16 @@ class StorageHooks(CharmHooks):
 
     @property
     def brick(self):
-        return '%s:/exp1' % self.private_address
+        return '%s:/exp%s' % (self.private_address, self.id)
 
     @property
     def volume(self):
         return 'medias_volume_%s' % self.id
+
+    @property
+    def volume_bricks(self):
+        return re.findall('Brick[0-9]+:\s*(\S*)',
+                          self.cmd('gluster volume info %s' % self.volume)['stdout'])
 
     @property
     def volumes(self):
@@ -54,63 +60,74 @@ class StorageHooks(CharmHooks):
     def peer_probe(self, peer_address, fail=True):
         return self.cmd('gluster peer probe %s' % peer_address)
 
-    def volume_create(self, volume=None, bricks=None, replica=None, fail=True):
+    def volume_create_or_expand(self, volume=None, bricks=None, replica=None):
         if volume is None:
             volume = self.volume
         if bricks is None:
             bricks = [self.brick]
         if replica is None:
             replica = self.config.replica_count
-        if replica % len(bricks) != 0:
-            raise ValueError('Cannot create a replica=%s volume with %s bricks' %
-                             (replica, len(bricks)))
         extra = (' ' if replica == 1 else ' replica %s transport tcp ' % replica) + ' '.join(bricks)
-        return self.cmd('gluster volume create %s%s' % (volume, extra), fail=fail)
+        if len(bricks) < replica:
+            self.remark("Waiting for %s peers to create and start a replica=%s volume %s" %
+                        (replica - 1, replica, volume))
+        elif len(bricks) == replica:
+            self.info('Create and start a replica=%s volume %s with %s brick%s' %
+                      (replica, volume, len(bricks), 's' if len(bricks) > 1 else ''))
+            self.cmd('gluster volume create %s%s' % (volume, extra))
+            self.volume_do('start', volume=volume)
+            open(self.volume_flag, 'w').close()
+        elif len(bricks) % replica == 0:
+            self.info('Expand replica=%s volume %s with new bricks' % (replica, volume))
+            vol_bricks = self.volume_bricks
+            self.debug('Volume bricks:' + vol_bricks)
+            for brick in bricks:  # FIXME remove bricks with set remove ...
+                if brick not in vol_bricks:
+                    self.info('Add brick %s to volume %s' % (brick, volume))
+                    self.cmd('gluster volume add-brick %s %s' % (volume, brick))
+            self.cmd('gluster volume rebalance %s' % volume)
+        print(self.volume_do('info')['stdout'])
 
-    def volume_do(self, action, volume=None, input=None, cli_input=None, fail=True):
+    def volume_do(self, action, volume=None, options='', input=None, cli_input=None, fail=True):
         if volume is None:
             volume = self.volume
-        return self.cmd('gluster volume %s %s' % (action, volume), input=input, cli_input=cli_input,
-                        fail=fail)
+        return self.cmd('gluster volume %s %s %s' % (action, volume, options),
+                        input=input, cli_input=cli_input, fail=fail)
 
     # ----------------------------------------------------------------------------------------------
 
     def hook_install(self):
-        self.info('Install prerequisities')
-        apt_get_install('ntp', 'glusterfs-server', 'nfs-common')
-        self.info('Upgrade packages')
+        self.hook_uninstall()
+        self.info('Install prerequisities and upgrade packages')
+        self.cmd('apt-get -y install ntp glusterfs-server nfs-common')
         self.cmd('apt-get -y upgrade')
         self.info('Restart network time protocol service')
         self.cmd('service ntp restart')
 
-        if self.config.replica_count == 1:
-            for volume in self.volumes:
-                self.info('Remove previously created medias volume %s' % volume)
-                self.volume_do('delete', volume=volume, cli_input='y\n')
-            self.info('Create and start medias volume %s with 1 brick (no redundancy at all)' %
-                      self.volume)
-            self.volume_create()
-            print(self.volume_do('info')['stdout'])
-            open(self.volume_flag, 'w').close()
-        else:
-            self.remark("Waiting for %s peers to create and start medias volume %s" %
-                        (self.config.replica_count - 1, self.volume))
-            os.remove(self.volume_flag)
+        # Create medias volume if it is already possible to do so
+        self.volume_create_or_expand()
 
         self.info('Expose GlusterFS Server service')
-        self.open_port(111, 'TCP')     # Is used for portmapper, and should have both TCP and UDP open
+        self.open_port(111, 'TCP')     # For portmapper, and should have both TCP and UDP open
         self.open_port(24007, 'TCP')   # For the Gluster Daemon
         #open_port(24008, 'TCP')  # Infiniband management (optional unless you are using IB)
         self.open_port(24009, 'TCP')   # We have only 1 storage brick (24009-24009)
         #open_port(38465, 'TCP')  # For NFS (not used)
         #open_port(38466, 'TCP')  # For NFS (not used)
         #open_port(38467, 'TCP')  # For NFS (not used)
-        raise NotImplementedError('want to crash')
 
     def hook_uninstall(self):
+        self.info('Remove prerequisities and created files/folders')
         self.hook_stop()
         self.cmd('apt-get -y remove --purge glusterfs-server nfs-common')
         self.cmd('apt-get -y autoremove')
+        shutil.rmtree('/etc/glusterd', ignore_errors=True)
+        shutil.rmtree('/etc/glusterfs', ignore_errors=True)
+        shutil.rmtree('/exp1', ignore_errors=True)
+        try:
+            os.remove(self.volume_flag)
+        except OSError:
+            pass
 
     def hook_start(self):
         if self.cmd('pgrep glusterd', fail=False)['returncode'] != 0:
@@ -130,8 +147,8 @@ class StorageHooks(CharmHooks):
     def hook_peer_relation_joined(self):
         if not self.is_leader:
             self.info('As slave, stop and delete my own volume %s' % self.volume)
-            if self.volume_exist():
-                self.volume_do('stop', cli_input='y\n')
+            if self.volume in self.volumes:
+                self.volume_do('stop', options='force', cli_input='y\n')
                 self.volume_do('delete', cli_input='y\n')
                 os.remove(self.volume_flag)
 
@@ -145,31 +162,19 @@ class StorageHooks(CharmHooks):
 
         # FIXME close previously opened ports if some bricks leaved ...
         self.info('Open required ports')
-        count = 1
+        port = 24009
         bricks = [self.brick]
         for peer in self.relation_list():
-            self.open_port(24009 + count, 'TCP')  # Open required
+            self.open_port(port, 'TCP')  # Open required
             peer_address = self.relation_get('private-address', peer)
-            bricks.append('%s:/exp1' % peer_address)
-            count += 1
+            bricks.append('%s:/exp%s' % (peer_address, self.id))
+            port += 1
 
         if self.is_leader:
-            self.info('As leader, probe remote peer %s' % peer_address)
+            self.info('As leader, probe remote peer %s and create or expand volume %s' %
+                      (peer_address, self.volume))
             self.peer_probe(peer_address)
-            if len(bricks) < self.config.replica_count:
-                self.remark('Waiting for %s peers to create and start medias volume %s' %
-                            (self.config.replica_count - 1, self.volume))
-            else:
-                self.info('Create and start medias volume %s with %s bricks' %
-                          (self.volume, len(bricks)))
-                self.info('Bricks are %s' % bricks)
-                self.volume_create(bricks=bricks)
-                self.volume_do('start')
-                print(self.volume_do('info')['stdout'])
-                open(self.volume_flag, 'w').close()
-            # FIXME handle addition of more peers when volume is already created and started !
-            #gluster volume add-brick "$VOLUME_NAME" "$ip:/$BRICK_NAME" || \
-            #  xecho 'Unable to add remote peer brick to medias volume' 4
+            self.volume_create_or_expand(bricks=bricks)
 
     def hook_peer_relation_broken(self):
         self.remark('FIXME NOT IMPLEMENTED')
