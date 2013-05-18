@@ -80,6 +80,7 @@ CONFIG_JUJU_TEMPL_FILE="$CONFIG_JUJU_FILES_PATH/environments.yaml.template"
 
 CONFIG_SCENARIOS_PATH="$CONFIG_PATH/scenarios"
 
+ID_RSA="$HOME/.ssh/id_rsa"
 JUJU_PATH="$HOME/.juju"
 JUJU_STORAGE_PATH="$JUJU_PATH/storage/"
 JUJU_ENVS_FILE="$JUJU_PATH/environments.yaml"
@@ -144,30 +145,31 @@ get_services_dialog_listing()
 
 get_unit_public_url()
 {
-  if [ $# -gt 2 ]; then
-    xecho "Usage: $(basename $0).get_unit_public_url name (number)"
+  if [ $# -gt 3 ]; then
+    xecho "Usage: $(basename $0).get_unit_public_url fail name (number)"
   fi
-  name=$1
-  [ $# -eq 2 ] && number=$2 || number='.*'
+  fail=$1
+  name=$2
+  [ $# -eq 3 ] && number=$3 || number='.*'
   if [ -f "$CONFIG_GEN_UNITS_FILE" ]; then
     url=$(cat "$CONFIG_GEN_UNITS_FILE" | grep -m 1 "^$name/$number=" | cut -d '=' -f2)
   else
     url='127.0.0.1'
   fi
-  [ ! "$url" ] && xecho "Unable to detect unit $1 public URL !"
+  [ ! "$url" -a $fail -eq $true ] && xecho "Unable to detect unit $1 public URL !"
   REPLY="$url"
 }
 
 get_orchestra_url()
 {
   if [ $# -eq 0 ]; then
-    get_unit_public_url 'oscied-orchestra'
+    get_unit_public_url $false 'oscied-orchestra'
   elif [ $# -eq 1 ]; then
-    get_unit_public_url 'oscied-orchestra' "$1"
+    get_unit_public_url $false 'oscied-orchestra' "$1"
   else
     xecho "Usage: $(basename $0).get_orchestra_url (number)"
   fi
-  REPLY="http://$REPLY:5000"
+  [ "$REPLY" ] && REPLY="http://$REPLY:5000"
 }
 
 get_storage_uploads_url()
@@ -187,17 +189,16 @@ storage_upload_media()
     xecho "Usage: $(basename $0).storage_upload_media filename"
   fi
 
-  get_unit_public_url 'oscied-storage'
+  get_unit_public_url $true 'oscied-storage'
   host="ubuntu@$REPLY"
   bkp_path='/home/ubuntu/uploads'
   dst_path="/exp1/uploads"
-  certif="$CONFIG_JUJU_ID_RSA"
-  chmod 600 "$certif" || xecho 'Unable to find id_rsa certificate'
-  rsync -ah --progress --rsync-path='sudo rsync' -e "ssh -i '$certif'" "$1" "$host:$bkp_path/" || \
+  chmod 600 "$ID_RSA" || xecho 'Unable to find id_rsa certificate'
+  rsync -ah --progress --rsync-path='sudo rsync' -e "ssh -i '$ID_RSA'" "$1" "$host:$bkp_path/" || \
     xecho "Unable to copy media file to $bkp_path path in storage"
-  ssh -i "$certif" "$host" -n "sudo rsync -ah --progress $bkp_path/ $dst_path/" || \
+  ssh -i "$ID_RSA" "$host" -n "sudo rsync -ah --progress $bkp_path/ $dst_path/" || \
     xecho "Unable to synchronize ($dst_path->$dst_path) paths in storage"
-  ssh -i "$certif" "$host" -n "sudo chown www-data:www-data $dst_path/ -R" || \
+  ssh -i "$ID_RSA" "$host" -n "sudo chown www-data:www-data $dst_path/ -R" || \
     xecho "Unable to set owner www-data for $dst_path path in storage"
   get_storage_uploads_url
   REPLY="$REPLY/$(basename $1)"
