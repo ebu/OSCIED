@@ -126,6 +126,21 @@ class CharmHooks(object):
         """
         return int(self.name.split('/')[1])
 
+    @property
+    def is_leader(self):
+        u"""
+        Returns True if current unit is the leader of the peer-relation.
+
+        By convention, the leader is the unit with the *smallest* id (the *oldest* unit).
+        """
+        try:
+            ids = self.relation_ids('peer')
+            assert(self.id in ids)
+            return len(ids) < 2 or self.id == min(ids)
+        except Exception as e:
+            self.debug('Is leader bug %s' % repr(e))
+            return True
+
     # Maps calls to charm helpers methods and replace them if called in standalone -----------------
 
     def log(self, message):
@@ -158,7 +173,7 @@ class CharmHooks(object):
 
     def relation_ids(self, relation_name):
         if self.juju_ok:
-            return charmhelpers.relation_ids(relation_name)
+            return [int(id) for id in charmhelpers.relation_ids(relation_name)]
         raise NotImplementedError('FIXME relation_ids not yet implemented')
 
     def relation_list(self, rid=None):
@@ -171,12 +186,6 @@ class CharmHooks(object):
             charmhelpers.relation_set(kwargs)
         else:
             raise NotImplementedError('FIXME relation_set not yet implemented')
-
-    def is_leader(self):
-        u"""
-        Returns True if current unit is the leader.
-        """
-        return True  # FIXME not implemented
 
     # Convenience methods for logging --------------------------------------------------------------
 

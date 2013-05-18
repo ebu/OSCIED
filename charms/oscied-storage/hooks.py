@@ -105,6 +105,7 @@ class StorageHooks(CharmHooks):
         #open_port(38465, 'TCP')  # For NFS (not used)
         #open_port(38466, 'TCP')  # For NFS (not used)
         #open_port(38467, 'TCP')  # For NFS (not used)
+        raise NotImplementedError('want to crash')
 
     def hook_uninstall(self):
         self.hook_stop()
@@ -127,7 +128,7 @@ class StorageHooks(CharmHooks):
             self.relation_set(fstype='', mountpoint='', options='')
 
     def hook_peer_relation_joined(self):
-        if not self.is_leader():
+        if not self.is_leader:
             self.info('As slave, stop and delete my own volume %s' % self.volume)
             if self.volume_exist():
                 self.volume_do('stop', cli_input='y\n')
@@ -152,7 +153,7 @@ class StorageHooks(CharmHooks):
             bricks.append('%s:/exp1' % peer_address)
             count += 1
 
-        if self.is_leader():
+        if self.is_leader:
             self.info('As leader, probe remote peer %s' % peer_address)
             self.peer_probe(peer_address)
             if len(bricks) < self.config.replica_count:
