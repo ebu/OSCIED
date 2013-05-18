@@ -407,7 +407,7 @@ config()
         sed -i "s#STORAGE_MOUNTPOINT=.*#STORAGE_MOUNTPOINT='$REPLY'#" common.sh
       fi
     else
-      xecho 'Unable to detect orchestrator unit name'
+      recho 'Unable to detect orchestrator unit name'
     fi
   }
 }
