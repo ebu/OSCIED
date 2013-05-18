@@ -34,9 +34,12 @@ except ImportError:
     subprocess.check_call(['apt-add-repository', '-y', 'ppa:juju/pkgs'])
     subprocess.check_call(['apt-get', 'install', '-y', 'python-charmhelpers'])
 
+import charmhelpers  # This is not unused, this import is necessary
+import os
 import shlex
 import sys
-import charmhelpers  # This is not unused, this import is necessary
+import uuid
+import yaml
 from shelltoolbox import command
 
 __get_ip = None
@@ -54,21 +57,49 @@ def get_ip():
 
 
 class CharmHooks(object):
+    u"""
+    TODO
+
+    **Example usage**:
+
+    >>> print('TODO')
+    TODO
+    """
 
     def __init__(self, default_config):
+        self.verbose = False
         try:
-            self.__dict__.update(charmhelpers.get_config())
             self.juju_ok = True
-            self.unit_id = 0  # FIXME
-            self.private_address = '127.0.0.1'  # FIXME
             self.juju_log = command('juju-log')
+            self.load_config(charmhelpers.get_config())
+            self.env_uuid = os.environ['JUJU_ENV_UUID']
+            self.name = os.environ['JUJU_UNIT_NAME']
+            self.private_address = charmhelpers.unit_get('private-address')
         except subprocess.CalledProcessError:
-            if default_config is not None:
-                self.__dict__.update(default_config)
             self.juju_ok = False
-            self.unit_id = 0
-            self.private_address = get_ip()
             self.juju_log = command('echo')
+            if default_config is not None:
+                self.load_config(default_config)
+            self.env_uuid = uuid.uuid4().hex
+            self.name = 'default-service-name/0'
+            self.private_address = get_ip()
+        self.debug('My __dict__ is %s' % self.__dict__)
+
+    # ----------------------------------------------------------------------------------------------
+
+    @property
+    def id(self):
+        u"""
+        Returns the id extracted from the unit's name.
+
+        **Example usage**:
+
+        >>> hooks = CharmHooks(None)
+        >>> hooks.name = 'oscied-storage/3'
+        >>> hooks.id
+        3
+        """
+        return int(self.name.split('/')[1])
 
     # Maps calls to charm helpers methods and replace them if called in standalone -----------------
 
@@ -120,7 +151,8 @@ class CharmHooks(object):
         u"""
         Convenience method for logging a debug-related message.
         """
-        return self.log('[DEBUG] %s' % message)
+        if self.verbose:
+            return self.log('[DEBUG] %s' % message)
 
     def info(self, message):
         u"""
@@ -140,7 +172,45 @@ class CharmHooks(object):
         """
         return self.log('[REMARK] %s !' % message)
 
-    # A simple tool to call an external process quite easily ---------------------------------------
+    # ----------------------------------------------------------------------------------------------
+
+    def load_config(self, config):
+        u"""
+        Update object dictionary with give configuration, ``config`` can be:
+
+        * The filename of a charm configuration file (e.g. ``config.yaml``)
+        * A dictionary containing the options names as keys and options values as values.
+
+        **Example usage**:
+
+        >>> hooks = CharmHooks(None)
+        >>> hasattr(hooks, 'pingu') or hasattr(hooks, 'rabbit_password')
+        False
+        >>> hooks.load_config({'pingu': 'bi bi'})
+        >>> print(hooks.pingu)
+        bi bi
+        >>> hooks.verbose = True
+        >>> hooks.load_config('../oscied-orchestra/config.yaml')  # doctest: +ELLIPSIS
+        [DEBUG] Load config from file ../oscied-orchestra/config.yaml
+        [DEBUG] Config is ...
+        >>> hasattr(hooks, 'rabbit_password')
+        True
+        """
+        if isinstance(config, str):
+            self.debug('Load config from file %s' % config)
+            with open(config) as f:
+                options = yaml.load(f)['options']
+                config = {}
+                for option in options:
+                    config[option] = options[option]['default']
+        for option, value in config.iteritems():
+            if str(value).lower() in ('false', 'true'):
+                config[option] = True if str(value).lower() == 'true' else False
+                self.debug('Convert boolean option %s %s -> %s' % (option, value, config[option]))
+        self.debug('Config is %s' % config)
+        self.__dict__.update(config)
+
+    # ----------------------------------------------------------------------------------------------
 
     def cmd(self, command, input=None, cli_input=None, fail=True):
         u"""
@@ -168,6 +238,8 @@ class CharmHooks(object):
         >>> print(result['stdout'].splitlines()[0])
         #!/usr/bin/env python2
         """
+        self.debug('Execute %s%s%s' % ('' if input is None else 'echo %s | ' % repr(input), command,
+                   '' if cli_input is None else ' < %s' % repr(cli_input)))
         args = command
         if isinstance(command, str):
             args = shlex.split(command)
@@ -182,7 +254,7 @@ class CharmHooks(object):
             raise subprocess.CalledProcessError(process.returncode, command, stderr)
         return result
 
-    # A sort of main -------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------------------
 
     def trigger(self, hook_name=None):
         u"""

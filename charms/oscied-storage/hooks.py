@@ -30,15 +30,12 @@ import re
 from lib.CharmHooks import CharmHooks
 from shelltoolbox import apt_get_install
 
-BASE_PATH = os.getcwd()
-DEFAULT_CONFIG = {'verbose': True, 'replica_count': 1}
-
 
 class StorageHooks(CharmHooks):
 
     def __init__(self, default_config):
         super(StorageHooks, self).__init__(default_config)
-        self.volume_flag = os.path.join(BASE_PATH, 'volume_ok')
+        self.volume_flag = os.path.join(os.getcwd(), 'volume_ok')
 
     @property
     def brick(self):
@@ -46,7 +43,7 @@ class StorageHooks(CharmHooks):
 
     @property
     def volume(self):
-        return 'medias_volume_%s' % self.unit_id
+        return 'medias_volume_%s' % self.id
 
     @property
     def volumes(self):
@@ -85,6 +82,7 @@ class StorageHooks(CharmHooks):
         self.cmd('apt-get -y upgrade')
         self.info('Restart network time protocol service')
         self.cmd('service ntp restart')
+
         if self.replica_count == 1:
             for volume in self.volumes:
                 self.info('Remove previously created medias volume %s' % volume)
@@ -97,6 +95,7 @@ class StorageHooks(CharmHooks):
         else:
             self.remark("Waiting for %s peers to create and start medias volume %s" %
                         (self.replica_count - 1, self.volume))
+            os.remove(self.volume_flag)
 
         self.info('Expose GlusterFS Server service')
         self.open_port(111, 'TCP')     # Is used for portmapper, and should have both TCP and UDP open
@@ -184,4 +183,4 @@ class StorageHooks(CharmHooks):
         self.remark('FIXME NOT IMPLEMENTED')
 
 if __name__ == '__main__':
-    StorageHooks(DEFAULT_CONFIG).trigger()
+    StorageHooks('config.yaml').trigger()
