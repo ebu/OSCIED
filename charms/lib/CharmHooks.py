@@ -38,9 +38,30 @@ import charmhelpers  # This is not unused, this import is necessary
 import os
 import shlex
 import sys
-import uuid
 import yaml
 from shelltoolbox import command
+
+DEFAULT_OS_ENV = {
+    'APT_LISTCHANGES_FRONTEND': 'none',
+    'CHARM_DIR': '/var/lib/juju/units/oscied-storage-0/charm',
+    'DEBIAN_FRONTEND': 'noninteractive',
+    '_JUJU_CHARM_FORMAT': '1',
+    'JUJU_AGENT_SOCKET': '/var/lib/juju/units/oscied-storage-0/.juju.hookcli.sock',
+    'JUJU_CLIENT_ID': 'constant',
+    'JUJU_ENV_UUID': '878ca8f623174911960f6fbed84f7bdd',
+    'JUJU_PYTHONPATH': ':/usr/lib/python2.7/dist-packages:/usr/lib/python2.7'
+                       ':/usr/lib/python2.7/plat-x86_64-linux-gnu'
+                       ':/usr/lib/python2.7/lib-tk'
+                       ':/usr/lib/python2.7/lib-old'
+                       ':/usr/lib/python2.7/lib-dynload'
+                       ':/usr/local/lib/python2.7/dist-packages'
+                       ':/usr/lib/pymodules/python2.7',
+    '_': '/usr/bin/python',
+    'JUJU_UNIT_NAME': 'oscied-storage/0',
+    'PATH': '/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin:/sbin:/bin',
+    'PWD': '/var/lib/juju/units/oscied-storage-0/charm',
+    'SHLVL': '1'
+}
 
 __get_ip = None
 
@@ -66,7 +87,7 @@ class CharmHooks(object):
     TODO
     """
 
-    def __init__(self, default_config):
+    def __init__(self, default_config, default_os_env):
         self.verbose = False
         try:
             self.juju_ok = True
@@ -80,8 +101,8 @@ class CharmHooks(object):
             self.juju_log = command('echo')
             if default_config is not None:
                 self.load_config(default_config)
-            self.env_uuid = uuid.uuid4().hex
-            self.name = 'default-service-name/0'
+            self.env_uuid = default_os_env['JUJU_ENV_UUID']
+            self.name = default_os_env['JUJU_UNIT_NAME']
             self.private_address = get_ip()
         self.debug('My __dict__ is %s' % self.__dict__)
 
@@ -94,7 +115,7 @@ class CharmHooks(object):
 
         **Example usage**:
 
-        >>> hooks = CharmHooks(None)
+        >>> hooks = CharmHooks(None, DEFAULT_OS_ENV)
         >>> hooks.name = 'oscied-storage/3'
         >>> hooks.id
         3
@@ -183,7 +204,7 @@ class CharmHooks(object):
 
         **Example usage**:
 
-        >>> hooks = CharmHooks(None)
+        >>> hooks = CharmHooks(None, DEFAULT_OS_ENV)
         >>> hasattr(hooks, 'pingu') or hasattr(hooks, 'rabbit_password')
         False
         >>> hooks.load_config({'pingu': 'bi bi'})
@@ -192,6 +213,7 @@ class CharmHooks(object):
         >>> hooks.verbose = True
         >>> hooks.load_config('../oscied-orchestra/config.yaml')  # doctest: +ELLIPSIS
         [DEBUG] Load config from file ../oscied-orchestra/config.yaml
+        [DEBUG] Convert boolean option verbose false -> False
         [DEBUG] Config is ...
         >>> hasattr(hooks, 'rabbit_password')
         True
@@ -222,7 +244,7 @@ class CharmHooks(object):
 
         **Example usage**:
 
-        >>> hooks = CharmHooks(None)
+        >>> hooks = CharmHooks(None, DEFAULT_OS_ENV)
         >>> print(hooks.cmd(['echo', 'it seem to work'])['stdout'])
         it seem to work
         <BLANKLINE>

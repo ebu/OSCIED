@@ -183,4 +183,4 @@ class StorageHooks(CharmHooks):
         self.remark('FIXME NOT IMPLEMENTED')
 
 if __name__ == '__main__':
-    StorageHooks('config.yaml').trigger()
+    StorageHooks('config.yaml', CharmHooks.DEFAULT_OS_ENV).trigger()
