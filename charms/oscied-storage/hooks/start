@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-python hooks.py start
+python lib/StorageHooks.py start

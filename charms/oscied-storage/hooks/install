@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-python hooks.py install
+python lib/StorageHooks.py install

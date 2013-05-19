@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-python hooks.py uninstall
+python lib/StorageHooks.py uninstall

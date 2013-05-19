@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 #**************************************************************************************************#
-#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : STORAGE
+#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARY
 #
 #  Authors   : David Fischer
 #  Contact   : david.fischer.ch@gmail.com / david.fischer@hesge.ch
@@ -26,7 +26,7 @@
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
 import glob, os, re, shutil
-from lib.CharmHooks import CharmHooks, DEFAULT_OS_ENV
+from CharmHooks import CharmHooks, DEFAULT_OS_ENV
 
 
 class StorageHooks(CharmHooks):
@@ -34,6 +34,9 @@ class StorageHooks(CharmHooks):
     def __init__(self, metadata, default_config, default_os_env):
         super(StorageHooks, self).__init__(metadata, default_config, default_os_env)
         self.volume_flag = os.path.join(os.getcwd(), 'volume_ok')
+        self.volume_infos_regex = re.compile(
+            ".*Volume Name:\s*(?P<name>\S+)\s+.*Type:\s*(?P<type>\S+)\s+.*"
+            "Status:\s*(?P<status>\S+)\s+.*Transport-type:\s*(?P<transport>\S+).*", re.DOTALL)
 
     @property
     def brick(self):
@@ -44,13 +47,8 @@ class StorageHooks(CharmHooks):
         return 'medias_volume_%s' % self.id
 
     @property
-    def volume_bricks(self):
-        return re.findall('Brick[0-9]+:\s*(\S*)',
-                          self.cmd('gluster volume info %s' % self.volume)['stdout'])
-
-    @property
     def volumes(self):
-        return re.findall('Name:\s*(\S*)', self.cmd('gluster volume info')['stdout'])
+        return re.findall('Name:\s*(\S*)', self.volume_do('info', volume='')['stdout'])
 
     # ----------------------------------------------------------------------------------------------
 
@@ -76,20 +74,39 @@ class StorageHooks(CharmHooks):
             open(self.volume_flag, 'w').close()
         elif len(bricks) % replica == 0:
             self.info('Expand replica=%s volume %s with new bricks' % (replica, volume))
-            vol_bricks = self.volume_bricks
+            vol_bricks = self.volume_infos(volume=volume)['bricks']
             self.debug('Volume bricks: %s' % vol_bricks)
             for brick in bricks:  # FIXME remove bricks with set remove ...
                 if brick not in vol_bricks:
                     self.info('Add brick %s to volume %s' % (brick, volume))
                     self.volume_do('add-brick', volume=volume, options=brick)
-            self.volume_do('rebalance', volume=volume)
-        print(self.volume_do('info')['stdout'])
+            self.volume_do('rebalance', volume=volume, options='start', fail=False)
+        self.info(self.volume_infos(volume=volume))
+        self.info(self.volume_do('rebalance', volume=volume, options='status', fail=False)['stdout'])
 
     def volume_do(self, action, volume=None, options='', input=None, cli_input=None, fail=True):
         if volume is None:
             volume = self.volume
         return self.cmd('gluster volume %s %s %s' % (action, volume, options),
                         input=input, cli_input=cli_input, fail=fail)
+
+    def volume_infos(self, volume=None):
+        u"""
+        Returns a dictionary containing informations about a volume.
+
+        **Example output**::
+
+            {'name': 'medias_volume_6', 'type': 'Distribute', 'status': 'Started',
+             'transport': 'tcp', 'bricks': ['domU-12-31-39-06-6C-E9.compute-1.internal:/exp6']}
+        """
+        stdout = self.volume_do('info', volume=volume, fail=False)['stdout']
+        self.debug('Volume infos stdout: %s' % repr(stdout))
+        match = self.volume_infos_regex.match(stdout)
+        if match:
+            infos = match.groupdict()
+            infos['bricks'] = re.findall('Brick[0-9]+:\s*(\S*)', stdout)
+            return infos
+        return None
 
     # ----------------------------------------------------------------------------------------------
 
@@ -146,8 +163,9 @@ class StorageHooks(CharmHooks):
         if not self.is_leader:
             self.info('As slave, stop and delete my own volume %s' % self.volume)
             if self.volume in self.volumes:
+                self.debug(self.volume_infos())
                 self.volume_do('stop', options='force', cli_input='y\n')
-                self.volume_do('delete', cli_input='y\n')
+                self.volume_do('delete', cli_input='y\n', fail=False)  # FIXME temporary hack
                 os.remove(self.volume_flag)
 
     def hook_peer_relation_changed(self):
@@ -160,7 +178,7 @@ class StorageHooks(CharmHooks):
 
         # FIXME close previously opened ports if some bricks leaved ...
         self.info('Open required ports')
-        port = 24009
+        port = 24010
         bricks = [self.brick]
         for peer in self.relation_list():
             self.open_port(port, 'TCP')  # Open required
