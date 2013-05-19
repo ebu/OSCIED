@@ -25,11 +25,8 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import os
-import re
-import shutil
+import os, re, shutil
 from lib.CharmHooks import CharmHooks, DEFAULT_OS_ENV
-from shelltoolbox import apt_get_install
 
 
 class StorageHooks(CharmHooks):
@@ -74,7 +71,7 @@ class StorageHooks(CharmHooks):
         elif len(bricks) == replica:
             self.info('Create and start a replica=%s volume %s with %s brick%s' %
                       (replica, volume, len(bricks), 's' if len(bricks) > 1 else ''))
-            self.cmd('gluster volume create %s%s' % (volume, extra))
+            self.volume_do('create', volume=volume, options=extra)
             self.volume_do('start', volume=volume)
             open(self.volume_flag, 'w').close()
         elif len(bricks) % replica == 0:
@@ -84,8 +81,8 @@ class StorageHooks(CharmHooks):
             for brick in bricks:  # FIXME remove bricks with set remove ...
                 if brick not in vol_bricks:
                     self.info('Add brick %s to volume %s' % (brick, volume))
-                    self.cmd('gluster volume add-brick %s %s' % (volume, brick))
-            self.cmd('gluster volume rebalance %s' % volume)
+                    self.volume_do('add-brick', volume=volume, options=brick)
+            self.volume_do('rebalance', volume=volume)
         print(self.volume_do('info')['stdout'])
 
     def volume_do(self, action, volume=None, options='', input=None, cli_input=None, fail=True):
