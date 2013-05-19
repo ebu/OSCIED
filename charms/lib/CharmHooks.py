@@ -183,7 +183,7 @@ class CharmHooks(object):
 
     def relation_set(self, **kwargs):
         if self.juju_ok:
-            charmhelpers.relation_set(kwargs)
+            charmhelpers.relation_set(**kwargs)
         else:
             raise NotImplementedError('FIXME relation_set not yet implemented')
 
@@ -193,8 +193,8 @@ class CharmHooks(object):
         u"""
         Convenience method for logging a debug-related message.
         """
-        #if self.config.verbose:
-        return self.log('[DEBUG] %s' % message)
+        if self.config.verbose:
+            return self.log('[DEBUG] %s' % message)
 
     def info(self, message):
         u"""
