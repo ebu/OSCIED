@@ -65,22 +65,24 @@ class StorageHooks(CharmHooks):
         extra = (' ' if replica == 1 else ' replica %s transport tcp ' % replica) + ' '.join(bricks)
         if len(bricks) < replica:
             self.remark("Waiting for %s peers to create and start a replica=%s volume %s" %
-                        (replica - 1, replica, volume))
+                        (replica - len(bricks), replica, volume))
         elif len(bricks) == replica:
             self.info('Create and start a replica=%s volume %s with %s brick%s' %
                       (replica, volume, len(bricks), 's' if len(bricks) > 1 else ''))
             self.volume_do('create', volume=volume, options=extra)
             self.volume_do('start', volume=volume)
             open(self.volume_flag, 'w').close()
-        elif len(bricks) % replica == 0:
-            self.info('Expand replica=%s volume %s with new bricks' % (replica, volume))
+        else:
             vol_bricks = self.volume_infos(volume=volume)['bricks']
             self.debug('Volume bricks: %s' % vol_bricks)
-            for brick in bricks:  # FIXME remove bricks with set remove ...
-                if brick not in vol_bricks:
-                    self.info('Add brick %s to volume %s' % (brick, volume))
-                    self.volume_do('add-brick', volume=volume, options=brick)
-            self.volume_do('rebalance', volume=volume, options='start', fail=False)
+            new_bricks = [b for b in bricks if b not in vol_bricks]
+            if len(new_bricks) == replica:
+                self.info('Expand replica=%s volume %s with new bricks' % (replica, volume))
+                self.volume_do('add-brick', volume=volume, options=' '.join(new_bricks))
+                self.volume_do('rebalance', volume=volume, options='start', fail=False)
+            else:
+                self.remark('Waiting for %s peers to expand replica=%s volume %s' %
+                            (replica - len(new_bricks), replica, volume))
         self.info(self.volume_infos(volume=volume))
         self.info(self.volume_do('rebalance', volume=volume, options='status', fail=False)['stdout'])
 
@@ -182,8 +184,7 @@ class StorageHooks(CharmHooks):
         bricks = [self.brick]
         for peer in self.relation_list():
             self.open_port(port, 'TCP')  # Open required
-            peer_address = self.relation_get('private-address', peer)
-            bricks.append('%s:/exp%s' % (peer_address, self.id))
+            bricks.append('%s:/exp%s' % (self.relation_get('private-address', peer), self.id))
             port += 1
 
         if self.is_leader:
