@@ -25,7 +25,7 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import os, re, shutil
+import glob, os, re, shutil
 from lib.CharmHooks import CharmHooks, DEFAULT_OS_ENV
 
 
@@ -114,13 +114,14 @@ class StorageHooks(CharmHooks):
         #open_port(38467, 'TCP')  # For NFS (not used)
 
     def hook_uninstall(self):
-        self.info('Remove prerequisities and created files/folders')
+        self.info('Uninstall prerequisities and remove configuration files & bricks')
         self.hook_stop()
         self.cmd('apt-get -y remove --purge glusterfs-server nfs-common')
         self.cmd('apt-get -y autoremove')
         shutil.rmtree('/etc/glusterd', ignore_errors=True)
         shutil.rmtree('/etc/glusterfs', ignore_errors=True)
-        shutil.rmtree('/exp1', ignore_errors=True)
+        for brick in glob.glob('/exp*'):
+            shutil.rmtree(brick, ignore_errors=True)
         try:
             os.remove(self.volume_flag)
         except OSError:
