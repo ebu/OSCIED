@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
 #**************************************************************************************************#
@@ -7,7 +7,7 @@
 #  Authors   : David Fischer
 #  Contact   : david.fischer.ch@gmail.com / david.fischer@hesge.ch
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
-#  Copyright : 2012 OSCIED Team. All rights reserved.
+#  Copyright : 2012-2013 OSCIED Team. All rights reserved.
 #**************************************************************************************************#
 #
 # This file is part of EBU/UER OSCIED Project.
@@ -23,15 +23,14 @@
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
 #
-# Retrieved from:
-#   svn co https://claire-et-david.dyndns.org/prog/OSCIED
+# Retrieved from https://github.com/EBU-TI/OSCIED
 
 import uuid
 from celery.result import AsyncResult
 from Media import MEDIA_TEST
 from TransformProfile import TRANSFORM_PROFILE_TEST
 from User import USER_TEST
-from Utilities import json2object, object2json, valid_uuid
+from pyutils.pyutils import json2object, object2json, valid_uuid
 
 
 class TransformJob(object):
@@ -78,7 +77,7 @@ class TransformJob(object):
         # FIXME check revoked
         return True
 
-    def add_statistic(self, key, value, overwrite):   
+    def add_statistic(self, key, value, overwrite):
         if overwrite or not key in self.statistic:
             self.statistic[key] = value
 

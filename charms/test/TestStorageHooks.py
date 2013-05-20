@@ -1,7 +1,8 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
 
 #**************************************************************************************************#
-#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : CLOUD
+#     OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : TESTS OF COMMON LIBRARY
 #
 #  Authors   : David Fischer
 #  Contact   : david.fischer.ch@gmail.com / david.fischer@hesge.ch
@@ -24,6 +25,27 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-. ./common.sh
+import CharmHooks
+from StorageHooks import StorageHooks
 
-# FIXME do nothing !
+CONFIG = {'verbose': False, 'replica_count': 1}
+
+INFOS_STDOUT = ('\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started'
+                '\nNumber of Bricks: 1\nTransport-type: tcp\nBricks:'
+                '\nBrick1: ip-10-36-122-169.ec2.internal:/exp14\n')
+INFOS_DICT = {'name': 'medias_volume_14', 'type': 'Distribute', 'status': 'Started',
+              'transport': 'tcp', 'bricks': ['ip-10-36-122-169.ec2.internal:/exp14']}
+
+
+class TestStorageHooks(object):
+
+    def volume_do(self, action, volume=None, options='', input=None, cli_input=None, fail=True):
+        if action == 'info':
+            return {'stdout': INFOS_STDOUT, 'stderr': None, 'returncode': 0}
+        return None
+
+    def test_volume_infos(self):
+        hooks = StorageHooks(None, CONFIG, CharmHooks.DEFAULT_OS_ENV)
+        hooks.volume_do = self.volume_do  # Replace volume_do by something without gluster
+        infos = hooks.volume_infos()
+        assert(infos == INFOS_DICT)

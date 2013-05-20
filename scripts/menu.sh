@@ -6,7 +6,7 @@
 #  Authors   : David Fischer
 #  Contact   : david.fischer.ch@gmail.com / david.fischer@hesge.ch
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
-#  Copyright : 2012 OSCIED Team. All rights reserved.
+#  Copyright : 2012-2013 OSCIED Team. All rights reserved.
 #**************************************************************************************************#
 #
 # This file is part of EBU/UER OSCIED Project.
@@ -59,24 +59,26 @@ main()
     fi
   else
     # Initialize main menu
+    [ "$ORCHESTRA_URL" ] && a='' || a='[DISABLED] '
     while true
     do
       $DIALOG --backtitle 'OSCIED General Operations' \
               --menu 'Please select an operation' 0 0 0 \
-              install              'Download / update documents and tools'           \
-              cleanup              'Cleanup configuration of charms (deploy path)'   \
-              revup                "Increment all charm's revision (+1)"             \
-              api_init_setup       'Initialize demo setup with Orchestra API'        \
-              api_launch_transform 'Launch a transform job with Orchestra API'       \
-              api_revoke_transform 'Revoke a transform job with Orchestra API'       \
-              api_launch_publish   'Launch a publish job with Orchestra API'         \
-              api_revoke_publish   'Revoke a publish job with Orchestra API'         \
-              api_test_all         'Test the whole methods of Orchestra API'         \
-              api_get_all          'Get listings of all things with Orchestra API'   \
-              webui_test_common    'Test some functions of Web UI hooks'             \
-              rsync_orchestra      'Rsync local code to running Orchestra instance'  \
-              rsync_publisher      'Rsync local code to running Publisher instance'  \
-              rsync_transform      'Rsync local code to running Transform instance'  \
+              install              'Download / update documents and tools'             \
+              cleanup              'Cleanup configuration of charms (deploy path)'     \
+              revup                "Increment all charm's revision (+1)"               \
+              api_init_setup       "${a}Initialize demo setup with Orchestra API"      \
+              api_launch_transform "${a}Launch a transform job with Orchestra API"     \
+              api_revoke_transform "${a}Revoke a transform job with Orchestra API"     \
+              api_launch_publish   "${a}Launch a publish job with Orchestra API"       \
+              api_revoke_publish   "${a}Revoke a publish job with Orchestra API"       \
+              api_test_all         "${a}Test the whole methods of Orchestra API"       \
+              api_get_all          "${a}Get listings of all things with Orchestra API" \
+              webui_test_common    'Test some functions of Web UI hooks'               \
+              rsync_orchestra      'Rsync local code to running Orchestra instance'    \
+              rsync_publisher      'Rsync local code to running Publisher instance'    \
+              rsync_storage        'Rsync local code to running Storage instance'      \
+              rsync_transform      'Rsync local code to running Transform instance'    \
               rsync_webui          'Rsync local code to running Web UI instance' 2> $tmpfile
 
       retval=$?
@@ -105,7 +107,7 @@ install()
 
   pecho 'Update submodules'
   cd "$BASE_PATH" || xecho "Unable to find path $BASE_PATH"
-  git submodule foreach git pull
+  git submodule init && git submodule update && git submodule status
 
   pecho 'Import logicielsUbuntu'
   if ! which lu-importUtils > /dev/null; then
@@ -218,6 +220,8 @@ api_init_setup()
   fi
   ok=$true
 
+  [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
+
   pecho 'Flush database'
   yesOrNo $false "do you really want to flush orchestrator $ORCHESTRA_URL"
   if [ $REPLY -eq $false ]; then
@@ -304,6 +308,8 @@ api_launch_transform()
   fi
   ok=$true
 
+  [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
+
   pecho 'Gather required authorizations and IDs'
   get_auth 'user1';     user1_auth=$REPLY
   get_id   'media1';    media1_id=$REPLY
@@ -325,6 +331,8 @@ api_revoke_transform()
   fi
   ok=$true
 
+  [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
+
   pecho 'Gather required authorizations and IDs'
   get_auth 'user1'; user1_auth=$REPLY
   get_id   'tjob1'; tjob1_id=$REPLY
@@ -339,6 +347,8 @@ api_launch_publish()
     xecho "Usage: $(basename $0) api_launch_publish"
   fi
   ok=$true
+
+  [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
 
   pecho 'Gather required authorizations and IDs'
   get_auth 'user1';  user1_auth=$REPLY
@@ -360,6 +370,8 @@ api_revoke_publish()
   fi
   ok=$true
 
+  [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
+
   pecho 'Gather required authorizations and IDs'
   get_auth 'user1'; user1_auth=$REPLY
   get_id   'pjob1'; pjob1_id=$REPLY
@@ -374,6 +386,8 @@ api_test_all()
     xecho "Usage: $(basename $0) api_test_all"
   fi
   ok=$true
+
+  [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
 
   cd "$CHARMS_PATH/oscied-orchestra/lib" || \
     xecho "Unable to find path $CHARMS_PATH/oscied-orchestra/lib"
@@ -585,6 +599,8 @@ api_get_all()
   fi
   ok=$true
 
+  [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
+
   get_auth 'user1'; user1_auth=$REPLY
   test_api 200 GET $ORCHESTRA_URL                         '' ''
   test_api 200 GET $ORCHESTRA_URL/user/count              "$user1_auth" ''
@@ -632,6 +648,23 @@ webui_test_common()
   mecho 'Unit test passed (update_proxies OK)'
 }
 
+rsync_helper()
+{
+  if [ $# -ne 1 ]; then
+    xecho "Usage: $(basename $0).rsync_publisher charm"
+  fi
+
+  chmod 600 "$ID_RSA" || xecho 'Unable to find id_rsa certificate'
+
+  get_unit_public_url $true "$1"
+  host="ubuntu@$REPLY"
+  dest="/var/lib/juju/units/$1-1/charm"
+  ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
+  rsync -avhL --progress --delete -e "ssh -i '$ID_RSA'" --exclude=.git --exclude=config.json \
+    --exclude=celeryconfig.py --exclude=*.pyc "$CHARMS_PATH/$1/" "$host:$dest/"
+  ssh -i "$ID_RSA" "$host" -n "sudo chown root:root $dest -R"
+}
+
 rsync_orchestra()
 {
   if [ $# -ne 0 ]; then
@@ -639,16 +672,7 @@ rsync_orchestra()
   fi
   ok=$true
 
-  certif="$CONFIG_JUJU_ID_RSA"
-  chmod 600 "$certif" || xecho 'Unable to find id_rsa certificate'
-
-  get_unit_public_url 'oscied-orchestra' '0'
-  host="ubuntu@$REPLY"
-  dest='/var/lib/juju/units/oscied-orchestra-0/charm'
-  ssh -i "$certif" "$host" -n "sudo chown 1000:1000 $dest -R"
-  rsync -avhL --progress --delete -e "ssh -i '$certif'" --exclude=.git --exclude=config.json \
-    --exclude=celeryconfig.py --exclude=*.pyc "$CHARMS_PATH/oscied-orchestra/" "$host:$dest/"
-  ssh -i "$certif" "$host" -n "sudo chown root:root $dest -R"
+  rsync_helper 'oscied-orchestra'
 }
 
 rsync_publisher()
@@ -658,16 +682,19 @@ rsync_publisher()
   fi
   ok=$true
 
-  certif="$CONFIG_JUJU_ID_RSA"
-  chmod 600 "$certif" || xecho 'Unable to find id_rsa certificate'
+  rsync_helper 'oscied-publisher'
+}
 
-  get_unit_public_url 'oscied-publisher' '0'
-  host="ubuntu@$REPLY"
-  dest='/var/lib/juju/units/oscied-publisher-0/charm/lib/'
-  ssh -i "$certif" "$host" -n "sudo chown 1000:1000 $dest -R"
-  rsync -avh --progress --delete -e "ssh -i '$certif'" --exclude=.git \
-    --exclude=*.pyc "$CHARMS_PATH/lib/" "$host:$dest/"
-  ssh -i "$certif" "$host" -n "sudo chown root:root $dest -R"
+rsync_storage()
+{
+  if [ $# -ne 0 ]; then
+    xecho "Usage: $(basename $0) rsync_storage"
+  fi
+  ok=$true
+
+  chmod 600 "$ID_RSA" || xecho 'Unable to find id_rsa certificate'
+
+  rsync_helper 'oscied-storage'
 }
 
 rsync_transform()
@@ -677,16 +704,7 @@ rsync_transform()
   fi
   ok=$true
 
-  certif="$CONFIG_JUJU_ID_RSA"
-  chmod 600 "$certif" || xecho 'Unable to find id_rsa certificate'
-
-  get_unit_public_url 'oscied-transform' '0'
-  host="ubuntu@$REPLY"
-  dest='/var/lib/juju/units/oscied-transform-0/charm/lib/'
-  ssh -i "$certif" "$host" -n "sudo chown 1000:1000 $dest -R"
-  rsync -avh --progress --delete -e "ssh -i '$certif'" --exclude=.git \
-    --exclude=*.pyc "$CHARMS_PATH/lib/" "$host:$dest/"
-  ssh -i "$certif" "$host" -n "sudo chown root:root $dest -R"
+  rsync_helper 'oscied-transform'
 }
 
 rsync_webui()
@@ -696,18 +714,19 @@ rsync_webui()
   fi
   ok=$true
 
-  certif="$CONFIG_JUJU_ID_RSA"
-  chmod 600 "$certif" || xecho 'Unable to find id_rsa certificate'
+  chmod 600 "$ID_RSA" || xecho 'Unable to find id_rsa certificate'
 
-  get_unit_public_url 'oscied-webui'
+  rsync_helper 'oscied-webui'
+
+  get_unit_public_url $true 'oscied-webui'
   host="ubuntu@$REPLY"
   dest='/var/www'
-  ssh -i "$certif" "$host" -n "sudo chown 1000:1000 $dest -R"
-  rsync -avh --progress -e "ssh -i '$certif'" --exclude=.git --exclude=.htaccess \
+  ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
+  rsync -avh --progress -e "ssh -i '$ID_RSA'" --exclude=.git --exclude=.htaccess \
     --exclude=application/config/config.php --exclude=application/config/database.php \
     --exclude=medias --exclude=uploads --exclude=orchestra_relation_ok --delete \
     "$CHARMS_PATH/oscied-webui/www/" "$host:$dest/"
-  ssh -i "$certif" "$host" -n "sudo chown www-data:www-data $dest -R"
+  ssh -i "$ID_RSA" "$host" -n "sudo chown www-data:www-data $dest -R"
 }
 
 main "$@"

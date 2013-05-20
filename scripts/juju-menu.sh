@@ -6,7 +6,7 @@
 #  Authors   : David Fischer
 #  Contact   : david.fischer.ch@gmail.com / david.fischer@hesge.ch
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
-#  Copyright : 2012 OSCIED Team. All rights reserved.
+#  Copyright : 2012-2013 OSCIED Team. All rights reserved.
 #**************************************************************************************************#
 #
 # This file is part of EBU/UER OSCIED Project.
@@ -407,7 +407,7 @@ config()
         sed -i "s#STORAGE_MOUNTPOINT=.*#STORAGE_MOUNTPOINT='$REPLY'#" common.sh
       fi
     else
-      xecho 'Unable to detect orchestrator unit name'
+      recho 'Unable to detect orchestrator unit name'
     fi
   }
 }
