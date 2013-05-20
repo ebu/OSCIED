@@ -25,13 +25,7 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import fcntl
-import os
-import re
-import select
-import shlex
-import subprocess
-import time
+import fcntl, os, re, select, shlex, subprocess, time
 
 
 def get_media_duration(filename):

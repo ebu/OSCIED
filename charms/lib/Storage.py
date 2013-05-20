@@ -25,8 +25,7 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import os
-import time
+import os, time
 from FFmpeg import get_media_duration
 from OrchestraConfig import ORCHESTRA_CONFIG_TEST
 

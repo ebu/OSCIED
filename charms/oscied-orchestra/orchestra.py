@@ -35,7 +35,7 @@ from lib.Orchestra import Orchestra
 from lib.OrchestraConfig import OrchestraConfig
 from lib.TransformProfile import TransformProfile
 from lib.User import User
-from lib.Utilities import object2json, valid_uuid, setup_logging
+from lib.pyutils.pyutils import object2json, valid_uuid, setup_logging
 
 
 # Global variables ---------------------------------------------------------------------------------

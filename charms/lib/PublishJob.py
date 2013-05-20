@@ -29,7 +29,7 @@ import uuid
 from celery.result import AsyncResult
 from Media import MEDIA_TEST
 from User import USER_TEST
-from Utilities import json2object, object2json, valid_uuid
+from pyutils.pyutils import json2object, object2json, valid_uuid
 
 
 class PublishJob(object):
@@ -65,7 +65,7 @@ class PublishJob(object):
         # FIXME check revoked
         return True
 
-    def add_statistic(self, key, value, overwrite):   
+    def add_statistic(self, key, value, overwrite):
         if overwrite or not key in self.statistic:
             self.statistic[key] = value
 
