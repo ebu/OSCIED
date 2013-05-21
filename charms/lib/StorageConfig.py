@@ -30,7 +30,7 @@ from pyutils.pyutils import PickleableObject
 
 class StorageConfig(PickleableObject):
 
-    def __init__(self, allowed_ips='*', volume_flag=False):
+    def __init__(self, allowed_ips='', volume_flag=False):
         self.allowed_ips = allowed_ips
         self.volume_flag = volume_flag
 

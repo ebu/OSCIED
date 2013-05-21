@@ -1,7 +1,7 @@
 ccopy_reg
 _reconstructor
 p0
-(c__main__
+(cStorageConfig
 StorageConfig
 p1
 c__builtin__
@@ -12,9 +12,9 @@ Rp4
 (dp5
 S'volume_flag'
 p6
-I00
+I01
 sS'allowed_ips'
 p7
-S'*'
+S''
 p8
 sb.

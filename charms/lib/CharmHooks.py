@@ -27,7 +27,7 @@
 
 # Charmhelpers : /usr/share/pyshared/charmhelpers/__init__.py
 
-import os, shlex, subprocess, sys, yaml
+import pyutils.pyutils, os, shlex, subprocess, sys, yaml
 
 try:
     import charmhelpers
@@ -285,43 +285,9 @@ class CharmHooks(object):
         u"""
         Calls the ``command`` and returns a dictionary with stdout, stderr, and the returncode.
 
-        * Pipe some content to the command with ``input``.
-        * Answer to interactive CLI questions with ``cli_input``.
-        * Set ``fail`` to False to avoid the exception ``subprocess.CalledProcessError``.
-
-        **Example usage**:
-
-        >>> hooks = CharmHooks(None, None, DEFAULT_OS_ENV)
-        >>> print(hooks.cmd(['echo', 'it seem to work'])['stdout'])
-        it seem to work
-        <BLANKLINE>
-
-        >>> assert(hooks.cmd('cat missing_file', fail=False)['returncode'] != 0)
-
-        >>> hooks.cmd('my.funny.missing.script.sh')
-        Traceback (most recent call last):
-        ...
-        OSError: [Errno 2] No such file or directory
-
-        >>> result = hooks.cmd('cat CharmHooks.py')
-        >>> print(result['stdout'].splitlines()[0])
-        #!/usr/bin/env python2
+        .. seealso:: :mod:`pyutils`
         """
-        self.debug('Execute %s%s%s' % ('' if input is None else 'echo %s | ' % repr(input), command,
-                   '' if cli_input is None else ' < %s' % repr(cli_input)))
-        args = command
-        if isinstance(command, str):
-            args = shlex.split(command)
-        process = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE)
-        if cli_input is not None:
-            process.stdin.write(cli_input)
-        stdout, stderr = process.communicate(input=input)
-        result = {'stdout': stdout, 'stderr': stderr, 'returncode': process.returncode}
-        if fail and process.returncode != 0:
-            self.debug(result)
-            raise subprocess.CalledProcessError(process.returncode, command, stderr)
-        return result
+        return pyutils.cmd(command, input=input, cli_input=cli_input, fail=fail, log=self.debug)
 
     # ----------------------------------------------------------------------------------------------
 

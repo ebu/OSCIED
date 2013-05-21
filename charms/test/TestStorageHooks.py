@@ -25,27 +25,125 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import CharmHooks
-from StorageHooks import StorageHooks
+from copy import copy
+from mock import Mock, call
+from nose.tools import assert_equal, raises
+from lib.CharmHooks import DEFAULT_OS_ENV
+from lib.StorageConfig import StorageConfig
+from lib.StorageHooks import StorageHooks
 
-CONFIG = {'verbose': False, 'replica_count': 1}
+CONFIG = {'verbose': False, 'replica_count': 1, 'allowed_ips': '*'}
+OS_ENV = copy(DEFAULT_OS_ENV)
+OS_ENV['JUJU_UNIT_NAME'] = 'oscied-storage/14'
+RETURNS = []
 
-INFOS_STDOUT = ('\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started'
-                '\nNumber of Bricks: 1\nTransport-type: tcp\nBricks:'
-                '\nBrick1: ip-10-36-122-169.ec2.internal:/exp14\n')
-INFOS_DICT = {'name': 'medias_volume_14', 'type': 'Distribute', 'status': 'Started',
-              'transport': 'tcp', 'bricks': ['ip-10-36-122-169.ec2.internal:/exp14']}
+
+def mock_cmd(stdout='', stderr='', returncode=0):
+    return Mock(return_value={'stdout': stdout, 'stderr': stderr, 'returncode': returncode})
+
+
+def side_effect(*args, **kwargs):
+    result = RETURNS.pop(0)
+    if isinstance(result, Exception):
+        raise result
+    return result
 
 
 class TestStorageHooks(object):
+    #return {'stdout': INFOS_STDOUT, 'stderr': None, 'returncode': 0}
 
-    def volume_do(self, action, volume=None, options='', input=None, cli_input=None, fail=True):
-        if action == 'info':
-            return {'stdout': INFOS_STDOUT, 'stderr': None, 'returncode': 0}
-        return None
+    def setUp(self):
+        local_config = StorageConfig()
+        local_config.write('test.pkl')
+        self.hooks = StorageHooks(None, CONFIG, 'test.pkl', OS_ENV)
+
+    def test_volume_set_allowed_ips_ok(self):
+        self.hooks.config.allowed_ips = '192.168.1.*,10.10.*'
+        self.hooks.local_config.allowed_ips = '129.194.185.47'
+        self.hooks.volume_do = mock_cmd(
+            '\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started'
+            '\nNumber of Bricks: 1\nTransport-type: tcp\nBricks:'
+            '\nBrick1: ip-10-36-122-169.ec2.internal:/exp14\n'
+            'Options Reconfigured:\nauth.allow: 192.168.1.*,10.10.*,129.194.185.47\n')
+        self.hooks.volume_set_allowed_ips()
+        assert_equal(self.hooks.volume_do.call_args_list, [
+            call('set', fail=False, volume='medias_volume_14',
+                 options='auth.allow 192.168.1.*,10.10.*,129.194.185.47'),
+            call('info', fail=False, volume='medias_volume_14')])
+
+    @raises(ValueError)
+    def test_volume_set_allowed_ips_raise(self):
+        self.hooks.config.allowed_ips = '192.168.1.*,10.10.*'
+        self.hooks.local_config.allowed_ips = '129.194.185.47'
+        self.hooks.volume_do = mock_cmd(
+            '\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started'
+            '\nNumber of Bricks: 1\nTransport-type: tcp\nBricks:'
+            '\nBrick1: ip-10-36-122-169.ec2.internal:/exp14\n'
+            'Options Reconfigured:\nauth.allow: 192.168.1.*\n')
+        self.hooks.volume_set_allowed_ips()
 
     def test_volume_infos(self):
-        hooks = StorageHooks(None, CONFIG, CharmHooks.DEFAULT_OS_ENV)
-        hooks.volume_do = self.volume_do  # Replace volume_do by something without gluster
-        infos = hooks.volume_infos()
-        assert(infos == INFOS_DICT)
+        self.hooks.volume_do = mock_cmd(
+            '\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started'
+            '\nNumber of Bricks: 1\nTransport-type: tcp\nBricks:'
+            '\nBrick1: ip-10-36-122-169.ec2.internal:/exp14\n'
+            'Options Reconfigured:\nauth.allow: 192.168.0.104\n')
+        infos = self.hooks.volume_infos()
+        assert_equal(infos, {
+            'name': 'medias_volume_14', 'type': 'Distribute', 'status': 'Started',
+            'transport': 'tcp', 'bricks': ['ip-10-36-122-169.ec2.internal:/exp14'],
+            'auth_allow': '192.168.0.104'})
+        self.hooks.volume_do.assert_called_with('info', volume=None, fail=False)
+
+    def test_install_replica_1_with_client(self):
+        self.hooks.local_config.allowed_ips = ''
+
+        global RETURNS
+        RETURNS = [
+            '', '', '',  # apt-get
+            '', '',  # volume_create_or_expand
+            {'stdout': '\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started'
+            '\nNumber of Bricks: 1\nTransport-type: tcp\nBricks:'
+            '\nBrick1: 10.1.1.10:/exp14\n'}, {'stdout': ''}]
+
+        self.hooks.private_address = '10.1.1.10'
+        self.hooks.hook_uninstall = Mock(return_value=None)
+        self.hooks.cmd = Mock(side_effect=side_effect)
+        self.hooks.volume_set_allowed_ips = Mock(return_value=None)
+        self.hooks.trigger(hook_name='install')
+        self.hooks.volume_set_allowed_ips.assert_called_once()
+        assert_equal(self.hooks.cmd.call_args_list, [
+            call('apt-get -y install ntp glusterfs-server nfs-common'),
+            call('apt-get -y upgrade'),
+            call('service ntp restart'),
+            call('gluster volume create medias_volume_14  10.1.1.10:/exp14', fail=True, input=None, cli_input=None),
+            call('gluster volume start medias_volume_14 ', fail=True, input=None, cli_input=None),
+            call('gluster volume info medias_volume_14 ', fail=False, input=None, cli_input=None),
+            call('gluster volume rebalance medias_volume_14 status', fail=False, input=None, cli_input=None)])
+
+        self.hooks.relation_set = Mock(return_value=None)
+        self.hooks.relation_get = Mock(return_value='129.194.185.47')
+        self.hooks.trigger(hook_name='storage_relation_joined')
+        self.hooks.relation_set.assert_called_with(mountpoint='medias_volume_14', options='', fstype='glusterfs')
+        self.hooks.relation_get.assert_called_with('private-address')
+        assert_equal(self.hooks.local_config.allowed_ips, '129.194.185.47')
+
+        self.hooks.relation_set = Mock(return_value=None)
+        self.hooks.relation_get = Mock(return_value='129.194.185.50')
+        self.hooks.trigger(hook_name='storage_relation_joined')
+        self.hooks.relation_set.assert_called_with(mountpoint='medias_volume_14', options='', fstype='glusterfs')
+        self.hooks.relation_get.assert_called_with('private-address')
+        assert_equal(self.hooks.local_config.allowed_ips, '129.194.185.47,129.194.185.50')
+
+        RETURNS = [
+            '10.1.1.11', '10.1.1.11',  # peer-relation changed loop
+            'FIXME TODO',  # volume_create_or_expand
+            ]
+        self.hooks.relation_get = Mock(side_effect=side_effect)
+        self.hooks.relation_list = Mock(return_value=['cui-cui'])
+        self.hooks.peer_probe = Mock(return_value=None)
+        self.hooks.trigger(hook_name='peer_relation_joined')
+        self.hooks.trigger(hook_name='peer_relation_changed')
+if __name__ == '__main__':
+    import nose
+    nose.runmodule(argv=[__file__], exit=False)

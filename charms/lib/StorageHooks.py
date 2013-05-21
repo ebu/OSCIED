@@ -94,6 +94,15 @@ class StorageHooks(CharmHooks):
         return self.cmd('gluster volume %s %s %s' % (action, volume, options),
                         input=input, cli_input=cli_input, fail=fail)
 
+    def volume_set_allowed_ips(self, volume=None):
+        if volume is None:
+            volume = self.volume
+        ips = ','.join(filter(None, [self.config.allowed_ips, self.local_config.allowed_ips]))
+        self.volume_do('set', volume=volume, options='auth.allow %s' % ips, fail=False)
+        auth_allow = self.volume_infos(volume=volume)['auth_allow']
+        if auth_allow != ips:
+            raise ValueError('Volume %s auth.allow=%s (expected %s)' % (volume, ips, auth_allow))
+
     def volume_infos(self, volume=None):
         u"""
         Returns a dictionary containing informations about a volume.
@@ -109,6 +118,7 @@ class StorageHooks(CharmHooks):
         if match:
             infos = match.groupdict()
             infos['bricks'] = re.findall('Brick[0-9]+:\s*(\S*)', stdout)
+            infos['auth_allow'] = ','.join(filter(None, re.findall('auth.allow:\s*(\S*)', stdout)))
             return infos
         return None
 
@@ -124,6 +134,8 @@ class StorageHooks(CharmHooks):
 
         # Create medias volume if it is already possible to do so
         self.volume_create_or_expand()
+        if self.local_config.volume_flag:
+            self.volume_set_allowed_ips()
 
         self.info('Expose GlusterFS Server service')
         self.open_port(111, 'TCP')     # For portmapper, and should have both TCP and UDP open
@@ -157,6 +169,10 @@ class StorageHooks(CharmHooks):
         # Send file-system type, mount point & options only if volume is created and started
         if self.local_config.volume_flag:
             self.relation_set(fstype='glusterfs', mountpoint=self.volume, options='')
+            client_address = self.relation_get('private-address')
+            if not client_address in self.local_config.allowed_ips:
+                self.local_config.allowed_ips = \
+                    ','.join(filter(None, [self.local_config.allowed_ips, client_address]))
         else:
             self.relation_set(fstype='', mountpoint='', options='')
 
