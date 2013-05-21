@@ -3,4 +3,4 @@ juju-source
 plantuml.jar
 PlantUML Language Reference Guide.pdf
 released-dl.current.txt
-ubuntu-13.04-server-cloudimg-amd64.tar.gz
+ubuntu-13.04-server-cloudimg-*.tar.gz
