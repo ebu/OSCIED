@@ -26,6 +26,8 @@
 
 . ./common.sh
 
+RSYNC_UNIT_ID='0'  # FIXME temporary hack to avoid coding 10's lines of code
+
 main()
 {
   if [ $# -gt 0 ]; then
@@ -658,7 +660,7 @@ rsync_helper()
 
   get_unit_public_url $true "$1"
   host="ubuntu@$REPLY"
-  dest="/var/lib/juju/units/$1-1/charm"
+  dest="/var/lib/juju/units/$1-$RSYNC_UNIT_ID/charm"
   ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
   rsync -avhL --progress --delete -e "ssh -i '$ID_RSA'" --exclude=.git --exclude=config.json \
     --exclude=celeryconfig.py --exclude=*.pyc "$CHARMS_PATH/$1/" "$host:$dest/"
