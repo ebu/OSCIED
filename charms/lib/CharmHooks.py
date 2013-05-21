@@ -27,19 +27,21 @@
 
 # Charmhelpers : /usr/share/pyshared/charmhelpers/__init__.py
 
-import subprocess
+import os, shlex, subprocess, sys
+from shelltoolbox import command
+
+try:
+    import yaml
+except ImportError:
+    subprocess.check_call(['apt-get', 'install', '-y', 'python-yaml'])
+    import yaml
+
 try:
     import charmhelpers
 except ImportError:
     subprocess.check_call(['apt-add-repository', '-y', 'ppa:juju/pkgs'])
     subprocess.check_call(['apt-get', 'install', '-y', 'python-charmhelpers'])
-
-import charmhelpers  # This is not unused, this import is necessary
-import os
-import shlex
-import sys
-import yaml
-from shelltoolbox import command
+    import charmhelpers
 
 DEFAULT_OS_ENV = {
     'APT_LISTCHANGES_FRONTEND': 'none',
@@ -342,6 +344,10 @@ class CharmHooks(object):
         try:  # Call the function hooks_...
             self.hook('Execute %s hook %s' % (self.__class__.__name__, hook_name))
             getattr(self, 'hook_%s' % hook_name.replace('-', '_'))()
+            try:
+                self.hooks_footer()
+            except AttributeError:
+                pass
         except subprocess.CalledProcessError as e:
             self.log('Exception caught:')
             self.log(e.output)

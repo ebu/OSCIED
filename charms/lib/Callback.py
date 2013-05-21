@@ -27,7 +27,7 @@
 
 import requests
 from urlparse import urlparse, ParseResult
-from pyutils.pyutils import json2object, object2json
+from pyutils import json2object, object2json
 
 
 class Callback(object):

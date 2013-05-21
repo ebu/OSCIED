@@ -26,7 +26,7 @@
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
 import logging
-from pyutils.pyutils import json2object, jsonfile2object, object2json
+from pyutils import json2object, jsonfile2object, object2json
 
 
 class TransformConfig(object):

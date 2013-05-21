@@ -25,15 +25,16 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import glob, os, re, shutil
+import glob, re, shutil
 from CharmHooks import CharmHooks, DEFAULT_OS_ENV
+from StorageConfig import StorageConfig
 
 
 class StorageHooks(CharmHooks):
 
-    def __init__(self, metadata, default_config, default_os_env):
+    def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(StorageHooks, self).__init__(metadata, default_config, default_os_env)
-        self.volume_flag = os.path.join(os.getcwd(), 'volume_ok')
+        self.local_config = StorageConfig.read(local_config_filename, store_filename=True)
         self.volume_infos_regex = re.compile(
             ".*Volume Name:\s*(?P<name>\S+)\s+.*Type:\s*(?P<type>\S+)\s+.*"
             "Status:\s*(?P<status>\S+)\s+.*Transport-type:\s*(?P<transport>\S+).*", re.DOTALL)
@@ -71,7 +72,7 @@ class StorageHooks(CharmHooks):
                       (replica, volume, len(bricks), 's' if len(bricks) > 1 else ''))
             self.volume_do('create', volume=volume, options=extra)
             self.volume_do('start', volume=volume)
-            open(self.volume_flag, 'w').close()
+            self.local_config.volume_flag = True
         else:
             vol_bricks = self.volume_infos(volume=volume)['bricks']
             self.debug('Volume bricks: %s' % vol_bricks)
@@ -141,10 +142,7 @@ class StorageHooks(CharmHooks):
         shutil.rmtree('/etc/glusterfs', ignore_errors=True)
         for brick in glob.glob('/exp*'):
             shutil.rmtree(brick, ignore_errors=True)
-        try:
-            os.remove(self.volume_flag)
-        except OSError:
-            pass
+        self.local_config.volume_flag = False
 
     def hook_start(self):
         if self.cmd('pgrep glusterd', fail=False)['returncode'] != 0:
@@ -156,7 +154,7 @@ class StorageHooks(CharmHooks):
 
     def hook_storage_relation_joined(self):
         # Send file-system type, mount point & options only if volume is created and started
-        if os.path.exists(self.volume_flag):
+        if self.local_config.volume_flag:
             self.relation_set(fstype='glusterfs', mountpoint=self.volume, options='')
         else:
             self.relation_set(fstype='', mountpoint='', options='')
@@ -168,7 +166,7 @@ class StorageHooks(CharmHooks):
                 self.debug(self.volume_infos())
                 self.volume_do('stop', options='force', cli_input='y\n')
                 self.volume_do('delete', cli_input='y\n', fail=False)  # FIXME temporary hack
-                os.remove(self.volume_flag)
+                self.local_config.volume_flag = False
 
     def hook_peer_relation_changed(self):
         # Get configuration from the relation
@@ -196,5 +194,9 @@ class StorageHooks(CharmHooks):
     def hook_peer_relation_broken(self):
         self.remark('FIXME NOT IMPLEMENTED')
 
+    def hooks_footer(self):
+        self.info('Save (updated) local configuration %s' % self.local_config)
+        self.local_config.write()
+
 if __name__ == '__main__':
-    StorageHooks('metadata.yaml', 'config.yaml', DEFAULT_OS_ENV).trigger()
+    StorageHooks('metadata.yaml', 'config.yaml', 'local_config.pkl', DEFAULT_OS_ENV).trigger()
