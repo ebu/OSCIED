@@ -29,10 +29,10 @@
 techo 'Temporary utility to speed-up testing of charms'
 
 # Simple helper to speed-up LXC containers
-yesOrNo $false 'Mount a ramdisk of 3GB for LXC VMs (Max. 3 VMs)'
+yesOrNo $false 'Mount a ramdisk of 2GB for LXC VMs (Max. 3 VMs)'
 if [ $REPLY -eq $true ]; then
   $udo umount /var/lib/lxc 2>/dev/null
-  $udo mount -t tmpfs -o size=3072M tmpfs /var/lib/lxc
+  $udo mount -t tmpfs -o size=2048M tmpfs /var/lib/lxc
 fi
 
 yesOrNo $true 'Download Ubuntu cloud image to LXC cache'
@@ -42,7 +42,9 @@ if [ $REPLY -eq $true ]; then
   cloud_list_url="$cloud_host/query/$RELEASE/server/released-dl.current.txt"
   lxc_cache='/var/cache/lxc/cloud-raring'
   wget -N "$cloud_list_url"
-  cloud_image_url="$cloud_host/$(cat $(basename $cloud_list_url) | grep amd64 | cut -f6)"
+  #cloud_image_url="$cloud_host/$(cat $(basename $cloud_list_url) | grep amd64 | cut -f6)"
+  # FIXME hardcoded
+  cloud_image_url="$cloud_host/server/releases/raring/release-20130423/ubuntu-13.04-server-cloudimg-amd64-root.tar.gz"
   wget -N "$cloud_image_url"
   $udo mkdir -p "$lxc_cache" 2>/dev/null
   $udo cp -a "$(basename $cloud_image_url)" "$lxc_cache/"
