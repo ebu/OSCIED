@@ -34,6 +34,7 @@ JUJU_CHARMS_SVN='https://claire-et-david.dyndns.org/prog/OSCIED/components'
 
 # Charms paths
 BASE_PATH=$(pwd)
+LIBRARY_PATH="$BASE_PATH/lib"
 
 # Charms files
 CONFIG_FILE="$BASE_PATH/config.json"
@@ -281,9 +282,8 @@ hook_install()
   eval $install build-essential python-dev python python-pip git-core mongodb rabbitmq-server \
     glusterfs-client nfs-common || xecho 'Unable to install packages' 6
 
-  pecho 'Install BSON, Celery Distrib. Task Queue, Flask Python Web Framework, PyMongo MongoDB API'
-  pip install --upgrade bson celery flask ipaddr passlib pymongo requests || \
-    xecho 'Unable to install packages' 7
+  pecho 'Install OSCIED Library'
+  python "$LIBRARY_PATH/setup.py" install || xecho 'Unable to install library' 7
 
   pecho 'Expose RESTful API, MongoDB & RabbitMQ service'
   open-port 5000/tcp   # Orchestra RESTful API

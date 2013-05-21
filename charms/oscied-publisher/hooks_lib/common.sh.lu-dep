@@ -32,6 +32,7 @@ ECHO='juju-log' # Used by logicielsUbuntuUtils
 
 # Charms paths
 BASE_PATH=$(pwd)
+LIBRARY_PATH="$BASE_PATH/lib"
 
 # Charms files
 CONFIG_FILE="$BASE_PATH/config.json"
@@ -286,9 +287,8 @@ hook_install()
     echo 'AddHandler h264-streaming.extensions .mp4' >> $config
   fi
 
-  pecho 'Install BSON Binary JSON, Celery Distributed Task Queue, MongoDB API and Requests'
-  pip install --upgrade bson celery ipaddr passlib pymongo requests || \
-    xecho 'Unable to install packages' 6
+  pecho 'Install OSCIED Library'
+  python "$LIBRARY_PATH/setup.py" install || xecho 'Unable to install library' 6
 
   pecho 'Expose Apache 2 service'
   open-port 80/tcp

@@ -32,6 +32,7 @@ ECHO='juju-log' # Used by logicielsUbuntuUtils
 
 # Charms paths
 BASE_PATH=$(pwd)
+LIBRARY_PATH="$BASE_PATH/lib"
 
 # Charms files
 CONFIG_FILE="$BASE_PATH/config.json"
@@ -258,9 +259,8 @@ hook_install()
   eval $install ffmpeg x264 python python-dev python-pip glusterfs-client nfs-common || \
     xecho 'Unable to install packages' 3
 
-  pecho 'Install BSON Binary JSON, Celery Distributed Task Queue, MongoDB API and Requests'
-  pip install --upgrade bson celery ipaddr passlib pymongo requests || \
-    xecho 'Unable to install packages' 4
+  pecho 'Install OSCIED Library'
+  python "$LIBRARY_PATH/setup.py" install || xecho 'Unable to install library' 4
 
   # FIXME this call is not necessary, but config-changed may create an infinite loop, so WE call it
   hook_config_changed

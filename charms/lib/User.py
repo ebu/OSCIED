@@ -28,7 +28,7 @@
 import uuid
 from passlib.hash import pbkdf2_sha512
 from passlib.utils import consteq
-from pyutils import json2object, valid_mail, valid_secret, valid_uuid
+from pyutils.pyutils import json2object, valid_mail, valid_secret, valid_uuid
 
 
 class User(object):
