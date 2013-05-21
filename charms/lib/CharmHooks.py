@@ -28,7 +28,6 @@
 # Charmhelpers : /usr/share/pyshared/charmhelpers/__init__.py
 
 import os, shlex, subprocess, sys, yaml
-from shelltoolbox import command
 
 try:
     import charmhelpers
@@ -36,6 +35,8 @@ except ImportError:
     subprocess.check_call(['apt-add-repository', '-y', 'ppa:juju/pkgs'])
     subprocess.check_call(['apt-get', 'install', '-y', 'python-charmhelpers'])
     import charmhelpers
+
+from shelltoolbox import command
 
 DEFAULT_OS_ENV = {
     'APT_LISTCHANGES_FRONTEND': 'none',
