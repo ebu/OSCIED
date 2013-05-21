@@ -2,8 +2,22 @@ options:
   verbose:
     type: string
     default: "false"
-    description: Set verbose logging.  Can be set to true or false
+    description: |
+        Set verbose logging.
+        Can be set to true or false.
+  allowed_ips:
+    type: string
+    default: "*"
+    description: |
+        Comma-delimited IP addresses (wild-cald patterns) of the clients which should be allowed to
+        access the volume, e.g. '30.0.0.*,27.32.*'.
+        Defaults means anyone can mount the storage.
+        This option is useful to grant an access to this service to your clients that are running
+        outside of the storage's JuJu environment.
   replica_count:
     type: int
     default: 1
-    description: Set replica count.  Medias volume is not created (and started) until N nodes are connected.  Default means no redundancy at all.
+    description: |
+        Set replica count.
+        Medias volume is not created (and started) until N nodes are connected.
+        Default means no redundancy at all.
