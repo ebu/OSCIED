@@ -27,14 +27,8 @@
 
 # Charmhelpers : /usr/share/pyshared/charmhelpers/__init__.py
 
-import os, shlex, subprocess, sys
+import os, shlex, subprocess, sys, yaml
 from shelltoolbox import command
-
-try:
-    import yaml
-except ImportError:
-    subprocess.check_call(['apt-get', 'install', '-y', 'python-yaml'])
-    import yaml
 
 try:
     import charmhelpers
