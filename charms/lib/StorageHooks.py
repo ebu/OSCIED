@@ -38,6 +38,7 @@ class StorageHooks(CharmHooks):
         self.volume_infos_regex = re.compile(
             ".*Volume Name:\s*(?P<name>\S+)\s+.*Type:\s*(?P<type>\S+)\s+.*"
             "Status:\s*(?P<status>\S+)\s+.*Transport-type:\s*(?P<transport>\S+).*", re.DOTALL)
+        self.debug('My __dict__ is %s' % self.__dict__)
 
     @property
     def brick(self):
@@ -199,4 +200,6 @@ class StorageHooks(CharmHooks):
         self.local_config.write()
 
 if __name__ == '__main__':
-    StorageHooks('metadata.yaml', 'config.yaml', 'local_config.pkl', DEFAULT_OS_ENV).trigger()
+    StorageHooks('../oscied-storage/metadata.yaml',
+                 '../oscied-storage/config.yaml',
+                 '../oscied-storage/local_config.pkl', DEFAULT_OS_ENV).trigger()

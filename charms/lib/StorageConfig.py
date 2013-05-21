@@ -34,6 +34,9 @@ class StorageConfig(PickleableObject):
         self.allowed_ips = allowed_ips
         self.volume_flag = volume_flag
 
+    def __repr__(self):
+        return str(self.__dict__)
+
 STORAGE_CONFIG_TEST = StorageConfig('*', False)
 
 # Main ---------------------------------------------------------------------------------------------

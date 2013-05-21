@@ -74,6 +74,15 @@ def get_ip():
     return __get_ip
 
 
+class CharmConfig(object):
+
+    def __init__(self):
+        self.verbose = False
+
+    def __repr__(self):
+        return str(self.__dict__)
+
+
 class CharmHooks(object):
     u"""
     TODO
@@ -85,8 +94,7 @@ class CharmHooks(object):
     """
 
     def __init__(self, metadata, default_config, default_os_env):
-        self.config = lambda: None
-        setattr(self.config, 'verbose', False)
+        self.config = CharmConfig()
         try:
             self.juju_ok = True
             self.juju_log = command('juju-log')
@@ -94,7 +102,7 @@ class CharmHooks(object):
             self.env_uuid = os.environ['JUJU_ENV_UUID']
             self.name = os.environ['JUJU_UNIT_NAME']
             self.private_address = charmhelpers.unit_get('private-address')
-        except subprocess.CalledProcessError:
+        except (subprocess.CalledProcessError, OSError):
             self.juju_ok = False
             self.juju_log = command('echo')
             if default_config is not None:
@@ -103,9 +111,6 @@ class CharmHooks(object):
             self.name = default_os_env['JUJU_UNIT_NAME']
             self.private_address = get_ip()
         self.load_metadata(metadata)
-        self.debug('My __dict__ is %s' % self.__dict__)
-        #self.debug('Relation settings: %s, members: %s, ids: %s' %
-        #           (self.relation_get(), self.relation_list(), self.relation_ids()))
 
     # ----------------------------------------------------------------------------------------------
 
