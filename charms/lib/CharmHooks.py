@@ -27,7 +27,8 @@
 
 # Charmhelpers : /usr/share/pyshared/charmhelpers/__init__.py
 
-import pyutils.pyutils, os, shlex, subprocess, sys, yaml
+import os, shlex, subprocess, sys, yaml
+from pyutils.pyutils import cmd
 
 try:
     import charmhelpers
@@ -287,7 +288,7 @@ class CharmHooks(object):
 
         .. seealso:: :mod:`pyutils`
         """
-        return pyutils.cmd(command, input=input, cli_input=cli_input, fail=fail, log=self.debug)
+        return cmd(command, input=input, cli_input=cli_input, fail=fail, log=self.debug)
 
     # ----------------------------------------------------------------------------------------------
 
