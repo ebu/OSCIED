@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+python lib/StorageHooks.py config-changed

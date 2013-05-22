@@ -93,10 +93,12 @@ class StorageHooks(CharmHooks):
     def volume_set_allowed_ips(self, volume=None):
         volume = volume or self.volume
         ips = ','.join(filter(None, [self.config.allowed_ips, self.local_config.allowed_ips]))
+        self.info('Set volume %s allowed clients IP list to %s' % (volume, ips))
         self.volume_do('set', volume=volume, options='auth.allow %s' % ips, fail=False)
         auth_allow = self.volume_infos(volume=volume)['auth_allow']
         if auth_allow != ips:
             raise ValueError('Volume %s auth.allow=%s (expected %s)' % (volume, ips, auth_allow))
+        self.info(self.volume_infos(volume=volume))
 
     def volume_infos(self, volume=None):
         u"""
@@ -129,8 +131,6 @@ class StorageHooks(CharmHooks):
 
         # Create medias volume if it is already possible to do so
         self.volume_create_or_expand()
-        if self.local_config.volume_flag:
-            self.volume_set_allowed_ips()
 
         self.info('Expose GlusterFS Server service')
         self.open_port(111, 'TCP')     # For portmapper, and should have both TCP and UDP open
@@ -140,6 +140,10 @@ class StorageHooks(CharmHooks):
         #open_port(38465, 'TCP')  # For NFS (not used)
         #open_port(38466, 'TCP')  # For NFS (not used)
         #open_port(38467, 'TCP')  # For NFS (not used)
+
+    def hook_config_changed(self):
+        if self.local_config.volume_flag:
+            self.volume_set_allowed_ips()
 
     def hook_uninstall(self):
         self.info('Uninstall prerequisities and remove configuration files & bricks')
