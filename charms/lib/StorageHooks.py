@@ -124,7 +124,7 @@ class StorageHooks(CharmHooks):
 
     def hook_install(self):
         self.hook_uninstall()
-        self.info('Install prerequisities and upgrade packages')
+        self.info('Install prerequisites and upgrade packages')
         self.cmd('apt-get -y install ntp glusterfs-server nfs-common')
         self.cmd('apt-get -y upgrade')
         self.info('Restart network time protocol service')
@@ -147,7 +147,7 @@ class StorageHooks(CharmHooks):
             self.volume_set_allowed_ips()
 
     def hook_uninstall(self):
-        self.info('Uninstall prerequisities and remove configuration files & bricks')
+        self.info('Uninstall prerequisites and remove configuration files & bricks')
         self.hook_stop()
         self.cmd('apt-get -y remove --purge glusterfs-server nfs-common')
         self.cmd('apt-get -y autoremove')
