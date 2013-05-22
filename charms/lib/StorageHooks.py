@@ -28,6 +28,7 @@
 import glob, re, shutil
 from CharmHooks import CharmHooks, DEFAULT_OS_ENV
 from StorageConfig import StorageConfig
+from pyutils.pyutils import first_existing_file
 
 
 class StorageHooks(CharmHooks):
@@ -215,6 +216,7 @@ class StorageHooks(CharmHooks):
         self.local_config.write()
 
 if __name__ == '__main__':
-    StorageHooks('../oscied-storage/metadata.yaml',
-                 '../oscied-storage/config.yaml',
-                 '../oscied-storage/local_config.pkl', DEFAULT_OS_ENV).trigger()
+    StorageHooks(first_existing_file(['metadata.yaml', '../oscied-storage/metadata.yaml']),
+                 first_existing_file(['config.yaml', '../oscied-storage/config.yaml']),
+                 first_existing_file(['local_config.pkl', '../oscied-storage/local_config.pkl']),
+                 DEFAULT_OS_ENV).trigger()
