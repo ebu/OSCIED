@@ -27,7 +27,7 @@
 
 # Charmhelpers : /usr/share/pyshared/charmhelpers/__init__.py
 
-import os, shlex, subprocess, sys, yaml
+import os, subprocess, sys, yaml
 from pyutils.pyutils import cmd
 
 try:
@@ -93,7 +93,6 @@ class CharmHooks(object):
     >>> print('TODO')
     TODO
     """
-
     def __init__(self, metadata, default_config, default_os_env):
         self.config = CharmConfig()
         try:
@@ -103,6 +102,7 @@ class CharmHooks(object):
             self.env_uuid = os.environ['JUJU_ENV_UUID']
             self.name = os.environ['JUJU_UNIT_NAME']
             self.private_address = charmhelpers.unit_get('private-address')
+            self.public_address = charmhelpers.unit_get('public-address')
         except (subprocess.CalledProcessError, OSError):
             self.juju_ok = False
             self.juju_log = command('echo')
@@ -110,7 +110,7 @@ class CharmHooks(object):
                 self.load_config(default_config)
             self.env_uuid = default_os_env['JUJU_ENV_UUID']
             self.name = default_os_env['JUJU_UNIT_NAME']
-            self.private_address = get_ip()
+            self.private_address = self.public_address = get_ip()
         self.load_metadata(metadata)
 
     # ----------------------------------------------------------------------------------------------
