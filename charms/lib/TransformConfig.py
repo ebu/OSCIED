@@ -26,21 +26,15 @@
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
 import logging
-from pyutils.pyutils import json2object, jsonfile2object, object2json
+from pyutils.pyutils import PickleableObject
 
 
-class TransformConfig(object):
+class TransformConfig(PickleableObject):
 
-    def __init__(self, verbose, public_address, mongo_connection, rabbit_connection, rabbit_queues,
-                 api_nat_socket, storage_ip, storage_fstype, storage_mountpoint, storage_options,
-                 storage_path):
-        self.verbose = verbose
-        self.public_address = public_address
-        self.mongo_connection = mongo_connection
-        self.rabbit_connection = rabbit_connection
-        self.rabbit_queues = rabbit_queues
+    def __init__(self, api_nat_socket='', storage_address='', storage_fstype='',
+                 storage_mountpoint='', storage_options='', storage_path='/mnt/storage'):
         self.api_nat_socket = api_nat_socket
-        self.storage_ip = storage_ip
+        self.storage_address = storage_address
         self.storage_fstype = storage_fstype
         self.storage_mountpoint = storage_mountpoint
         self.storage_options = storage_options
@@ -52,32 +46,43 @@ class TransformConfig(object):
 
     @property
     def storage_uri(self):
-        if self.storage_fstype and self.storage_ip and self.storage_mountpoint:
-            return self.storage_fstype + '://' + self.storage_ip + '/' + self.storage_mountpoint
+        u"""
+        Returns storage URI.
+
+        **Example usage**:
+
+        >>> from copy import copy
+        >>> config = copy(TRANSFORM_CONFIG_TEST)
+        >>> print(config.storage_uri)
+        glusterfs://10.1.1.2/medias_volume
+        >>> config.storage_fstype = ''
+        >>> print(config.storage_uri)
+        None
+        >>> config.storage_fstype = 'nfs'
+        >>> config.storage_address = ''
+        >>> print(config.storage_uri)
+        None
+        >>> config.storage_address = '30.0.0.1'
+        >>> print(config.storage_uri)
+        nfs://30.0.0.1/medias_volume
+        """
+        if self.storage_fstype and self.storage_address and self.storage_mountpoint:
+            return '%s://%s/%s' % (
+                self.storage_fstype, self.storage_address, self.storage_mountpoint)
         return None
 
-    @staticmethod
-    def read(filename):
-        config = TransformConfig(None, None, None, None, None, None, None, None, None, None, None)
-        jsonfile2object(filename, config)
-        return config
+    def __repr__(self):
+        return str(self.__dict__)
 
-    @staticmethod
-    def load(json):
-        config = TransformConfig(None, None, None, None, None, None, None, None, None, None, None)
-        json2object(json, config)
-        return config
-
-TRANSFORM_CONFIG_TEST = TransformConfig(True, 'amazon.blabla.com',
-                                        'mongodb://guest:Mongo@10.1.1.3:27017',
-                                        'amqp://guest:Alice@10.1.1.3//', 'transform_private',
-                                        '129.194.185.47:5000', '10.1.1.2', 'glusterfs',
-                                        'medias_volume', '', '/mnt/storage')
+TRANSFORM_CONFIG_TEST = TransformConfig('129.194.185.47:5000', '10.1.1.2', 'glusterfs',
+                                        'medias_volume', '')
 
 # Main ---------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-
-    print object2json(TRANSFORM_CONFIG_TEST, True)
-    assert TRANSFORM_CONFIG_TEST.storage_uri == 'glusterfs://10.1.1.2/medias_volume'
-    print TransformConfig.load(object2json(TRANSFORM_CONFIG_TEST, False))
+    print('Test TransformConfig with doctest')
+    import doctest
+    doctest.testmod(verbose=False)
+    print('OK')
+    print('Write default transform configuration')
+    TransformConfig().write('../oscied-transform/local_config.pkl')
