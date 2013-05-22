@@ -28,7 +28,7 @@
 import glob, re, shutil
 from CharmHooks import CharmHooks, DEFAULT_OS_ENV
 from StorageConfig import StorageConfig
-from pyutils.pyutils import first_existing_file
+from pyutils.pyutils import first_that_exist
 
 
 class StorageHooks(CharmHooks):
@@ -166,8 +166,8 @@ class StorageHooks(CharmHooks):
             self.cmd('service glusterfs-server stop')
 
     def hook_storage_relation_joined(self):
-        # Send file-system type, mount point & options only if volume is created and started
         if self.local_config.volume_flag:
+            self.info('Send filesystem (volume %s) configuration to remote client' % self.volume)
             self.relation_set(fstype='glusterfs', mountpoint=self.volume, options='')
             client_address = self.relation_get('private-address')
             if not client_address in self.local_config.allowed_ips:
@@ -216,7 +216,7 @@ class StorageHooks(CharmHooks):
         self.local_config.write()
 
 if __name__ == '__main__':
-    StorageHooks(first_existing_file(['metadata.yaml', '../oscied-storage/metadata.yaml']),
-                 first_existing_file(['config.yaml', '../oscied-storage/config.yaml']),
-                 first_existing_file(['local_config.pkl', '../oscied-storage/local_config.pkl']),
+    StorageHooks(first_that_exist('metadata.yaml', '../oscied-storage/metadata.yaml'),
+                 first_that_exist('config.yaml', '../oscied-storage/config.yaml'),
+                 first_that_exist('local_config.pkl', '../oscied-storage/local_config.pkl'),
                  DEFAULT_OS_ENV).trigger()
