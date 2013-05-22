@@ -58,12 +58,9 @@ class StorageHooks(CharmHooks):
         return self.cmd('gluster peer probe %s' % peer_address)
 
     def volume_create_or_expand(self, volume=None, bricks=None, replica=None):
-        if volume is None:
-            volume = self.volume
-        if bricks is None:
-            bricks = [self.brick]
-        if replica is None:
-            replica = self.config.replica_count
+        volume = volume or self.volume
+        bricks = bricks or [self.brick]
+        replica = replica or self.config.replica_count
         extra = (' ' if replica == 1 else ' replica %s transport tcp ' % replica) + ' '.join(bricks)
         if len(bricks) < replica:
             self.remark("Waiting for %s peers to create and start a replica=%s volume %s" %
@@ -89,14 +86,12 @@ class StorageHooks(CharmHooks):
         self.info(self.volume_do('rebalance', volume=volume, options='status', fail=False)['stdout'])
 
     def volume_do(self, action, volume=None, options='', input=None, cli_input=None, fail=True):
-        if volume is None:
-            volume = self.volume
+        volume = volume or self.volume
         return self.cmd('gluster volume %s %s %s' % (action, volume, options),
                         input=input, cli_input=cli_input, fail=fail)
 
     def volume_set_allowed_ips(self, volume=None):
-        if volume is None:
-            volume = self.volume
+        volume = volume or self.volume
         ips = ','.join(filter(None, [self.config.allowed_ips, self.local_config.allowed_ips]))
         self.volume_do('set', volume=volume, options='auth.allow %s' % ips, fail=False)
         auth_allow = self.volume_infos(volume=volume)['auth_allow']
