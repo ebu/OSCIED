@@ -198,7 +198,7 @@ class TransformHooks(CharmHooks):
         self.transform_unregister()
         self.cmd('apt-get -y remove --purge ffmpeg glusterfs-server nfs-common x264')
         self.cmd('apt-get -y autoremove')
-        self.local_config = TransformConfig()
+        self.local_config.reset()
 
     def hook_start(self):
         if not self.storage_is_mounted():

@@ -45,6 +45,9 @@ class TransformConfig(PickleableObject):
         self.celery_config_file = celery_config_file
         self.celery_template_file = celery_template_file
 
+    def __repr__(self):
+        return str(self.__dict__)
+
     @property
     def log_level(self):
         return logging.DEBUG if self.verbose else logging.INFO
@@ -76,8 +79,16 @@ class TransformConfig(PickleableObject):
                 self.storage_fstype, self.storage_address, self.storage_mountpoint)
         return None
 
-    def __repr__(self):
-        return str(self.__dict__)
+    def reset(self):
+        self.api_nat_socket = ''
+        self.storage_address = ''
+        self.storage_fstype = ''
+        self.storage_mountpoint = ''
+        self.storage_options = ''
+        self.storage_path = '/mnt/storage'
+        self.hosts_file = '/etc/hosts'
+        self.celery_config_file = 'celeryconfig.py'
+        self.celery_template_file = 'templates/celeryconfig.py.template'
 
 TRANSFORM_CONFIG_TEST = TransformConfig('129.194.185.47:5000', '10.1.1.2', 'glusterfs',
                                         'medias_volume', '')
