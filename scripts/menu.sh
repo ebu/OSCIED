@@ -131,9 +131,6 @@ install()
   $udo pip install --upgrade celery coverage docutils flask ipaddr nose pygments pymongo rednose \
     requests sphinx sphinxcontrib-email sphinxcontrib-googlechart sphinxcontrib-httpdomain
 
-  pecho 'Update sublime text configuration'
-  find "$SUBLIME_PATH" -type f -exec sed -i "s:BASE_PATH:$BASE_PATH:g" {} \;
-
   pecho 'Download references'
   cd "$REFERENCES_PATH"|| xecho "Unable to find path $REFERENCES_PATH"
   openstack='http://docs.openstack.org'
