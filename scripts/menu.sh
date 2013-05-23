@@ -61,9 +61,9 @@ main()
     fi
   else
     # Initialize main menu
-    [ "$ORCHESTRA_URL" ] && a='' || a='[DISABLED] '
     while true
     do
+      [ "$ORCHESTRA_URL" ] && a='' || a='[DISABLED] '
       $DIALOG --backtitle 'OSCIED General Operations' \
               --menu 'Please select an operation' 0 0 0 \
               install              'Download / update documents and tools'             \
