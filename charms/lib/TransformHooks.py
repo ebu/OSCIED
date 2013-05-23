@@ -25,12 +25,14 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import os, multiprocessing, pymongo.uri_parser, re, setuptools.archive_util, shutil, time
-from CharmHooks import CharmHooks, DEFAULT_OS_ENV
+import os, multiprocessing, pymongo.uri_parser, setuptools.archive_util, shutil, time
+from CharmHooks import DEFAULT_OS_ENV
+from CharmHooks_Storage import CharmHooks_Storage
 from TransformConfig import TransformConfig
-from pyutils.pyutils import first_that_exist, screen_launch, screen_list, screen_kill, try_makedirs
+from pyutils.pyutils import first_that_exist, screen_launch, screen_list, screen_kill
 
-class TransformHooks(CharmHooks):
+
+class TransformHooks(CharmHooks_Storage):
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(TransformHooks, self).__init__(metadata, default_config, default_os_env)
@@ -44,89 +46,8 @@ class TransformHooks(CharmHooks):
         return ','.join([self.config.rabbit_queues, self.public_address])
 
     @property
-    def storage_config_is_enabled(self):
-        c = self.config
-        return c.storage_address and c.storage_fstype and c.storage_mountpoint
-
-    @property
-    def storage_is_mounted(self):
-        return os.path.ismount(self.local_config.storage_path)
-
-    @property
     def transform_config_is_enabled(self):
         return self.config.mongo_connection and self.config.rabbit_connection
-
-    # ----------------------------------------------------------------------------------------------
-
-    def storage_remount(self, address=None, fstype=None, mountpoint=None, options=''):
-        if self.storage_config_is_enabled:
-            self.info('Override storage parameters with charm configuration')
-            address = self.config.storage_address
-            nat_address = self.config.storage_nat_address
-            fstype = self.config.storage_fstype
-            mountpoint = self.config.storage_mountpoint
-            options = self.config.storage_options
-        elif address and fstype and mountpoint:
-            self.info('Use storage parameters from charm storage relation')
-            nat_address = ''
-        else:
-            return
-        if nat_address:
-            self.info('Update hosts file to map storage internal address %s to %s' %
-                      (address, nat_address))
-            nat_line = '%s %s' % (nat_address, address)
-            with open(self.local_config.hosts_file, 'rw') as hosts_file:
-                data = hosts_file.read()
-                re.sub(re.escape(nat_address) + r' .*', nat_line, data)
-                if nat_line not in data:
-                    data.append(nat_line)
-                # FIXME maybe a better idea to write to a temporary file then rename it /etc/hosts
-                hosts_file.f.seek(0)
-                hosts_file.f.truncate()
-                hosts_file.write()
-        # FIXME avoid unregistering storage if it does not change ...
-        self.storage_unregister()
-        self.debug("Mount shared storage [%s] %s:%s type %s options '%s' -> %s" % (nat_address,
-                  address, mountpoint, fstype, options, self.local_config.storage_path))
-        try_makedirs(self.local_config.storage_path)
-        # FIXME try 5 times, a better way to handle failure
-        for i in range(5):
-            if self.storage_is_mounted:
-                break
-            mount_address = '%s:/%s' % (nat_address or address, mountpoint)
-            mount_path = self.local_config.storage_path
-            if options:
-                self.cmd(['mount', '-t', fstype, '-o', options, mount_address, mount_path])
-            else:
-                self.cmd(['mount', '-t', fstype, mount_address, mount_path])
-            time.sleep(5)
-        if self.storage_is_mounted:
-            # FIXME update /etc/fstab (?)
-            self.local_config.storage_address = address
-            self.local_config.storage_nat_address = nat_address
-            self.local_config.storage_fstype = fstype
-            self.local_config.storage_mountpoint = mountpoint
-            self.local_config.storage_options = options
-            self.remark('Shared storage successfully registered')
-        else:
-            raise IOError('Unable to mount shared storage')
-
-    def storage_unregister(self):
-        self.info('Unregister shared storage')
-        self.local_config.storage_address = ''
-        self.local_config.storage_fstype = ''
-        self.local_config.storage_mountpoint = ''
-        self.local_config.storage_options = ''
-        if self.storage_is_mounted:
-            # FIXME update /etc/fstab (?)
-            self.remark('Unmount shared storage (is mounted)')
-            self.cmd(['umount', self.local_config.storage_path])
-        else:
-            self.remark('Shared storage already unmounted')
-
-    def storage_hook_bypass(self):
-        if self.storage_config_is_enabled:
-            raise RuntimeError('Shared storage is set in config, storage relation is disabled')
 
     # ----------------------------------------------------------------------------------------------
 
@@ -235,29 +156,6 @@ class TransformHooks(CharmHooks):
 
     def hook_stop(self):
         screen_kill('Transform', log=self.debug)
-
-    def hook_storage_relation_joined(self):
-        self.storage_hook_bypass()
-
-    def hook_storage_relation_changed(self):
-        self.storage_hook_bypass()
-        address = self.relation_get('private-address')
-        fstype = self.relation_get('fstype')
-        mountpoint = self.relation_get('mountpoint')
-        options = self.relation_get('options')
-        self.debug('Storage address is %s, fstype: %s, mountpoint: %s, options: %s' %
-                  (address, fstype, mountpoint, options))
-        if address and fstype and mountpoint:
-            self.hook_stop()
-            self.storage_remount(address, fstype, mountpoint, options)
-            self.hook_start()
-        else:
-            self.remark('Waiting for complete setup')
-
-    def hook_storage_relation_broken(self):
-        self.storage_hook_bypass()
-        self.hook_stop()
-        self.storage_remount()
 
     def hook_transform_relation_joined(self):
         self.transform_hook_bypass()
