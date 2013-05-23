@@ -282,8 +282,11 @@ hook_install()
   eval $install build-essential python-dev python python-pip git-core mongodb rabbitmq-server \
     glusterfs-client nfs-common || xecho 'Unable to install packages' 6
 
+  pecho 'Install Flask Micro Web Framework'
+  eval pip install flask || xecho 'Unable to install packages' 7
+
   pecho 'Install OSCIED Library'
-  python "$LIBRARY_PATH/setup.py" install || xecho 'Unable to install library' 7
+  python "$LIBRARY_PATH/setup.py" install || xecho 'Unable to install library' 8
 
   pecho 'Expose RESTful API, MongoDB & RabbitMQ service'
   open-port 5000/tcp   # Orchestra RESTful API
