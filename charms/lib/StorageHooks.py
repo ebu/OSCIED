@@ -48,7 +48,7 @@ class StorageHooks(CharmHooks):
 
     @property
     def volumes(self):
-        return re.findall('Name:\s*(\S*)', self.volume_do('info', volume='')['stdout'])
+        return re.findall('Name:\s*(\S*)', self.volume_do('info', volume='all')['stdout'])
 
     # ----------------------------------------------------------------------------------------------
 
