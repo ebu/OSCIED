@@ -25,6 +25,7 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
+import re
 from pyutils.pyutils import PickleableObject
 
 
@@ -33,6 +34,9 @@ class StorageConfig(PickleableObject):
     def __init__(self, allowed_ips='', volume_flag=False):
         self.allowed_ips = allowed_ips
         self.volume_flag = volume_flag
+        self.volume_infos_regex = re.compile(
+            r".*Volume Name:\s*(?P<name>\S+)\s+.*Type:\s*(?P<type>\S+)\s+.*"
+            r"Status:\s*(?P<status>\S+)\s+.*Transport-type:\s*(?P<transport>\S+).*", re.DOTALL)
 
     def __repr__(self):
         return str(self.__dict__)

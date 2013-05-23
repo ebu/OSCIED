@@ -36,9 +36,6 @@ class StorageHooks(CharmHooks):
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(StorageHooks, self).__init__(metadata, default_config, default_os_env)
         self.local_config = StorageConfig.read(local_config_filename, store_filename=True)
-        self.volume_infos_regex = re.compile(
-            ".*Volume Name:\s*(?P<name>\S+)\s+.*Type:\s*(?P<type>\S+)\s+.*"
-            "Status:\s*(?P<status>\S+)\s+.*Transport-type:\s*(?P<transport>\S+).*", re.DOTALL)
         self.debug('My __dict__ is %s' % self.__dict__)
 
     @property
@@ -112,7 +109,7 @@ class StorageHooks(CharmHooks):
         """
         stdout = self.volume_do('info', volume=volume, fail=False)['stdout']
         self.debug('Volume infos stdout: %s' % repr(stdout))
-        match = self.volume_infos_regex.match(stdout)
+        match = self.local_config.volume_infos_regex.match(stdout)
         if match:
             infos = match.groupdict()
             infos['bricks'] = re.findall('Brick[0-9]+:\s*(\S*)', stdout)
@@ -147,7 +144,7 @@ class StorageHooks(CharmHooks):
             self.volume_set_allowed_ips()
 
     def hook_uninstall(self):
-        self.info('Uninstall prerequisites and remove configuration files & bricks')
+        self.info('Uninstall prerequisites, remove files & bricks and load default configuration')
         self.hook_stop()
         self.cmd('apt-get -y remove --purge glusterfs-server nfs-common')
         self.cmd('apt-get -y autoremove')
@@ -155,7 +152,7 @@ class StorageHooks(CharmHooks):
         shutil.rmtree('/etc/glusterfs', ignore_errors=True)
         for brick in glob.glob('/exp*'):
             shutil.rmtree(brick, ignore_errors=True)
-        self.local_config.volume_flag = False
+        self.local_config = StorageConfig()
 
     def hook_start(self):
         if self.cmd('pgrep glusterd', fail=False)['returncode'] != 0:
