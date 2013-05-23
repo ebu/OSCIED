@@ -152,7 +152,7 @@ class StorageHooks(CharmHooks):
         shutil.rmtree('/etc/glusterfs', ignore_errors=True)
         for brick in glob.glob('/exp*'):
             shutil.rmtree(brick, ignore_errors=True)
-        self.local_config = StorageConfig()
+        self.local_config.reset()
 
     def hook_start(self):
         if self.cmd('pgrep glusterd', fail=False)['returncode'] != 0:
