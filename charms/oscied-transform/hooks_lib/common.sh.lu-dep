@@ -262,6 +262,18 @@ hook_install()
   pecho 'Install OSCIED Library'
   python "$LIBRARY_PATH/setup.py" install || xecho 'Unable to install library' 4
 
+  pecho 'Install DashCash dependencies'
+  eval $install libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libavdevice-dev \
+    libavcodec-extra-53 zlib1g-dev || xecho 'Unable to install packages' 5
+
+  pecho 'Install GPAC/DashCast'
+  lib='gpac'
+  tar="$lib.tar.bz2"
+  rm -rf $lib 2>/dev/null; mkdir $lib; tar -xjf $tar -C $lib
+  cd $lib || xecho "Unable to find directory $lib" 6
+  ./configure; make -j$(threadsCount) && make install || xecho 'Unable to compile GPAC/DashCast' 7
+  cd ..; rm -rf $lib
+
   # FIXME this call is not necessary, but config-changed may create an infinite loop, so WE call it
   hook_config_changed
 }
