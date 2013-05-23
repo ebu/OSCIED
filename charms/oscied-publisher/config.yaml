@@ -25,11 +25,11 @@ options:
     description: Maximum time for http post.  Default value means 10 minutes
   mongo_connection:
     type: string
-    defaul: ""
+    default: ""
     description: Orchestrator database connection.  The 'connection' options override and disable transform relation.
   rabbit_connection:
     type: string
-    defaul: ""
+    default: ""
     description: Orchestrator message broker connection
   api_nat_socket:
     type: string
