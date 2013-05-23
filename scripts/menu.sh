@@ -26,6 +26,8 @@
 
 . ./common.sh
 
+RSYNC_UNIT_ID='0'  # FIXME temporary hack to avoid coding 10's lines of code
+
 main()
 {
   if [ $# -gt 0 ]; then
@@ -59,9 +61,9 @@ main()
     fi
   else
     # Initialize main menu
-    [ "$ORCHESTRA_URL" ] && a='' || a='[DISABLED] '
     while true
     do
+      [ "$ORCHESTRA_URL" ] && a='' || a='[DISABLED] '
       $DIALOG --backtitle 'OSCIED General Operations' \
               --menu 'Please select an operation' 0 0 0 \
               install              'Download / update documents and tools'             \
@@ -126,11 +128,8 @@ install()
   pecho 'Install prerequisites'
   eval $install bzr python-pip rst2pdf texlive-latex-recommended \
     texlive-latex-extra texlive-fonts-recommended || xecho 'Unable to install prerequisites'
-  $udo pip install --upgrade celery docutils flask ipaddr pygments pymongo requests sphinx \
-    sphinxcontrib-email sphinxcontrib-googlechart sphinxcontrib-httpdomain
-
-  pecho 'Update sublime text configuration'
-  find "$SUBLIME_PATH" -type f -exec sed -i "s:BASE_PATH:$BASE_PATH:g" {} \;
+  $udo pip install --upgrade celery coverage docutils flask ipaddr nose pygments pymongo rednose \
+    requests sphinx sphinxcontrib-email sphinxcontrib-googlechart sphinxcontrib-httpdomain
 
   pecho 'Download references'
   cd "$REFERENCES_PATH"|| xecho "Unable to find path $REFERENCES_PATH"
@@ -650,15 +649,15 @@ webui_test_common()
 
 rsync_helper()
 {
-  if [ $# -ne 1 ]; then
-    xecho "Usage: $(basename $0).rsync_publisher charm"
+  if [ $# -ne 2 ]; then
+    xecho "Usage: $(basename $0).rsync_publisher charm id"
   fi
 
   chmod 600 "$ID_RSA" || xecho 'Unable to find id_rsa certificate'
 
-  get_unit_public_url $true "$1"
+  get_unit_public_url $true "$1" "$2"
   host="ubuntu@$REPLY"
-  dest="/var/lib/juju/units/$1-1/charm"
+  dest="/var/lib/juju/units/$1-$2/charm"
   ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
   rsync -avhL --progress --delete -e "ssh -i '$ID_RSA'" --exclude=.git --exclude=config.json \
     --exclude=celeryconfig.py --exclude=*.pyc "$CHARMS_PATH/$1/" "$host:$dest/"
@@ -672,7 +671,7 @@ rsync_orchestra()
   fi
   ok=$true
 
-  rsync_helper 'oscied-orchestra'
+  rsync_helper 'oscied-orchestra' "$RSYNC_UNIT_ID"
 }
 
 rsync_publisher()
@@ -682,7 +681,7 @@ rsync_publisher()
   fi
   ok=$true
 
-  rsync_helper 'oscied-publisher'
+  rsync_helper 'oscied-publisher' "$RSYNC_UNIT_ID"
 }
 
 rsync_storage()
@@ -694,7 +693,7 @@ rsync_storage()
 
   chmod 600 "$ID_RSA" || xecho 'Unable to find id_rsa certificate'
 
-  rsync_helper 'oscied-storage'
+  rsync_helper 'oscied-storage' "$RSYNC_UNIT_ID"
 }
 
 rsync_transform()
@@ -704,7 +703,7 @@ rsync_transform()
   fi
   ok=$true
 
-  rsync_helper 'oscied-transform'
+  rsync_helper 'oscied-transform' "$RSYNC_UNIT_ID"
 }
 
 rsync_webui()
@@ -716,9 +715,9 @@ rsync_webui()
 
   chmod 600 "$ID_RSA" || xecho 'Unable to find id_rsa certificate'
 
-  rsync_helper 'oscied-webui'
+  rsync_helper 'oscied-webui' "$RSYNC_UNIT_ID"
 
-  get_unit_public_url $true 'oscied-webui'
+  get_unit_public_url $true 'oscied-webui' "$RSYNC_UNIT_ID"
   host="ubuntu@$REPLY"
   dest='/var/www'
   ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"

@@ -68,7 +68,6 @@ main()
       $DIALOG --backtitle 'OSCIED Operations with JuJu' \
               --menu 'Please select an operation' 0 0 0 \
               overwrite       'Overwrite charms in deployment path'      \
-              update          'Update code of charms in deployment path' \
               deploy          'Launch a deployment scenario'             \
               destroy         'Destroy a deployed environment'           \
               standalone      'Play with a charm locally (yes, really)'  \
@@ -112,29 +111,8 @@ overwrite_helper()
   mkdir -p "$CHARMS_DEPLOY_PATH" 2>/dev/null
   rm   -rf "$CHARMS_DEPLOY_PATH/$1" 2>/dev/null
   rsync -rtvh -LH --delete --progress --exclude='.git' --exclude='*.log' --exclude='*.pyc' \
-    --exclude='celeryconfig.py' "$CHARMS_PATH/$1/" "$CHARMS_DEPLOY_PATH/$1/"
-}
-
-update()
-{
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) update"
-  fi
-  ok=$true
-
-  update_helper 'oscied-orchestra' || xecho 'Unable to overwrite Orchestra charm'
-  update_helper 'oscied-publisher' || xecho 'Unable to overwrite Publisher charm'
-  update_helper 'oscied-storage'   || xecho 'Unable to overwrite Storage charm'
-  update_helper 'oscied-transform' || xecho 'Unable to overwrite Transform charm'
-  update_helper 'oscied-webui'     || xecho 'Unable to overwrite Web UI charm'
-  lu-importUtils "$CHARMS_DEPLOY_PATH"
-}
-
-update_helper()
-{
-  [ $# -ne 1 ] && xecho 'OUPS !'
-  rsync -rtvh -LH --progress --exclude='.git' --exclude='*.log' --exclude='*.pyc' \
-    --exclude='config.*' "$CHARMS_PATH/$1/" "$CHARMS_DEPLOY_PATH/$1/"
+    --exclude='celeryconfig.py' --exclude='build' --exclude='dist' --exclude='*.egg-info' \
+    "$CHARMS_PATH/$1/" "$CHARMS_DEPLOY_PATH/$1/"
 }
 
 deploy()
