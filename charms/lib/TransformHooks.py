@@ -25,11 +25,10 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import os, pymongo.uri_parser, re, shutil, time
+import os, multiprocessing, pymongo.uri_parser, re, setuptools.archive_util, shutil, time
 from CharmHooks import CharmHooks, DEFAULT_OS_ENV
 from TransformConfig import TransformConfig
 from pyutils.pyutils import first_that_exist, screen_launch, screen_list, screen_kill, try_makedirs
-
 
 class TransformHooks(CharmHooks):
 
@@ -182,10 +181,21 @@ class TransformHooks(CharmHooks):
         self.hook_uninstall()
         self.info('Install prerequisites and upgrade packages')
         self.cmd('apt-add-repository -y ppa:jon-severinsson/ffmpeg')
-        self.cmd('apt-get -y install ffmpeg ntp glusterfs-client nfs-common x264')
+        self.cmd('apt-get -y install ffmpeg ntp glusterfs-client nfs-common x264 libavcodec-dev '
+                 'libavformat-dev libavutil-dev libswscale-dev libavdevice-dev libavcodec-extra-53 '
+                 'zlib1g-dev')
         self.cmd('apt-get -y upgrade')
         self.info('Restart network time protocol service')
         self.cmd('service ntp restart')
+        self.info('Compile and install GPAC/DashCast')
+        shutil.rmtree('gpac', ignore_errors=True)
+        setuptools.archive_util.unpack_archive('gpac.tar.bz2', 'gpac')
+        os.chdir('gpac')
+        self.cmd('./configure')
+        self.cmd('make -j%s' % multiprocessing.cpu_count())
+        self.cmd('make install')
+        os.chdir('..')
+        shutil.rmtree('gpac')
         # FIXME not necessary, but config-changed may create an infinite loop, so WE call it
         self.hook_config_changed()
 
@@ -200,7 +210,9 @@ class TransformHooks(CharmHooks):
         self.hook_stop()
         self.storage_unregister()
         self.transform_unregister()
-        self.cmd('apt-get -y remove --purge ffmpeg glusterfs-server nfs-common x264')
+        self.cmd('apt-get -y remove --purge ffmpeg glusterfs-server nfs-common x264 libavcodec-dev '
+                 'libavformat-dev libavutil-dev libswscale-dev libavdevice-dev libavcodec-extra-53 '
+                 'zlib1g-dev')
         self.cmd('apt-get -y autoremove')
         self.local_config.reset()
 
