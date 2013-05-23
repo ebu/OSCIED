@@ -25,7 +25,7 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import os, shutil, time
+import os, pymongo.uri_parser, re, shutil, time
 from CharmHooks import CharmHooks, DEFAULT_OS_ENV
 from TransformConfig import TransformConfig
 from pyutils.pyutils import first_that_exist, screen_launch, screen_list, screen_kill, try_makedirs
@@ -36,7 +36,6 @@ class TransformHooks(CharmHooks):
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(TransformHooks, self).__init__(metadata, default_config, default_os_env)
         self.local_config = TransformConfig.read(local_config_filename, store_filename=True)
-        self.celery_config_file = 'celeryconfig.py'
         self.debug('My __dict__ is %s' % self.__dict__)
 
     # ----------------------------------------------------------------------------------------------
@@ -60,7 +59,7 @@ class TransformHooks(CharmHooks):
 
     # ----------------------------------------------------------------------------------------------
 
-    def storage_remount(self, address=None, fstype=None, mountpoint=None, options=None):
+    def storage_remount(self, address=None, fstype=None, mountpoint=None, options=''):
         if self.storage_config_is_enabled:
             self.info('Override storage parameters with charm configuration')
             address = self.config.storage_address
@@ -68,41 +67,36 @@ class TransformHooks(CharmHooks):
             fstype = self.config.storage_fstype
             mountpoint = self.config.storage_mountpoint
             options = self.config.storage_options
-        elif address is None or fstype is None or mountpoint is None or options is None:
-            return
-        else:
+        elif address and fstype and mountpoint:
             self.info('Use storage parameters from charm storage relation')
             nat_address = ''
-
+        else:
+            return
         if nat_address:
             self.info('Update hosts file to map storage internal address %s to %s' %
                       (address, nat_address))
-            with open('/etc/hosts', 'rw') as f:
-                lines = f.readlines()
-                #for line in lines:
-                #    print('line %s' % line)
-                #    if address in line:
-            #if grep -q "$ip" /etc/hosts:
-            #    sed -i "s<$nat_ip .*<$nat_ip $ip<" /etc/hosts
-            #else:
-            #    echo "$nat_ip $ip" >> /etc/hosts
-            #else:
-            #    nat_ip=$ip
-
-        self.storage_umount()
-
+            nat_line = '%s %s' % (nat_address, address)
+            with open(self.local_config.hosts_file, 'rw') as hosts_file:
+                data = hosts_file.read()
+                re.sub(re.escape(nat_address) + r' .*', nat_line, data)
+                if nat_line not in data:
+                    data.append(nat_line)
+                # FIXME maybe a better idea to write to a temporary file then rename it /etc/hosts
+                hosts_file.f.seek(0)
+                hosts_file.f.truncate()
+                hosts_file.write()
+        # FIXME avoid unregistering storage if it does not change ...
+        self.storage_unregister()
         self.info("Mount shared storage [%s] %s:%s type %s options '%s' -> %s" % (nat_address,
                   address, mountpoint, fstype, options, self.local_config.storage_path))
         try_makedirs(self.local_config.storage_path)
-
         # FIXME try 5 times, a better way to handle failure
         for i in range(5):
             if self.storage_is_mounted:
                 break
-            self.cmd(['mount', '-t', fstype, '-o', options, '%s:%s' % (nat_address, mountpoint),
-                      self.local_config.storage_path])
+            self.cmd(['mount', '-t', fstype, '-o', options, '%s:%s' %
+                     (nat_address, mountpoint), self.local_config.storage_path])
             time.sleep(5)
-
         if self.storage_is_mounted:
             # FIXME update /etc/fstab (?)
             self.info('Update configuration : Register shared storage')
@@ -113,7 +107,7 @@ class TransformHooks(CharmHooks):
         else:
             raise IOError('Unable to mount shared storage')
 
-    def storage_umount(self):
+    def storage_unregister(self):
         self.info('Update configuration : Unregister shared storage')
         self.local_config.storage_address = ''
         self.local_config.storage_fstype = ''
@@ -123,7 +117,6 @@ class TransformHooks(CharmHooks):
             # FIXME update /etc/fstab (?)
             self.info('Unmount shared storage (is actually mounted)')
             self.cmd(['umount', self.local_config.storage_path])
-            self.remark('Shared storage successfully unmounted')
         else:
             self.remark('Shared storage already unmounted')
 
@@ -131,58 +124,53 @@ class TransformHooks(CharmHooks):
         if self.storage_config_is_enabled:
             raise RuntimeError('Shared storage is set in config, storage relation is disabled')
 
-    def transform_hook_bypass(self):
+    # ----------------------------------------------------------------------------------------------
+
+    def transform_register(self, mongo=None, rabbit=None, socket=''):
         if self.transform_config_is_enabled:
-            raise RuntimeError('Orchestrator is set in config, transform relation is disabled')
-
-    def transform_register(self):
-        pass
-      # Overrides transform parameters with charm configuration
-      # if transform_config_is_enabled; then # if transform options are set
-      #   mongo=$MONGO_CONNECTION
-      #   rabbit=$RABBIT_CONNECTION
-      #   socket=$API_NAT_SOCKET
-      # # Or uses transform parameters from charm transform relation
-      # elif [ $# -eq 2 ]; then # if function parameters are set
-      #   mongo=$1
-      #   rabbit=$2
-      #   socket=''
-      # elif [ $# -eq 0 ]; then
-      #   return
-      # else
-      #   xecho "Usage: $(basename $0).transform_register mongo rabbit"
-      # fi
-
-      # pecho 'Configure Transform : Register the Orchestrator'
-      # setSettingJSON_STRING "$CONFIG_FILE" 'mongo_connection'  "$mongo"  || xecho 'Config' 1
-      # setSettingJSON_STRING "$CONFIG_FILE" 'rabbit_connection' "$rabbit" || xecho 'Config' 2
-      # setSettingJSON_STRING "$CONFIG_FILE" 'api_nat_socket'    "$socket" || xecho 'Config' 3
-
-      # host=$(expr match "$mongo" '.*mongodb://[^:]*:[^@]*@\([^:]*\):[0-9]*/[a-z]*.*')
-      # port=$(expr match "$mongo" '.*mongodb://[^:]*:[^@]*@[^:]*:\([0-9]*\)/[a-z]*.*')
-      # user=$(expr match "$mongo" '.*mongodb://\([^:]*\):[^@]*@[^:]*:[0-9]*/[a-z]*.*')
-      # password=$(expr match "$mongo" '.*mongodb://[^:]*:\([^@]*\)@[^:]*:[0-9]*/[a-z]*.*')
-      # database=$(expr match "$mongo" '.*mongodb://[^:]*:[^@]*@[^:]*:[0-9]*/\([a-z]*\).*')
-      # mecho "MongoDB host=$host, port=$port, user=$user, password=$password, database=$database"
-      # if [ ! "$host" -o ! "$port" -o ! "$user" -o ! "$password" -o ! "$database" ]; then
-      #   xecho 'Unable to parse MongoDB connection' 3
-      # fi
-
-      # a="s<RABBIT_CONNECTION<$rabbit<g"
-      # b="s<MONGO_HOST<$host<g"
-      # c="s<MONGO_PORT<$port<g"
-      # d="s<MONGO_USER<$user<g"
-      # e="s<MONGO_PASSWORD<$password<g"
-      # f="s<MONGO_DATABASE<$database<g"
-      # g="s<THE_CONCURRENCY<$THE_CONCURRENCY<g"
-      # sed "$a;$b;$c;$d;$e;$f;$g" "$CELERY_TEMPL_FILE" > "$CELERY_CONFIG_FILE" || xecho 'Config' 4
-      # recho "Orchestrator successfully registered, it's time to wake-up"
+            self.info('Override transform parameters with charm configuration')
+            mongo = self.config.mongo_connection
+            rabbit = self.config.rabbit_connection
+            socket = self.config.api_nat_socket
+        elif mongo and rabbit:
+            self.info('Use transform parameters from charm transform relation')
+            socket = ''
+        else:
+            return
+        self.info('Update configuration : Register the Orchestrator')
+        self.local_config.api_nat_socket = socket
+        try:
+            infos = pymongo.uri_parser.parse_uri(mongo)
+            host, port = infos['nodelist'][0]
+            username = infos['username']
+            password = infos['password']
+            database = infos['database']
+            assert(len(infos['nodelist']) == 1)
+            assert(host and port and username and password and database)
+        except:
+            raise ValueError('Unable to parse MongoDB connection %s' % mongo)
+        self.info('MongoDB connection is: %s' % infos)
+        with open(self.local_config.celery_template_file) as celery_template_file:
+            data = celery_template_file.read()
+            data.replace('RABBIT_CONNECTION', rabbit)
+            data.replace('MONGO_HOST', host)
+            data.replace('MONGO_PORT', port)
+            data.replace('MONGO_USER', username)
+            data.replace('MONGO_PASSWORD', password)
+            data.replace('MONGO_DATABASE', database)
+            data.replace('THE_CONCURRENCY', self.config.concurrency)
+            with open(self.local_config.celery_config_file, 'w') as celery_config_file:
+                celery_config_file.write(data)
+                self.remark('Orchestrator successfully registered')
 
     def transform_unregister(self):
         self.info('Update configuration : Unregister the Orchestrator')
         self.local_config.api_nat_socket = ''
-        shutil.rmtree(self.celery_config_file, ignore_errors=True)
-        self.remark('Orchestrator successfully unregistered')
+        shutil.rmtree(self.local_config.celery_config_file, ignore_errors=True)
+
+    def transform_hook_bypass(self):
+        if self.transform_config_is_enabled:
+            raise RuntimeError('Orchestrator is set in config, transform relation is disabled')
 
     # ----------------------------------------------------------------------------------------------
 
@@ -198,17 +186,19 @@ class TransformHooks(CharmHooks):
         self.hook_config_changed()
 
     def hook_config_changed(self):
-        # FIXME infinite loop is used as config-changed hook !
-        self.hook_stop()
+        # FIXME self.hook_stop()
         self.storage_remount()
         self.transform_register()
-        self.hook_start()
+        # FIXME self.hook_start()
 
     def hook_uninstall(self):
-        self.info('Uninstall prerequisities')
+        self.info('Uninstall prerequisities, unregister service and load default configuration')
         self.hook_stop()
+        self.storage_unregister()
+        self.transform_unregister()
         self.cmd('apt-get -y remove --purge ffmpeg glusterfs-server nfs-common x264')
         self.cmd('apt-get -y autoremove')
+        self.local_config = TransformConfig()
 
     def hook_start(self):
         if not self.storage_is_mounted():
