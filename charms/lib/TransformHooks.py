@@ -87,35 +87,40 @@ class TransformHooks(CharmHooks):
                 hosts_file.write()
         # FIXME avoid unregistering storage if it does not change ...
         self.storage_unregister()
-        self.info("Mount shared storage [%s] %s:%s type %s options '%s' -> %s" % (nat_address,
+        self.debug("Mount shared storage [%s] %s:%s type %s options '%s' -> %s" % (nat_address,
                   address, mountpoint, fstype, options, self.local_config.storage_path))
         try_makedirs(self.local_config.storage_path)
         # FIXME try 5 times, a better way to handle failure
         for i in range(5):
             if self.storage_is_mounted:
                 break
-            self.cmd(['mount', '-t', fstype, '-o', options, '%s:%s' %
-                     (nat_address, mountpoint), self.local_config.storage_path])
+            mount_address = '%s:/%s' % (nat_address or address, mountpoint)
+            mount_path = self.local_config.storage_path
+            if options:
+                self.cmd(['mount', '-t', fstype, '-o', options, mount_address, mount_path])
+            else:
+                self.cmd(['mount', '-t', fstype, mount_address, mount_path])
             time.sleep(5)
         if self.storage_is_mounted:
             # FIXME update /etc/fstab (?)
-            self.info('Update configuration : Register shared storage')
             self.local_config.storage_address = address
+            self.local_config.storage_nat_address = nat_address
             self.local_config.storage_fstype = fstype
             self.local_config.storage_mountpoint = mountpoint
             self.local_config.storage_options = options
+            self.remark('Shared storage successfully registered')
         else:
             raise IOError('Unable to mount shared storage')
 
     def storage_unregister(self):
-        self.info('Update configuration : Unregister shared storage')
+        self.info('Unregister shared storage')
         self.local_config.storage_address = ''
         self.local_config.storage_fstype = ''
         self.local_config.storage_mountpoint = ''
         self.local_config.storage_options = ''
         if self.storage_is_mounted:
             # FIXME update /etc/fstab (?)
-            self.info('Unmount shared storage (is actually mounted)')
+            self.remark('Unmount shared storage (is mounted)')
             self.cmd(['umount', self.local_config.storage_path])
         else:
             self.remark('Shared storage already unmounted')
@@ -137,7 +142,7 @@ class TransformHooks(CharmHooks):
             socket = ''
         else:
             return
-        self.info('Update configuration : Register the Orchestrator')
+        self.info('Register the Orchestrator')
         self.local_config.api_nat_socket = socket
         try:
             infos = pymongo.uri_parser.parse_uri(mongo)
@@ -149,7 +154,6 @@ class TransformHooks(CharmHooks):
             assert(host and port and username and password and database)
         except:
             raise ValueError('Unable to parse MongoDB connection %s' % mongo)
-        self.info('MongoDB connection is: %s' % infos)
         with open(self.local_config.celery_template_file) as celery_template_file:
             data = celery_template_file.read()
             data.replace('RABBIT_CONNECTION', rabbit)
@@ -164,7 +168,7 @@ class TransformHooks(CharmHooks):
                 self.remark('Orchestrator successfully registered')
 
     def transform_unregister(self):
-        self.info('Update configuration : Unregister the Orchestrator')
+        self.info('Unregister the Orchestrator')
         self.local_config.api_nat_socket = ''
         shutil.rmtree(self.local_config.celery_config_file, ignore_errors=True)
 
@@ -201,11 +205,11 @@ class TransformHooks(CharmHooks):
         self.local_config.reset()
 
     def hook_start(self):
-        if not self.storage_is_mounted():
+        if not self.storage_is_mounted:
             self.remark('Do not start transform daemon : No shared storage')
-        if not os.path.exists(self.celery_config_file):
+        elif not os.path.exists(self.local_config.celery_config_file):
             self.remark('Do not start transform daemon : No celery configuration file')
-        if len(self.rabbit_queues) == 0:
+        elif len(self.rabbit_queues) == 0:
             self.remark('Do not start transform daemon : No RabbitMQ queues declared')
         else:
             if screen_list('Transform', log=self.debug) == []:
@@ -229,14 +233,14 @@ class TransformHooks(CharmHooks):
         fstype = self.relation_get('fstype')
         mountpoint = self.relation_get('mountpoint')
         options = self.relation_get('options')
-        self.info('Storage address is %s, fstype: %s, mountpoint: %s, options: %s' %
+        self.debug('Storage address is %s, fstype: %s, mountpoint: %s, options: %s' %
                   (address, fstype, mountpoint, options))
-        if not address or not fstype or not mountpoint:
+        if address and fstype and mountpoint:
+            self.hook_stop()
+            self.storage_remount(address, fstype, mountpoint, options)
+            self.hook_start()
+        else:
             self.remark('Waiting for complete setup')
-            return
-        self.hook_stop()
-        self.storage_remount(address, fstype, mountpoint, options)
-        self.hook_start()
 
     def hook_storage_relation_broken(self):
         self.storage_hook_bypass()
@@ -251,14 +255,14 @@ class TransformHooks(CharmHooks):
         address = self.relation_get('private-address')
         mongo = self.relation_get('mongo_connection')
         rabbit = self.relation_get('rabbit_connection')
-        self.info('Orchestra address is %s, MongoDB is %s, RabbitMQ is %s' %
-                  (address, mongo, rabbit))
-        if not address or not mongo or not rabbit:
+        self.debug('Orchestra address is %s, MongoDB is %s, RabbitMQ is %s' %
+                   (address, mongo, rabbit))
+        if address and mongo and rabbit:
+            self.hook_stop()
+            self.transform_register(mongo, rabbit)
+            self.hook_start()
+        else:
             self.remark('Waiting for complete setup')
-            return
-        self.hook_stop()
-        self.transform_register(mongo, rabbit)
-        self.hook_start()
 
     def hook_transform_relation_broken(self):
         self.transform_hook_bypass()
