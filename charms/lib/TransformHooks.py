@@ -51,7 +51,7 @@ class TransformHooks(CharmHooks_Storage):
 
     # ----------------------------------------------------------------------------------------------
 
-    def transform_register(self, mongo=None, rabbit=None, socket=''):
+    def transform_register(self, mongo=None, rabbit=None):
         if self.transform_config_is_enabled:
             self.info('Override transform parameters with charm configuration')
             mongo = self.config.mongo_connection
@@ -66,23 +66,17 @@ class TransformHooks(CharmHooks_Storage):
         self.local_config.api_nat_socket = socket
         try:
             infos = pymongo.uri_parser.parse_uri(mongo)
-            host, port = infos['nodelist'][0]
-            username = infos['username']
-            password = infos['password']
-            database = infos['database']
             assert(len(infos['nodelist']) == 1)
-            assert(host and port and username and password and database)
+            infos['host'], infos['port'] = infos['nodelist'][0]
+            infos['rabbit'], infos['concurrency'] = rabbit, self.config.concurrency
+            del infos['nodelist']
+            assert(infos['host'] and infos['port'] and infos['username'] and infos['password'] and
+                   infos['database'])
         except:
             raise ValueError('Unable to parse MongoDB connection %s' % mongo)
         with open(self.local_config.celery_template_file) as celery_template_file:
             data = celery_template_file.read()
-            data.replace('RABBIT_CONNECTION', rabbit)
-            data.replace('MONGO_HOST', host)
-            data.replace('MONGO_PORT', port)
-            data.replace('MONGO_USER', username)
-            data.replace('MONGO_PASSWORD', password)
-            data.replace('MONGO_DATABASE', database)
-            data.replace('THE_CONCURRENCY', self.config.concurrency)
+            data = data.format(**infos)
             with open(self.local_config.celery_config_file, 'w') as celery_config_file:
                 celery_config_file.write(data)
                 self.remark('Orchestrator successfully registered')

@@ -30,19 +30,19 @@ import sys
 
 sys.path.append('.')
 
-BROKER_URL = 'RABBIT_CONNECTION'
+BROKER_URL = '{rabbit}'
 CELERY_RESULT_BACKEND = 'mongodb'
-CELERY_MONGODB_BACKEND_SETTINGS = {
-    'host': 'MONGO_HOST',
-    'port': 'MONGO_PORT',
-    'user': 'MONGO_USER',
-    'password': 'MONGO_PASSWORD',
-    'database': 'MONGO_DATABASE',
+CELERY_MONGODB_BACKEND_SETTINGS = {{
+    'host': '{host}',
+    'port': '{port}',
+    'user': '{username}',
+    'password': '{password}',
+    'database': '{database}',
     'taskmeta_collection': 'taskmeta',
-}
+}}
 
 CELERY_IMPORTS = ('lib.Transform',)
-CELERYD_CONCURRENCY = THE_CONCURRENCY
+CELERYD_CONCURRENCY = {concurrency}
 CELERY_IGNORE_RESULT = False
 CELERY_SEND_EVENTS = True
 CELERY_TASK_SERIALIZER = 'json'
