@@ -191,7 +191,7 @@ storage_upload_media()
   get_unit_public_url $true 'oscied-storage'
   host="ubuntu@$REPLY"
   bkp_path='/home/ubuntu/uploads'
-  dst_path="/exp1/uploads"
+  dst_path="/exp0/uploads"
   chmod 600 "$ID_RSA" || xecho 'Unable to find id_rsa certificate'
   rsync -ah --progress --rsync-path='sudo rsync' -e "ssh -i '$ID_RSA'" "$1" "$host:$bkp_path/" || \
     xecho "Unable to copy media file to $bkp_path path in storage"
