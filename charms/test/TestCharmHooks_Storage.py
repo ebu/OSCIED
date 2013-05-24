@@ -25,7 +25,7 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import pyutils.pyutils, shutil
+import os, pyutils.pyutils, shutil
 from copy import copy
 from mock import call
 from nose.tools import assert_equal
@@ -71,26 +71,43 @@ class TestCharmHooks_Storage(object):
         hooks.local_config = TransformConfig()
         hooks.local_config.storage_mount_sleep_delay = 0.01
         shutil.copy(hooks.local_config.hosts_file, 'hosts')
+        system_hosts = open(hooks.local_config.hosts_file).readlines()
         hooks.local_config.hosts_file = 'hosts'  # Avoid writing to system hosts file !
-        return hooks
+        return hooks, system_hosts
+
+    def tearDown(self):
+        os.remove('hosts')
 
     def test_storage_remount_no_storage_at_all(self):
-        self.hooks = self.create_hooks(CharmHooks_Storage, CONFIG_DEFAULT)
+        self.hooks, system_hosts = self.create_hooks(CharmHooks_Storage, CONFIG_DEFAULT)
         self.hooks.cmd = mock_cmd()
         self.hooks.storage_remount()
         assert_equal(self.hooks.cmd.call_args_list, [])
+        assert_equal(system_hosts, open(self.hooks.local_config.hosts_file).readlines())
+
+    def test_storage_remount_storage_config_nat_hosts_updated(self):
+        self.hooks, system_hosts = self.create_hooks(CharmHooks_Storage_tmp, CONFIG_STORAGE_NAT)
+        self.hooks.cmd = mock_cmd()
+        pyutils.pyutils.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
+        self.hooks.storage_remount()
+        assert_equal(
+            self.hooks.cmd.call_args_list,
+            [call(['mount', '-t', 'glusterfs', 'proxy.ch:/medias_volume_0', '/mnt/storage'])])
+        assert('proxy.ch home.ch' in open(self.hooks.local_config.hosts_file).readlines()[-1])
+        assert_equal(system_hosts, open(self.hooks.local_config.hosts_file).readlines()[:-1])
 
     def test_storage_remount_storage_config(self):
-        self.hooks = self.create_hooks(CharmHooks_Storage_tmp, CONFIG_STORAGE)
+        self.hooks, system_hosts = self.create_hooks(CharmHooks_Storage_tmp, CONFIG_STORAGE)
         self.hooks.cmd = mock_cmd()
         pyutils.pyutils.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
         self.hooks.storage_remount()
         assert_equal(
             self.hooks.cmd.call_args_list,
             [call(['mount', '-t', 'glusterfs', 'home.ch:/medias_volume_0', '/mnt/storage'])])
+        assert_equal(system_hosts, open(self.hooks.local_config.hosts_file).readlines())
 
     def test_storage_remount_storage_config_do_not_re_re_mount(self):
-        self.hooks = self.create_hooks(CharmHooks_Storage_tmp, CONFIG_STORAGE)
+        self.hooks, system_hosts = self.create_hooks(CharmHooks_Storage_tmp, CONFIG_STORAGE)
         self.hooks.cmd = mock_cmd()
         pyutils.pyutils.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
         self.hooks.storage_remount()
@@ -100,9 +117,10 @@ class TestCharmHooks_Storage(object):
         assert_equal(
             self.hooks.cmd.call_args_list,
             [call(['mount', '-t', 'glusterfs', 'home.ch:/medias_volume_0', '/mnt/storage'])])
+        assert_equal(system_hosts, open(self.hooks.local_config.hosts_file).readlines())
 
     def test_storage_remount_do_not_re_re_mount(self):
-        self.hooks = self.create_hooks(CharmHooks_Storage_tmp, CONFIG_DEFAULT)
+        self.hooks, system_hosts = self.create_hooks(CharmHooks_Storage_tmp, CONFIG_DEFAULT)
         self.hooks.cmd = mock_cmd()
         pyutils.pyutils.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
         self.hooks.storage_remount(address='home.ch', fstype='glusterfs', mountpoint='my_vol_0')
@@ -112,6 +130,7 @@ class TestCharmHooks_Storage(object):
         assert_equal(
             self.hooks.cmd.call_args_list,
             [call(['mount', '-t', 'glusterfs', 'home.ch:/my_vol_0', '/mnt/storage'])])
+        assert_equal(system_hosts, open(self.hooks.local_config.hosts_file).readlines())
 
 if __name__ == '__main__':
     import nose

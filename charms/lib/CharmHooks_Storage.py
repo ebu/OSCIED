@@ -65,16 +65,9 @@ class CharmHooks_Storage(CharmHooks):
         if nat_address:
             self.info('Update hosts file to map storage internal address %s to %s' %
                       (address, nat_address))
-            nat_line = '%s %s' % (nat_address, address)
-            with open(self.local_config.hosts_file, 'rw') as hosts_file:
-                data = hosts_file.read()
-                re.sub(re.escape(nat_address) + r' .*', nat_line, data)
-                if nat_line not in data:
-                    data.append(nat_line)
-                # FIXME maybe a better idea to write to a temporary file then rename it /etc/hosts
-                hosts_file.f.seek(0)
-                hosts_file.f.truncate()
-                hosts_file.write()
+            lines = filter(lambda l: nat_address not in l, open(self.local_config.hosts_file))
+            lines += '%s %s\n' % (nat_address, address)
+            open(self.local_config.hosts_file, 'w').write(''.join(lines))
         # Avoid unregistering and registering storage if it does not change ...
         if address == self.local_config.storage_address and \
            nat_address == self.local_config.storage_nat_address and \
