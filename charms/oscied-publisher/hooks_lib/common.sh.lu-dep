@@ -265,8 +265,8 @@ hook_install()
   eval $service ntp restart || xecho 'Unable to restart ntp service' 2
 
   pecho 'Install python, Apache 2 Web Server and Gluster Filesystem'
-  eval $install apache2 apache2-threaded-dev make python python-dev python-pip glusterfs-client \
-    nfs-common || xecho 'Unable to install packages' 3
+  eval $install apache2 apache2-threaded-dev git-core make python python-dev python-pip \
+    glusterfs-client nfs-common || xecho 'Unable to install packages' 3
   #rm -rf /var/www/*
 
   pecho 'Install Apache 2 H.264 streaming module'
