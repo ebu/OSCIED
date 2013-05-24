@@ -1,4 +1,2 @@
-#!/bin/bash
-
-. hooks_lib/common.sh
-hook_storage_relation_joined
+#!/usr/bin/env bash
+python lib/PublisherHooks.py storage-relation-joined

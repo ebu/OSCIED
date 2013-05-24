@@ -1,4 +1,2 @@
-#!/bin/bash
-
-. hooks_lib/common.sh
-hook_config_changed
+#!/usr/bin/env bash
+python lib/PublisherHooks.py config-changed
