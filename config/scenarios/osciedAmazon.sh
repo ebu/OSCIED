@@ -31,6 +31,7 @@ osciedAmazonScenario()
   cfg="$CONFIG_JUJU_PATH/osciedAmazon.yaml"
   cp -f "$cfg" "$CONFIG_GEN_CONFIG_FILE"
   tm='instance-type=t1.micro'
+  mm='instance-type=m1.medium'
 
   techo '1/5 Cleanup and bootstrap JuJu environment'
 
@@ -59,11 +60,11 @@ osciedAmazonScenario()
   if [ $REPLY -eq $true ]; then
     if [ -f "$cfg" ]; then
       mecho "Using user define Web UI configuration : $cfg"
-      juju deploy --environment 'amazon' --constraints "$tm" --config "$cfg" \
+      juju deploy --environment 'amazon' --constraints "$mm" --config "$cfg" \
         --repository=. local:$RELEASE/oscied-webui || xecho '1'
     else
       mecho 'Using default Web UI configuration'
-      juju deploy --environment 'amazon' --constraints "$tm" \
+      juju deploy --environment 'amazon' --constraints "$mm" \
         --repository=. local:$RELEASE/oscied-webui || xecho '1'
     fi
     juju expose --environment 'amazon' oscied-webui || xecho '2'
@@ -89,11 +90,11 @@ osciedAmazonScenario()
   if [ $REPLY -eq $true ]; then
     if [ -f "$cfg" ]; then
       mecho "Using user define Transform configuration : $cfg"
-      juju deploy --environment 'amazon' --constraints "$tm" --config "$cfg" \
+      juju deploy --environment 'amazon' --constraints "$mm" --config "$cfg" \
         --repository=. local:$RELEASE/oscied-transform || xecho '1'
     else
       mecho 'Using default Transform configuration'
-      juju deploy --environment 'amazon' --constraints "$tm" \
+      juju deploy --environment 'amazon' --constraints "$mm" \
         --repository=. local:$RELEASE/oscied-transform || xecho '1'
     fi
   fi
