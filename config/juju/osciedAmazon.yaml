@@ -11,6 +11,7 @@ oscied-orchestra:
   mongo_nodes_password: "M2qlif8rdtKtBYil"
   rabbit_password: "OZy23iO0D4UpYS2k"
   storage_ip: ""
+  storage_nat_ip: ""
   storage_fstype: ""
   storage_mountpoint: ""
   storage_options: ""
@@ -23,20 +24,25 @@ oscied-publisher:
   max_input_time: 600
   mongo_connection: ""
   rabbit_connection: ""
+  api_nat_socket: ""
   storage_ip: ""
+  storage_nat_ip: ""
   storage_fstype: ""
   storage_mountpoint: ""
   storage_options: ""
 oscied-storage:
-  verbose: "false"
-  replica_count: 1
+  verbose: "true"
+  allowed_ips: "*"
+  replica_count: 2
 oscied-transform:
-  verbose: "false"
+  verbose: "true"
   concurrency: 1
   rabbit_queues: "transform_private"
   mongo_connection: ""
   rabbit_connection: ""
-  storage_ip: ""
+  api_nat_socket: ""
+  storage_address: ""
+  storage_nat_address: ""
   storage_fstype: ""
   storage_mountpoint: ""
   storage_options: ""
@@ -48,7 +54,9 @@ oscied-webui:
   mysql_my_password: "OKDvS0B3DCZIJKcX"
   mysql_root_password: "OKDvS0B3DCZIJKcX"
   mysql_user_password: "HydI1iM6Dfh3vuls"
+  api_url: ""
   storage_ip: ""
+  storage_nat_ip: ""
   storage_fstype: ""
   storage_mountpoint: ""
   storage_options: ""
