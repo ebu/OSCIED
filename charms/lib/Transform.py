@@ -43,6 +43,7 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
 
     try:
         # Avoid 'referenced before assignment'
+        callback = None
         media_out = None
         encoder_out = ''
         request = current_task.request
@@ -53,7 +54,7 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
         print('%s Transform job started' % (request.id))
 
         # Read current configuration to translate files uri to local paths
-        config = TransformConfig.read('config.json')
+        config = TransformConfig.read('../local_config.pkl')
         print object2json(config, True)
 
         # Load and check task parameters
@@ -224,6 +225,10 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
         data_json = object2json({
             'job_id': request.id,
             'status': 'ERROR\n%s\n\nOUTPUT\n%s' % (str(error), encoder_out,)}, False)
-        result = callback.post(data_json)
-        print('%s Code %s %s : %s' % (request.id, result.status_code, result.reason, result._content))
+        if callback is None:
+            print('%s [ERROR] Unable to callback orchestrator: %s' % (request.id, data_json))
+        else:
+            result = callback.post(data_json)
+            print('%s Code %s %s : %s' %
+                  (request.id, result.status_code, result.reason, result._content))
         raise

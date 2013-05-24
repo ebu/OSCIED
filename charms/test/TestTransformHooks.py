@@ -40,11 +40,11 @@ CONFIG_DEFAULT = {
 }
 
 CONFIG_TRANSFORM = {
-    'verbose': False, 'concurrency': 1, 'rabbit_queues': 'transform_private',
+    'verbose': True, 'concurrency': 2, 'rabbit_queues': 'transform_other',
     'mongo_connection': 'mongodb://tabby:miaow@home.ch:27017/mydb',
-    'rabbit_connection': 'the_rabbit_connection', 'api_nat_socket': '',
-    'storage_address': 'storage.com', 'storage_nat_address': '', 'storage_fstype': 'glusterfs',
-    'storage_mountpoint': 'medias_volume_0', 'storage_options': ''
+    'rabbit_connection': 'another_rabbit_connection', 'api_nat_socket': 'the_nat_socket',
+    'storage_address': '', 'storage_nat_address': '', 'storage_fstype': '',
+    'storage_mountpoint': '', 'storage_options': ''
 }
 
 OS_ENV = copy(DEFAULT_OS_ENV)
@@ -69,6 +69,9 @@ class TestTransformHooks(object):
         local_config = TransformConfig()
         local_config.write('test.pkl')
 
+    def tearDown(self):
+        os.remove('test.pkl')
+
     def test_transform_register_default(self):
         self.hooks = TransformHooks(None, CONFIG_DEFAULT, 'test.pkl', OS_ENV)
         self.hooks.local_config.celery_template_file = os.path.join(
@@ -84,6 +87,20 @@ class TestTransformHooks(object):
             'host': 'home.ch', 'port': '27017', 'user': 'tabby', 'password': 'miaow',
             'database': 'mydb', 'taskmeta_collection': 'taskmeta'})
         assert_equal(celeryconfig['CELERYD_CONCURRENCY'], self.hooks.config.concurrency)
+
+    def test_transform_register_transform(self):
+        self.hooks = TransformHooks(None, CONFIG_TRANSFORM, 'test.pkl', OS_ENV)
+        self.hooks.local_config.celery_template_file = os.path.join(
+            '../oscied-transform', self.hooks.local_config.celery_template_file)
+        self.hooks.transform_register(mongo='fail', rabbit='fail')
+        assert_equal(self.hooks.local_config.api_nat_socket, CONFIG_TRANSFORM['api_nat_socket'])
+        celeryconfig = {}
+        execfile(self.hooks.local_config.celery_config_file, celeryconfig)
+        assert_equal(celeryconfig['BROKER_URL'], CONFIG_TRANSFORM['rabbit_connection'])
+        assert_equal(celeryconfig['CELERY_MONGODB_BACKEND_SETTINGS'], {
+            'host': 'home.ch', 'port': '27017', 'user': 'tabby', 'password': 'miaow',
+            'database': 'mydb', 'taskmeta_collection': 'taskmeta'})
+        assert_equal(celeryconfig['CELERYD_CONCURRENCY'], CONFIG_TRANSFORM['concurrency'])
 
 if __name__ == '__main__':
     import nose

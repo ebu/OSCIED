@@ -1,7 +1,7 @@
 ccopy_reg
 _reconstructor
 p0
-(cTransformConfig
+(c__main__
 TransformConfig
 p1
 c__builtin__
@@ -33,7 +33,7 @@ p14
 g7
 sS'celery_config_file'
 p15
-S'celeryconfig.py'
+S'lib/celeryconfig.py'
 p16
 sS'api_nat_socket'
 p17

@@ -140,8 +140,12 @@ class TransformHooks(CharmHooks_Storage):
             self.remark('Do not start transform daemon : No RabbitMQ queues declared')
         else:
             if screen_list('Transform', log=self.debug) == []:
-                screen_launch('Transform',
-                              ['celeryd', '--config', 'celeryconfig', '-Q', self.rabbit_queues])
+                os.chdir('lib')
+                try:
+                    screen_launch('Transform',
+                                  ['celeryd', '--config', 'celeryconfig', '-Q', self.rabbit_queues])
+                finally:
+                    os.chdir('..')
             time.sleep(5)
             if screen_list('Transform', log=self.debug) == []:
                 raise RuntimeError('Transform is not ready')

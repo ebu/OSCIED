@@ -33,7 +33,7 @@ class TransformConfig(PickleableObject):
 
     def __init__(self, api_nat_socket='', storage_address='', storage_fstype='',
                  storage_mountpoint='', storage_options='', storage_path='/mnt/storage',
-                 hosts_file='/etc/hosts', celery_config_file='celeryconfig.py',
+                 hosts_file='/etc/hosts', celery_config_file='lib/celeryconfig.py',
                  celery_template_file='templates/celeryconfig.py.template'):
         self.api_nat_socket = api_nat_socket
         self.storage_address = storage_address
@@ -87,7 +87,7 @@ class TransformConfig(PickleableObject):
         self.storage_options = ''
         self.storage_path = '/mnt/storage'
         self.hosts_file = '/etc/hosts'
-        self.celery_config_file = 'celeryconfig.py'
+        self.celery_config_file = 'lib/celeryconfig.py'
         self.celery_template_file = 'templates/celeryconfig.py.template'
 
 TRANSFORM_CONFIG_TEST = TransformConfig('129.194.185.47:5000', '10.1.1.2', 'glusterfs',
