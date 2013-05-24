@@ -75,32 +75,39 @@ class CharmHooks_Storage(CharmHooks):
                 hosts_file.f.seek(0)
                 hosts_file.f.truncate()
                 hosts_file.write()
-        # FIXME avoid unregistering storage if it does not change ...
-        self.storage_unregister()
-        self.debug("Mount shared storage [%s] %s:%s type %s options '%s' -> %s" % (nat_address,
-                   address, mountpoint, fstype, options, self.local_config.storage_path))
-        try_makedirs(self.local_config.storage_path)
-        # FIXME try 5 times, a better way to handle failure
-        for i in range(5):
-            if self.storage_is_mounted:
-                break
-            mount_address = '%s:/%s' % (nat_address or address, mountpoint)
-            mount_path = self.local_config.storage_path
-            if options:
-                self.cmd(['mount', '-t', fstype, '-o', options, mount_address, mount_path])
-            else:
-                self.cmd(['mount', '-t', fstype, mount_address, mount_path])
-            time.sleep(5)
-        if self.storage_is_mounted:
-            # FIXME update /etc/fstab (?)
-            self.local_config.storage_address = address
-            self.local_config.storage_nat_address = nat_address
-            self.local_config.storage_fstype = fstype
-            self.local_config.storage_mountpoint = mountpoint
-            self.local_config.storage_options = options
-            self.remark('Shared storage successfully registered')
+        # Avoid unregistering and registering storage if it does not change ...
+        if address == self.local_config.storage_address and \
+           nat_address == self.local_config.storage_nat_address and \
+           fstype == self.local_config.storage_fstype and \
+           mountpoint == self.local_config.storage_mountpoint and \
+           options == self.local_config.storage_options:
+            self.remark('Skip remount already mounted shared storage')
         else:
-            raise IOError('Unable to mount shared storage')
+            self.storage_unregister()
+            self.debug("Mount shared storage [%s] %s:%s type %s options '%s' -> %s" % (nat_address,
+                       address, mountpoint, fstype, options, self.local_config.storage_path))
+            try_makedirs(self.local_config.storage_path)
+            # FIXME try X times, a better way to handle failure
+            for i in range(self.local_config.storage_mount_max_retry):
+                if self.storage_is_mounted:
+                    break
+                mount_address = '%s:/%s' % (nat_address or address, mountpoint)
+                mount_path = self.local_config.storage_path
+                if options:
+                    self.cmd(['mount', '-t', fstype, '-o', options, mount_address, mount_path])
+                else:
+                    self.cmd(['mount', '-t', fstype, mount_address, mount_path])
+                time.sleep(self.local_config.storage_mount_sleep_delay)
+            if self.storage_is_mounted:
+                # FIXME update /etc/fstab (?)
+                self.local_config.storage_address = address
+                self.local_config.storage_nat_address = nat_address
+                self.local_config.storage_fstype = fstype
+                self.local_config.storage_mountpoint = mountpoint
+                self.local_config.storage_options = options
+                self.remark('Shared storage successfully registered')
+            else:
+                raise IOError('Unable to mount shared storage')
 
     def storage_unregister(self):
         self.info('Unregister shared storage')

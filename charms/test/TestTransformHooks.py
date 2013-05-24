@@ -27,7 +27,6 @@
 
 import os
 from copy import copy
-from mock import Mock
 from nose.tools import assert_equal
 from lib.CharmHooks import DEFAULT_OS_ENV
 from lib.TransformConfig import TransformConfig
@@ -50,17 +49,6 @@ CONFIG_TRANSFORM = {
 OS_ENV = copy(DEFAULT_OS_ENV)
 OS_ENV['JUJU_UNIT_NAME'] = 'oscied-transform/0'
 RETURNS = []
-
-
-def mock_cmd(stdout='', stderr='', returncode=0):
-    return Mock(return_value={'stdout': stdout, 'stderr': stderr, 'returncode': returncode})
-
-
-def side_effect(*args, **kwargs):
-    result = RETURNS.pop(0)
-    if isinstance(result, Exception):
-        raise result
-    return result
 
 
 class TestTransformHooks(object):
