@@ -36,7 +36,8 @@ class PublisherConfig(PickleableObject):
                  storage_mount_max_retry=5, storage_mount_sleep_delay=5,
                  hosts_file='/etc/hosts', celery_config_file='lib/celeryconfig.py',
                  celery_template_file='templates/celeryconfig.py.template',
-                 apache_config_file='/etc/apache2/apache2.conf'):
+                 apache_config_file='/etc/apache2/apache2.conf',
+                 publish_uri='', publish_path='/var/www'):
         self.api_nat_socket = api_nat_socket
         self.storage_address = storage_address
         self.storage_fstype = storage_fstype
@@ -49,6 +50,8 @@ class PublisherConfig(PickleableObject):
         self.celery_config_file = celery_config_file
         self.celery_template_file = celery_template_file
         self.apache_config_file = apache_config_file
+        self.publish_uri = publish_uri
+        self.publish_path = publish_path
 
     def __repr__(self):
         return str(self.__dict__)
@@ -84,7 +87,10 @@ class PublisherConfig(PickleableObject):
                 self.storage_fstype, self.storage_address, self.storage_mountpoint)
         return None
 
-    def reset(self):
+    def update_publish_uri(self, public_address):
+        self.publish_uri = 'http://%s' % public_address
+
+    def reset(self, reset_publish_uri=False):
         self.api_nat_socket = ''
         self.storage_address = ''
         self.storage_fstype = ''
@@ -95,6 +101,9 @@ class PublisherConfig(PickleableObject):
         self.celery_config_file = 'lib/celeryconfig.py'
         self.celery_template_file = 'templates/celeryconfig.py.template'
         self.apache_config_file = '/etc/apache2/apache2.conf'
+        if reset_publish_uri:
+            self.publish_uri = ''
+        self.publish_path = '/var/www'
 
 PUBLISHER_CONFIG_TEST = PublisherConfig('129.194.185.47:5000', '10.1.1.2', 'glusterfs',
                                         'medias_volume', '')

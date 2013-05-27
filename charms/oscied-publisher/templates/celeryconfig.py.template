@@ -41,7 +41,7 @@ CELERY_MONGODB_BACKEND_SETTINGS = {{
     'taskmeta_collection': 'taskmeta',
 }}
 
-CELERY_IMPORTS = ('Transform',)
+CELERY_IMPORTS = ('Publisher',)
 CELERYD_CONCURRENCY = {concurrency}
 CELERY_IGNORE_RESULT = False
 CELERY_SEND_EVENTS = True

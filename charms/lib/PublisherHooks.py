@@ -42,6 +42,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(PublisherHooks, self).__init__(metadata, default_config, default_os_env)
         self.local_config = PublisherConfig.read(local_config_filename, store_filename=True)
+        self.local_config.update_publish_uri(self.public_address)
         self.debug('My __dict__ is %s' % self.__dict__)
 
     # ----------------------------------------------------------------------------------------------
@@ -50,14 +51,14 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         self.hook_uninstall()
         self.info('Install prerequisites and upgrade packages')
         self.cmd('apt-add-repository -y ppa:jon-severinsson/ffmpeg')
-        self.cmd('apt-get -y install %s' % ''.join(PublisherHooks.PACKAGES))
+        self.cmd('apt-get -y install %s' % ' '.join(PublisherHooks.PACKAGES))
         self.cmd('apt-get -y upgrade')
         self.info('Restart network time protocol service')
         self.cmd('service ntp restart')
         self.info('Compile and install Apache H.264 streaming module')
         mod_streaming = 'mod_h264_streaming-2.2.7'
         shutil.rmtree(mod_streaming, ignore_errors=True)
-        setuptools.archive_util.unpack_archive('apache_%s.tar.gz' % mod_streaming, mod_streaming)
+        setuptools.archive_util.unpack_archive('apache_%s.tar.gz' % mod_streaming, '.')
         os.chdir(mod_streaming)
         self.cmd('./configure --with-apxs=%s' % self.cmd('which apxs2')['stdout'])
         self.cmd('make -j%s' % multiprocessing.cpu_count())
@@ -70,6 +71,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         lines = filter(lambda l: l not in mods, open(self.local_config.apache_config_file))
         lines += '\n'.join(mods) + '\n'
         open(self.local_config.hosts_file, 'w').write(''.join(lines))
+        self.open_port(80, 'TCP')
         # FIXME not necessary, but config-changed may create an infinite loop, so WE call it
         self.hook_config_changed()
 
@@ -84,14 +86,14 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         self.hook_stop()
         self.storage_unregister()
         self.subordinate_unregister()
-        self.cmd('apt-get -y remove --purge %s' % ''.join(PublisherHooks.PACKAGES))
+        self.cmd('apt-get -y remove --purge %s' % ' '.join(PublisherHooks.PACKAGES))
         self.cmd('apt-get -y remove --purge apache2.2-common', fail=False)  # Fixes some problems
         self.cmd('apt-get -y autoremove')
         shutil.rmtree('/etc/apache2/', ignore_errors=True)
-        shutil.rmtree('/var/www/', ignore_errors=True)
+        shutil.rmtree(self.local_config.publish_path, ignore_errors=True)
         shutil.rmtree('/var/log/apache2/', ignore_errors=True)
-        os.makedirs('/var/www/')
-        self.local_config.reset()
+        os.makedirs(self.local_config.publish_path)
+        self.local_config.reset(reset_publish_uri=False)
 
     def hook_start(self):
         if not self.storage_is_mounted:
@@ -117,7 +119,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
 
     def hook_stop(self):
         screen_kill('Publisher', log=self.debug)
-        self.cmd('service apache2 stop')
+        self.cmd('service apache2 stop', fail=False)
 
     def hooks_footer(self):
         self.info('Save (updated) local configuration %s' % self.local_config)

@@ -36,7 +36,7 @@ from pyutils.pyutils import first_that_exist, screen_launch, screen_list, screen
 class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
 
     PACKAGES = tuple(set(CharmHooks_Storage.PACKAGES + CharmHooks_Subordinate.PACKAGES +
-                    ('ffmpeg', 'ntp', 'x264', 'libavcodec-dev ', 'libavformat-dev', 'libavutil-dev',
+                    ('ffmpeg', 'ntp', 'x264', 'libavcodec-dev', 'libavformat-dev', 'libavutil-dev',
                      'libswscale-dev', 'libavdevice-dev', 'libavcodec-extra-53', 'zlib1g-dev')))
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
@@ -50,7 +50,7 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
         self.hook_uninstall()
         self.info('Install prerequisites and upgrade packages')
         self.cmd('apt-add-repository -y ppa:jon-severinsson/ffmpeg')
-        self.cmd('apt-get -y install %s' % ''.join(TransformHooks.PACKAGES))
+        self.cmd('apt-get -y install %s' % ' '.join(TransformHooks.PACKAGES))
         self.cmd('apt-get -y upgrade')
         self.info('Restart network time protocol service')
         self.cmd('service ntp restart')
@@ -77,7 +77,7 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
         self.hook_stop()
         self.storage_unregister()
         self.subordinate_unregister()
-        self.cmd('apt-get -y remove --purge %s' % ''.join(TransformHooks.PACKAGES))
+        self.cmd('apt-get -y remove --purge %s' % ' '.join(TransformHooks.PACKAGES))
         self.cmd('apt-get -y autoremove')
         self.local_config.reset()
 

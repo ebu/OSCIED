@@ -44,6 +44,7 @@ def publish_job(user_json, media_json, callback_json):
 
     try:
         # Avoid 'referenced before assignment'
+        callback = None
         media_path = None
         publish_path = None
         request = current_task.request
@@ -53,6 +54,10 @@ def publish_job(user_json, media_json, callback_json):
         start_time = time.time()
         print('%s Publish job started' % (request.id))
 
+        # Read current configuration to translate files uri to local paths
+        config = PublisherConfig.read('../local_config.pkl')
+        print object2json(config, True)
+
         # Load and check task parameters
         user = User.load(user_json)
         media = Media.load(media_json)
@@ -60,10 +65,6 @@ def publish_job(user_json, media_json, callback_json):
         user.is_valid(True)
         media.is_valid(True)
         callback.is_valid(True)
-
-        # Read current configuration to translate files uri to local paths
-        config = PublisherConfig.read('config.json')
-        print object2json(config, True)
 
         # Update callback socket according to configuration
         if config.api_nat_socket and len(config.api_nat_socket) > 0:
@@ -142,6 +143,10 @@ def publish_job(user_json, media_json, callback_json):
         print('%s Publish job failed ' % (request.id))
         print('%s Callback : Something went wrong' % (request.id))
         data_json = object2json({'job_id': request.id, 'status': str(error)}, False)
-        result = callback.post(data_json)
-        print('%s Code %s %s : %s' % (request.id, result.status_code, result.reason, result._content))
-        raise error
+        if callback is None:
+            print('%s [ERROR] Unable to callback orchestrator: %s' % (request.id, data_json))
+        else:
+            result = callback.post(data_json)
+            print('%s Code %s %s : %s' %
+                  (request.id, result.status_code, result.reason, result._content))
+        raise
