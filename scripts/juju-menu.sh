@@ -375,14 +375,14 @@ config()
         xecho 'Unable to detect storage internal IP address'
       else
         mecho "Updating common.sh with detected storage internal IP = $REPLY"
-        sed -i "s#STORAGE_PRIVATE_IP=.*#STORAGE_PRIVATE_IP='$REPLY'#" common.sh
+        sed -i "s#STORAGE_PRIVATE_IP=.*#STORAGE_PRIVATE_IP='$REPLY'#" "$SCRIPTS_PATH/common.sh"
       fi
       get_unit_config 'oscied-orchestra' "$number" 'storage_mountpoint'
       if [ ! "$REPLY" ]; then
         xecho 'Unable to detect storage mountpoint'
       else
         mecho "Updating common.sh with detected storage mountpoint = $REPLY"
-        sed -i "s#STORAGE_MOUNTPOINT=.*#STORAGE_MOUNTPOINT='$REPLY'#" common.sh
+        sed -i "s#STORAGE_MOUNTPOINT=.*#STORAGE_MOUNTPOINT='$REPLY'#" "$SCRIPTS_PATH/common.sh"
       fi
     else
       recho 'Unable to detect orchestrator unit name'
