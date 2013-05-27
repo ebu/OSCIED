@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-python lib/TransformHooks.py transform-relation-broken
+python lib/TransformHooks.py subordinate-relation-broken

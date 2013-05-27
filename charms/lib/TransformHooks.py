@@ -25,14 +25,19 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import os, multiprocessing, pymongo.uri_parser, setuptools.archive_util, shutil, time
+import os, multiprocessing, setuptools.archive_util, shutil, time
 from CharmHooks import DEFAULT_OS_ENV
 from CharmHooks_Storage import CharmHooks_Storage
+from CharmHooks_Subordinate import CharmHooks_Subordinate
 from TransformConfig import TransformConfig
 from pyutils.pyutils import first_that_exist, screen_launch, screen_list, screen_kill
 
 
-class TransformHooks(CharmHooks_Storage):
+class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
+
+    PACKAGES = tuple(set(CharmHooks_Storage.PACKAGES + CharmHooks_Subordinate.PACKAGES +
+                    ('ffmpeg', 'ntp', 'x264', 'libavcodec-dev ', 'libavformat-dev', 'libavutil-dev',
+                     'libswscale-dev', 'libavdevice-dev', 'libavcodec-extra-53', 'zlib1g-dev')))
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(TransformHooks, self).__init__(metadata, default_config, default_os_env)
@@ -41,64 +46,11 @@ class TransformHooks(CharmHooks_Storage):
 
     # ----------------------------------------------------------------------------------------------
 
-    @property
-    def rabbit_queues(self):
-        return ','.join([self.config.rabbit_queues, self.public_address])
-
-    @property
-    def transform_config_is_enabled(self):
-        return self.config.mongo_connection and self.config.rabbit_connection
-
-    # ----------------------------------------------------------------------------------------------
-
-    def transform_register(self, mongo=None, rabbit=None):
-        if self.transform_config_is_enabled:
-            self.info('Override transform parameters with charm configuration')
-            mongo = self.config.mongo_connection
-            rabbit = self.config.rabbit_connection
-            socket = self.config.api_nat_socket
-        elif mongo and rabbit:
-            self.info('Use transform parameters from charm transform relation')
-            socket = ''
-        else:
-            return
-        self.info('Register the Orchestrator')
-        self.local_config.api_nat_socket = socket
-        try:
-            infos = pymongo.uri_parser.parse_uri(mongo)
-            assert(len(infos['nodelist']) == 1)
-            infos['host'], infos['port'] = infos['nodelist'][0]
-            infos['rabbit'], infos['concurrency'] = rabbit, self.config.concurrency
-            del infos['nodelist']
-            assert(infos['host'] and infos['port'] and infos['username'] and infos['password'] and
-                   infos['database'])
-        except:
-            raise ValueError('Unable to parse MongoDB connection %s' % mongo)
-        with open(self.local_config.celery_template_file) as celery_template_file:
-            data = celery_template_file.read()
-            data = data.format(**infos)
-            with open(self.local_config.celery_config_file, 'w') as celery_config_file:
-                celery_config_file.write(data)
-                self.remark('Orchestrator successfully registered')
-
-    def transform_unregister(self):
-        self.info('Unregister the Orchestrator')
-        self.local_config.api_nat_socket = ''
-        shutil.rmtree(self.local_config.celery_config_file, ignore_errors=True)
-
-    def transform_hook_bypass(self):
-        if self.transform_config_is_enabled:
-            raise RuntimeError('Orchestrator is set in config, transform relation is disabled')
-
-    # ----------------------------------------------------------------------------------------------
-
     def hook_install(self):
         self.hook_uninstall()
         self.info('Install prerequisites and upgrade packages')
         self.cmd('apt-add-repository -y ppa:jon-severinsson/ffmpeg')
-        self.cmd('apt-get -y install ffmpeg ntp glusterfs-client nfs-common x264 libavcodec-dev '
-                 'libavformat-dev libavutil-dev libswscale-dev libavdevice-dev libavcodec-extra-53 '
-                 'zlib1g-dev')
+        self.cmd('apt-get -y install %s' % ''.join(TransformHooks.PACKAGES))
         self.cmd('apt-get -y upgrade')
         self.info('Restart network time protocol service')
         self.cmd('service ntp restart')
@@ -117,17 +69,15 @@ class TransformHooks(CharmHooks_Storage):
     def hook_config_changed(self):
         # FIXME self.hook_stop()
         self.storage_remount()
-        self.transform_register()
+        self.subordinate_register()
         # FIXME self.hook_start()
 
     def hook_uninstall(self):
         self.info('Uninstall prerequisities, unregister service and load default configuration')
         self.hook_stop()
         self.storage_unregister()
-        self.transform_unregister()
-        self.cmd('apt-get -y remove --purge ffmpeg glusterfs-server nfs-common x264 libavcodec-dev '
-                 'libavformat-dev libavutil-dev libswscale-dev libavdevice-dev libavcodec-extra-53 '
-                 'zlib1g-dev')
+        self.subordinate_unregister()
+        self.cmd('apt-get -y remove --purge %s' % ''.join(TransformHooks.PACKAGES))
         self.cmd('apt-get -y autoremove')
         self.local_config.reset()
 
@@ -154,28 +104,6 @@ class TransformHooks(CharmHooks_Storage):
 
     def hook_stop(self):
         screen_kill('Transform', log=self.debug)
-
-    def hook_transform_relation_joined(self):
-        self.transform_hook_bypass()
-
-    def hook_transform_relation_changed(self):
-        self.transform_hook_bypass()
-        address = self.relation_get('private-address')
-        mongo = self.relation_get('mongo_connection')
-        rabbit = self.relation_get('rabbit_connection')
-        self.debug('Orchestra address is %s, MongoDB is %s, RabbitMQ is %s' %
-                   (address, mongo, rabbit))
-        if address and mongo and rabbit:
-            self.hook_stop()
-            self.transform_register(mongo, rabbit)
-            self.hook_start()
-        else:
-            self.remark('Waiting for complete setup')
-
-    def hook_transform_relation_broken(self):
-        self.transform_hook_bypass()
-        self.hook_stop()
-        self.transform_unregister()
 
     def hooks_footer(self):
         self.info('Save (updated) local configuration %s' % self.local_config)

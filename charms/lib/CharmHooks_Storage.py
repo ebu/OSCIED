@@ -32,6 +32,8 @@ from pyutils.pyutils import try_makedirs
 
 class CharmHooks_Storage(CharmHooks):
 
+    PACKAGES = ('glusterfs-client', 'nfs-common')
+
     def __init__(self, metadata, default_config, default_os_env):
         super(CharmHooks_Storage, self).__init__(metadata, default_config, default_os_env)
         self.local_config = None  # Must be set by derived class
