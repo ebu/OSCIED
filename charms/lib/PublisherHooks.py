@@ -71,6 +71,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         lines = filter(lambda l: l not in mods, open(self.local_config.apache_config_file))
         lines += '\n'.join(mods) + '\n'
         open(self.local_config.hosts_file, 'w').write(''.join(lines))
+        self.info('Expose Apache 2 service')
         self.open_port(80, 'TCP')
         # FIXME not necessary, but config-changed may create an infinite loop, so WE call it
         self.hook_config_changed()
