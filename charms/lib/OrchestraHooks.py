@@ -29,7 +29,7 @@ import configparser, os, shutil, time
 from CharmHooks import DEFAULT_OS_ENV
 from CharmHooks_Storage import CharmHooks_Storage
 from OrchestraConfig import OrchestraConfig
-from pyutils.pyutils import first_that_exist, screen_launch, screen_list, screen_kill
+from pyutils.pyutils import first_that_exist, screen_launch, screen_list, screen_kill, try_makedirs
 
 
 class OrchestraHooks(CharmHooks_Storage):
@@ -163,15 +163,15 @@ class OrchestraHooks(CharmHooks_Storage):
     def hook_uninstall(self):
         self.info('Uninstall prerequisities, unregister service and load default configuration')
         self.hook_stop()
-        os.try_makedirs('/var/log/rabbitmq')  # Fix rabbitmq-server package uninstall error
+        try_makedirs('/var/log/rabbitmq')  # Fix rabbitmq-server package uninstall error
         #self.cmd('juju destroy-environment')
         #self.cmd('... --purge apt-cacher-ng charm-tools juju libzookeeper-java lxc zookeeper')
         self.storage_unregister()
         self.cmd('apt-get -y remove --purge %s' % ' '.join(OrchestraHooks.PACKAGES))
         self.cmd('apt-get -y autoremove')
         #shutil.rmtree('$HOME/.juju $HOME/.ssh/id_rsa*
-        shutil.rmtree('/etc/rabbitmq/', ignore_erros=True)
-        shutil.rmtree('/var/log/rabbitmq/', ignore_erros=True)
+        shutil.rmtree('/etc/rabbitmq/', ignore_errors=True)
+        shutil.rmtree('/var/log/rabbitmq/', ignore_errors=True)
         self.local_config.reset()
 
     def hook_start(self):

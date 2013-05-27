@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 apt-get -y install build-essential git-core python-dev
-python lib/setup.py install
+python lib/setup.py install  # kombu error
+python lib/setup.py install  # Then it works ...
 python lib/OrchestraHooks.py install
