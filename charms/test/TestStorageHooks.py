@@ -25,7 +25,7 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-#import pyutils.pyutils
+import os
 from copy import copy
 from mock import call  #, Mock
 from nose.tools import assert_equal, raises
@@ -47,6 +47,9 @@ class TestStorageHooks(object):
         local_config = StorageConfig()
         local_config.write('test.pkl')
         self.hooks = StorageHooks(None, CONFIG, 'test.pkl', OS_ENV)
+
+    def tearDown(self):
+        os.remove('test.pkl')
 
     def test_volume_set_allowed_ips_ok(self):
         self.hooks.config.allowed_ips = '192.168.1.*,10.10.*'
