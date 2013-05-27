@@ -60,11 +60,11 @@ class TestTransformHooks(object):
     def tearDown(self):
         os.remove('test.pkl')
 
-    def test_transform_register_default(self):
+    def test_subordinate_register_default(self):
         self.hooks = TransformHooks(None, CONFIG_DEFAULT, 'test.pkl', OS_ENV)
         self.hooks.local_config.celery_template_file = os.path.join(
             '../oscied-transform', self.hooks.local_config.celery_template_file)
-        self.hooks.transform_register(
+        self.hooks.subordinate_register(
             mongo='mongodb://tabby:miaow@home.ch:27017/mydb',
             rabbit='the_rabbit_connection')
         assert_equal(self.hooks.local_config.api_nat_socket, '')
@@ -76,11 +76,11 @@ class TestTransformHooks(object):
             'database': 'mydb', 'taskmeta_collection': 'taskmeta'})
         assert_equal(celeryconfig['CELERYD_CONCURRENCY'], self.hooks.config.concurrency)
 
-    def test_transform_register_transform(self):
+    def test_subordinate_register_transform(self):
         self.hooks = TransformHooks(None, CONFIG_TRANSFORM, 'test.pkl', OS_ENV)
         self.hooks.local_config.celery_template_file = os.path.join(
             '../oscied-transform', self.hooks.local_config.celery_template_file)
-        self.hooks.transform_register(mongo='fail', rabbit='fail')
+        self.hooks.subordinate_register(mongo='fail', rabbit='fail')
         assert_equal(self.hooks.local_config.api_nat_socket, CONFIG_TRANSFORM['api_nat_socket'])
         celeryconfig = {}
         execfile(self.hooks.local_config.celery_config_file, celeryconfig)

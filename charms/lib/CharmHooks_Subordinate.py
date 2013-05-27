@@ -49,14 +49,14 @@ class CharmHooks_Subordinate(CharmHooks):
 
     # ----------------------------------------------------------------------------------------------
 
-    def subordinate_register(self, relation_name, mongo=None, rabbit=None):
+    def subordinate_register(self, mongo=None, rabbit=None):
         if self.subordinate_config_is_enabled:
-            self.info('Override %s parameters with charm configuration' % relation_name)
+            self.info('Override subordinate parameters with charm configuration')
             mongo = self.config.mongo_connection
             rabbit = self.config.rabbit_connection
             socket = self.config.api_nat_socket
         elif mongo and rabbit:
-            self.info('Use %s parameters from charm %s relation' % relation_name)
+            self.info('Use subordinate parameters from charm relation')
             socket = ''
         else:
             return
@@ -84,10 +84,10 @@ class CharmHooks_Subordinate(CharmHooks):
         self.local_config.api_nat_socket = ''
         shutil.rmtree(self.local_config.celery_config_file, ignore_errors=True)
 
-    def subordinate_hook_bypass(self, relation_name):
+    def subordinate_hook_bypass(self):
         if self.subordinate_config_is_enabled:
             raise RuntimeError(
-                'Orchestrator is set in config, %s relation is disabled' % relation_name)
+                'Orchestrator is set in config, subordinate relation is disabled')
 
     # ----------------------------------------------------------------------------------------------
 
