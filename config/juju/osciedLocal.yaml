@@ -1,5 +1,5 @@
 oscied-orchestra:
-  verbose: "false"
+  verbose: "true"
   root_secret: "5FrvHcm7oyF4WQFW"
   nodes_secret: "bdZccPuG9fibjwCS"
   repositories_user: "oscied"
@@ -10,13 +10,13 @@ oscied-orchestra:
   mongo_admin_password: "Iz85QVjdCJugEosz"
   mongo_nodes_password: "M2qlif8rdtKtBYil"
   rabbit_password: "OZy23iO0D4UpYS2k"
-  storage_ip: ""
-  storage_nat_ip: ""
+  storage_address: ""
+  storage_nat_address: ""
   storage_fstype: ""
   storage_mountpoint: ""
   storage_options: ""
 oscied-publisher:
-  verbose: "false"
+  verbose: "true"
   concurrency: 2
   rabbit_queues: "publisher_private"
   max_upload_size: 4294967296
@@ -25,8 +25,8 @@ oscied-publisher:
   mongo_connection: ""
   rabbit_connection: ""
   api_nat_socket: ""
-  storage_ip: ""
-  storage_nat_ip: ""
+  storage_address: ""
+  storage_nat_address: ""
   storage_fstype: ""
   storage_mountpoint: ""
   storage_options: ""

@@ -1,5 +1,5 @@
 oscied-publisher:
-  verbose: "false"
+  verbose: "true"
   concurrency: 2
   rabbit_queues: "publisher_private"
   max_upload_size: 4294967296
@@ -8,8 +8,8 @@ oscied-publisher:
   mongo_connection: "MONGO"
   rabbit_connection: "RABBIT"
   api_nat_socket: ""
-  storage_ip: "STORAGE_IP"
-  storage_nat_ip: ""
+  storage_address: "STORAGE_IP"
+  storage_nat_address: ""
   storage_fstype: "glusterfs"
   storage_mountpoint: "medias_volume"
   storage_options: ""
