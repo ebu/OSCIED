@@ -26,66 +26,85 @@
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
 import logging
-from pyutils.pyutils import json2object, jsonfile2object, object2json
+from pyutils.pyutils import PickleableObject
 
 
-class PublisherConfig(object):
+class PublisherConfig(PickleableObject):
 
-    def __init__(self, verbose, public_address, mongo_connection, rabbit_connection, rabbit_queues,
-                 api_nat_socket, storage_ip, storage_fstype, storage_mountpoint, storage_options,
-                 storage_path):
-        self.verbose = verbose
-        self.public_address = public_address
-        self.mongo_connection = mongo_connection
-        self.rabbit_connection = rabbit_connection
-        self.rabbit_queues = rabbit_queues
+    def __init__(self, api_nat_socket='', storage_address='', storage_fstype='',
+                 storage_mountpoint='', storage_options='', storage_path='/mnt/storage',
+                 storage_mount_max_retry=5, storage_mount_sleep_delay=5,
+                 hosts_file='/etc/hosts', celery_config_file='lib/celeryconfig.py',
+                 celery_template_file='templates/celeryconfig.py.template',
+                 apache_config_file='/etc/apache2/apache2.conf'):
         self.api_nat_socket = api_nat_socket
-        self.storage_ip = storage_ip
+        self.storage_address = storage_address
         self.storage_fstype = storage_fstype
         self.storage_mountpoint = storage_mountpoint
         self.storage_options = storage_options
         self.storage_path = storage_path
+        self.storage_mount_max_retry = storage_mount_max_retry
+        self.storage_mount_sleep_delay = storage_mount_sleep_delay
+        self.hosts_file = hosts_file
+        self.celery_config_file = celery_config_file
+        self.celery_template_file = celery_template_file
+        self.apache_config_file = apache_config_file
+
+    def __repr__(self):
+        return str(self.__dict__)
 
     @property
     def log_level(self):
         return logging.DEBUG if self.verbose else logging.INFO
 
     @property
-    def publish_uri(self):
-        return 'http://' + self.public_address
-
-    @property
-    def publish_path(self):
-        return '/var/www'
-
-    @property
     def storage_uri(self):
-        if self.storage_fstype and self.storage_ip and self.storage_mountpoint:
-            return self.storage_fstype + '://' + self.storage_ip + '/' + self.storage_mountpoint
+        u"""
+        Returns storage URI.
+
+        **Example usage**:
+
+        >>> from copy import copy
+        >>> config = copy(PUBLISHER_CONFIG_TEST)
+        >>> print(config.storage_uri)
+        glusterfs://10.1.1.2/medias_volume
+        >>> config.storage_fstype = ''
+        >>> print(config.storage_uri)
+        None
+        >>> config.storage_fstype = 'nfs'
+        >>> config.storage_address = ''
+        >>> print(config.storage_uri)
+        None
+        >>> config.storage_address = '30.0.0.1'
+        >>> print(config.storage_uri)
+        nfs://30.0.0.1/medias_volume
+        """
+        if self.storage_fstype and self.storage_address and self.storage_mountpoint:
+            return '%s://%s/%s' % (
+                self.storage_fstype, self.storage_address, self.storage_mountpoint)
         return None
 
-    @staticmethod
-    def read(filename):
-        config = PublisherConfig(None, None, None, None, None, None, None, None, None, None, None)
-        jsonfile2object(filename, config)
-        return config
+    def reset(self):
+        self.api_nat_socket = ''
+        self.storage_address = ''
+        self.storage_fstype = ''
+        self.storage_mountpoint = ''
+        self.storage_options = ''
+        self.storage_path = '/mnt/storage'
+        self.hosts_file = '/etc/hosts'
+        self.celery_config_file = 'lib/celeryconfig.py'
+        self.celery_template_file = 'templates/celeryconfig.py.template'
+        self.apache_config_file = '/etc/apache2/apache2.conf'
 
-    @staticmethod
-    def load(json):
-        config = PublisherConfig(None, None, None, None, None, None, None, None, None, None, None)
-        json2object(json, config)
-        return config
-
-PUBLISHER_CONFIG_TEST = PublisherConfig(True, 'amazon.blabla.com',
-                                        'mongodb://guest:Mongo@10.1.1.3:27017',
-                                        'amqp://guest:Alice@10.1.1.3//', 'publisher_private',
-                                        '129.194.185.47:5000', '10.1.1.2', 'glusterfs',
-                                        'medias_volume', '', '/mnt/storage')
+PUBLISHER_CONFIG_TEST = PublisherConfig('129.194.185.47:5000', '10.1.1.2', 'glusterfs',
+                                        'medias_volume', '')
 
 # Main ---------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-
-    print object2json(PUBLISHER_CONFIG_TEST, True)
-    assert PUBLISHER_CONFIG_TEST.storage_uri == 'glusterfs://10.1.1.2/medias_volume'
-    print str(PublisherConfig.load(object2json(PUBLISHER_CONFIG_TEST, False)))
+    print('Test PublisherConfig with doctest')
+    import doctest
+    doctest.testmod(verbose=False)
+    print('OK')
+    print('Write default publisher configuration')
+    PublisherConfig().write('../oscied-publisher/local_config.pkl')

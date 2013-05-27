@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-python lib/PublisherHooks.py publisher-relation-changed
+python lib/PublisherHooks.py subordinate-relation-changed

@@ -1,13 +1,13 @@
-#! /usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
 #**************************************************************************************************#
-#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : PUBLISHER
+#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARY
 #
 #  Authors   : David Fischer
 #  Contact   : david.fischer.ch@gmail.com / david.fischer@hesge.ch
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
-#  Copyright : 2012 OSCIED Team. All rights reserved.
+#  Copyright : 2012-2013 OSCIED Team. All rights reserved.
 #**************************************************************************************************#
 #
 # This file is part of EBU/UER OSCIED Project.
@@ -23,28 +23,20 @@
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
 #
-# Retrieved from:
-#   svn co https://claire-et-david.dyndns.org/prog/OSCIED
+# Retrieved from https://github.com/EBU-TI/OSCIED
 
-import sys
+from CharmHooks import CharmHooks
 
-sys.path.append('.')
 
-BROKER_URL = '{rabbit}'
-CELERY_RESULT_BACKEND = 'mongodb'
-CELERY_MONGODB_BACKEND_SETTINGS = {{
-    'host': '{host}',
-    'port': '{port}',
-    'user': '{username}',
-    'password': '{password}',
-    'database': '{database}',
-    'taskmeta_collection': 'taskmeta',
-}}
+class CharmHooks_Website(CharmHooks):
 
-CELERY_IMPORTS = ('Transform',)
-CELERYD_CONCURRENCY = {concurrency}
-CELERY_IGNORE_RESULT = False
-CELERY_SEND_EVENTS = True
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_TASK_COMPRESSION = 'zlib'
-CELERY_TRACK_STARTED = True
+    PACKAGES = ()
+
+    def __init__(self, metadata, default_config, default_os_env):
+        super(CharmHooks_Website, self).__init__(metadata, default_config, default_os_env)
+        self.local_config = None  # Must be set by derived class
+
+    # ----------------------------------------------------------------------------------------------
+
+    def hook_website_relation_joined(self):
+        self.relation_set(port='80', hostname=self.cmd('hostname -f'))
