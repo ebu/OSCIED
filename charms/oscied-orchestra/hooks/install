@@ -1,4 +1,4 @@
-#!/bin/bash
-
-. hooks_lib/common.sh
-hook_install
+#!/usr/bin/env bash
+apt-get -y install build-essential git-core python-dev
+python lib/setup.py install
+python lib/OrchestraHooks.py install

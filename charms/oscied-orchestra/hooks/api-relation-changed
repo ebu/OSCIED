@@ -1,4 +1,2 @@
-#!/bin/bash
-
-. hooks_lib/common.sh
-hook_api_relation_changed
+#!/usr/bin/env bash
+python lib/OrchestraHooks.py api-relation-changed
