@@ -381,8 +381,11 @@ config()
       if [ ! "$REPLY" ]; then
         xecho 'Unable to detect storage mountpoint'
       else
-        mecho "Updating common.sh with detected storage mountpoint = $REPLY"
-        sed -i "s#STORAGE_MOUNTPOINT=.*#STORAGE_MOUNTPOINT='$REPLY'#" "$SCRIPTS_PATH/common.sh"
+        number=$(expr match "$REPLY" '.*_\([0-9]*\)')
+        brick="/exp$number"
+        mecho "Updating common.sh with detected storage mountpoint = $REPLY and brick = $brick"
+        sed -i -e "s#STORAGE_MOUNTPOINT=.*#STORAGE_MOUNTPOINT='$REPLY'#" \
+               -e "s#STORAGE_BRICK=.*#STORAGE_BRICK='$brick'#" "$SCRIPTS_PATH/common.sh"
       fi
     else
       recho 'Unable to detect orchestrator unit name'

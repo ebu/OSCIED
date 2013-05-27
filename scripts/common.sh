@@ -35,6 +35,7 @@ if ! osciedCommonImported 2>/dev/null; then
 # -> config to update storage's related constants automatically
 STORAGE_PRIVATE_IP=''
 STORAGE_MOUNTPOINT=''
+STORAGE_BRICK=''
 RELEASE='raring'      # Update this according to your needs
 NETWORK_IFACE='eth0'  # Update this according to your needs
 
@@ -191,7 +192,7 @@ storage_upload_media()
   get_unit_public_url $true 'oscied-storage'
   host="ubuntu@$REPLY"
   bkp_path='/home/ubuntu/uploads'
-  dst_path="/exp0/uploads"
+  dst_path="$STORAGE_BRICK/uploads"
   chmod 600 "$ID_RSA" || xecho 'Unable to find id_rsa certificate'
   rsync -ah --progress --rsync-path='sudo rsync' -e "ssh -i '$ID_RSA'" "$1" "$host:$bkp_path/" || \
     xecho "Unable to copy media file to $bkp_path path in storage"
