@@ -237,7 +237,7 @@ class CharmHooks(object):
         >>> hooks.config.verbose = True
         >>> hooks.load_config('../oscied-orchestra/config.yaml')  # doctest: +ELLIPSIS
         [DEBUG] Load config from file ../oscied-orchestra/config.yaml
-        [DEBUG] Convert boolean option verbose false -> False
+        [DEBUG] Convert boolean option verbose true -> True
         >>> hasattr(hooks.config, 'rabbit_password')
         True
         """

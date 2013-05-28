@@ -2487,7 +2487,7 @@ def api_publish_job_hook_0():
 if __name__ == '__main__':
 
     try:
-        config = OrchestraConfig.read('config.json')
+        config = OrchestraConfig.read('local_config.pkl')
         setup_logging('orchestra.log', config.log_level)
         logging.info('OSCIED Orchestra by David Fischer 2013')
         logging.info('Configuration : ' + str(object2json(config, True)))

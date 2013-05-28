@@ -25,7 +25,8 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import configparser, os, shutil, time
+import os, shutil, time
+from configobj import ConfigObj
 from CharmHooks import DEFAULT_OS_ENV
 from CharmHooks_Storage import CharmHooks_Storage
 from OrchestraConfig import OrchestraConfig
@@ -90,10 +91,11 @@ class OrchestraHooks(CharmHooks_Storage):
 
     def hook_install(self):
         self.hook_uninstall()
-        self.info('Install prerequisites and upgrade packages')
+        self.info('Upgrade system and install prerequisites')
         self.cmd('apt-add-repository -y ppa:jon-severinsson/ffmpeg')
-        self.cmd('apt-get -y install %s' % ' '.join(OrchestraHooks.PACKAGES))
+        self.cmd('apt-get -y update', fail=False)
         self.cmd('apt-get -y upgrade')
+        self.cmd('apt-get -y install %s' % ' '.join(OrchestraHooks.PACKAGES))
         self.info('Restart network time protocol service')
         self.cmd('service ntp restart')
         #pecho 'Checkout OSCIED charms locally'
@@ -113,11 +115,8 @@ class OrchestraHooks(CharmHooks_Storage):
         #self.open_port(27019, 'TCP') # MongoDB port when running with configsvr setting
         #self.open_port(28017, 'TCP') # MongoDB port for the web status page. This is always +1000
         self.open_port(5672, 'TCP')   # RabbitMQ service
-        # FIXME not necessary, but config-changed may create an infinite loop, so WE call it
-        self.hook_config_changed()
 
     def hook_config_changed(self):
-        # FIXME self.hook_stop()
         self.info('Configure MongoDB Scalable NoSQL DB')
         with open('f.js', 'w') as mongo_f:
             mongo_f.write("db.addUser('admin', '%s', false);" % self.config.mongo_admin_password)
@@ -127,14 +126,13 @@ class OrchestraHooks(CharmHooks_Storage):
         self.cmd('mongo orchestra f.js')
         self.cmd('mongo celery g.js')
         [os.remove(f) for f in ('f.js', 'g.js')]
-        config = configparser.ConfigParser()
-        config.read(self.local_config.mongo_config_file)
-        print(config.__dict__)
-        config['DEFAULT']['bind_ip'] = '0.0.0.0'
-        config['DEFAULT']['noauth'] = 'false'
-        config['DEFAULT']['auth'] = 'true'
-        with open(self.local_config.mongo_config_file, 'w') as mongo_config:
-            config.write(mongo_config)
+
+        config = ConfigObj(self.local_config.mongo_config_file)
+        config['bind_ip'] = '0.0.0.0'
+        config['noauth'] = 'false'
+        config['auth'] = 'true'
+        self.debug('MongoDB configuration is: %s' % config.__dict__)
+        config.write()
 
         self.configure_rabbitmq()
 
@@ -158,7 +156,6 @@ class OrchestraHooks(CharmHooks_Storage):
                 self.remark('Orchestrator successfully configured')
 
         self.storage_remount()
-        # FIXME self.hook_start()
 
     def hook_uninstall(self):
         self.info('Uninstall prerequisities, unregister service and load default configuration')
