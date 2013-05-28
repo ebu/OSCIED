@@ -25,7 +25,7 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import os, shutil, time
+import os, re, shutil, time
 from configobj import ConfigObj
 from CharmHooks import DEFAULT_OS_ENV
 from CharmHooks_Storage import CharmHooks_Storage
@@ -65,13 +65,13 @@ class OrchestraHooks(CharmHooks_Storage):
 
     @property
     def rabbit_users(self):
-        results = self.cmd('rabbitmqctl list_users', fail=False)
-        return results['stdout']
+        stdout = self.cmd('rabbitmqctl list_users', fail=False)['stdout']
+        return re.findall('^([a-z]+)\s+.*$', stdout, re.MULTILINE)
 
     @property
     def rabbit_vhosts(self):
-        results = self.cmd('rabbitmqctl list_vhosts', fail=False)
-        return results['stdout']
+        stdout = self.cmd('rabbitmqctl list_vhosts', fail=False)['stdout']
+        return re.findall('^([a-z]+)$', stdout, re.MULTILINE)
 
     # ----------------------------------------------------------------------------------------------
 
@@ -82,10 +82,11 @@ class OrchestraHooks(CharmHooks_Storage):
         self.cmd('rabbitmqctl add_user nodes "%s"' % self.config.rabbit_password, fail=False)
         self.cmd('rabbitmqctl add_vhost celery', fail=False)
         self.cmd('rabbitmqctl set_permissions -p celery nodes ".*" ".*" ".*"', fail=False)
-        if 'nodes' not in self.rabbit_users:
-            raise RuntimeError('Unable to add RabbitMQ user')
-        if 'celery' not in self.rabbit_vhosts:
-            raise RuntimeError('Unable to add RabbitMQ vhost')
+        users = self.rabbit_users
+        vhosts = self.rabbit_vhosts
+        self.debug('RabbitMQ users: %s vhosts: %s' % (users, vhosts))
+        if 'guest' in users or 'nodes' not in users or '/' in vhosts or 'celery' not in vhosts:
+            raise RuntimeError('Unable to configure RabbitMQ')
 
     # ----------------------------------------------------------------------------------------------
 

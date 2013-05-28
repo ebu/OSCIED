@@ -50,28 +50,50 @@ OS_ENV['JUJU_UNIT_NAME'] = 'oscied-orchestra/0'
 RETURNS = []
 
 
+class OrchestraHooks_tmp(OrchestraHooks):
+    def __init__(self, m, c, l, o):
+        super(OrchestraHooks_tmp, self).__init__(m, c, l, o)
+
+    @property
+    def rabbit_users(self):
+        return ['nodes']
+
+    @property
+    def rabbit_vhosts(self):
+        return ['celery']
+
 class TestOrchestraHooks(object):
 
     def setUp(self):
-        local_config = OrchestraConfig()
-        local_config.write('test.pkl')
-        self.hooks = OrchestraHooks(None, CONFIG, 'test.pkl', OS_ENV)
+        OrchestraConfig().write('test.pkl')
+        self.hooks = OrchestraHooks_tmp(None, CONFIG, 'test.pkl', OS_ENV)
         shutil.copy(self.hooks.local_config.hosts_file, 'hosts')
         shutil.copy('mongodb.conf', 'mongodb_test.conf')
         self.hooks.local_config.hosts_file = 'hosts'  # Avoid writing to system hosts file !
-        self.hooks.local_config.mongo_config_file = 'mongodb_test.conf'
         self.hooks.local_config.celery_config_file = 'celeryconfig.py'
+        self.hooks.local_config.celery_template_file = os.path.join(
+            '../oscied-orchestra', self.hooks.local_config.celery_template_file)
+        self.hooks.local_config.mongo_config_file = 'mongodb_test.conf'
 
     def tearDown(self):
         for f in ('celeryconfig.py', 'hosts', 'mongodb_test.conf', 'test.pkl'):
-            os.remove(f)
+            try:
+                os.remove(f)
+            except:
+                pass
 
     def test_config_changed(self):
         self.hooks.cmd = mock_cmd()
         self.hooks.hook_config_changed()
-        self.hooks.rabbit_users = Mock(return_value='nodes')
-        self.hooks.rabbit_vhosts = Mock(return_value='celery')
-        raise self.hooks.cmd.call_args_list
+        assert_equal(self.hooks.cmd.call_args_list, [
+            call('mongo f.js'),
+            call('mongo orchestra f.js'),
+            call('mongo celery g.js'),
+            call('rabbitmqctl delete_user guest', fail=False),
+            call('rabbitmqctl delete_vhost /', fail=False),
+            call('rabbitmqctl add_user nodes "Alice_in_wonderland"', fail=False),
+            call('rabbitmqctl add_vhost celery', fail=False),
+            call('rabbitmqctl set_permissions -p celery nodes ".*" ".*" ".*"', fail=False)])
 
 if __name__ == '__main__':
     import nose

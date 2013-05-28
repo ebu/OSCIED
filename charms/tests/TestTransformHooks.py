@@ -53,17 +53,25 @@ RETURNS = []
 
 class TestTransformHooks(object):
 
-    def setUp(self):
-        local_config = TransformConfig()
-        local_config.write('test.pkl')
+    def create_hooks(self, default_config):
+        TransformConfig().write('test.pkl')
+        hooks = TransformHooks(None, default_config, 'test.pkl', OS_ENV)
+        hooks.local_config.storage_mount_sleep_delay = 0.01
+        hooks.local_config.hosts_file = 'hosts'  # Avoid writing to system hosts file !
+        hooks.local_config.celery_config_file = 'celeryconfig.py'
+        hooks.local_config.celery_template_file = os.path.join(
+            '../oscied-transform', hooks.local_config.celery_template_file)
+        return hooks
 
     def tearDown(self):
-        os.remove('test.pkl')
+        for f in ('celeryconfig.py', 'hosts', 'test.pkl'):
+            try:
+                os.remove(f)
+            except:
+                pass
 
     def test_subordinate_register_default(self):
-        self.hooks = TransformHooks(None, CONFIG_DEFAULT, 'test.pkl', OS_ENV)
-        self.hooks.local_config.celery_template_file = os.path.join(
-            '../oscied-transform', self.hooks.local_config.celery_template_file)
+        self.hooks = self.create_hooks(CONFIG_DEFAULT)
         self.hooks.subordinate_register(
             mongo='mongodb://tabby:miaow@home.ch:27017/mydb',
             rabbit='the_rabbit_connection')
@@ -77,7 +85,7 @@ class TestTransformHooks(object):
         assert_equal(celeryconfig['CELERYD_CONCURRENCY'], self.hooks.config.concurrency)
 
     def test_subordinate_register_transform(self):
-        self.hooks = TransformHooks(None, CONFIG_TRANSFORM, 'test.pkl', OS_ENV)
+        self.hooks = self.create_hooks(CONFIG_TRANSFORM)
         self.hooks.local_config.celery_template_file = os.path.join(
             '../oscied-transform', self.hooks.local_config.celery_template_file)
         self.hooks.subordinate_register(mongo='fail', rabbit='fail')

@@ -44,8 +44,7 @@ class TestStorageHooks(object):
     #return {'stdout': INFOS_STDOUT, 'stderr': None, 'returncode': 0}
 
     def setUp(self):
-        local_config = StorageConfig()
-        local_config.write('test.pkl')
+        StorageConfig().write('test.pkl')
         self.hooks = StorageHooks(None, CONFIG, 'test.pkl', OS_ENV)
 
     def tearDown(self):
