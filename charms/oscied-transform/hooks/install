@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
-apt-get -y install build-essential git-core python-dev
-python oscied_lib/setup.py install
+echo 'Install OSCIED Library'
+apt-get -y install build-essential git-core python-dev >/dev/null
+python setup.py install  # kombu error
+python setup.py install  # Then it works ...
 python oscied_lib/TransformHooks.py install
