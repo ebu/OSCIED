@@ -25,19 +25,22 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import logging, pymongo, Publisher, Transform
-from Storage import Storage
+from __future__ import absolute_import
+
+import logging, pymongo
 from celery import states
 #from celery import current_app
 #from celery.task.control import inspect
 from celery.task.control import revoke
 #from celery.events.state import state
-from Callback import Callback
-from Media import Media
-from PublishJob import PublishJob
-from TransformProfile import TransformProfile, ENCODERS_NAMES
-from TransformJob import TransformJob
-from User import User
+from . import Publisher, Transform
+from .Callback import Callback
+from .Media import Media
+from .PublishJob import PublishJob
+from .Storage import Storage
+from .TransformProfile import TransformProfile, ENCODERS_NAMES
+from .TransformJob import TransformJob
+from .User import User
 from pyutils.pyutils import object2json, datetime_now, UUID_ZERO, valid_uuid
 
 

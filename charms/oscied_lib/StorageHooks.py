@@ -25,6 +25,8 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
+from __future__ import absolute_import
+
 import glob, re, shutil
 from CharmHooks import CharmHooks, DEFAULT_OS_ENV
 from StorageConfig import StorageConfig

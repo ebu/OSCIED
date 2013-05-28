@@ -25,6 +25,8 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
+from __future__ import absolute_import
+
 import os, re, shutil, time
 from configobj import ConfigObj
 from CharmHooks import DEFAULT_OS_ENV

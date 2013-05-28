@@ -25,6 +25,8 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
+from __future__ import absolute_import
+
 import requests
 from urlparse import urlparse, ParseResult
 from pyutils.pyutils import json2object, object2json

@@ -25,6 +25,8 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
+from __future__ import absolute_import
+
 import os, time
 from CharmHooks import CharmHooks
 from pyutils.pyutils import try_makedirs

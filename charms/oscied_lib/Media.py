@@ -25,8 +25,10 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
+from __future__ import absolute_import
+
 import uuid
-from OrchestraConfig import ORCHESTRA_CONFIG_TEST
+from .OrchestraConfig import ORCHESTRA_CONFIG_TEST
 from pyutils.pyutils import json2object, object2json, valid_filename, valid_uuid
 
 

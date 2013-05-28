@@ -25,11 +25,13 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
+from __future__ import absolute_import
+
 import uuid
 from celery.result import AsyncResult
-from Media import MEDIA_TEST
-from TransformProfile import TRANSFORM_PROFILE_TEST
-from User import USER_TEST
+from .Media import MEDIA_TEST
+from .TransformProfile import TRANSFORM_PROFILE_TEST
+from .User import USER_TEST
 from pyutils.pyutils import json2object, object2json, valid_uuid
 
 

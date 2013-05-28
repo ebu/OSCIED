@@ -25,6 +25,8 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
+from __future__ import absolute_import
+
 import uuid
 from passlib.hash import pbkdf2_sha512
 from passlib.utils import consteq

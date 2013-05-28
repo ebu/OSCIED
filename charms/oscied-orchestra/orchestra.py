@@ -27,14 +27,16 @@
 
 # FIXME mongo concurrency : http://emptysquare.net/blog/requests-in-python-and-mongodb/
 
+from __future__ import absolute_import
+
 import logging
 import sys
 from flask import Flask, abort, request, Response
-from lib.Media import Media
-from lib.Orchestra import Orchestra
-from lib.OrchestraConfig import OrchestraConfig
-from lib.TransformProfile import TransformProfile
-from lib.User import User
+from oscied_lib.Media import Media
+from oscied_lib.Orchestra import Orchestra
+from oscied_lib.OrchestraConfig import OrchestraConfig
+from oscied_lib.TransformProfile import TransformProfile
+from oscied_lib.User import User
 from pyutils.pyutils import object2json, valid_uuid, setup_logging
 
 
