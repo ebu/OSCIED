@@ -31,7 +31,7 @@ from __future__ import absolute_import
 
 import os, subprocess, sys, yaml
 from six import string_types
-from pyutils.pyutils import cmd
+from .pyutils.pyutils import cmd
 
 try:
     import charmhelpers

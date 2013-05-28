@@ -28,7 +28,7 @@
 from __future__ import absolute_import
 
 import logging
-from pyutils.pyutils import PickleableObject
+from .pyutils.pyutils import PickleableObject
 
 
 class PublisherConfig(PickleableObject):

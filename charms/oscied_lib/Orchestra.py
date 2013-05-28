@@ -41,7 +41,7 @@ from .Storage import Storage
 from .TransformProfile import TransformProfile, ENCODERS_NAMES
 from .TransformJob import TransformJob
 from .User import User
-from pyutils.pyutils import object2json, datetime_now, UUID_ZERO, valid_uuid
+from .pyutils.pyutils import object2json, datetime_now, UUID_ZERO, valid_uuid
 
 
 class Orchestra(object):

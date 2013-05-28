@@ -28,8 +28,8 @@
 from __future__ import absolute_import
 
 import os, time
-from CharmHooks import CharmHooks
-from pyutils.pyutils import try_makedirs
+from .CharmHooks import CharmHooks
+from .pyutils.pyutils import try_makedirs
 
 
 class CharmHooks_Storage(CharmHooks):

@@ -29,10 +29,11 @@ from __future__ import absolute_import
 
 import os, re, shutil, time
 from configobj import ConfigObj
-from CharmHooks import DEFAULT_OS_ENV
-from CharmHooks_Storage import CharmHooks_Storage
-from OrchestraConfig import OrchestraConfig
-from pyutils.pyutils import first_that_exist, screen_launch, screen_list, screen_kill, try_makedirs
+from .CharmHooks import DEFAULT_OS_ENV
+from .CharmHooks_Storage import CharmHooks_Storage
+from .OrchestraConfig import OrchestraConfig
+from .pyutils.pyutils import (first_that_exist, screen_launch, screen_list, screen_kill,
+                               try_makedirs)
 
 
 class OrchestraHooks(CharmHooks_Storage):

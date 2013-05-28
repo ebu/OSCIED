@@ -35,7 +35,7 @@ from .Media import Media
 from .PublisherConfig import PublisherConfig
 from .Storage import Storage
 from .User import User
-from pyutils.pyutils import object2json, datetime_now
+from .pyutils.pyutils import object2json, datetime_now
 
 
 @task(name='Publisher.publish_job')

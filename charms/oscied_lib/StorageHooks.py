@@ -28,9 +28,9 @@
 from __future__ import absolute_import
 
 import glob, re, shutil
-from CharmHooks import CharmHooks, DEFAULT_OS_ENV
-from StorageConfig import StorageConfig
-from pyutils.pyutils import first_that_exist
+from .CharmHooks import CharmHooks, DEFAULT_OS_ENV
+from .StorageConfig import StorageConfig
+from .pyutils.pyutils import first_that_exist
 
 
 class StorageHooks(CharmHooks):

@@ -28,7 +28,7 @@
 from __future__ import absolute_import
 
 import uuid
-from pyutils.pyutils import json2object, object2json, valid_uuid
+from .pyutils.pyutils import json2object, object2json, valid_uuid
 
 ENCODERS_NAMES = ('copy', 'ffmpeg', 'dashcast')
 

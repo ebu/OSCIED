@@ -37,7 +37,7 @@ from .Storage import Storage
 from .TransformConfig import TransformConfig
 from .TransformProfile import TransformProfile
 from .User import User
-from pyutils.pyutils import object2json, datetime_now, duration2secs
+from .pyutils.pyutils import object2json, datetime_now, duration2secs
 
 
 @task(name='Transform.transform_job')
