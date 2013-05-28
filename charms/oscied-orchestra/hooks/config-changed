@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-./oscied_lib/OrchestraHooks.py config-changed
+python -m oscied_lib.OrchestraHooks config-changed

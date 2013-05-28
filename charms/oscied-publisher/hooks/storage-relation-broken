@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-./oscied_lib/PublisherHooks.py storage-relation-broken
+python -m oscied_lib.PublisherHooks storage-relation-broken

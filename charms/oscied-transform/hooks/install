@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 ./setup.sh
-./oscied_lib/TransformHooks.py install
+python -m oscied_lib.TransformHooks install

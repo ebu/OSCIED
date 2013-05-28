@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-./oscied_lib/OrchestraHooks.py uninstall
+python -m oscied_lib.OrchestraHooks uninstall

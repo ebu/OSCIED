@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-./oscied_lib/TransformHooks.py subordinate-relation-joined
+python -m oscied_lib.TransformHooks subordinate-relation-joined

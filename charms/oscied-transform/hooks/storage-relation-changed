@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-./oscied_lib/TransformHooks.py storage-relation-changed
+python -m oscied_lib.TransformHooks storage-relation-changed

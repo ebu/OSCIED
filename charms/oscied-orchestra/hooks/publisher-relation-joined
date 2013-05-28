@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-./oscied_lib/OrchestraHooks.py publisher-relation-joined
+python -m oscied_lib.OrchestraHooks publisher-relation-joined

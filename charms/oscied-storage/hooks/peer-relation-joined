@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-./oscied_lib/StorageHooks.py peer-relation-joined
+python -m oscied_lib.StorageHooks peer-relation-joined

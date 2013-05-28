@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-./oscied_lib/PublisherHooks.py stop
+python -m oscied_lib.PublisherHooks stop

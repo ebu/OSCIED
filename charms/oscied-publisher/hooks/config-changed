@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-./oscied_lib/PublisherHooks.py config-changed
+python -m oscied_lib.PublisherHooks config-changed

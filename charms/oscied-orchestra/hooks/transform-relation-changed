@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-./oscied_lib/OrchestraHooks.py transform-relation-changed
+python -m oscied_lib.OrchestraHooks transform-relation-changed

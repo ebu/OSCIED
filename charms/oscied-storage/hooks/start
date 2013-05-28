@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-./oscied_lib/StorageHooks.py start
+python -m oscied_lib.StorageHooks start
