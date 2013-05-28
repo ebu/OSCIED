@@ -19,9 +19,3 @@
 [submodule "tools/logicielsUbuntu"]
 	path = tools/logicielsUbuntu
 	url = git://github.com/davidfischer-ch/logicielsUbuntu.git
-[submodule "tools/pyutils-source"]
-	path = tools/pyutils-source
-	url = git://github.com/davidfischer-ch/pyutils.git
-[submodule "charms/pyutils"]
-	path = charms/pyutils
-	url = git://github.com/davidfischer-ch/pyutils.git
