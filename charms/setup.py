@@ -33,8 +33,10 @@ setup(name='oscied-lib',
       author_email='david.fischer.ch@gmail.com',
       install_requires=['configobj', 'bson', 'celery', 'flask', 'ipaddr', 'passlib',
                         'pymongo', 'pyutils', 'requests'],
-      dependency_links=['git+https://github.com/davidfischer-ch/pyutils#egg=pyutils-1.0'],
-      tests_require=['nose'],
+      dependency_links=['https://github.com/davidfischer-ch/pyutils/tarball/master#egg=pyutils-1.0'],
+      tests_require=['mock', 'nose'],
       license='GPLv3',
       url='https://github.com/EBU-TI/OSCIED',
-      packages=['.'])
+      packages=['oscied_lib'],
+      test_suite="tests")
+

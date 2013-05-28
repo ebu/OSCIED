@@ -29,10 +29,10 @@ import os, pyutils.pyutils, shutil
 from copy import copy
 from mock import call
 from nose.tools import assert_equal
-from lib.CharmHooks import DEFAULT_OS_ENV
-from lib.TransformConfig import TransformConfig
-from lib.CharmHooks_Storage import CharmHooks_Storage
 from pyutils.pyutils import mock_cmd, mock_side_effect
+from oscied_lib.CharmHooks import DEFAULT_OS_ENV
+from oscied_lib.TransformConfig import TransformConfig
+from oscied_lib.CharmHooks_Storage import CharmHooks_Storage
 
 CONFIG_DEFAULT = {
     'storage_address': '', 'storage_nat_address': '', 'storage_fstype': '',

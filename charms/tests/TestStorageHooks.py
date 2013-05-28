@@ -29,10 +29,10 @@ import os
 from copy import copy
 from mock import call  #, Mock
 from nose.tools import assert_equal, raises
-from lib.CharmHooks import DEFAULT_OS_ENV
-from lib.StorageConfig import StorageConfig
-from lib.StorageHooks import StorageHooks
 from pyutils.pyutils import mock_cmd  #, mock_side_effect
+from oscied_lib.CharmHooks import DEFAULT_OS_ENV
+from oscied_lib.StorageConfig import StorageConfig
+from oscied_lib.StorageHooks import StorageHooks
 
 CONFIG = {'verbose': False, 'replica_count': 1, 'allowed_ips': '*'}
 OS_ENV = copy(DEFAULT_OS_ENV)

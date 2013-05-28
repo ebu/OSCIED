@@ -29,10 +29,10 @@ import os, shutil
 from copy import copy
 from mock import Mock, call
 from nose.tools import assert_equal
-from lib.CharmHooks import DEFAULT_OS_ENV
-from lib.OrchestraConfig import OrchestraConfig
-from lib.OrchestraHooks import OrchestraHooks
 from pyutils.pyutils import mock_cmd
+from oscied_lib.CharmHooks import DEFAULT_OS_ENV
+from oscied_lib.OrchestraConfig import OrchestraConfig
+from oscied_lib.OrchestraHooks import OrchestraHooks
 
 CONFIG = {
     'verbose': True, 'root_secret': 'toto', 'nodes_secret': 'abcd',

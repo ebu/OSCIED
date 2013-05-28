@@ -28,9 +28,9 @@
 import os
 from copy import copy
 from nose.tools import assert_equal
-from lib.CharmHooks import DEFAULT_OS_ENV
-from lib.TransformConfig import TransformConfig
-from lib.TransformHooks import TransformHooks
+from oscied_lib.CharmHooks import DEFAULT_OS_ENV
+from oscied_lib.TransformConfig import TransformConfig
+from oscied_lib.TransformHooks import TransformHooks
 
 CONFIG_DEFAULT = {
     'verbose': False, 'concurrency': 1, 'rabbit_queues': 'transform_private',
