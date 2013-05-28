@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-python lib/PublisherHooks.py uninstall
+python oscied_lib/PublisherHooks.py uninstall

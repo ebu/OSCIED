@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-python lib/StorageHooks.py storage-relation-joined
+python oscied_lib/StorageHooks.py storage-relation-joined
