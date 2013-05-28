@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-python lib/OrchestraHooks.py transform-relation-joined
+python oscied_lib/OrchestraHooks.py transform-relation-joined

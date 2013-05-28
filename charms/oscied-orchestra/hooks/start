@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-python lib/OrchestraHooks.py start
+python oscied_lib/OrchestraHooks.py start

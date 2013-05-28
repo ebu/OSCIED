@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-python lib/OrchestraHooks.py api-relation-changed
+python oscied_lib/OrchestraHooks.py api-relation-changed
