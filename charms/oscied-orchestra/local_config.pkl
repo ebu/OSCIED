@@ -59,7 +59,7 @@ p24
 g7
 sS'celery_config_file'
 p25
-S'lib/celeryconfig.py'
+S'oscied_lib/celeryconfig.py'
 p26
 sS'mongo_connection'
 p27

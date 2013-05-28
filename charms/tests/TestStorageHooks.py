@@ -62,7 +62,7 @@ class TestStorageHooks(object):
         self.hooks.volume_set_allowed_ips()
         assert_equal(self.hooks.volume_do.call_args_list, [
             call('set', fail=False, volume='medias_volume_14',
-                 options='auth.allow 192.168.1.*,10.10.*,129.194.185.47'),
+                 options='auth.allow "192.168.1.*,10.10.*,129.194.185.47"'),
             call('info', fail=False, volume='medias_volume_14'),
             call('info', fail=False, volume='medias_volume_14')])
 

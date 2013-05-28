@@ -94,7 +94,7 @@ class StorageHooks(CharmHooks):
         self.info('Set volume %s allowed clients IP list to %s' % (volume, ips))
         self.volume_do('set', volume=volume, options='auth.allow "%s"' % ips, fail=False)
         auth_allow = self.volume_infos(volume=volume)['auth_allow']
-        if auth_allow not in ips:
+        if auth_allow != ips:
             raise ValueError('Volume %s auth.allow=%s (expected %s)' % (volume, ips, auth_allow))
         self.info(self.volume_infos(volume=volume))
 
