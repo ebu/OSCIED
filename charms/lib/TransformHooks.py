@@ -48,10 +48,11 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
 
     def hook_install(self):
         self.hook_uninstall()
-        self.info('Install prerequisites and upgrade packages')
+        self.info('Upgrade system and install prerequisites')
         self.cmd('apt-add-repository -y ppa:jon-severinsson/ffmpeg')
-        self.cmd('apt-get -y install %s' % ' '.join(TransformHooks.PACKAGES))
+        self.cmd('apt-get -y update', fail=False)
         self.cmd('apt-get -y upgrade')
+        self.cmd('apt-get -y install %s' % ' '.join(TransformHooks.PACKAGES))
         self.info('Restart network time protocol service')
         self.cmd('service ntp restart')
         self.info('Compile and install GPAC/DashCast')
@@ -63,14 +64,10 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
         self.cmd('make install')
         os.chdir('..')
         shutil.rmtree('gpac')
-        # FIXME not necessary, but config-changed may create an infinite loop, so WE call it
-        self.hook_config_changed()
 
     def hook_config_changed(self):
-        # FIXME self.hook_stop()
         self.storage_remount()
         self.subordinate_register()
-        # FIXME self.hook_start()
 
     def hook_uninstall(self):
         self.info('Uninstall prerequisities, unregister service and load default configuration')

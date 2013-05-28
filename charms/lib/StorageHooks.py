@@ -121,9 +121,10 @@ class StorageHooks(CharmHooks):
 
     def hook_install(self):
         self.hook_uninstall()
-        self.info('Install prerequisites and upgrade packages')
-        self.cmd('apt-get -y install ntp glusterfs-server nfs-common')
+        self.info('Upgrade system and install prerequisites')
+        self.cmd('apt-get -y update', fail=False)
         self.cmd('apt-get -y upgrade')
+        self.cmd('apt-get -y install ntp glusterfs-server nfs-common')
         self.info('Restart network time protocol service')
         self.cmd('service ntp restart')
 
