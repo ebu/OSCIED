@@ -73,7 +73,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
                 'AddHandler h264-streaming.extensions .mp4')
         lines = filter(lambda l: l not in mods, open(self.local_config.apache_config_file))
         lines += '\n'.join(mods) + '\n'
-        open(self.local_config.hosts_file, 'w').write(''.join(lines))
+        open(self.local_config.apache_config_file, 'w').write(''.join(lines))
         self.info('Expose Apache 2 service')
         self.open_port(80, 'TCP')
 
