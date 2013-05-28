@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 echo 'Install OSCIED Library'
 apt-get -y install build-essential git-core python-dev >/dev/null
-python setup.py install  # kombu error
-python setup.py install  # Then it works ...
-python oscied_lib/PublisherHooks.py install
+./setup.py install  # kombu error
+./setup.py install  # Then it works ...
+./oscied_lib/PublisherHooks.py install

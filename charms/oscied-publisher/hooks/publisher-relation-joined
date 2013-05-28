@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-python oscied_lib/PublisherHooks.py subordinate-relation-joined
+./oscied_lib/PublisherHooks.py subordinate-relation-joined

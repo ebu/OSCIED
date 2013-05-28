@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-python oscied_lib/OrchestraHooks.py storage-relation-changed
+./oscied_lib/OrchestraHooks.py storage-relation-changed
