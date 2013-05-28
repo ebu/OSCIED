@@ -28,7 +28,8 @@
 # Charmhelpers : /usr/share/pyshared/charmhelpers/__init__.py
 
 import os, subprocess, sys, yaml
-from pyutils.pyutils import cmd, isstr
+from six import string_types
+from pyutils.pyutils import cmd
 
 try:
     import charmhelpers
@@ -241,7 +242,7 @@ class CharmHooks(object):
         >>> hasattr(hooks.config, 'rabbit_password')
         True
         """
-        if isstr(config):
+        if isinstance(config, string_types):
             self.debug('Load config from file %s' % config)
             with open(config) as f:
                 options = yaml.load(f)['options']
@@ -274,7 +275,7 @@ class CharmHooks(object):
         >>> print(hooks.metadata['maintainer'])
         OSCIED Main Developper <david.fischer.ch@gmail.com>
         """
-        if isstr(metadata):
+        if isinstance(metadata, string_types):
             self.debug('Load metadatas from file %s' % metadata)
             with open(metadata) as f:
                 metadata = yaml.load(f)
