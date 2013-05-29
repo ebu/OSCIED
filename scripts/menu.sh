@@ -125,7 +125,7 @@ install()
     lu-importUtils . || xecho 'Unable to import utilities of logicielsUbuntu'
   fi
 
-  "$CHARMS_PATH/setup.sh"
+  $udo "$CHARMS_PATH/setup.sh"
 
   pecho 'Install prerequisites'
   eval $install bzr rst2pdf texlive-latex-recommended texlive-latex-extra \
