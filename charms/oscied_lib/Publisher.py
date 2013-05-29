@@ -25,17 +25,15 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-from __future__ import absolute_import
-
 import time, os
 from celery import current_task
 from celery.decorators import task
-from .Callback import Callback
-from .Media import Media
-from .PublisherConfig import PublisherConfig
-from .Storage import Storage
-from .User import User
-from .pyutils.pyutils import object2json, datetime_now
+from Callback import Callback
+from Media import Media
+from PublisherConfig import PublisherConfig
+from Storage import Storage
+from User import User
+from pyutils.pyutils import object2json, datetime_now
 
 
 @task(name='Publisher.publish_job')

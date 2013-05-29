@@ -25,9 +25,7 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-from __future__ import absolute_import
-
-from .CharmHooks import CharmHooks
+from CharmHooks import CharmHooks
 
 
 class CharmHooks_Website(CharmHooks):

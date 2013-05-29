@@ -27,8 +27,6 @@
 
 # FIXME mongo concurrency : http://emptysquare.net/blog/requests-in-python-and-mongodb/
 
-from __future__ import absolute_import
-
 import logging
 import sys
 from flask import Flask, abort, request, Response
@@ -37,7 +35,7 @@ from oscied_lib.Orchestra import Orchestra
 from oscied_lib.OrchestraConfig import OrchestraConfig
 from oscied_lib.TransformProfile import TransformProfile
 from oscied_lib.User import User
-from pyutils.pyutils import object2json, valid_uuid, setup_logging
+from oscied_lib.pyutils.pyutils import object2json, valid_uuid, setup_logging
 
 
 # Global variables ---------------------------------------------------------------------------------

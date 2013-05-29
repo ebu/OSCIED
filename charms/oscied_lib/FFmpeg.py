@@ -25,8 +25,6 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-from __future__ import absolute_import
-
 import fcntl, os, re, select, shlex, subprocess, time
 
 

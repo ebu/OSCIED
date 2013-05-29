@@ -25,11 +25,9 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-from __future__ import absolute_import
-
 import os, time
-from .FFmpeg import get_media_duration
-from .OrchestraConfig import ORCHESTRA_CONFIG_TEST
+from FFmpeg import get_media_duration
+from OrchestraConfig import ORCHESTRA_CONFIG_TEST
 
 
 class Storage(object):

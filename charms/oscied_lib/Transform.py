@@ -25,19 +25,17 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-from __future__ import absolute_import
-
 import fcntl, os, re, select, shlex, subprocess, time
 from celery import current_task
 from celery.decorators import task
-from .Callback import Callback
-from .FFmpeg import get_media_duration
-from .Media import Media
-from .Storage import Storage
-from .TransformConfig import TransformConfig
-from .TransformProfile import TransformProfile
-from .User import User
-from .pyutils.pyutils import object2json, datetime_now, duration2secs
+from Callback import Callback
+from FFmpeg import get_media_duration
+from Media import Media
+from Storage import Storage
+from TransformConfig import TransformConfig
+from TransformProfile import TransformProfile
+from User import User
+from pyutils.pyutils import object2json, datetime_now, duration2secs
 
 
 @task(name='Transform.transform_job')

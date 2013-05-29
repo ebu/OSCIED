@@ -25,10 +25,8 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-from __future__ import absolute_import
-
 import re
-from .pyutils.pyutils import PickleableObject
+from pyutils.pyutils import PickleableObject
 
 
 class StorageConfig(PickleableObject):

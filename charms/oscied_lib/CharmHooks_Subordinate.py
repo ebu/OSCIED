@@ -25,10 +25,8 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-from __future__ import absolute_import
-
 import pymongo.uri_parser, shutil
-from .CharmHooks import CharmHooks
+from CharmHooks import CharmHooks
 
 
 class CharmHooks_Subordinate(CharmHooks):

@@ -25,14 +25,12 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-from __future__ import absolute_import
-
 import os, multiprocessing, setuptools.archive_util, shutil, time
-from .CharmHooks import DEFAULT_OS_ENV
-from .CharmHooks_Storage import CharmHooks_Storage
-from .CharmHooks_Subordinate import CharmHooks_Subordinate
-from .TransformConfig import TransformConfig
-from .pyutils.pyutils import first_that_exist, screen_launch, screen_list, screen_kill
+from CharmHooks import DEFAULT_OS_ENV
+from CharmHooks_Storage import CharmHooks_Storage
+from CharmHooks_Subordinate import CharmHooks_Subordinate
+from TransformConfig import TransformConfig
+from pyutils.pyutils import first_that_exist, screen_launch, screen_list, screen_kill
 
 
 class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
