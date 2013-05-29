@@ -125,11 +125,13 @@ install()
     lu-importUtils . || xecho 'Unable to import utilities of logicielsUbuntu'
   fi
 
+  "$CHARMS_PATH/setup.sh"
+
   pecho 'Install prerequisites'
-  eval $install bzr python-pip rst2pdf texlive-latex-recommended \
-    texlive-latex-extra texlive-fonts-recommended || xecho 'Unable to install prerequisites'
-  $udo pip install --upgrade celery coverage docutils flask ipaddr nose pygments pymongo rednose \
-    requests sphinx sphinxcontrib-email sphinxcontrib-googlechart sphinxcontrib-httpdomain
+  eval $install bzr rst2pdf texlive-latex-recommended texlive-latex-extra \
+    texlive-fonts-recommended || xecho 'Unable to install packages'
+  $udo pip install --upgrade coverage docutils nose pygments rednose sphinx sphinxcontrib-email \
+    sphinxcontrib-googlechart sphinxcontrib-httpdomain || xecho 'Unable to install python packages'
 
   pecho 'Download references'
   cd "$REFERENCES_PATH"|| xecho "Unable to find path $REFERENCES_PATH"
