@@ -209,10 +209,6 @@ class StorageHooks(CharmHooks):
     def hook_peer_relation_broken(self):
         self.remark('FIXME NOT IMPLEMENTED')
 
-    def hooks_footer(self):
-        self.info('Save (updated) local configuration %s' % self.local_config)
-        self.local_config.write()
-
 if __name__ == '__main__':
     StorageHooks(first_that_exist('metadata.yaml', '../oscied-storage/metadata.yaml'),
                  first_that_exist('config.yaml', '../oscied-storage/config.yaml'),

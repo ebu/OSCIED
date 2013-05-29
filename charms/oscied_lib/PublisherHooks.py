@@ -101,6 +101,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         elif len(self.rabbit_queues) == 0:
             self.remark('Do not start publisher daemon : No RabbitMQ queues declared')
         else:
+            self.save_local_config()  # Update local configuration file for publisher daemon
             self.cmd('service apache2 start')
             if screen_list('Publisher', log=self.debug) == []:
                 os.chdir('oscied_lib')
@@ -118,10 +119,6 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
     def hook_stop(self):
         screen_kill('Publisher', log=self.debug)
         self.cmd('service apache2 stop', fail=False)
-
-    def hooks_footer(self):
-        self.info('Save (updated) local configuration %s' % self.local_config)
-        self.local_config.write()
 
 if __name__ == '__main__':
     PublisherHooks(first_that_exist('metadata.yaml', '../oscied-publisher/metadata.yaml'),

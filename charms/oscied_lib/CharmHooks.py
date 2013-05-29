@@ -255,6 +255,15 @@ class CharmHooks(object):
                 self.debug('Convert boolean option %s %s -> %s' % (option, value, config[option]))
         self.config.__dict__.update(config)
 
+    def save_local_config(self):
+        u"""
+        Save or update local configuration file only if this instance has the attribute
+        ``local_config``.
+        """
+        if hasattr(self, 'local_config'):
+            self.info('Save (updated) local configuration %s' % self.local_config)
+            self.local_config.write()
+
     def load_metadata(self, metadata):
         u"""
         Set ``metadata`` attribute with given metadatas, ``metadata`` can be:
@@ -312,10 +321,7 @@ class CharmHooks(object):
         try:  # Call the function hooks_...
             self.hook('Execute %s hook %s' % (self.__class__.__name__, hook_name))
             getattr(self, 'hook_%s' % hook_name.replace('-', '_'))()
-            try:
-                self.hooks_footer()
-            except AttributeError:
-                pass
+            self.save_local_config()
         except subprocess.CalledProcessError as e:
             self.log('Exception caught:')
             self.log(e.output)

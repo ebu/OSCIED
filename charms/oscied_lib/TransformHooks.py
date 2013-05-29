@@ -86,6 +86,7 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
         elif len(self.rabbit_queues) == 0:
             self.remark('Do not start transform daemon : No RabbitMQ queues declared')
         else:
+            self.save_local_config()  # Update local configuration file for transform daemon
             if screen_list('Transform', log=self.debug) == []:
                 os.chdir('oscied_lib')
                 try:
@@ -101,10 +102,6 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
 
     def hook_stop(self):
         screen_kill('Transform', log=self.debug)
-
-    def hooks_footer(self):
-        self.info('Save (updated) local configuration %s' % self.local_config)
-        self.local_config.write()
 
 if __name__ == '__main__':
     TransformHooks(first_that_exist('metadata.yaml', '../oscied-transform/metadata.yaml'),

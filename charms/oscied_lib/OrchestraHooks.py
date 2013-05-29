@@ -178,6 +178,7 @@ class OrchestraHooks(CharmHooks_Storage):
         elif not os.path.exists(self.local_config.celery_config_file):
             self.remark('Do not start orchestra daemon : No celery configuration file')
         else:
+            self.save_local_config()  # Update local configuration file for orchestra daemon
             # do not check status after all, orchestra can do it for us !
             self.cmd('service mongodb start', fail=False)
             self.cmd('service rabbitmq-server start', fail=False)
@@ -234,10 +235,6 @@ class OrchestraHooks(CharmHooks_Storage):
             self.remark('Waiting for complete setup')
             return
         # FIXME something to do (register unit ?)
-
-    def hooks_footer(self):
-        self.info('Save (updated) local configuration %s' % self.local_config)
-        self.local_config.write()
 
 if __name__ == '__main__':
     OrchestraHooks(first_that_exist('metadata.yaml', '../oscied-orchestra/metadata.yaml'),
