@@ -89,7 +89,7 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
             self.remark('Do not start transform daemon : No RabbitMQ queues declared')
         else:
             if screen_list('Transform', log=self.debug) == []:
-                os.chdir('lib')
+                os.chdir('oscied_lib')
                 try:
                     screen_launch('Transform',
                                   ['celeryd', '--config', 'celeryconfig', '-Q', self.rabbit_queues])
