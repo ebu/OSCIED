@@ -370,7 +370,7 @@ config()
     if [ "$orchestra" ]; then
       pecho "Auto-detect storage internal IP address by parsing $orchestra unit configuration"
       number=$(expr match "$orchestra" '.*/\([0-9]*\)')
-      get_unit_config 'oscied-orchestra' "$number" 'storage_ip'
+      get_unit_config 'oscied-orchestra' "$number" 'storage_address'
       if [ ! "$REPLY" ]; then
         xecho 'Unable to detect storage internal IP address'
       else

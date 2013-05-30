@@ -99,8 +99,10 @@ get_unit_config()
   name=$1
   number=$2
   option=$3
-  val=$(juju ssh $name/$number "cat /var/lib/juju/units/$name-*/charm/config.json")
-  REPLY=$(expr match "$val" ".*\"$option\": \"\([^\"]*\)\",.*")
+
+  # Example : sS'storage_address' p29 S'ip-10-245-189-174.ec2.internal' p30
+  val=$(juju ssh $name/$number "cat /var/lib/juju/units/$name-*/charm/local_config.pkl" | tr '\n' ' ')
+  REPLY=$(expr match "$val" ".*'$option' p[0-9]* [^']*'\([^']*\)' p[0-9]*.*")
 }
 
 # Parse orchestra.yaml configuration file to get options value -------------------------------------
