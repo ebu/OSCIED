@@ -25,7 +25,7 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import os, shutil, string
+import os, shutil, socket, string
 from configobj import ConfigObj
 from random import choice
 from CharmHooks import DEFAULT_OS_ENV
@@ -48,76 +48,64 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         self.local_config = WebuiConfig.read(local_config_filename, store_filename=True)
         self.debug('My __dict__ is %s' % self.__dict__)
 
-# ORCHESTRA_FLAG="$WWW_ROOT_PATH/orchestra_relation_ok"
-# API_URL=$(config-get api_url)
+    # ----------------------------------------------------------------------------------------------
+
+    def mysql_do(self, action=None, cli_input=None, fail=True):
+        command = ['mysql', '-uroot', '-p%s' % self.config.mysql_root_password]
+        if action:
+            command.extend(['-e', action])
+        return self.cmd(command=command, cli_input=cli_input, fail=fail)
+
+    @staticmethod
+    def randpass(length):
+        chars = string.letters + string.digits
+        print ''.join([choice(chars) for i in range(length)])
 
     # ----------------------------------------------------------------------------------------------
 
-# api_config_is_enabled()
-# {
-#   [ "$API_URL" ]
-# }
-# api_hook_bypass()
-# {
-#   if api_config_is_enabled; then
-#     xecho 'Orchestrator is set in config, api relation is disabled' 1
-#   fi
-# }
-# api_register()
-# {
-#   # Overrides api parameters with charm configuration
-#   if api_config_is_enabled; then # if api options are set
-#     api_url=$API_URL
-#   # Or uses api parameters from charm api relation
-#   elif [ $# -eq 1 ]; then # if function parameters are set
-#     api_url=$1
-#   elif [ $# -eq 0 ]; then
-#     return
-#   else
-#     xecho "Usage: $(basename $0).api_register api_url"
-#   fi
-#   pecho 'Configure Web UI : Register the Orchestrator'
-#   setSettingPHP $GENERAL_CONFIG_FILE 'config' 'orchestra_api_url' "$api_url" || xecho 'Config'
-#   touch "$ORCHESTRA_FLAG" || xecho 'Unable to create flag'
-# }
-# api_unregister()
-# {
-#   pecho 'Configure Web UI : Unregister the Orchestrator'
-#   setSettingPHP $GENERAL_CONFIG_FILE 'config' 'orchestra_api_url' '' || xecho 'Config'
-#   rm -f "$ORCHESTRA_FLAG" 2>/dev/null
-# }
-# update_proxies()
-# {
-#   if [ $# -ne 2 ]; then
-#     xecho "Usage: $(basename $0).update_proxies action ip"
-#   fi
-#   action=$1
-#   ip=$2
-#   PROXY_IPS=$(cat proxy_ips 2>/dev/null)
-#   case "$action" in
-#   'add' )
-#     if ! echo $PROXY_IPS | grep -q "$ip"; then
-#       [ "$PROXY_IPS" ] && PROXY_IPS="$PROXY_IPS,"
-#       PROXY_IPS="$PROXY_IPS$ip"
-#       echo $PROXY_IPS > proxy_ips
-#       setSettingPHP $GENERAL_CONFIG_FILE 'config' 'proxy_ips' "$PROXY_IPS" || return $false
-#     fi ;;
-#   'remove' )
-#     if echo $PROXY_IPS | grep -q "$ip"; then
-#       sed -i "s<$ip,<<g;s<,$ip<<g;s<$ip<<g" proxy_ips
-#       PROXY_IPS=$(cat proxy_ips)
-#       setSettingPHP $GENERAL_CONFIG_FILE 'config' 'proxy_ips' "$PROXY_IPS" || return $false
-#     fi ;;
-#   'cleanup' )
-#     if "$PROXY_IPS"; then
-#       PROXY_IPS=''
-#       echo '' > proxy_ips
-#       setSettingPHP $GENERAL_CONFIG_FILE 'config' 'proxy_ips' "$PROXY_IPS" || return $false
-#     fi ;;
-#   * ) xecho "Unknown action : $action" ;;
-#   esac
-#   return $true
-# }
+    @property
+    def api_config_is_enabled(self):
+        return self.config.api_url
+
+    def api_hook_bypass(self):
+        if self.api_config_is_enabled:
+            raise RuntimeError('Orchestrator is set in config, api relation is disabled')
+
+    def api_register(self, api_url=None):
+        if self.api_config_is_enabled:
+            self.info('Override api parameters with charm configuration')
+            self.local_config.api_url = self.config.api_url
+        elif api_url:
+            self.info('Use storage parameters from charm api relation')
+            self.local_config.api_url = api_url
+
+    def api_unregister(self):
+        self.info('Unregister the Orchestrator')
+        self.local_config.api_url = ''
+
+    # ----------------------------------------------------------------------------------------------
+
+    def hook_api_relation_joined(self):
+        self.api_hook_bypass()
+
+    def hook_api_relation_changed(self):
+        self.api_hook_bypass()
+        # Get configuration from the relation
+        api_url = self.relation_get('api_url')
+        if not api_url:
+            self.remark('Waiting for complete setup')
+        else:
+            self.hook_stop()
+            self.api_register(api_url)
+            self.hook_config_changed()
+            self.hook_start()
+
+    def hook_api_relation_broken(self):
+        self.api_hook_bypass()
+        self.hook_stop()
+        self.api_unregister()
+        self.hook_config_changed()
+
 # storage_remount()
 # {
 #   # ...
@@ -171,19 +159,6 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
 
     # ----------------------------------------------------------------------------------------------
 
-    def mysql_do(self, action=None, cli_input=None):
-        command = ['mysql', '-uroot', '-p%s' % self.config.mysql_root_password]
-        if action:
-            command.extend(['-e', action])
-        return self.cmd(command=command, cli_input=cli_input)
-
-    @staticmethod
-    def randpass(length):
-        chars = string.letters + string.digits
-        print ''.join([choice(chars) for i in range(length)])
-
-    # ----------------------------------------------------------------------------------------------
-
     def hook_install(self):
         self.hook_uninstall()
         self.info('Upgrade system and install prerequisites')
@@ -208,40 +183,53 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         # Now MySQL will listen to incoming request of any source
         #sed -i 's/127.0.0.1/0.0.0.0/g' /etc/mysql/my.cnf
         # Fix ticket #57 : Keystone + MySQL = problems
-        self.mysql_do("DROP USER ''@'localhost'; DROP USER ''@'$(hostname)';")
-        self.mysql_do("GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;")
-        self.mysql_do("SET PASSWORD FOR 'root'@'%' = PASSWORD('%s');" % mysql_pass)
+        self.info('Import Web UI database and create user')
+        hostname = socket.gethostname()
+        self.cmd('service mysql start', fail=False)
+        self.mysql_do("DROP USER ''@'localhost'; DROP USER ''@'%s';" % hostname, fail=False)
+        self.mysql_do("GRANT ALL PRIVILEGES ON *.* TO 'root'@'%%' WITH GRANT OPTION;")
+        self.mysql_do("SET PASSWORD FOR 'root'@'%%' = PASSWORD('%s');" % mysql_pass)
         self.cmd('service mysql restart')
-
-        self.info('Import Web User Interface database')
+        self.mysql_do('DROP DATABASE IF EXISTS webui')
         self.mysql_do(cli_input=open(self.local_config.site_database_file).read())
-
-        self.info('Create Web User Interface user')
-        self.mysql_do("GRANT ALL ON webui.* TO 'webui'@'%' IDENTIFIED BY '%s';" %
-                      self.config.mysql_user_pass)
-
-        self.inf('Configure Apache2 + PHP')
+        self.mysql_do("GRANT ALL ON webui.* TO 'webui'@'%%' IDENTIFIED BY '%s';" %
+                      self.config.mysql_user_password)
+        self.info('Configure Apache2 + PHP')
         self.cmd('a2enmod rewrite')
-
-        self.info('Copy Web User Interface')
+        self.info('Copy and pre-configure Web UI')
         shutil.copy(self.local_config.site_template_file, self.local_config.sites_enabled_path)
         rsync('www/', self.local_config.www_root_path,
               archive=True, delete=True, exclude_vcs=True, recursive=True)
-
+        try_makedirs(self.local_config.mysql_temp_path)
+        chown(self.local_config.mysql_temp_path, 122, 133)  # FIXME mysql = 122 / 133
+        chown(self.local_config.www_root_path, 33, 3, recursive=True)  # FIXME www-data = 33
+        self.local_config.encryption_key = WebuiHooks.randpass(32)
+        # config php, mettre short opentags à "on"
+        # lire les logs, problème MY_ my_ nom fichier
         self.info('Expose Apache 2 service')
         self.open_port(80, 'TCP')
 
-        self.info('Configure Web User Interface')
-        self.local_config.encryption_key = WebuiHooks.randpass(32)
-
-        shutil.makedirs(self.local_config.mysql_temp_path)
-        chown(self.local_config.mysql_temp_path, 'mysql', 'mysql')
-        chown(self.local_config.www_root_path, 'www-data', 'www-data', recursive=True)
-
-        # config php, mettre short opentags à "on"
-        # lire les logs, problème MY_ my_ nom fichier
-
     def hook_config_changed(self):
+        # famille@Gtx:~/David/git/OSCIED/charms/oscied-webui$ sudo hooks/config-changed
+        # [HOOK] Execute WebuiHooks hook config-changed
+        # Traceback (most recent call last):
+        #   File "/usr/lib/python2.7/runpy.py", line 162, in _run_module_as_main
+        #     "__main__", fname, loader, pkg_name)
+        #   File "/usr/lib/python2.7/runpy.py", line 72, in _run_code
+        #     exec code in run_globals
+        #   File "/home/famille/David/git/OSCIED/charms/oscied_lib/WebuiHooks.py", line 267, in <module>
+        #     DEFAULT_OS_ENV).trigger()
+        #   File "oscied_lib/CharmHooks.py", line 331, in trigger
+        #     getattr(self, 'hook_%s' % hook_name.replace('-', '_'))()
+        #   File "/home/famille/David/git/OSCIED/charms/oscied_lib/WebuiHooks.py", line 216, in hook_config_changed
+        #     mysql_config = ConfigObj(self.local_config.mysql_config_file)
+        #   File "/usr/lib/python2.7/dist-packages/configobj.py", line 1230, in __init__
+        #     self._load(infile, configspec)
+        #   File "/usr/lib/python2.7/dist-packages/configobj.py", line 1320, in _load
+        #     raise error
+        # configobj.ConfigObjError: Parsing failed with several errors.
+        # First error at line 43.
+
         self.storage_remount()
         self.api_register()
 
@@ -275,85 +263,22 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         shutil.rmtree('/var/lib/mysql/', ignore_errors=True)
         shutil.rmtree('/var/log/mysql/', ignore_errors=True)
         os.makedirs(self.local_config.www_root_path)
-        self.local_config.reset(reset_publish_uri=False)
+        self.local_config.reset()
 
-# hook_start()
-# {
-#   techo 'Web UI - start'
-#   if ! storage_is_mounted; then
-#     recho 'WARNING Do not start Web UI : No shared storage'
-#   elif [ ! -f "$ORCHESTRA_FLAG" ]; then
-#     recho 'WARNING Do not start Web UI : No Orchestrator API'
-#   else
-#     if ! service mysql status | grep -q 'running'; then
-#       service mysql start || xecho 'Unable to start MySQL' 1
-#     fi
-#     service apache2 start || xecho 'Unable to start Apache 2' 2
-#   fi
-# }
-# hook_stop()
-# {
-#   techo 'Web UI - stop'
-#   service apache2 stop || xecho 'Unable to stop Apache 2' 1
-#   if service mysql status | grep -q 'running'; then
-#     service mysql stop || xecho 'Unable to stop MySQL' 2
-#   fi
-# }
+    def hook_start(self):
+        if not self.storage_is_mounted:
+            self.remark('Do not start web user interface : No shared storage')
+        elif not self.local_config.api_url:
+            self.remark('Do not start web user interface : No orchestrator api')
+        else:
+            self.save_local_config()  # Update local configuration file first
+            self.cmd('service mysql start')
+            self.cmd('service apache2 start')
+            self.remark('Web user interface successfully started')
 
-    # def hook_start(self):
-    #     if not self.storage_is_mounted:
-    #         self.remark('Do not start publisher daemon : No shared storage')
-    #     elif not os.path.exists(self.local_config.celery_config_file):
-    #         self.remark('Do not start publisher daemon : No celery configuration file')
-    #     elif len(self.rabbit_queues) == 0:
-    #         self.remark('Do not start publisher daemon : No RabbitMQ queues declared')
-    #     else:
-    #         self.save_local_config()  # Update local configuration file for publisher daemon
-    #         self.cmd('service apache2 start')
-    #         if screen_list('Publisher', log=self.debug) == []:
-    #             try:
-    #                 screen_launch('Publisher',
-    #                               ['celeryd', '--config', 'celeryconfig', '-Q', self.rabbit_queues])
-    #             finally:
-    #                 os.chdir('..')
-    #         time.sleep(5)
-    #         if screen_list('Publisher', log=self.debug) == []:
-    #             raise RuntimeError('Publisher is not ready')
-    #         else:
-    #             self.remark('Publisher successfully started')
-
-    # def hook_stop(self):
-    #     screen_kill('Publisher', log=self.debug)
-    #     self.cmd('service apache2 stop', fail=False)
-
-# hook_api_relation_joined()
-# {
-#   techo 'Web UI - api relation joined'
-#   api_hook_bypass
-# }
-# hook_api_relation_changed()
-# {
-#   techo 'Web UI - api relation changed'
-#   api_hook_bypass
-#   # Get configuration from the relation
-#   ip=$(relation-get private-address)
-#   api_url=$(relation-get api_url)
-#   mecho "Orchestrator IP is $ip, API URL is $api_url"
-#   if [ ! "$ip" -o ! "$api_url" ]; then
-#     recho 'Waiting for complete setup'
-#     exit 0
-#   fi
-#   hook_stop
-#   api_register "$api_url"
-#   hook_start
-# }
-# hook_api_relation_broken()
-# {
-#   techo 'Web UI - api relation broken'
-#   api_hook_bypass
-#   hook_stop
-#   api_unregister
-#}
+    def hook_stop(self):
+        self.cmd('service apache2 stop', fail=False)
+        self.cmd('service mysql stop', fail=False)
 
 if __name__ == '__main__':
     WebuiHooks(first_that_exist('metadata.yaml', '../oscied-webui/metadata.yaml'),

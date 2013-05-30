@@ -57,8 +57,7 @@ class CharmHooks_Website(CharmHooks):
         self.info('Proxy address is %s' % proxy_address)
         if not proxy_address:
             self.remark('Waiting for complete setup')
-            return
-        if not proxy_address in self.local_config.proxy_ips:
+        elif not proxy_address in self.local_config.proxy_ips:
             self.info('Add %s to allowed proxy IPs' % proxy_address)
             self.hook_stop()
             self.local_config.proxy_ips.append(proxy_address)
@@ -71,8 +70,7 @@ class CharmHooks_Website(CharmHooks):
         proxy_address = self.relation_get('private-address')
         if not proxy_address:
             self.remark('Waiting for complete setup')
-            return
-        if proxy_address in self.local_config.proxy_ips:
+        elif proxy_address in self.local_config.proxy_ips:
             self.info('Remove %s from allowed proxy IPs' % proxy_address)
             self.hook_stop()
             self.local_config.proxy_ips.remove(proxy_address)
