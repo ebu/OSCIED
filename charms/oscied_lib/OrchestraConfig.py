@@ -96,21 +96,26 @@ class OrchestraConfig(PickleableObject):
         return ('publisher_private', 'publisher_amazon',)
 
     def reset(self):
-        self.verbose = True
-        self.api_url = ''
-        self.root_secret = ''
-        self.nodes_secret = ''
-        self.mongo_connection = ''
-        self.rabbit_connection = ''
-        self.storage_address = ''
-        self.storage_fstype = ''
-        self.storage_mountpoint = ''
-        self.storage_options = ''
-        self.storage_path = '/mnt/storage'
-        self.hosts_file = '/etc/hosts'
-        self.celery_config_file = 'celeryconfig.py'
-        self.celery_template_file = 'templates/celeryconfig.py.template'
-        self.mongo_config_file = '/etc/mongodb.conf'
+        u"""
+        Reset attributes to theirs default values.
+
+        **Example usage**:
+
+        >>> from copy import copy
+        >>> config = copy(ORCHESTRA_CONFIG_TEST)
+        >>> config._pickle_filename = 'my_file.pkl'
+        >>> print(config.storage_path)
+        /mnt/medias
+        >>> config.storage_path = 'salut'
+        >>> print(config.storage_path)
+        salut
+        >>> config.reset()
+        >>> print(config.storage_path)
+        /mnt/storage
+        >>> print(config._pickle_filename)
+        my_file.pkl
+        """
+        self.__init__()
 
 ORCHESTRA_CONFIG_TEST = OrchestraConfig(True, 'http://127.0.0.1:5000', 'toto', 'abcd', '...', '...',
                                         '10.1.1.2', 'glusterfs', 'medias_volume', '', '/mnt/medias')

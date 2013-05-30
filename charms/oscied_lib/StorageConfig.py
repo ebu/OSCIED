@@ -42,8 +42,26 @@ class StorageConfig(PickleableObject):
         return str(self.__dict__)
 
     def reset(self):
-        self.allowed_ips = ''
-        self.volume_flag = False
+        u"""
+        Reset attributes to theirs default values.
+
+        **Example usage**:
+
+        >>> from copy import copy
+        >>> config = copy(WEBUI_CONFIG_TEST)
+        >>> config._pickle_filename = 'my_file.pkl'
+        >>> print(config.storage_path)
+        /mnt/storage
+        >>> config.storage_path = 'salut'
+        >>> print(config.storage_path)
+        salut
+        >>> config.reset()
+        >>> print(config.storage_path)
+        /mnt/storage
+        >>> print(config._pickle_filename)
+        my_file.pkl
+        """
+        self.__init__()
 
 STORAGE_CONFIG_TEST = StorageConfig('*', False)
 

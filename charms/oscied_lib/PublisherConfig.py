@@ -33,8 +33,8 @@ class PublisherConfig(PickleableObject):
 
     def __init__(self, api_nat_socket='', storage_address='', storage_fstype='',
                  storage_mountpoint='', storage_options='', storage_path='/mnt/storage',
-                 storage_mount_max_retry=5, storage_mount_sleep_delay=5,
-                 hosts_file='/etc/hosts', celery_config_file='celeryconfig.py',
+                 storage_mount_max_retry=5, storage_mount_sleep_delay=5, hosts_file='/etc/hosts',
+                 celery_config_file='celeryconfig.py',
                  celery_template_file='templates/celeryconfig.py.template',
                  apache_config_file='/etc/apache2/apache2.conf',
                  publish_uri='', publish_path='/var/www'):
@@ -90,20 +90,27 @@ class PublisherConfig(PickleableObject):
     def update_publish_uri(self, public_address):
         self.publish_uri = 'http://%s' % public_address
 
-    def reset(self, reset_publish_uri=False):
-        self.api_nat_socket = ''
-        self.storage_address = ''
-        self.storage_fstype = ''
-        self.storage_mountpoint = ''
-        self.storage_options = ''
-        self.storage_path = '/mnt/storage'
-        self.hosts_file = '/etc/hosts'
-        self.celery_config_file = 'celeryconfig.py'
-        self.celery_template_file = 'templates/celeryconfig.py.template'
-        self.apache_config_file = '/etc/apache2/apache2.conf'
-        if reset_publish_uri:
-            self.publish_uri = ''
-        self.publish_path = '/var/www'
+    def reset(self):
+        u"""
+        Reset attributes to theirs default values.
+
+        **Example usage**:
+
+        >>> from copy import copy
+        >>> config = copy(PUBLISHER_CONFIG_TEST)
+        >>> config._pickle_filename = 'my_file.pkl'
+        >>> print(config.storage_path)
+        /mnt/storage
+        >>> config.storage_path = 'salut'
+        >>> print(config.storage_path)
+        salut
+        >>> config.reset()
+        >>> print(config.storage_path)
+        /mnt/storage
+        >>> print(config._pickle_filename)
+        my_file.pkl
+        """
+        self.__init__()
 
 PUBLISHER_CONFIG_TEST = PublisherConfig('129.194.185.47:5000', '10.1.1.2', 'glusterfs',
                                         'medias_volume', '')

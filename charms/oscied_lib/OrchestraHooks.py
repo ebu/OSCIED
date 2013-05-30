@@ -149,13 +149,9 @@ class OrchestraHooks(CharmHooks_Storage):
             'username': 'nodes',
             'password': str(self.config.mongo_nodes_password),
         }
-        with open(self.local_config.celery_template_file) as celery_template_file:
-            data = celery_template_file.read()
-            data = data.format(**infos)
-            with open(self.local_config.celery_config_file, 'w') as celery_config_file:
-                celery_config_file.write(data)
-                self.remark('Orchestrator successfully configured')
-
+        self.template2config(self.local_config.celery_template_file,
+                             self.local_config.celery_config_file, infos)
+        self.remark('Orchestrator successfully configured')
         self.storage_remount()
 
     def hook_uninstall(self):

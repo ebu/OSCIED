@@ -300,6 +300,14 @@ class CharmHooks(object):
         """
         return cmd(command, input=input, cli_input=cli_input, fail=fail, log=self.debug)
 
+    def template2config(self, template, config, values):
+        with open(template) as template_file:
+            data = template_file.read()
+            data = data.format(**values)
+            with open(config, 'w') as config_file:
+                config_file.write(data)
+                self.remark('File %s successfully generated' % config)
+
     # ----------------------------------------------------------------------------------------------
 
     def trigger(self, hook_name=None):

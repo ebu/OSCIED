@@ -25,17 +25,29 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import logging
+import logging, os
 from pyutils.pyutils import PickleableObject
 
 
-class TransformConfig(PickleableObject):
+class WebuiConfig(PickleableObject):
 
     def __init__(self, api_nat_socket='', storage_address='', storage_fstype='',
                  storage_mountpoint='', storage_options='', storage_path='/mnt/storage',
                  storage_mount_max_retry=5, storage_mount_sleep_delay=5, hosts_file='/etc/hosts',
-                 celery_config_file='celeryconfig.py',
-                 celery_template_file='templates/celeryconfig.py.template'):
+                 encryption_key='', proxy_ips='',
+                 mysql_config_file='/etc/mysql/my.cnf', mysql_temp_path='/var/lib/mysql/tmp',
+                 sites_enabled_path='/etc/apache2/sites-enabled', site_database_file='webui-db.sql',
+                 site_template_file='templates/000-default',
+                 htaccess_template_file='templates/htaccess.template',
+                 general_template_file='templates/config.php.template',
+                 database_template_file='templates/database.php.template',
+                 htaccess_config_file='/var/www/.htaccess',
+                 general_config_file='/var/www/application/config/config.php',
+                 database_config_file='/var/www/application/config/database.php',
+                 www_root_path='/var/www', www_medias_path='/var/www/medias',
+                 www_uploads_path='/var/www/uploads',
+                 storage_medias_path='/mnt/storage/medias',
+                 storage_uploads_path='/mnt/storage/uploads'):
         self.api_nat_socket = api_nat_socket
         self.storage_address = storage_address
         self.storage_fstype = storage_fstype
@@ -45,8 +57,24 @@ class TransformConfig(PickleableObject):
         self.storage_mount_max_retry = storage_mount_max_retry
         self.storage_mount_sleep_delay = storage_mount_sleep_delay
         self.hosts_file = hosts_file
-        self.celery_config_file = celery_config_file
-        self.celery_template_file = celery_template_file
+        #self.encryption_key = encryption_key
+        #self.proxy_ips = proxy_ips
+        #self.mysql_config_file = mysql_config_file
+        #self.mysql_temp_path = mysql_temp_path
+        #self.sites_enabled_path = sites_enabled_path
+        #self.site_database_file = site_database_file
+        #self.site_template_file = site_template_file
+        #self.htaccess_template_file = htaccess_template_file
+        self.general_template_file = general_template_file
+        self.database_template_file = database_template_file
+        #self.htaccess_config_file = htaccess_config_file
+        #self.general_config_file = general_config_file
+        #self.database_config_file = database_config_file
+        self.www_root_path = www_root_path
+        self.www_medias_path = www_medias_path
+        self.www_uploads_path = www_uploads_path
+        self.storage_medias_path = storage_medias_path
+        self.storage_uploads_path = storage_uploads_path
 
     def __repr__(self):
         return str(self.__dict__)
@@ -63,7 +91,7 @@ class TransformConfig(PickleableObject):
         **Example usage**:
 
         >>> from copy import copy
-        >>> config = copy(TRANSFORM_CONFIG_TEST)
+        >>> config = copy(WEBUI_CONFIG_TEST)
         >>> print(config.storage_uri)
         glusterfs://10.1.1.2/medias_volume
         >>> config.storage_fstype = ''
@@ -89,7 +117,7 @@ class TransformConfig(PickleableObject):
         **Example usage**:
 
         >>> from copy import copy
-        >>> config = copy(TRANSFORM_CONFIG_TEST)
+        >>> config = copy(WEBUI_CONFIG_TEST)
         >>> config._pickle_filename = 'my_file.pkl'
         >>> print(config.storage_path)
         /mnt/storage
@@ -104,15 +132,15 @@ class TransformConfig(PickleableObject):
         """
         self.__init__()
 
-TRANSFORM_CONFIG_TEST = TransformConfig('129.194.185.47:5000', '10.1.1.2', 'glusterfs',
-                                        'medias_volume', '')
+WEBUI_CONFIG_TEST = WebuiConfig('129.194.185.47:5000', '', '10.1.1.2', 'glusterfs',
+                                'medias_volume', '')
 
 # Main ---------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    print('Test TransformConfig with doctest')
+    print('Test WebuiConfig with doctest')
     import doctest
     doctest.testmod(verbose=False)
     print('OK')
-    print('Write default transform configuration')
-    TransformConfig().write('../oscied-transform/local_config.pkl')
+    print('Write default web user interface configuration')
+    WebuiConfig().write('../oscied-webui/local_config.pkl')

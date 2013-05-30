@@ -36,8 +36,9 @@ from pyutils.pyutils import first_that_exist, screen_launch, screen_list, screen
 
 class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Website):
 
-    PACKAGES = tuple(set(CharmHooks_Storage.PACKAGES + CharmHooks_Subordinate.PACKAGES +
-                    ('apache2', 'apache2-threaded-dev', 'make', 'ntp')))
+    PACKAGES = tuple(set(
+        CharmHooks_Storage.PACKAGES + CharmHooks_Subordinate.PACKAGES +
+        CharmHooks_Website.PACKAGES + ('apache2', 'apache2-threaded-dev', 'make', 'ntp')))
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(PublisherHooks, self).__init__(metadata, default_config, default_os_env)

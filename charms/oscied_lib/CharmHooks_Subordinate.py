@@ -72,12 +72,9 @@ class CharmHooks_Subordinate(CharmHooks):
                    infos['database'])
         except:
             raise ValueError('Unable to parse MongoDB connection %s' % mongo)
-        with open(self.local_config.celery_template_file) as celery_template_file:
-            data = celery_template_file.read()
-            data = data.format(**infos)
-            with open(self.local_config.celery_config_file, 'w') as celery_config_file:
-                celery_config_file.write(data)
-                self.remark('Orchestrator successfully registered')
+        self.template2config(self.local_config.celery_template_file,
+                             self.local_config.celery_config_file, infos)
+        self.remark('Orchestrator successfully registered')
 
     def subordinate_unregister(self):
         self.info('Unregister the Orchestrator')
