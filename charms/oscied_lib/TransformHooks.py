@@ -88,11 +88,8 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
         else:
             self.save_local_config()  # Update local configuration file for transform daemon
             if screen_list('Transform', log=self.debug) == []:
-                try:
-                    screen_launch('Transform',
-                                  ['celeryd', '--config', 'celeryconfig', '-Q', self.rabbit_queues])
-                finally:
-                    os.chdir('..')
+                screen_launch(
+                    'Transform', ['celeryd', '--config', 'celeryconfig', '-Q', self.rabbit_queues])
             time.sleep(5)
             if screen_list('Transform', log=self.debug) == []:
                 raise RuntimeError('Transform is not ready')

@@ -105,11 +105,8 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
             self.save_local_config()  # Update local configuration file for publisher daemon
             self.cmd('service apache2 start')
             if screen_list('Publisher', log=self.debug) == []:
-                try:
-                    screen_launch('Publisher',
-                                  ['celeryd', '--config', 'celeryconfig', '-Q', self.rabbit_queues])
-                finally:
-                    os.chdir('..')
+                screen_launch(
+                    'Publisher', ['celeryd', '--config', 'celeryconfig', '-Q', self.rabbit_queues])
             time.sleep(5)
             if screen_list('Publisher', log=self.debug) == []:
                 raise RuntimeError('Publisher is not ready')
