@@ -90,7 +90,7 @@ class TransformConfig(PickleableObject):
         self.storage_options = ''
         self.storage_path = '/mnt/storage'
         self.hosts_file = '/etc/hosts'
-        self.celery_config_file = 'oscied_lib/celeryconfig.py'
+        self.celery_config_file = 'celeryconfig.py'
         self.celery_template_file = 'templates/celeryconfig.py.template'
 
 TRANSFORM_CONFIG_TEST = TransformConfig('129.194.185.47:5000', '10.1.1.2', 'glusterfs',

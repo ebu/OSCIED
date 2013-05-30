@@ -108,7 +108,7 @@ class OrchestraConfig(PickleableObject):
         self.storage_options = ''
         self.storage_path = '/mnt/storage'
         self.hosts_file = '/etc/hosts'
-        self.celery_config_file = 'oscied_lib/celeryconfig.py'
+        self.celery_config_file = 'celeryconfig.py'
         self.celery_template_file = 'templates/celeryconfig.py.template'
         self.mongo_config_file = '/etc/mongodb.conf'
 
