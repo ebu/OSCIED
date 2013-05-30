@@ -34,7 +34,7 @@ class PublisherConfig(PickleableObject):
     def __init__(self, api_nat_socket='', storage_address='', storage_fstype='',
                  storage_mountpoint='', storage_options='', storage_path='/mnt/storage',
                  storage_mount_max_retry=5, storage_mount_sleep_delay=5, hosts_file='/etc/hosts',
-                 celery_config_file='celeryconfig.py',
+                 proxy_ips=[], celery_config_file='celeryconfig.py',
                  celery_template_file='templates/celeryconfig.py.template',
                  apache_config_file='/etc/apache2/apache2.conf',
                  publish_uri='', publish_path='/var/www'):
@@ -47,6 +47,7 @@ class PublisherConfig(PickleableObject):
         self.storage_mount_max_retry = storage_mount_max_retry
         self.storage_mount_sleep_delay = storage_mount_sleep_delay
         self.hosts_file = hosts_file
+        self.proxy_ips = proxy_ips
         self.celery_config_file = celery_config_file
         self.celery_template_file = celery_template_file
         self.apache_config_file = apache_config_file

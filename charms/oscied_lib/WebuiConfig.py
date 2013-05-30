@@ -25,7 +25,7 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import logging, os
+import logging
 from pyutils.pyutils import PickleableObject
 
 
@@ -34,7 +34,7 @@ class WebuiConfig(PickleableObject):
     def __init__(self, api_nat_socket='', storage_address='', storage_fstype='',
                  storage_mountpoint='', storage_options='', storage_path='/mnt/storage',
                  storage_mount_max_retry=5, storage_mount_sleep_delay=5, hosts_file='/etc/hosts',
-                 encryption_key='', proxy_ips='',
+                 encryption_key='', proxy_ips=[],
                  mysql_config_file='/etc/mysql/my.cnf', mysql_temp_path='/var/lib/mysql/tmp',
                  sites_enabled_path='/etc/apache2/sites-enabled', site_database_file='webui-db.sql',
                  site_template_file='templates/000-default',
@@ -57,19 +57,19 @@ class WebuiConfig(PickleableObject):
         self.storage_mount_max_retry = storage_mount_max_retry
         self.storage_mount_sleep_delay = storage_mount_sleep_delay
         self.hosts_file = hosts_file
-        #self.encryption_key = encryption_key
-        #self.proxy_ips = proxy_ips
-        #self.mysql_config_file = mysql_config_file
-        #self.mysql_temp_path = mysql_temp_path
-        #self.sites_enabled_path = sites_enabled_path
-        #self.site_database_file = site_database_file
-        #self.site_template_file = site_template_file
-        #self.htaccess_template_file = htaccess_template_file
+        self.encryption_key = encryption_key
+        self.proxy_ips = proxy_ips
+        self.mysql_config_file = mysql_config_file
+        self.mysql_temp_path = mysql_temp_path
+        self.sites_enabled_path = sites_enabled_path
+        self.site_database_file = site_database_file
+        self.site_template_file = site_template_file
+        self.htaccess_template_file = htaccess_template_file
         self.general_template_file = general_template_file
         self.database_template_file = database_template_file
-        #self.htaccess_config_file = htaccess_config_file
-        #self.general_config_file = general_config_file
-        #self.database_config_file = database_config_file
+        self.htaccess_config_file = htaccess_config_file
+        self.general_config_file = general_config_file
+        self.database_config_file = database_config_file
         self.www_root_path = www_root_path
         self.www_medias_path = www_medias_path
         self.www_uploads_path = www_uploads_path
@@ -132,8 +132,7 @@ class WebuiConfig(PickleableObject):
         """
         self.__init__()
 
-WEBUI_CONFIG_TEST = WebuiConfig('129.194.185.47:5000', '', '10.1.1.2', 'glusterfs',
-                                'medias_volume', '')
+WEBUI_CONFIG_TEST = WebuiConfig('129.194.185.47:5000', '10.1.1.2', 'glusterfs', 'medias_volume', '')
 
 # Main ---------------------------------------------------------------------------------------------
 

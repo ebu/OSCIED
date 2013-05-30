@@ -233,7 +233,6 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
 
         self.info('Configure Web User Interface')
         self.local_config.encryption_key = WebuiHooks.randpass(32)
-        self.local_config.proxy_ips = self.config.proxy_ips  # FIXME like storage ips
 
         shutil.makedirs(self.local_config.mysql_temp_path)
         chown(self.local_config.mysql_temp_path, 'mysql', 'mysql')
@@ -250,8 +249,11 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         mysql_config['tmpdir'] = self.local_config.mysql_temp_path
         mysql_config.write()
 
+        proxy_ips_backup = self.local_config.proxy_ips
+        self.local_config.proxy_ips = self.proxy_ips_string
         self.template2config(self.local_config.general_template_file,
                              self.local_config.general_config_file, self.local_config.__dict__)
+        self.local_config.proxy_ips = proxy_ips_backup
 
         self.template2config(self.local_config.database_template_file,
                              self.local_config.database_config_file, self.config.__dict__)
@@ -352,61 +354,6 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
 #   hook_stop
 #   api_unregister
 #}
-
-# hook_website_relation_joined()
-# {
-#   techo 'Web UI - website relation joined'
-#   # Send port & hostname
-#   relation-set port=80 hostname=$(hostname -f)
-# }
-# hook_website_relation_changed()
-# {
-#   techo 'Web UI - website relation changed'
-#   # Get configuration from the relation
-#   proxy_ip=$(relation-get private-address)
-#   mecho "Proxy IP is $proxy_ip"
-#   if [ ! "$proxy_ip" ]; then
-#     recho 'Waiting for complete setup'
-#     exit 0
-#   fi
-#   hook_stop
-#   pecho "Configure Web UI : Add $proxy_ip to allowed proxy IPs"
-#   update_proxies add "$proxy_ip" || xecho 'Unable to add proxy'
-#   hook_start
-# }
-# hook_website_relation_departed()
-# {
-#   techo 'Web UI - website relation departed'
-#   # Get configuration from the relation
-#   proxy_ip=$(relation-get private-address)
-#   mecho "Proxy IP is $proxy_ip"
-#   if [ ! "$proxy_ip" ]; then
-#     recho 'Waiting for complete setup'
-#     exit 0
-#   fi
-#   hook_stop
-#   pecho "Configure Web UI : Remove $proxy_ip from allowed proxy IPs"
-#   update_proxies remove "$proxy_ip" || xecho 'Unable to remove proxy'
-#   hook_start
-# }
-# hook_website_relation_broken()
-# {
-#   techo 'Web UI - website relation broken'
-#   # Get configuration from the relation
-#   proxy_ip=$(relation-get private-address)
-#   mecho "Proxy IP is $proxy_ip"
-#   if [ ! "$proxy_ip" ]; then
-#     recho 'Waiting for complete setup'
-#     exit 0
-#   fi
-#   hook_stop
-#   pecho "Configure Web UI : Remove $proxy_ip from allowed proxy IPs"
-#   update_proxies remove "$proxy_ip" || xecho 'Unable to remove proxy'
-#   # FIXME does relation broken means that no more proxies are linked to us ? if yes :
-#   #pecho 'Configure Web UI : Cleanup allowed proxy IPs'
-#   #update_proxies cleanup || xecho 'Unable to cleanup proxies'
-#   hook_start
-# }
 
 if __name__ == '__main__':
     WebuiHooks(first_that_exist('metadata.yaml', '../oscied-webui/metadata.yaml'),

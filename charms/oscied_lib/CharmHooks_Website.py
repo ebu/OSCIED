@@ -38,5 +38,51 @@ class CharmHooks_Website(CharmHooks):
 
     # ----------------------------------------------------------------------------------------------
 
+    @property
+    def proxy_ips_string(self):
+        try:
+            proxy_ips = self.config.proxy_ips.split(',')
+        except:
+            proxy_ips = []
+        return ','.join(list(filter(None, self.local_config.proxy_ips + proxy_ips)))
+
+    # ----------------------------------------------------------------------------------------------
+
     def hook_website_relation_joined(self):
         self.relation_set(port='80', hostname=self.cmd('hostname -f'))
+
+    def hook_website_relation_changed(self):
+        # Get configuration from the relation
+        proxy_address = self.relation_get('private-address')
+        self.info('Proxy address is %s' % proxy_address)
+        if not proxy_address:
+            self.remark('Waiting for complete setup')
+            return
+        if not proxy_address in self.local_config.proxy_ips:
+            self.info('Add %s to allowed proxy IPs' % proxy_address)
+            self.hook_stop()
+            self.local_config.proxy_ips.append(proxy_address)
+            self.save_local_config()
+            self.hook_config_changed()
+            self.hook_start()
+
+    def hook_website_relation_departed(self):
+        # Get configuration from the relation
+        proxy_address = self.relation_get('private-address')
+        if not proxy_address:
+            self.remark('Waiting for complete setup')
+            return
+        if proxy_address in self.local_config.proxy_ips:
+            self.info('Remove %s from allowed proxy IPs' % proxy_address)
+            self.hook_stop()
+            self.local_config.proxy_ips.remove(proxy_address)
+            self.save_local_config()
+            self.hook_config_changed()
+            self.hook_start()
+
+    def hook_website_relation_broken(self):
+        self.info('Cleanup allowed proxy IPs')
+        self.hook_stop()
+        self.local_config.proxy_ips = []
+        self.hook_config_changed()
+        self.hook_start()

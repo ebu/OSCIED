@@ -90,7 +90,7 @@ class StorageHooks(CharmHooks):
 
     def volume_set_allowed_ips(self, volume=None):
         volume = volume or self.volume
-        ips = ','.join(filter(None, [self.config.allowed_ips, self.local_config.allowed_ips]))
+        ips = ','.join(list(filter(None, [self.config.allowed_ips, self.local_config.allowed_ips])))
         self.info('Set volume %s allowed clients IP list to %s' % (volume, ips))
         self.volume_do('set', volume=volume, options='auth.allow "%s"' % ips, fail=False)
         auth_allow = self.volume_infos(volume=volume)['auth_allow']
@@ -169,8 +169,9 @@ class StorageHooks(CharmHooks):
             self.relation_set(fstype='glusterfs', mountpoint=self.volume, options='')
             client_address = self.relation_get('private-address')
             if not client_address in self.local_config.allowed_ips:
+                self.info('Add %s to allowed clients IPs' % client_address)
                 self.local_config.allowed_ips = \
-                    ','.join(filter(None, [self.local_config.allowed_ips, client_address]))
+                    ','.join(list(filter(None, [self.local_config.allowed_ips, client_address])))
         else:
             self.relation_set(fstype='', mountpoint='', options='')
 
