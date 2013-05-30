@@ -1,4 +1,2 @@
-#!/bin/bash
-
-. hooks_lib/common.sh
-hook_start
+#!/usr/bin/env bash
+python -m oscied_lib.WebuiHooks start

@@ -1,4 +1,2 @@
-#!/bin/bash
-
-. hooks_lib/common.sh
-hook_website_relation_joined
+#!/usr/bin/env bash
+python -m oscied_lib.WebuiHooks website-relation-joined
