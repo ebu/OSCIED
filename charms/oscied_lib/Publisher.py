@@ -55,7 +55,7 @@ def publish_job(user_json, media_json, callback_json):
         print('%s Publish job started' % (request.id))
 
         # Read current configuration to translate files uri to local paths
-        config = PublisherConfig.read('../local_config.pkl')
+        config = PublisherConfig.read('local_config.pkl')
         print object2json(config, True)
 
         # Load and check task parameters

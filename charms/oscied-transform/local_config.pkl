@@ -39,7 +39,7 @@ p16
 g8
 sS'celery_config_file'
 p17
-S'oscied_lib/celeryconfig.py'
+S'celeryconfig.py'
 p18
 sS'api_nat_socket'
 p19

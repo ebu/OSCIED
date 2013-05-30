@@ -35,7 +35,7 @@ class OrchestraConfig(PickleableObject):
                  mongo_connection='', rabbit_connection='', storage_address='', storage_fstype='',
                  storage_mountpoint='', storage_options='', storage_path='/mnt/storage',
                  storage_mount_max_retry=5, storage_mount_sleep_delay=5, hosts_file='/etc/hosts',
-                 celery_config_file='oscied_lib/celeryconfig.py',
+                 celery_config_file='celeryconfig.py',
                  celery_template_file='templates/celeryconfig.py.template',
                  mongo_config_file='/etc/mongodb.conf'):
         self.verbose = verbose

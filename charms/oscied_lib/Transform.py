@@ -54,7 +54,7 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
         print('%s Transform job started' % (request.id))
 
         # Read current configuration to translate files uri to local paths
-        config = TransformConfig.read('../local_config.pkl')
+        config = TransformConfig.read('local_config.pkl')
         print object2json(config, True)
 
         # Load and check task parameters

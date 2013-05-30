@@ -104,7 +104,6 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
             self.save_local_config()  # Update local configuration file for publisher daemon
             self.cmd('service apache2 start')
             if screen_list('Publisher', log=self.debug) == []:
-                os.chdir('oscied_lib')
                 try:
                     screen_launch('Publisher',
                                   ['celeryd', '--config', 'celeryconfig', '-Q', self.rabbit_queues])
