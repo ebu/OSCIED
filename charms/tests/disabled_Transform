@@ -25,7 +25,11 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import sys
+import os, sys
+from os.path import abspath, dirname, join
+sys.path.append(abspath(dirname(dirname(__file__))))
+sys.path.append(abspath(join(dirname(dirname(__file__)), 'pyutils')))
+
 from celery.task.control import inspect
 import lib.Transform
 #from celery.task.sets import TaskSet

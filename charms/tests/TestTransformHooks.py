@@ -25,7 +25,11 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import os
+import os, sys
+from os.path import abspath, dirname, join
+sys.path.append(abspath(dirname(dirname(__file__))))
+sys.path.append(abspath(join(dirname(dirname(__file__)), 'pyutils')))
+
 from copy import copy
 from nose.tools import assert_equal
 from oscied_lib.CharmHooks import DEFAULT_OS_ENV

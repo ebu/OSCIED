@@ -25,14 +25,20 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import os, pyutils.pyutils, shutil
+import os, sys
+from os.path import abspath, dirname, join
+sys.path.append(abspath(dirname(dirname(__file__))))
+sys.path.append(abspath(join(dirname(dirname(__file__)), 'pyutils')))
+
+import os, shutil
+import pyutils.pyutils
 from copy import copy
 from mock import call
 from nose.tools import assert_equal
-from pyutils.pyutils import mock_cmd, mock_side_effect
 from oscied_lib.CharmHooks import DEFAULT_OS_ENV
 from oscied_lib.TransformConfig import TransformConfig
 from oscied_lib.CharmHooks_Storage import CharmHooks_Storage
+from pyutils.pyutils import mock_cmd, mock_side_effect
 
 CONFIG_DEFAULT = {
     'storage_address': '', 'storage_nat_address': '', 'storage_fstype': '',
