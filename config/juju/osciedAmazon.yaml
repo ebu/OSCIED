@@ -51,7 +51,6 @@ oscied-webui:
   max_upload_size: 4294967296
   max_execution_time: 180
   max_input_time: 600
-  mysql_my_password: "OKDvS0B3DCZIJKcX"
   mysql_root_password: "OKDvS0B3DCZIJKcX"
   mysql_user_password: "HydI1iM6Dfh3vuls"
   api_url: ""
