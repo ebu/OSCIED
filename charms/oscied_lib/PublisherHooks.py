@@ -88,9 +88,9 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         self.cmd('apt-get -y remove --purge %s' % ' '.join(PublisherHooks.PACKAGES))
         self.cmd('apt-get -y remove --purge apache2.2-common', fail=False)  # Fixes some problems
         self.cmd('apt-get -y autoremove')
-        shutil.rmtree('/etc/apache2/', ignore_errors=True)
+        shutil.rmtree('/etc/apache2/',                ignore_errors=True)
         shutil.rmtree(self.local_config.publish_path, ignore_errors=True)
-        shutil.rmtree('/var/log/apache2/', ignore_errors=True)
+        shutil.rmtree('/var/log/apache2/',            ignore_errors=True)
         os.makedirs(self.local_config.publish_path)
         self.local_config.reset(reset_publish_uri=False)
 
@@ -118,7 +118,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         self.cmd('service apache2 stop', fail=False)
 
 if __name__ == '__main__':
-    PublisherHooks(first_that_exist('metadata.yaml', '../oscied-publisher/metadata.yaml'),
-                   first_that_exist('config.yaml', '../oscied-publisher/config.yaml'),
+    PublisherHooks(first_that_exist('metadata.yaml',    '../oscied-publisher/metadata.yaml'),
+                   first_that_exist('config.yaml',      '../oscied-publisher/config.yaml'),
                    first_that_exist('local_config.pkl', '../oscied-publisher/local_config.pkl'),
                    DEFAULT_OS_ENV).trigger()

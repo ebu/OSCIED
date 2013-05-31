@@ -100,7 +100,7 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
         screen_kill('Transform', log=self.debug)
 
 if __name__ == '__main__':
-    TransformHooks(first_that_exist('metadata.yaml', '../oscied-transform/metadata.yaml'),
-                   first_that_exist('config.yaml', '../oscied-transform/config.yaml'),
+    TransformHooks(first_that_exist('metadata.yaml',    '../oscied-transform/metadata.yaml'),
+                   first_that_exist('config.yaml',      '../oscied-transform/config.yaml'),
                    first_that_exist('local_config.pkl', '../oscied-transform/local_config.pkl'),
                    DEFAULT_OS_ENV).trigger()
