@@ -31,7 +31,7 @@ from CharmConfig import CharmConfig
 
 class StorageConfig(CharmConfig):
 
-    def __init__(self, allowed_ips='', volume_flag=False, **kwargs):
+    def __init__(self, allowed_ips=[], volume_flag=False, **kwargs):
         super(StorageConfig, self).__init__(**kwargs)
         self.allowed_ips = allowed_ips
         self.volume_flag = volume_flag

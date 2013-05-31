@@ -38,6 +38,16 @@ class StorageHooks(CharmHooks):
         self.local_config = StorageConfig.read(local_config_filename, store_filename=True)
         self.debug('My __dict__ is %s' % self.__dict__)
 
+    # ----------------------------------------------------------------------------------------------
+
+    @property
+    def allowed_ips_string(self):
+        try:
+            allowed_ips = self.config.allowed_ips.split(',')
+        except:
+            allowed_ips = [self.config.allowed_ips]
+        return ','.join(list(filter(None, self.local_config.allowed_ips + allowed_ips)))
+
     @property
     def brick(self):
         return '%s:/exp%s' % (self.private_address, self.id)
@@ -90,7 +100,7 @@ class StorageHooks(CharmHooks):
 
     def volume_set_allowed_ips(self, volume=None):
         volume = volume or self.volume
-        ips = ','.join(list(filter(None, [self.config.allowed_ips, self.local_config.allowed_ips])))
+        ips = self.allowed_ips_string
         self.info('Set volume %s allowed clients IP list to %s' % (volume, ips))
         self.volume_do('set', volume=volume, options='auth.allow "%s"' % ips, fail=False)
         auth_allow = self.volume_infos(volume=volume)['auth_allow']
@@ -170,10 +180,25 @@ class StorageHooks(CharmHooks):
             client_address = self.relation_get('private-address')
             if not client_address in self.local_config.allowed_ips:
                 self.info('Add %s to allowed clients IPs' % client_address)
-                self.local_config.allowed_ips = \
-                    ','.join(list(filter(None, [self.local_config.allowed_ips, client_address])))
+                self.local_config.allowed_ips.append(client_address)
+                self.hook_config_changed()
         else:
             self.relation_set(fstype='', mountpoint='', options='')
+
+    def hook_storage_relation_departed(self):
+        # Get configuration from the relation
+        client_address = self.relation_get('private-address')
+        if not client_address:
+            self.remark('Waiting for complete setup')
+        elif client_address in self.local_config.allowed_ips:
+            self.info('Remove %s from allowed clients IPs' % client_address)
+            self.local_config.allowed_ips.remove(client_address)
+            self.hook_config_changed()
+
+    def hook_storage_relation_broken(self):
+        self.info('Cleanup allowed clients IPs')
+        self.local_config.allowed_ips = []
+        self.hook_config_changed()
 
     def hook_peer_relation_joined(self):
         if not self.is_leader:
