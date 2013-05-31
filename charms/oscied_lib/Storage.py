@@ -27,18 +27,14 @@
 
 import os, time
 from FFmpeg import get_media_duration
+from pyutils.pyutils import try_makedirs
 
 
 class Storage(object):
 
     @staticmethod
-    def is_mounted(path):
-        return os.path.ismount(path)
-
-    @staticmethod
     def create_file_directory(file_path):
-        if not os.path.exists(os.path.dirname(file_path)):
-            os.makedirs(os.path.dirname(file_path))
+        return try_makedirs(os.path.dirname(file_path))
 
     @staticmethod
     def add_media(config, media):
