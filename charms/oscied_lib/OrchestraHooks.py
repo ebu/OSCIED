@@ -138,7 +138,7 @@ class OrchestraHooks(CharmHooks_Storage):
         self.configure_rabbitmq()
 
         self.info('Configure Orchestra the Orchestrator')
-        self.local_config.verbse = self.config.verbose
+        self.local_config.verbose = self.config.verbose
         self.local_config.api_url = self.api_url
         self.local_config.root_secret = self.config.root_secret
         self.local_config.mongo_connection = self.mongo_admin_connection
