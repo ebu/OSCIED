@@ -30,7 +30,7 @@ from os.path import abspath, dirname, join
 sys.path.append(abspath(dirname(dirname(__file__))))
 sys.path.append(abspath(join(dirname(dirname(__file__)), 'pyutils')))
 
-import os, shutil
+import shutil
 import pyutils.pyutils
 from copy import copy
 from mock import call
@@ -96,8 +96,7 @@ class TestCharmHooks_Storage(object):
         self.hooks.cmd = mock_cmd()
         pyutils.pyutils.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
         self.hooks.storage_remount()
-        assert_equal(
-            self.hooks.cmd.call_args_list,
+        assert_equal(self.hooks.cmd.call_args_list,
             [call(['mount', '-t', 'glusterfs', 'proxy.ch:/medias_volume_0', '/mnt/storage'])])
         assert('proxy.ch home.ch' in open(self.hooks.local_config.hosts_file).readlines()[-1])
         assert_equal(system_hosts, open(self.hooks.local_config.hosts_file).readlines()[:-1])
@@ -107,8 +106,7 @@ class TestCharmHooks_Storage(object):
         self.hooks.cmd = mock_cmd()
         pyutils.pyutils.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
         self.hooks.storage_remount()
-        assert_equal(
-            self.hooks.cmd.call_args_list,
+        assert_equal(self.hooks.cmd.call_args_list,
             [call(['mount', '-t', 'glusterfs', 'home.ch:/medias_volume_0', '/mnt/storage'])])
         assert_equal(system_hosts, open(self.hooks.local_config.hosts_file).readlines())
 
@@ -120,8 +118,7 @@ class TestCharmHooks_Storage(object):
         pyutils.pyutils.MOCK_SIDE_EFFECT_RETURNS = [Exception('oups')]
         self.hooks.storage_remount()
         self.hooks.storage_remount()
-        assert_equal(
-            self.hooks.cmd.call_args_list,
+        assert_equal(self.hooks.cmd.call_args_list,
             [call(['mount', '-t', 'glusterfs', 'home.ch:/medias_volume_0', '/mnt/storage'])])
         assert_equal(system_hosts, open(self.hooks.local_config.hosts_file).readlines())
 
@@ -133,8 +130,7 @@ class TestCharmHooks_Storage(object):
         pyutils.pyutils.MOCK_SIDE_EFFECT_RETURNS = [Exception('oups')]
         self.hooks.storage_remount(address='home.ch', fstype='glusterfs', mountpoint='my_vol_0')
         self.hooks.storage_remount(address='home.ch', fstype='glusterfs', mountpoint='my_vol_0')
-        assert_equal(
-            self.hooks.cmd.call_args_list,
+        assert_equal(self.hooks.cmd.call_args_list,
             [call(['mount', '-t', 'glusterfs', 'home.ch:/my_vol_0', '/mnt/storage'])])
         assert_equal(system_hosts, open(self.hooks.local_config.hosts_file).readlines())
 

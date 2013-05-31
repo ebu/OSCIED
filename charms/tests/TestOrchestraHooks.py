@@ -94,10 +94,10 @@ class TestOrchestraHooks(object):
             call('mongo f.js'),
             call('mongo orchestra f.js'),
             call('mongo celery g.js'),
-            call('rabbitmqctl delete_user guest', fail=False),
-            call('rabbitmqctl delete_vhost /', fail=False),
+            call('rabbitmqctl delete_user guest',                    fail=False),
+            call('rabbitmqctl delete_vhost /',                       fail=False),
             call('rabbitmqctl add_user nodes "Alice_in_wonderland"', fail=False),
-            call('rabbitmqctl add_vhost celery', fail=False),
+            call('rabbitmqctl add_vhost celery',                     fail=False),
             call('rabbitmqctl set_permissions -p celery nodes ".*" ".*" ".*"', fail=False)])
 
 if __name__ == '__main__':
