@@ -43,7 +43,7 @@ class CharmHooks_Website(CharmHooks):
         try:
             proxy_ips = self.config.proxy_ips.split(',')
         except:
-            proxy_ips = []
+            proxy_ips = [self.config.proxy_ips]
         return ','.join(list(filter(None, self.local_config.proxy_ips + proxy_ips)))
 
     # ----------------------------------------------------------------------------------------------
