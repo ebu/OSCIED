@@ -74,11 +74,11 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
             callback.replace_netloc(config.api_nat_socket)
 
         # Verify that media file can be accessed and create output path
-        media_in_path = Storage.media_path(config, media_in, False)
+        media_in_path = config.storage_medias_path(media_in, generate=False)
         if not media_in_path:
             raise NotImplementedError('Input media will not be readed from shared storage : %s' %
                                       media_in.uri)
-        media_out_path = Storage.media_path(config, media_out, True)
+        media_out_path = config.storage_medias_path(media_out, generate=True)
         if not media_out_path:
             raise NotImplementedError('Output media will not be written to shared storage : %s' %
                                       media_out.uri)

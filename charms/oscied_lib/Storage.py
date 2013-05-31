@@ -27,7 +27,6 @@
 
 import os, time
 from FFmpeg import get_media_duration
-from OrchestraConfig import ORCHESTRA_CONFIG_TEST
 
 
 class Storage(object):
@@ -42,41 +41,17 @@ class Storage(object):
             os.makedirs(os.path.dirname(file_path))
 
     @staticmethod
-    def media_path(config, media, generate):
-        uri = config.storage_uri
-        if not uri:
-            return None
-        if generate:
-            return config.storage_path + '/medias/' + media.user_id + '/' + media._id
-        if not media.uri or not media.uri.startswith(uri):
-            return None
-        return config.storage_path + media.uri.replace(uri, '', 1)
-
-    @staticmethod
-    def media_uri(config, media, generate):
-        if not config.storage_uri:
-            return None
-        if generate:
-            return config.storage_uri + '/medias/' + media.user_id + '/' + media._id
-        return media.uri
-
-    @staticmethod
-    def publish_point(config, media):
-        common = '/medias/' + media.user_id + '/' + media._id + '/' + media.virtual_filename
-        return (config.publish_path + common, config.publish_uri + common)
-
-    @staticmethod
     def add_media(config, media):
         if not media.status in ('PENDING',):
-            media_src_path = Storage.media_path(config, media, False)  # get actual media path
+            media_src_path = config.storage_medias_path(media, generate=False)
             if media_src_path:
-                media_dst_path = Storage.media_path(config, media, True)  # generate media storage path
+                media_dst_path = config.storage_medias_path(media, generate=True)
                 if media_dst_path != media_src_path:
                     # Generate media storage uri and move it to media storage path + set permissions
-                    media.uri = Storage.media_uri(config, media, True)
+                    media.uri = config.storage_medias_uri(media)
                     Storage.create_file_directory(media_dst_path)
                     the_error = None
-                    for i in range(1,5):
+                    for i in range(1, 5):
                         try:
                             os.rename(media_src_path, media_dst_path)
                             # FIXME chown chmod
@@ -94,7 +69,7 @@ class Storage(object):
 
     @staticmethod
     def delete_media(config, media):
-        media_path = Storage.media_path(config, media, False)
+        media_path = config.storage_medias_path(media, generate=False)
         if media_path:
             try:
                 os.remove(media_path)
@@ -102,14 +77,3 @@ class Storage(object):
                 pass
         else:
             raise NotImplementedError('FIXME Delete of external uri not implemented.')
-
-# Main ---------------------------------------------------------------------------------------------
-
-if __name__ == '__main__':
-
-    #print ORCHESTRA_CONFIG_TEST.storage_mounted
-    assert ORCHESTRA_CONFIG_TEST.storage_uri == 'glusterfs://10.1.1.2/medias_volume'
-    #assert ORCHESTRA_CONFIG_TEST.media_path('glusterfs://10.1.1.2/medias_volume/medias/test.mpg')
-    #assert not ORCHESTRA_CONFIG_TEST.media_path('http://10.1.1.2/medias/test.mpg')
-
-

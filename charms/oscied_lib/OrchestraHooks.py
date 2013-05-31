@@ -164,7 +164,7 @@ class OrchestraHooks(CharmHooks_Storage):
         self.cmd('apt-get -y remove --purge %s' % ' '.join(OrchestraHooks.PACKAGES))
         self.cmd('apt-get -y autoremove')
         #shutil.rmtree('$HOME/.juju $HOME/.ssh/id_rsa*
-        shutil.rmtree('/etc/rabbitmq/', ignore_errors=True)
+        shutil.rmtree('/etc/rabbitmq/',     ignore_errors=True)
         shutil.rmtree('/var/log/rabbitmq/', ignore_errors=True)
         self.local_config.reset()
 
@@ -176,7 +176,7 @@ class OrchestraHooks(CharmHooks_Storage):
         else:
             self.save_local_config()  # Update local configuration file for orchestra daemon
             # do not check status after all, orchestra can do it for us !
-            self.cmd('service mongodb start', fail=False)
+            self.cmd('service mongodb start',         fail=False)
             self.cmd('service rabbitmq-server start', fail=False)
             # FIXME this is not a good idea, but I have some trouble with precise release
             self.configure_rabbitmq()  # (see ticket #205 of my private TRAC ticket system)
@@ -192,7 +192,7 @@ class OrchestraHooks(CharmHooks_Storage):
     def hook_stop(self):
         screen_kill('Orchestra', log=self.debug)
         self.cmd('service rabbitmq-server stop', fail=False)
-        self.cmd('service mongodb stop', fail=False)
+        self.cmd('service mongodb stop',         fail=False)
 
     def hook_api_relation_joined(self):
         self.relation_set(api_url=self.api_url)
@@ -233,7 +233,7 @@ class OrchestraHooks(CharmHooks_Storage):
         # FIXME something to do (register unit ?)
 
 if __name__ == '__main__':
-    OrchestraHooks(first_that_exist('metadata.yaml', '../oscied-orchestra/metadata.yaml'),
-                   first_that_exist('config.yaml', '../oscied-orchestra/config.yaml'),
+    OrchestraHooks(first_that_exist('metadata.yaml',    '../oscied-orchestra/metadata.yaml'),
+                   first_that_exist('config.yaml',      '../oscied-orchestra/config.yaml'),
                    first_that_exist('local_config.pkl', '../oscied-orchestra/local_config.pkl'),
                    DEFAULT_OS_ENV).trigger()

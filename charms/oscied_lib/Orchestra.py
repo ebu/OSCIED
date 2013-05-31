@@ -209,7 +209,7 @@ class Orchestra(object):
                                       media_in.status + '.')
         media_out = Media(None, user_id, media_in_id, None, None, virtual_filename, metadata,
                           'PENDING')
-        media_out.uri = Storage.media_uri(self.config, media_out, True)
+        media_out.uri = self.config.storage_medias_uri(media_out)
         self.save_media(media_out)  # Save pending output media
         # FIXME create a one-time password to avoid fixed secret authentication ...
         callback = Callback(self.config.api_url + callback_url, 'node', self.config.nodes_secret)

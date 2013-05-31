@@ -71,11 +71,11 @@ def publish_job(user_json, media_json, callback_json):
             callback.replace_netloc(config.api_nat_socket)
 
         # Verify that media file can be accessed and create output path
-        media_path = Storage.media_path(config, media, False)
+        media_path = config.storage_medias_path(media, generate=False)
         if not media_path:
             raise NotImplementedError('Media will not be readed from shared storage : %s' %
                                       media.uri)
-        (publish_path, publish_uri) = Storage.publish_point(config, media)
+        (publish_path, publish_uri) = config.publish_point(media)
         Storage.create_file_directory(publish_path)
 
         # Initialize block-based copy

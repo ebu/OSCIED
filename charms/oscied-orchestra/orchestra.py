@@ -2492,7 +2492,7 @@ if __name__ == '__main__':
         logging.info('OSCIED Orchestra by David Fischer 2013')
         logging.info('Configuration : ' + str(object2json(config, True)))
 
-        if not config.storage_uri:
+        if not config.storage_uri():
             logging.warning('Shared storage is not set in configuration ... exiting')
             sys.exit(0)
 

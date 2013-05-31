@@ -380,7 +380,7 @@ $config['max_upload_size'] = '{max_upload_size}';
 |--------------------------------------------------------------------------
 |
 */
-$config['orchestra_api_url'] = '';
+$config['orchestra_api_url'] = '{api_url}';
 
 /*
 |--------------------------------------------------------------------------
@@ -388,9 +388,9 @@ $config['orchestra_api_url'] = '';
 |--------------------------------------------------------------------------
 |
 */
-$config['uploads_uri'] = '';
+$config['uploads_uri'] = '{www_uploads_uri}';
 $config['uploads_path'] = '{www_uploads_path}';
-$config['medias_uri'] = '';
+$config['medias_uri'] = '{www_medias_uri}';
 $config['medias_path'] = '{www_medias_path}';
 
 /*

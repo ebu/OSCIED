@@ -50,7 +50,7 @@ $active_record = TRUE;
 
 $db['default']['hostname'] = 'localhost';
 $db['default']['username'] = 'webui';
-$db['default']['password'] = '{mysql_user_pass}';
+$db['default']['password'] = '{mysql_user_password}';
 $db['default']['database'] = 'webui';
 $db['default']['dbdriver'] = 'mysql';
 $db['default']['dbprefix'] = '';
