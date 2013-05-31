@@ -2488,7 +2488,7 @@ if __name__ == '__main__':
 
     try:
         config = OrchestraConfig.read('local_config.pkl')
-        setup_logging('orchestra.log', config.log_level)
+        setup_logging(filename='orchestra.log', console=True, level=config.log_level)
         logging.info('OSCIED Orchestra by David Fischer 2013')
         logging.info('Configuration : ' + str(object2json(config, True)))
 
