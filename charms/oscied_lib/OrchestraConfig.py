@@ -25,67 +25,24 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import logging
-from pyutils.pyutils import PickleableObject
+from CharmConfig_Storage import CharmConfig_Storage
 
 
-class OrchestraConfig(PickleableObject):
+class OrchestraConfig(CharmConfig_Storage):
 
-    def __init__(self, verbose=True, api_url='', root_secret='', nodes_secret='',
-                 mongo_connection='', rabbit_connection='', storage_address='', storage_fstype='',
-                 storage_mountpoint='', storage_options='', storage_path='/mnt/storage',
-                 storage_mount_max_retry=5, storage_mount_sleep_delay=5, hosts_file='/etc/hosts',
-                 celery_config_file='celeryconfig.py',
+    def __init__(self, api_url='', root_secret='', nodes_secret='', mongo_connection='',
+                 rabbit_connection='', celery_config_file='celeryconfig.py',
                  celery_template_file='templates/celeryconfig.py.template',
-                 mongo_config_file='/etc/mongodb.conf'):
-        self.verbose = verbose
+                 mongo_config_file='/etc/mongodb.conf', **kwargs):
+        super(OrchestraConfig, self).__init__(**kwargs)
         self.api_url = api_url
         self.root_secret = root_secret
         self.nodes_secret = nodes_secret
         self.mongo_connection = mongo_connection
         self.rabbit_connection = rabbit_connection
-        self.storage_address = storage_address
-        self.storage_fstype = storage_fstype
-        self.storage_mountpoint = storage_mountpoint
-        self.storage_options = storage_options
-        self.storage_path = storage_path
-        self.storage_mount_max_retry = storage_mount_max_retry
-        self.storage_mount_sleep_delay = storage_mount_sleep_delay
-        self.hosts_file = hosts_file
         self.celery_config_file = celery_config_file
         self.celery_template_file = celery_template_file
         self.mongo_config_file = mongo_config_file
-
-    @property
-    def log_level(self):
-        return logging.DEBUG if self.verbose else logging.INFO
-
-    @property
-    def storage_uri(self):
-        u"""
-        Returns storage URI.
-
-        **Example usage**:
-
-        >>> from copy import copy
-        >>> config = copy(ORCHESTRA_CONFIG_TEST)
-        >>> print(config.storage_uri)
-        glusterfs://10.1.1.2/medias_volume
-        >>> config.storage_fstype = ''
-        >>> print(config.storage_uri)
-        None
-        >>> config.storage_fstype = 'nfs'
-        >>> config.storage_address = ''
-        >>> print(config.storage_uri)
-        None
-        >>> config.storage_address = '30.0.0.1'
-        >>> print(config.storage_uri)
-        nfs://30.0.0.1/medias_volume
-        """
-        if self.storage_fstype and self.storage_address and self.storage_mountpoint:
-            return '%s://%s/%s' % (
-                self.storage_fstype, self.storage_address, self.storage_mountpoint)
-        return None
 
     @property
     def transform_queues(self):
@@ -95,30 +52,8 @@ class OrchestraConfig(PickleableObject):
     def publisher_queues(self):
         return ('publisher_private', 'publisher_amazon',)
 
-    def reset(self):
-        u"""
-        Reset attributes to theirs default values.
-
-        **Example usage**:
-
-        >>> from copy import copy
-        >>> config = copy(ORCHESTRA_CONFIG_TEST)
-        >>> config._pickle_filename = 'my_file.pkl'
-        >>> print(config.storage_path)
-        /mnt/medias
-        >>> config.storage_path = 'salut'
-        >>> print(config.storage_path)
-        salut
-        >>> config.reset()
-        >>> print(config.storage_path)
-        /mnt/storage
-        >>> print(config._pickle_filename)
-        my_file.pkl
-        """
-        self.__init__()
-
-ORCHESTRA_CONFIG_TEST = OrchestraConfig(True, 'http://127.0.0.1:5000', 'toto', 'abcd', '...', '...',
-                                        '10.1.1.2', 'glusterfs', 'medias_volume', '', '/mnt/medias')
+ORCHESTRA_CONFIG_TEST = OrchestraConfig(api_url='http://127.0.0.1:5000', root_secret='toto',
+    nodes_secret='abcd', mongo_connection='...', rabbit_connection='...')
 
 # Main ---------------------------------------------------------------------------------------------
 

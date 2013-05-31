@@ -25,87 +25,20 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import logging
-from pyutils.pyutils import PickleableObject
+from CharmConfig_Storage import CharmConfig_Storage
 
 
-class TransformConfig(PickleableObject):
+class TransformConfig(CharmConfig_Storage):
 
-    def __init__(self, api_nat_socket='', storage_address='', storage_fstype='',
-                 storage_mountpoint='', storage_options='', storage_path='/mnt/storage',
-                 storage_mount_max_retry=5, storage_mount_sleep_delay=5, hosts_file='/etc/hosts',
-                 celery_config_file='celeryconfig.py',
-                 celery_template_file='templates/celeryconfig.py.template'):
+    def __init__(self, api_nat_socket='', celery_config_file='celeryconfig.py',
+                 celery_template_file='templates/celeryconfig.py.template', **kwargs):
+        super(TransformConfig, self).__init__(**kwargs)
         self.api_nat_socket = api_nat_socket
-        self.storage_address = storage_address
-        self.storage_fstype = storage_fstype
-        self.storage_mountpoint = storage_mountpoint
-        self.storage_options = storage_options
-        self.storage_path = storage_path
-        self.storage_mount_max_retry = storage_mount_max_retry
-        self.storage_mount_sleep_delay = storage_mount_sleep_delay
-        self.hosts_file = hosts_file
         self.celery_config_file = celery_config_file
         self.celery_template_file = celery_template_file
 
-    def __repr__(self):
-        return str(self.__dict__)
-
-    @property
-    def log_level(self):
-        return logging.DEBUG if self.verbose else logging.INFO
-
-    @property
-    def storage_uri(self):
-        u"""
-        Returns storage URI.
-
-        **Example usage**:
-
-        >>> from copy import copy
-        >>> config = copy(TRANSFORM_CONFIG_TEST)
-        >>> print(config.storage_uri)
-        glusterfs://10.1.1.2/medias_volume
-        >>> config.storage_fstype = ''
-        >>> print(config.storage_uri)
-        None
-        >>> config.storage_fstype = 'nfs'
-        >>> config.storage_address = ''
-        >>> print(config.storage_uri)
-        None
-        >>> config.storage_address = '30.0.0.1'
-        >>> print(config.storage_uri)
-        nfs://30.0.0.1/medias_volume
-        """
-        if self.storage_fstype and self.storage_address and self.storage_mountpoint:
-            return '%s://%s/%s' % (
-                self.storage_fstype, self.storage_address, self.storage_mountpoint)
-        return None
-
-    def reset(self):
-        u"""
-        Reset attributes to theirs default values.
-
-        **Example usage**:
-
-        >>> from copy import copy
-        >>> config = copy(TRANSFORM_CONFIG_TEST)
-        >>> config._pickle_filename = 'my_file.pkl'
-        >>> print(config.storage_path)
-        /mnt/storage
-        >>> config.storage_path = 'salut'
-        >>> print(config.storage_path)
-        salut
-        >>> config.reset()
-        >>> print(config.storage_path)
-        /mnt/storage
-        >>> print(config._pickle_filename)
-        my_file.pkl
-        """
-        self.__init__()
-
-TRANSFORM_CONFIG_TEST = TransformConfig('129.194.185.47:5000', '10.1.1.2', 'glusterfs',
-                                        'medias_volume', '')
+TRANSFORM_CONFIG_TEST = TransformConfig(api_nat_socket='129.194.185.47:5000',
+    storage_address='10.1.1.2', storage_fstype='glusterfs', storage_mountpoint='medias_volume')
 
 # Main ---------------------------------------------------------------------------------------------
 

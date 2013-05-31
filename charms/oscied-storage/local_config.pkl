@@ -27,4 +27,7 @@ sS'allowed_ips'
 p12
 S''
 p13
+sS'verbose'
+p14
+I01
 sb.

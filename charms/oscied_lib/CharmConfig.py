@@ -25,41 +25,47 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-from os.path import join
-from CharmConfig_Storage import CharmConfig_Storage, MEDIAS_PATH
+import logging
+from pyutils.pyutils import PickleableObject
 
 
-class PublisherConfig(CharmConfig_Storage):
+class CharmConfig(PickleableObject):
 
-    def __init__(self, api_nat_socket='', proxy_ips=[], celery_config_file='celeryconfig.py',
-                 celery_template_file='templates/celeryconfig.py.template',
-                 apache_config_file='/etc/apache2/apache2.conf', publish_uri='',
-                 publish_path='/var/www', **kwargs):
-        super(PublisherConfig, self).__init__(**kwargs)
-        self.api_nat_socket = api_nat_socket
-        self.proxy_ips = proxy_ips
-        self.celery_config_file = celery_config_file
-        self.celery_template_file = celery_template_file
-        self.apache_config_file = apache_config_file
-        self.publish_uri = publish_uri
-        self.publish_path = publish_path
+    def __init__(self, verbose=True):
+        self.verbose = verbose
 
-    def publish_point(self, media):
-        common = join(MEDIAS_PATH, media.user_id, media._id, media.virtual_filename)
-        return (join(self.publish_path, common), join(self.publish_uri, common))
+    def __repr__(self):
+        return str(self.__dict__)
 
-    def update_publish_uri(self, public_address):
-        self.publish_uri = 'http://%s' % public_address
+    @property
+    def log_level(self):
+        return logging.DEBUG if self.verbose else logging.INFO
 
-PUBLISHER_CONFIG_TEST = PublisherConfig(api_nat_socket='129.194.185.47:5000',
-    storage_address='10.1.1.2', storage_fstype='glusterfs', storage_mountpoint='medias_volume')
+    def reset(self):
+        u"""
+        Reset attributes to theirs default values.
+
+        **Example usage**:
+
+        >>> config = CharmConfig(verbose=True)
+        >>> config._pickle_filename = 'my_file.pkl'
+        >>> print(config.verbose)
+        True
+        >>> config.verbose = False
+        >>> print(config.verbose)
+        False
+        >>> config.reset()
+        >>> print(config.verbose)
+        True
+        >>> print(config._pickle_filename)
+        my_file.pkl
+        """
+        self.__init__()
 
 # Main ---------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    print('Test PublisherConfig with doctest')
+    print('Test CharmConfig with doctest')
     import doctest
     doctest.testmod(verbose=False)
     print('OK')
-    print('Write default publisher configuration')
-    PublisherConfig().write('../oscied-publisher/local_config.pkl')

@@ -26,42 +26,18 @@
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
 import re
-from pyutils.pyutils import PickleableObject
+from CharmConfig import CharmConfig
 
 
-class StorageConfig(PickleableObject):
+class StorageConfig(CharmConfig):
 
-    def __init__(self, allowed_ips='', volume_flag=False):
+    def __init__(self, allowed_ips='', volume_flag=False, **kwargs):
+        super(StorageConfig, self).__init__(**kwargs)
         self.allowed_ips = allowed_ips
         self.volume_flag = volume_flag
         self.volume_infos_regex = re.compile(
             r".*Volume Name:\s*(?P<name>\S+)\s+.*Type:\s*(?P<type>\S+)\s+.*"
             r"Status:\s*(?P<status>\S+)\s+.*Transport-type:\s*(?P<transport>\S+).*", re.DOTALL)
-
-    def __repr__(self):
-        return str(self.__dict__)
-
-    def reset(self):
-        u"""
-        Reset attributes to theirs default values.
-
-        **Example usage**:
-
-        >>> from copy import copy
-        >>> config = copy(WEBUI_CONFIG_TEST)
-        >>> config._pickle_filename = 'my_file.pkl'
-        >>> print(config.storage_path)
-        /mnt/storage
-        >>> config.storage_path = 'salut'
-        >>> print(config.storage_path)
-        salut
-        >>> config.reset()
-        >>> print(config.storage_path)
-        /mnt/storage
-        >>> print(config._pickle_filename)
-        my_file.pkl
-        """
-        self.__init__()
 
 STORAGE_CONFIG_TEST = StorageConfig('*', False)
 

@@ -25,17 +25,12 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import logging
-from pyutils.pyutils import PickleableObject
+from CharmConfig_Storage import CharmConfig_Storage
 
 
-class WebuiConfig(PickleableObject):
+class WebuiConfig(CharmConfig_Storage):
 
-    def __init__(self, api_nat_socket='', storage_address='', storage_fstype='',
-                 storage_mountpoint='', storage_options='', storage_path='/mnt/storage',
-                 storage_mount_max_retry=5, storage_mount_sleep_delay=5, hosts_file='/etc/hosts',
-                 encryption_key='', proxy_ips=[],
-                 mysql_config_file='/etc/mysql/my.cnf', mysql_temp_path='/var/lib/mysql/tmp',
+    def __init__(self, api_url='', encryption_key='', proxy_ips=[],
                  sites_enabled_path='/etc/apache2/sites-enabled', site_database_file='webui-db.sql',
                  site_template_file='templates/000-default',
                  htaccess_template_file='templates/htaccess.template',
@@ -45,22 +40,11 @@ class WebuiConfig(PickleableObject):
                  general_config_file='/var/www/application/config/config.php',
                  database_config_file='/var/www/application/config/database.php',
                  www_root_path='/var/www', www_medias_path='/var/www/medias',
-                 www_uploads_path='/var/www/uploads',
-                 storage_medias_path='/mnt/storage/medias',
-                 storage_uploads_path='/mnt/storage/uploads'):
-        self.api_nat_socket = api_nat_socket
-        self.storage_address = storage_address
-        self.storage_fstype = storage_fstype
-        self.storage_mountpoint = storage_mountpoint
-        self.storage_options = storage_options
-        self.storage_path = storage_path
-        self.storage_mount_max_retry = storage_mount_max_retry
-        self.storage_mount_sleep_delay = storage_mount_sleep_delay
-        self.hosts_file = hosts_file
+                 www_uploads_path='/var/www/uploads', **kwargs):
+        super(WebuiConfig, self).__init__(**kwargs)
+        self.api_url = api_url
         self.encryption_key = encryption_key
         self.proxy_ips = proxy_ips
-        self.mysql_config_file = mysql_config_file
-        self.mysql_temp_path = mysql_temp_path
         self.sites_enabled_path = sites_enabled_path
         self.site_database_file = site_database_file
         self.site_template_file = site_template_file
@@ -73,66 +57,9 @@ class WebuiConfig(PickleableObject):
         self.www_root_path = www_root_path
         self.www_medias_path = www_medias_path
         self.www_uploads_path = www_uploads_path
-        self.storage_medias_path = storage_medias_path
-        self.storage_uploads_path = storage_uploads_path
 
-    def __repr__(self):
-        return str(self.__dict__)
-
-    @property
-    def log_level(self):
-        return logging.DEBUG if self.verbose else logging.INFO
-
-    @property
-    def storage_uri(self):
-        u"""
-        Returns storage URI.
-
-        **Example usage**:
-
-        >>> from copy import copy
-        >>> config = copy(WEBUI_CONFIG_TEST)
-        >>> print(config.storage_uri)
-        glusterfs://10.1.1.2/medias_volume
-        >>> config.storage_fstype = ''
-        >>> print(config.storage_uri)
-        None
-        >>> config.storage_fstype = 'nfs'
-        >>> config.storage_address = ''
-        >>> print(config.storage_uri)
-        None
-        >>> config.storage_address = '30.0.0.1'
-        >>> print(config.storage_uri)
-        nfs://30.0.0.1/medias_volume
-        """
-        if self.storage_fstype and self.storage_address and self.storage_mountpoint:
-            return '%s://%s/%s' % (
-                self.storage_fstype, self.storage_address, self.storage_mountpoint)
-        return None
-
-    def reset(self):
-        u"""
-        Reset attributes to theirs default values.
-
-        **Example usage**:
-
-        >>> from copy import copy
-        >>> config = copy(WEBUI_CONFIG_TEST)
-        >>> config._pickle_filename = 'my_file.pkl'
-        >>> print(config.storage_path)
-        /mnt/storage
-        >>> config.storage_path = 'salut'
-        >>> print(config.storage_path)
-        salut
-        >>> config.reset()
-        >>> print(config.storage_path)
-        /mnt/storage
-        >>> print(config._pickle_filename)
-        my_file.pkl
-        """
-        self.__init__()
-
-WEBUI_CONFIG_TEST = WebuiConfig('129.194.185.47:5000', '10.1.1.2', 'glusterfs', 'medias_volume', '')
+WEBUI_CONFIG_TEST = WebuiConfig(api_url='10.10.4.3:5000', storage_address='10.1.1.2',
+    storage_fstype='glusterfs', storage_mountpoint='medias_volume')
 
 # Main ---------------------------------------------------------------------------------------------
 
