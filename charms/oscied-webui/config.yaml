@@ -15,10 +15,6 @@ options:
     type: int
     default: 600
     description: Maximum time for http post.  Default value means 10 minutes
-  mysql_my_password:
-    type: string
-    default: "root"
-    description: Password for phpmyadmin.  Please change it in production
   mysql_root_password:
     type: string
     default: "root"
