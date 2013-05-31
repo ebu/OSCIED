@@ -92,7 +92,8 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         shutil.rmtree(self.local_config.publish_path, ignore_errors=True)
         shutil.rmtree('/var/log/apache2/',            ignore_errors=True)
         os.makedirs(self.local_config.publish_path)
-        self.local_config.reset(reset_publish_uri=False)
+        self.local_config.reset()
+        self.local_config.update_publish_uri(self.public_address)
 
     def hook_start(self):
         if not self.storage_is_mounted:

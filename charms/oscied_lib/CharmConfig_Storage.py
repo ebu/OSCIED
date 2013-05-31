@@ -25,7 +25,7 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-from os.path import join
+from os.path import join, sep
 from CharmConfig import CharmConfig
 
 MEDIAS_PATH = 'medias'
@@ -47,14 +47,44 @@ class CharmConfig_Storage(CharmConfig):
         self.storage_mount_sleep_delay = storage_mount_sleep_delay
         self.hosts_file = hosts_file
 
-    def storage_medias_path(self, media, generate=True):
+    @property
+    def storage_uploads_path(self):
         uri = self.storage_uri()
         if not uri:
             return None
+        return join(self.storage_path, UPLOADS_PATH)
+
+    def storage_medias_path(self, media=None, generate=True):
+        u"""
+        Returns storage path of a media stored into medias directory.
+
+        **Example usage**:
+
+        >>> from copy import copy
+        >>> from Media import MEDIA_TEST
+        >>> media = copy(MEDIA_TEST)
+        >>> config = CharmConfig_Storage()
+        >>> config.storage_address='10.1.1.2'
+        >>> config.storage_fstype='glusterfs'
+        >>> config.storage_mountpoint='medias_volume'
+        >>> print(config.storage_medias_path())
+        /mnt/storage/medias
+        >>> media_uri = config.storage_medias_path(media=media)
+        >>> print(media_uri)  # doctest: +ELLIPSIS
+        /mnt/storage/medias/.../...
+        >>> media.uri = media_uri
+        >>> print(config.storage_medias_path(media=media))  # doctest: +ELLIPSIS
+        /mnt/storage/medias/.../...
+        """
+        uri = self.storage_uri()
+        if not uri:
+            return None
+        if media is None:
+            return join(self.storage_path, MEDIAS_PATH)
         if generate:
             return join(self.storage_path, MEDIAS_PATH, media.user_id, media._id)
         if media.uri and media.uri.startswith(uri):
-            return join(self.storage_path, media.uri.replace(uri, '', 1))
+            return join(self.storage_path, media.uri.replace(uri + sep, '', 1))
         return None
 
     def storage_uri(self, path=None):

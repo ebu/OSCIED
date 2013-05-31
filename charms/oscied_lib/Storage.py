@@ -57,7 +57,8 @@ class Storage(object):
                             the_error = error
                             time.sleep(1)
                     if the_error:
-                        raise IndexError('An error occured : ' + the_error + '.')
+                        raise IndexError('An error occured : %s (%s -> %s).' %
+                                         (the_error, media_src_path, media_dst_path))
                 return (os.stat(media_dst_path).st_size, get_media_duration(media_dst_path))
             else:
                 raise NotImplementedError('FIXME Add of external uri not implemented.')

@@ -106,57 +106,6 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         self.api_unregister()
         self.hook_config_changed()
 
-# storage_remount()
-# {
-#   # ...
-#   if storage_is_mounted; then
-#     storage_migrate_path 'medias'  "$STORAGE_MEDIAS_PATH"  "$WWW_MEDIAS_PATH"  'root'     755 644
-#     storage_migrate_path 'uploads' "$STORAGE_UPLOADS_PATH" "$WWW_UPLOADS_PATH" 'www-data' 755 644
-#     # FIXME update /etc/fstab (?)
-#     pecho 'Configure Web UI : Register shared storage'
-#     # FIXME this is a little bit cheating with paths ;-)
-#     storage_uri="$fstype://$ip/$mountpoint"
-#     uploads_uri="$storage_uri/uploads/"
-#     medias_uri="$storage_uri/medias/"
-#     setSettingPHP $GENERAL_CONFIG_FILE 'config' 'uploads_uri' "$uploads_uri" || xecho 'Config' 2
-#     setSettingPHP $GENERAL_CONFIG_FILE 'config' 'medias_uri'  "$medias_uri"  || xecho 'Config' 3
-#   else
-#     xecho 'Unable to mount shared storage' 4
-#   fi
-# }
-# # Migrate a local Web UI path to shared storage only if necessary ----------------------------------
-# storage_migrate_path()
-# {
-#   if [ $# -ne 6 ]; then
-#     xecho "Usage: $(basename $0).storage_migrate_path name storage local owner dmod fmod"
-#   fi
-#   name=$1
-#   storage=$2
-#   local=$3
-#   owner=$4
-#   dmod=$5
-#   fmod=$6
-#   if [ ! -d "$storage" ]; then
-#     pecho "Create $name path in storage"
-#     mkdir -p "$storage" || xecho "Unable to create $name path" 1
-#   else
-#     recho "Storage $name path already created"
-#   fi
-#   if [ -d "$local" ]; then
-#     mecho "Migrating files from Web UI $name path to $name path in storage ..."
-#     rsync -a "$local/" "$storage/" || xecho "Unable to migrate $name files" 2
-#     rm -rf "$local"
-#   fi
-#   if [ ! -h "$local" ]; then
-#     pecho "Link Web UI $name path to $name path in storage"
-#     ln -s "$storage" "$local" || xecho "Unable to create $name link" 3
-#   fi
-#   pecho "Ensure POSIX rights (owner=$owner:$owner mod=(d=$dmod,f=$fmod)) of $name path in storage"
-#   chown "$owner:$owner" "$storage" -R || xecho "Unable to chown $storage" 4
-#   find "$storage" -type d -exec chmod "$dmod" "$storage" \;
-#   find "$storage" -type f -exec chmod "$fmod" "$storage" \;
-# }
-
     # ----------------------------------------------------------------------------------------------
 
     def hook_install(self):
@@ -189,8 +138,6 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         shutil.copy(self.local_config.site_template_file, self.local_config.sites_enabled_path)
         rsync('www/', self.local_config.www_root_path,
               archive=True, delete=True, exclude_vcs=True, recursive=True)
-        try_makedirs(self.local_config.mysql_temp_path)
-        chown(self.local_config.mysql_temp_path, 'mysql', 'mysql')
         chown(self.local_config.www_root_path, 'www-data', 'www-data', recursive=True)
         self.local_config.encryption_key = WebuiHooks.randpass(32)
         self.info('Expose Apache 2 service')
@@ -208,6 +155,12 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         self.template2config(config.general_template_file,  config.general_config_file,  infos)
         self.template2config(config.database_template_file, config.database_config_file, infos)
         self.template2config(config.htaccess_template_file, config.htaccess_config_file, infos)
+        if self.storage_is_mounted:
+            self.info('Create uploads directory and symlink storage')
+            try_makedirs(self.local_config.storage_uploads_path)
+            chown(self.local_config.storage_uploads_path, 'www-data', 'www-data', recursive=True)
+            os.symlink(self.local_config.storage_medias_path(), self.local_config.www_medias_path)
+            os.symlink(self.local_config.storage_uploads_path, self.local_config.www_uploads_path)
 
     def hook_uninstall(self):
         self.info('Uninstall prerequisities, unregister service and load default configuration')
