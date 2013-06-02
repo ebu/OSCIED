@@ -35,13 +35,12 @@ main()
     xecho 'Unable to detect local copy revision number !'
   fi
 
-  # Generate images from textual UMLs
+  pecho 'Generate images from textual UMLs'
   java -jar "$REPORT_TOOLS_PLANTUML_BINARY" "$DAVID_REPORT_UML_PATH" \
     -failonerror || xecho 'Unable to generate images from UML diagrams'
 
+  pecho 'Append hooks UMLs images together'
   cd "$DAVID_REPORT_UML_PATH" || xecho "Unable to find path $DAVID_REPORT_UML_PATH"
-
-  # Append hooks UMLs images together !
   for name in 'orchestra' 'webui' 'storage' 'transform' 'publisher'
   do
     a="activity-$name-install.png"
@@ -54,8 +53,8 @@ main()
     rm $a $b $c $d 2>/dev/null
   done
 
+  pecho 'Generate reStructuredText from templates'
   cd "$DAVID_REPORT_PATH" || xecho "Unable to find path $DAVID_REPORT_PATH"
-
   listing=/tmp/$$.list
   tmpfile=/tmp/$$
   trap "rm -f '$listing' '$tmpfile' 2>/dev/null" INT TERM EXIT
@@ -66,6 +65,7 @@ main()
     sed "s:SVN_REVISION:$revision:g" "$template" > "$rest"
   done < $listing
 
+  pecho 'Generate links into common file'
   common=''
   references=''
   savedIFS=$IFS
@@ -88,6 +88,7 @@ main()
   echo $e_ "$common" > 'source/common.rst'
   echo $e_ "$references" > 'source/appendices-references.rst'
 
+  pecho 'Append header files into common file'
   find . -type f -name "*.rst.header" | sort > $listing
   while read header
   do
@@ -96,24 +97,33 @@ main()
     mv "$tmpfile" "$rest"
   done < $listing
 
+  pecho 'Build HTML and PDF from source reStructuredText files'
   # FIXME echo about.rst -> index.rst for html version at least
   $udo rm -rf build/* 2>/dev/null
   make html || xecho 'Unable to generate HTML version of the report'
   make latexpdf || xecho 'Unable to generate PDF version of the report'
 
+  pecho 'Move PDF into releases directory'
   find "$DAVID_REPORT_BUILD_PATH" -type f -name "*.pdf" -exec mv {} "$DAVID_REPORT_RELEASE_PATH" \;
 
-  # Compress report
+  #pecho 'Compress report'
   #cd "$DAVID_REPORT_RELEASE_PATH" || xecho "Unable to find path $DAVID_REPORT_RELEASE_PATH"
   #gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook -dNOPAUSE -dQUIET -dBATCH \
   #  -sOutputFile=MA_DavidFischer_OSCIED_compressed.pdf MA_DavidFischer_OSCIED.pdf
 
-  # Remove intermediate files
-  #find "$DAVID_REPORT_UML_PATH" -type f -name "*.png" -exec rm -f {} \;
-  #find "$DAVID_REPORT_PATH" -type f -name "*.rst.template" | while read template
-  #do
-  #  rm -f "$(dirname "$template")/$(basename "$template" .template)"
-  #done
+  pecho 'Update project wiki'
+  find "$WIKI_SOURCE_PATH" -type f -not -name 'common.rst' | while read rst
+  do
+    name=$(basename "$rst")
+    cat "$WIKI_SOURCE_PATH/common.rst" "$rst" > "$WIKI_BUILD_PATH/$name"
+  done
+
+  pecho 'Remove intermediate files'
+  find "$DAVID_REPORT_UML_PATH" -type f -name "*.png" -exec rm -f {} \;
+  find "$DAVID_REPORT_PATH" -type f -name "*.rst.template" | while read template
+  do
+    rm -f "$(dirname "$template")/$(basename "$template" .template)"
+  done
 }
 
 main "$@"
