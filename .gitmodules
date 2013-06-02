@@ -22,3 +22,6 @@
 [submodule "charms/pyutils"]
 	path = charms/pyutils
 	url = git://github.com/davidfischer-ch/pyutils.git
+[submodule "docs/wiki/build"]
+	path = docs/wiki/build
+	url = git@github.com:ebu/OSCIED.wiki.git
