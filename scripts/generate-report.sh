@@ -101,7 +101,7 @@ main()
   # FIXME echo about.rst -> index.rst for html version at least
   $udo rm -rf build/* 2>/dev/null
   make html || xecho 'Unable to generate HTML version of the report'
-  make latexpdf || xecho 'Unable to generate PDF version of the report'
+  #make latexpdf || xecho 'Unable to generate PDF version of the report'
 
   pecho 'Move PDF into releases directory'
   find "$DAVID_REPORT_BUILD_PATH" -type f -name "*.pdf" -exec mv {} "$DAVID_REPORT_RELEASE_PATH" \;
@@ -112,7 +112,7 @@ main()
   #  -sOutputFile=MA_DavidFischer_OSCIED_compressed.pdf MA_DavidFischer_OSCIED.pdf
 
   pecho 'Update project wiki'
-  find "$WIKI_SOURCE_PATH" -type f -not -name 'common.rst' | while read rst
+  find "$WIKI_SOURCE_PATH" -name "*.rst" -not -name 'common.rst' | while read rst
   do
     name=$(basename "$rst")
     cat "$WIKI_SOURCE_PATH/common.rst" "$rst" > "$WIKI_BUILD_PATH/$name"
