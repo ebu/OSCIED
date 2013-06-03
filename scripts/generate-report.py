@@ -37,6 +37,23 @@ from common import (
 from pyutils.pyutils import cmd, try_makedirs, try_remove
 
 if __name__ == '__main__':
+    from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+    HELP_HTML = 'Build HTML from source reStructuredText files'
+    HELP_PDF = 'Build PDF from source reStructuredText files'
+    HELP_WIKI = 'Build Wiki from source reStructuredText files'
+
+    parser = ArgumentParser(
+        formatter_class=ArgumentDefaultsHelpFormatter,
+        epilog='''Generate OSCIED project documentation from source reStructuredText files.''')
+    parser.add_argument('--html', help=HELP_HTML, action='store_true')
+    parser.add_argument('--pdf', help=HELP_PDF, action='store_true')
+    parser.add_argument('--wiki', help=HELP_WIKI, action='store_true')
+    args = parser.parse_args()
+
+    if not args.html and not args.pdf and not args.wiki:
+        parser.print_help()
+        print('')
+        xprint('At least one target must be enabled')
 
     revision = cmd("git log --pretty=format:'%H' -n 1", fail=False)['stdout']
     if not revision:
@@ -96,44 +113,45 @@ if __name__ == '__main__':
                 rst_file.seek(0)
                 rst_file.write(header_file.read() + data)
 
-    print('Build HTML and PDF from source reStructuredText files')
     # FIXME echo about.rst -> index.rst for html version at least
     shutil.rmtree(DAVID_REPORT_BUILD_PATH, ignore_errors=True)
     try_makedirs(DAVID_REPORT_BUILD_PATH)
     os.chdir(DAVID_REPORT_PATH)
 
-    print('Building HTML ...')
-    result = cmd('make html', fail=False)
-    with open('build_html.log', 'w') as log_file:
-        log_file.write('Output:\n%s\nError:\n%s' % (result['stdout'], result['stderr']))
-    if result['returncode'] != 0:
-        xprint('Unable to generate HTML version of the report, see build_html.log')
+    if args.html:
+        print(HELP_HTML)
+        result = cmd('make html', fail=False)
+        with open('build_html.log', 'w') as log_file:
+            log_file.write('Output:\n%s\nError:\n%s' % (result['stdout'], result['stderr']))
+        if result['returncode'] != 0:
+            xprint('Unable to generate HTML version of the report, see build_html.log')
 
-    print('Building PDF ...')
-    result = cmd('make latexpdf', fail=False)
-    with open('build_pdf.log', 'w') as log_file:
-        log_file.write('Output:\n%s\nError:\n%s' % (result['stdout'], result['stderr']))
-    if result['returncode'] != 0:
-        xprint('Unable to generate PDF version of the report, see build_pdf.log')
-
-    print('Move PDF into releases directory')
-    for pdf_filename in glob.glob(join(DAVID_REPORT_BUILD_PATH, '*.pdf')):
-        os.move(pdf_filename, DAVID_REPORT_RELEASE_PATH)
+    if args.pdf:
+        print(HELP_PDF)
+        result = cmd('make latexpdf', fail=False)
+        with open('build_pdf.log', 'w') as log_file:
+            log_file.write('Output:\n%s\nError:\n%s' % (result['stdout'], result['stderr']))
+        if result['returncode'] != 0:
+            xprint('Unable to generate PDF version of the report, see build_pdf.log')
+        print('Move PDF into releases directory')
+        for pdf_filename in glob.glob(join(DAVID_REPORT_BUILD_PATH, '*.pdf')):
+            os.move(pdf_filename, DAVID_REPORT_RELEASE_PATH)
 
     #pecho 'Compress report'
     #cd "$DAVID_REPORT_RELEASE_PATH" || xecho "Unable to find path $DAVID_REPORT_RELEASE_PATH"
     #gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook -dNOPAUSE -dQUIET -dBATCH \
     #  -sOutputFile=MA_DavidFischer_OSCIED_compressed.pdf MA_DavidFischer_OSCIED.pdf
 
-    print('Update project wiki')
-    c_data = ''.join(filter(lambda l: ':orphan:' not in l, open(DAVID_REPORT_COMMON_FILE)))
-    for rst_src_filename in glob.glob(join(WIKI_SOURCE_PATH, '*.rst')):
-        rst_dst_filename = join(WIKI_BUILD_PATH, basename(rst_src_filename))
-        with open(rst_src_filename) as rst_src_file:
-            data = '%s\n%s' % (c_data, rst_src_file.read())
-            data = re.sub(r':file:`([^`]*)`', r'``\1``', data, flags=re.MULTILINE)
-            with open(rst_dst_filename, 'w') as rst_dst_file:
-                rst_dst_file.write(data)
+    if args.wiki:
+        print(HELP_WIKI)
+        c_data = ''.join(filter(lambda l: ':orphan:' not in l, open(DAVID_REPORT_COMMON_FILE)))
+        for rst_src_filename in glob.glob(join(WIKI_SOURCE_PATH, '*.rst')):
+            rst_dst_filename = join(WIKI_BUILD_PATH, basename(rst_src_filename))
+            with open(rst_src_filename) as rst_src_file:
+                data = '%s\n%s' % (c_data, rst_src_file.read())
+                data = re.sub(r':file:`([^`]*)`', r'``\1``', data, flags=re.MULTILINE)
+                with open(rst_dst_filename, 'w') as rst_dst_file:
+                    rst_dst_file.write(data)
 
     print('Remove intermediate files')
     for png_filename in glob.glob(join(DAVID_REPORT_UML_PATH, '*.png')):
