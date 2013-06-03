@@ -144,12 +144,35 @@ if __name__ == '__main__':
 
     if args.wiki:
         print(HELP_WIKI)
+        file_regex = re.compile(r':file:`([^`]*)`')
+        include_regex = re.compile(r'(?P<space>\s*)\.\. literalinclude::\s+(?P<link>\S+)\s*')
+        option_regex = re.compile(r'(?P<space>\s*):(?P<name>\S+):\s+(?P<value>\S+)\s*')
         c_data = ''.join(filter(lambda l: ':orphan:' not in l, open(DAVID_REPORT_COMMON_FILE)))
         for rst_src_filename in glob.glob(join(WIKI_SOURCE_PATH, '*.rst')):
             rst_dst_filename = join(WIKI_BUILD_PATH, basename(rst_src_filename))
             with open(rst_src_filename) as rst_src_file:
                 data = '%s\n%s' % (c_data, rst_src_file.read())
-                data = re.sub(r':file:`([^`]*)`', r'``\1``', data, flags=re.MULTILINE)
+                # Replace :file: directives by ``
+                data = file_regex.sub(r'``\1``', data, re.MULTILINE)
+                # Replace literalinclude directives by code-block
+                include = {'space': None, 'link': None}
+                options = {}
+                for line in data.split('\n'):
+                    match = include_regex.match(line)
+                    if match:
+                        include = match.groupdict()
+                    elif include['link']:
+                        match = option_regex.match(line)
+                        if match:
+                            option = match.groupdict()
+                            options[option['name']] = option['value']
+                        else:
+                            pass  # FIXME TODO
+                            # # Here all lines of literalinclude are scanned
+                            # with open(join(DAVID_REPORT_SOURCE_PATH, include['link'])) as f:
+                            #     data = f.read()
+                            #     # TODO -> write to dest
+                            # include['link'] = None
                 with open(rst_dst_filename, 'w') as rst_dst_file:
                     rst_dst_file.write(data)
 
