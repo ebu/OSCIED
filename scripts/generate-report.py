@@ -58,8 +58,7 @@ if __name__ == '__main__':
         if cmd(['convert', a, b, c, d, '+append', e], fail=False)['returncode'] != 0:
             if cmd(['convert', a, c, d, '+append', e], fail=False)['returncode'] != 0:
                 xprint("Unable to append %s's hooks UMLs images" % name)
-        for f in (a, b, c, d):
-            try_remove(f)
+        (try_remove(f) for f in (a, b, c, d))
 
     print('Generate reStructuredText from templates')
     for template_filename in glob.glob(join(DAVID_REPORT_SOURCE_PATH, '*.rst.template')):
