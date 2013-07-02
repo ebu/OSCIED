@@ -25,7 +25,7 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import time, os
+import time, os, shutil
 from celery import current_task
 from celery.decorators import task
 from Callback import Callback
@@ -33,7 +33,7 @@ from Media import Media
 from PublisherConfig import PublisherConfig
 from Storage import Storage
 from User import User
-from pyutils.pyutils import object2json, datetime_now
+from pyutils.pyutils import object2json, datetime_now, get_size
 
 
 @task(name='Publisher.publish_job')
@@ -70,54 +70,64 @@ def publish_job(user_json, media_json, callback_json):
         if config.api_nat_socket and len(config.api_nat_socket) > 0:
             callback.replace_netloc(config.api_nat_socket)
 
-        # Verify that media file can be accessed and create output path
+        # Verify that media file can be accessed
         media_path = config.storage_medias_path(media, generate=False)
         if not media_path:
             raise NotImplementedError('Media will not be readed from shared storage : %s' %
                                       media.uri)
-        (publish_path, publish_uri) = config.publish_point(media)
-        Storage.create_file_directory(publish_path)
+        publish_path, publish_uri = config.publish_point(media)
+        media_root, publish_root = os.path.dirname(media_path), os.path.dirname(publish_path)
+        media_size, publish_size = get_size(media_root), 0
 
-        # Initialize block-based copy
-        block_size = 1024 * 1024
-        media_file = open(media_path, "rb")
-        publish_file = open(publish_path, "wb")
-        media_size = os.stat(media_path).st_size
+        # Recursive copy of a media (directory of files or file) to the local path of the publisher
+        for root, dirnames, filenames in os.walk(media_root):
+            for filename in filenames:
+                dst_root = root.replace(media_root, publish_root)
+                src_path = os.path.join(root, filename)
+                dst_path = os.path.join(dst_root, filename)
 
-        # Block-based copy loop
-        block_pos = 0
-        prev_ratio = 0
-        prev_time = 0
-        while True:
-            block = media_file.read(block_size)
-            ratio = float(block_pos) / media_size
-            elapsed_time = time.time() - start_time
-            if ratio - prev_ratio > RATIO_DELTA and elapsed_time - prev_time > TIME_DELTA:
-                prev_ratio = ratio
-                prev_time = elapsed_time
-                eta_time = int(elapsed_time * (1 - ratio) / ratio) if ratio > 0 else 0
-                publish_job.update_state(
-                    state="PROGRESS",
-                    meta={'hostname': request.hostname,
-                          'start_date': start_date,
-                          'elapsed_time': elapsed_time,
-                          'eta_time': eta_time,
-                          'media_size': media_size,
-                          'publish_size': block_pos,
-                          'percent': int(100 * ratio)})
-            block_pos += len(block)
-            if not block:
-                break  # End of input media reached
-            publish_file.write(block)
-        media_file.close()
-        publish_file.close()  # FIXME maybe a finally block for that
+                # Initialize block-based copy
+                Storage.create_file_directory(dst_path)
+                block_size = 1024 * 1024
+                src_file = open(src_path, 'rb')
+                dst_file = open(dst_path, 'wb')
+
+                # Block-based copy loop
+                block_pos = prev_ratio = prev_time = 0
+                while True:
+                    block = src_file.read(block_size)
+                    try:
+                        ratio = float(publish_size) / media_size
+                    except ZeroDivisionError:
+                        ratio = 1.0
+                    elapsed_time = time.time() - start_time
+                    if ratio - prev_ratio > RATIO_DELTA and elapsed_time - prev_time > TIME_DELTA:
+                        prev_ratio = ratio
+                        prev_time = elapsed_time
+                        eta_time = int(elapsed_time * (1 - ratio) / ratio) if ratio > 0 else 0
+                        publish_job.update_state(
+                            state='PROGRESS',
+                            meta={'hostname': request.hostname,
+                                  'start_date': start_date,
+                                  'elapsed_time': elapsed_time,
+                                  'eta_time': eta_time,
+                                  'media_size': media_size,
+                                  'publish_size': publish_size,
+                                  'percent': int(100 * ratio)})
+                    block_length = len(block)
+                    block_pos += block_length
+                    publish_size += block_length
+                    if not block:
+                        break  # End of input media reached
+                    dst_file.write(block)
+                src_file.close()
+                dst_file.close()  # FIXME maybe a finally block for that
 
         # Output media file sanity check
-        publish_size = os.stat(publish_path).st_size
+        publish_size = get_size(publish_root)
         if publish_size != media_size:
-            raise IOError(
-                "Output media size does not match input (%s vs %s)" %
-                (media_size, publish_size))
+            raise IOError('Output media size does not match input (%s vs %s)' %
+                          (media_size, publish_size))
 
         # Here all seem okay
         elapsed_time = time.time() - start_time
@@ -138,8 +148,8 @@ def publish_job(user_json, media_json, callback_json):
     except Exception as error:
 
         # Here something went wrong
-        if publish_path:
-            os.remove(publish_path)
+        if publish_root:
+            shutil.rmtree(publish_root, ignore_errors=True)
         print('%s Publish job failed ' % (request.id))
         print('%s Callback : Something went wrong' % (request.id))
         data_json = object2json({'job_id': request.id, 'status': str(error)}, False)

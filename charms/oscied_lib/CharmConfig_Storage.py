@@ -82,7 +82,8 @@ class CharmConfig_Storage(CharmConfig):
         if media is None:
             return join(self.storage_path, MEDIAS_PATH)
         if generate:
-            return join(self.storage_path, MEDIAS_PATH, media.user_id, media._id)
+            return join(self.storage_path, MEDIAS_PATH, media.user_id, media._id,
+                        media.virtual_filename)
         if media.uri and media.uri.startswith(uri):
             return join(self.storage_path, media.uri.replace(uri + sep, '', 1))
         return None
@@ -136,7 +137,8 @@ class CharmConfig_Storage(CharmConfig):
         glusterfs://10.1.1.2/medias_volume/medias/.../...
         """
         if media:
-            return self.storage_uri(path=join(MEDIAS_PATH, media.user_id, media._id))
+            return self.storage_uri(path=join(MEDIAS_PATH, media.user_id, media._id,
+                                    media.virtual_filename))
         return self.storage_uri(path=MEDIAS_PATH)
 
 # Main ---------------------------------------------------------------------------------------------
