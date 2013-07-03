@@ -116,6 +116,7 @@ class OrchestraHooks(CharmHooks_Storage):
         #self.open_port(27019, 'TCP') # MongoDB port when running with configsvr setting
         #self.open_port(28017, 'TCP') # MongoDB port for the web status page. This is always +1000
         self.open_port(5672, 'TCP')   # RabbitMQ service
+        # FIXME detect own_environment and save it to local_config
 
     def hook_config_changed(self):
         self.info('Configure MongoDB Scalable NoSQL DB')
