@@ -33,7 +33,9 @@ class OrchestraConfig(CharmConfig_Storage):
     def __init__(self, api_url='', root_secret='', nodes_secret='', mongo_connection='',
                  rabbit_connection='', celery_config_file='celeryconfig.py',
                  celery_template_file='templates/celeryconfig.py.template',
-                 mongo_config_file='/etc/mongodb.conf', **kwargs):
+                 mongo_config_file='/etc/mongodb.conf', own_environment='private',
+                 charms_config='config.yaml', charms_release='raring', charms_repository='charms',
+                 **kwargs):
         super(OrchestraConfig, self).__init__(**kwargs)
         self.api_url = api_url
         self.root_secret = root_secret
@@ -43,6 +45,10 @@ class OrchestraConfig(CharmConfig_Storage):
         self.celery_config_file = celery_config_file
         self.celery_template_file = celery_template_file
         self.mongo_config_file = mongo_config_file
+        self.own_environment = own_environment,
+        self.charms_config = charms_config
+        self.charms_release = charms_release
+        self.charms_repository = charms_repository
 
     @property
     def transform_queues(self):
