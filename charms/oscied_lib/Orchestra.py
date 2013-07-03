@@ -41,8 +41,12 @@ from TransformJob import TransformJob
 from User import User
 from pyutils.pyutils import object2json, datetime_now, UUID_ZERO, valid_uuid
 
+TRANSFORM_NAME = 'oscied-transform'
+
 
 class Orchestra(object):
+
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Constructor >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     def __init__(self, config):
         self.config = config
@@ -52,7 +56,13 @@ class Orchestra(object):
         self.nodes_user = User(UUID_ZERO, 'nodes', 'oscied', 'nodes@oscied.org',
                                self.config.nodes_secret, False)
 
-    # ----------------------------------------------------------------------------------------------
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Properties >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    @property
+    def about(self):
+        return ('Orchestra : EBU\'s OSCIED Orchestrator by David Fischer 2012-2013')
+
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Functions >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     def flush_db(self):
         self._db.drop_collection('users')
@@ -81,6 +91,12 @@ class Orchestra(object):
         return user if secret is None or user.verify_secret(secret) else None
 
     def delete_user(self, user):
+        # FIXME issue #16 (https://github.com/ebu/OSCIED/issues/16)
+        # entity = self.get_user({'_id': user_id}, {'secret': 0})
+        # if not entity:
+        #     raise IndexError('No user with id ' + id + '.')
+        # self._db.users.remove({'_id': entity._id})
+        # return User.load(object2json(entity, False))
         if valid_uuid(user, False):
             user = self.get_user({'_id': user}, {'secret': 0})
         user.is_valid(True)
