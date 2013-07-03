@@ -30,8 +30,9 @@
 import logging
 import sys
 from flask import Flask, abort, request, Response
+import oscied_lib.juju as juju
 from oscied_lib.Media import Media
-from oscied_lib.Orchestra import Orchestra
+from oscied_lib.Orchestra import Orchestra, TRANSFORM_NAME
 from oscied_lib.OrchestraConfig import OrchestraConfig
 from oscied_lib.TransformProfile import TransformProfile
 from oscied_lib.User import User
@@ -132,6 +133,16 @@ def check_id(id):
         abort(415, 'Wrong id format ' + id)
 
 
+def get_request_json(request):
+    try:
+        data = request.json
+    except:
+        abort(415, 'Requires valid json content-type.')
+    if not data:
+        abort(415, 'Requires json content-type.')
+    return data
+
+
 @app.errorhandler(400)
 def error_400(value=None):
     response = Response(response=object2json({'status': 400, 'value': value}, False),
@@ -215,13 +226,13 @@ def api_root():
 
         {
           "status": 200, "value":
-          "Orchestra : EBU's OSCIED Orchestrator by David Fischer 2012\\n"
+          "Orchestra : EBU's OSCIED Orchestrator by David Fischer 2012-2013\\n"
         }
 
     :Allowed: Any user (including unauthenticated)
     :statuscode 200: OK
     """
-    return "Orchestra : EBU's OSCIED Orchestrator by David Fischer 2012\n"
+    return orchestra.about
 
 
 # System management --------------------------------------------------------------------------------
@@ -442,12 +453,7 @@ def api_user_post():
     :statuscode 415: Requires (valid) json content-type.
     """
     requires_auth(request=request, allow_root=True, role='admin_platform')
-    try:
-        data = request.json
-        if not data:
-            abort(415, 'Requires json content-type.')
-    except:
-        abort(415, 'Requires valid json content-type.')
+    data = get_request_json(request)
     try:
         user = User(None, data['first_name'], data['last_name'], data['mail'], data['secret'],
                           data['admin_platform'])
@@ -455,7 +461,7 @@ def api_user_post():
     except (ValueError, TypeError) as error:
         abort(400, str(error))
     except KeyError as error:
-        abort(400, 'Key ' + str(error) + ' not found.')
+        abort(400, 'Key %s not found.' % error)
     delattr(user, 'secret')  # do not send back user's secret
     return ok_200(user, True)
 
@@ -506,7 +512,7 @@ def api_user_id_get(id):
     requires_auth(request=request, allow_root=True, allow_any=True)
     user = orchestra.get_user(specs={'_id': id}, fields={'secret': 0})
     if not user:
-        abort(404, 'No user with id ' + id + '.')
+        abort(404, 'No user with id %s.' % id)
     return ok_200(user, True)
 
 
@@ -567,14 +573,9 @@ def api_user_id_patch(id):
     check_id(id)
     auth_user = requires_auth(request=request, allow_root=True, role='admin_platform', id=id)
     user = orchestra.get_user(specs={'_id': id})
-    try:
-        data = request.json
-    except:
-        abort(415, 'Requires valid json content-type.')
-    if not data:
-        abort(415, 'Requires json content-type.')
+    data = get_request_json(request)
     if not user:
-        abort(404, 'No user with id ' + id + '.')
+        abort(404, 'No user with id %s.' % id)
     try:
         old_name = user.name
         first_name = data['first_name'] if 'first_name' in data else user.first_name
@@ -589,8 +590,8 @@ def api_user_id_patch(id):
     except (ValueError, TypeError) as error:
         abort(400, str(error))
     except KeyError as error:
-        abort(400, 'Key ' + str(error) + ' not found.')
-    return ok_200('The user "' + old_name + '" has been updated.', False)
+        abort(400, 'Key %s not found.' % error)
+    return ok_200('The user "%s" has been updated.' % old_name, False)
 
 
 @app.route('/user/id/<id>', methods=['DELETE'])
@@ -632,9 +633,9 @@ def api_user_id_delete(id):
     requires_auth(request=request, allow_root=True, role='admin_platform', id=id)
     user = orchestra.get_user(specs={'_id': id})
     if not user:
-        abort(404, 'No user with id ' + id + '.')
+        abort(404, 'No user with id %s.' % id)
     orchestra.delete_user(user)
-    return ok_200('The user "' + user.name + '" has been deleted.', False)
+    return ok_200('The user "%s" has been deleted.' % user.name, False)
 
 
 # Medias management --------------------------------------------------------------------------------
@@ -832,12 +833,7 @@ def api_media_post():
     :statuscode 501: FIXME Add of external uri not implemented.
     """
     auth_user = requires_auth(request=request, allow_any=True)
-    try:
-        data = request.json
-    except:
-        abort(415, 'Requires valid json content-type.')
-    if not data:
-        abort(415, 'Requires json content-type.')
+    data = get_request_json(request)
     try:
         media = Media(None, auth_user._id, None, data['uri'], None,
                       data['virtual_filename'], data['metadata'], 'READY')
@@ -845,7 +841,7 @@ def api_media_post():
     except (ValueError, TypeError) as error:
         abort(400, str(error))
     except KeyError as error:
-        abort(400, 'Key ' + str(error) + ' not found.')
+        abort(400, 'Key %s not found.' % error)
     except IndexError as error:
         abort(404, str(error))
     except NotImplementedError as error:
@@ -908,7 +904,7 @@ def api_media_id_head(id):
     requires_auth(request=request, allow_any=True)
     media = orchestra.get_media(specs={'_id': id})
     if not media:
-        abort(404, 'No media with id ' + id + '.')
+        abort(404, 'No media with id %s.' % id)
     return ok_200(media, True)
 
 
@@ -977,7 +973,7 @@ def api_media_id_get(id):
     requires_auth(request=request, allow_any=True)
     media = orchestra.get_media(specs={'_id': id}, load_fields=True)
     if not media:
-        abort(404, 'No media with id ' + id + '.')
+        abort(404, 'No media with id %s.' % id)
     return ok_200(media, True)
 
 
@@ -1027,16 +1023,11 @@ def api_media_id_patch(id):
     check_id(id)
     auth_user = requires_auth(request=request, allow_any=True)
     media = orchestra.get_media(specs={'_id': id})
-    try:
-        data = request.json
-    except:
-        abort(415, 'Requires valid json content-type.')
-    if not data:
-        abort(415, 'Requires json content-type.')
+    data = get_request_json(request)
     if not media:
-        abort(404, 'No media with id ' + id + '.')
+        abort(404, 'No media with id %s.' % id)
     if auth_user._id != media.user_id:
-        abort(403, 'You are not allowed to modify media with id ' + id + '.')
+        abort(403, 'You are not allowed to modify media with id %s.' % id)
     try:
         old_virtual_filename = media.virtual_filename
         if 'virtual_filename' in data:
@@ -1047,8 +1038,8 @@ def api_media_id_patch(id):
     except (ValueError, TypeError) as error:
         abort(400, str(error))
     except KeyError as error:
-        abort(400, 'Key ' + str(error) + ' not found.')
-    return ok_200('The media "' + old_virtual_filename + '" has been updated.', False)
+        abort(400, 'Key %s not found.' % error)
+    return ok_200('The media "%s" has been updated.' % old_virtual_filename, False)
 
 
 @app.route('/media/id/<id>', methods=['DELETE'])
@@ -1096,16 +1087,16 @@ def api_media_id_delete(id):
     auth_user = requires_auth(request=request, allow_any=True)
     media = orchestra.get_media(specs={'_id': id})
     if not media:
-        abort(404, 'No media with id ' + id + '.')
+        abort(404, 'No media with id %s.' % id)
     if auth_user._id != media.user_id:
-        abort(403, 'You are not allowed to delete media with id ' + id + '.')
+        abort(403, 'You are not allowed to delete media with id %s.' % id)
     try:
         orchestra.delete_media(media)
     except ValueError as error:
         abort(400, str(error))
     except NotImplementedError as error:
         abort(501, str(error))
-    return ok_200('The media "' + media.metadata['title'] + '" has been deleted.', False)
+    return ok_200('The media "%s" has been deleted.' % media.metadata['title'], False)
 
 
 # Transform profiles management --------------------------------------------------------------------
@@ -1274,12 +1265,7 @@ def api_transform_profile_post():
     :statuscode 415: Requires (valid) json content-type.
     """
     requires_auth(request=request, allow_any=True)
-    try:
-        data = request.json
-    except:
-        abort(415, 'Requires valid json content-type.')
-    if not data:
-        abort(415, 'Requires json content-type.')
+    data = get_request_json(request)
     try:
         profile = TransformProfile(None, data['title'], data['description'], data['encoder_name'],
                                    data['encoder_string'])
@@ -1289,7 +1275,7 @@ def api_transform_profile_post():
         abort(400, str(error))
     except KeyError as error:
         print str(error)
-        abort(400, 'Key ' + str(error) + ' not found.')
+        abort(400, 'Key %s not found.' % error)
     return ok_200(profile, True)
 
 
@@ -1338,7 +1324,7 @@ def api_transform_profile_id_get(id):
     requires_auth(request=request, allow_any=True)
     profile = orchestra.get_transform_profile(specs={'_id': id})
     if not profile:
-        abort(404, 'No transform profile with id ' + id + '.')
+        abort(404, 'No transform profile with id %s.' % id)
     return ok_200(profile, True)
 
 
@@ -1381,26 +1367,211 @@ def api_transform_profile_id_delete(id):
     requires_auth(request=request, allow_any=True)
     profile = orchestra.get_transform_profile(specs={'_id': id})
     if not profile:
-        abort(404, 'No transform profile with id ' + id)
+        abort(404, 'No transform profile with id %s.' % id)
     orchestra.delete_transform_profile(profile)
-    return ok_200('The transform profile "' + profile.title + '" has been deleted.', False)
+    return ok_200('The transform profile "%s" has been deleted.' % profile.title, False)
 
 
-# Transformation workers (encoders) ----------------------------------------------------------------
+# Transformation units management (encoders) -------------------------------------------------------
 
-## return transform worker list
-#@app.route('/transform/worker', methods = ['GET'])
-#def api_transform_unit():
-#    return 'List of all transform units (TODO)\n'
+@app.route('/transform/unit/environment/<environment>/count', methods=['GET'])
+def api_transform_unit_count(environment):
+    """
+    Return transform units count of environment ``environment``.
 
-## return a transform worker
-#@app.route('/transform/worker/id/<id>', methods = ['GET'])
-#def api_transform_unit_show(id):
-#    try:
-#        unit_id = uuid.UUID('{'+id+'}');
-#    except ValueError:
-#         abort(415)
-#    return 'Informations about transform unit ' + str(unit_id)+' (TODO)\n'
+    **Example request**:
+
+    # .. sourcecode:: http
+
+    #     GET /transform/unit/environment/amazon/count HTTP/1.1
+    #     Host: somewhere.com
+    #     Header: nabil@oscied.org:oscied
+    #     Accept: application/json
+
+    # **Example response**:
+
+    # .. sourcecode:: http
+
+    #     HTTP/1.1 200 OK
+    #     Vary: Accept
+    #     Content-Type: application/json
+
+    #     {"status": 200, "value": 5}
+
+    :Allowed: Any user
+    :statuscode 200: OK
+    :statuscode 401: Authenticate.
+    :statuscode 403: Authentication Failed.
+    """
+    requires_auth(request=request, allow_any=True)
+    return ok_200(juju.get_units_count(environment, TRANSFORM_NAME), False)
+
+
+@app.route('/transform/unit/environment/<environment>', methods=['GET'])
+def api_transform_unit_get(environment):
+    """
+    Return an array containing the transform units of environment ``environment`` serialized to
+    JSON.
+
+    **Example request**:
+
+    # .. sourcecode:: http
+
+    #     GET /transform/unit/environment/private HTTP/1.1
+    #     Host: somewhere.com
+    #     Header: michel@oscied.org:oscied
+    #     Accept: application/json
+
+    # **Example response**:
+
+    # .. sourcecode:: http
+
+    #     HTTP/1.1 200 OK
+    #     Vary: Accept
+    #     Content-Type: application/json
+
+    #     {
+    #       "status": 200,
+    #       "value": {"0": {"...": "..."}, "1": {"...": "...}}}
+
+    :Allowed: Any user
+    :statuscode 200: OK
+    :statuscode 401: Authenticate.
+    :statuscode 403: Authentication Failed.
+    """
+    requires_auth(request=request, allow_any=True)
+    return ok_200(juju.get_units(environment, TRANSFORM_NAME), False)
+
+
+@app.route('/transform/unit/environment/<environment>/num_units/<num_units>', methods=['POST'])
+def api_transform_unit_post(environment, num_units):
+    """
+    Deploy ``num_units`` new transform units into environment ``environment``.
+
+    **Example request**:
+
+    # .. sourcecode:: http
+
+    #     POST /transform/unit/environment/private/num_units/2 HTTP/1.1
+    #     Host: somewhere.com
+    #     Header: daniel@oscied.org:oscied
+    #     Accept: application/json
+
+    # **Example response**:
+
+    # .. sourcecode:: http
+
+    #     HTTP/1.1 200 OK
+    #     Vary: Accept
+    #     Content-Type: application/json
+
+    #     {
+    #       "status": 200,
+    #       "value": "Deployed 2 transform units into environment \\"private\\".
+    #     }
+
+    :Allowed: Root and user with admin_platform attribute set
+    :statuscode 200: OK
+    :statuscode 401: Authenticate.
+    :statuscode 403: Authentication Failed.
+    """
+    requires_auth(request=request, allow_root=True, role='admin_platform')
+    juju.add_or_deploy_units(environment, TRANSFORM_NAME, num_units,
+                             config=orchestra.config.charms_config, local=True,
+                             release=orchestra.config.charms_release,
+                             repository=orchestra.config.charms_repository)
+    return ok_200('Deployed %s transform units into environment "%s"' %
+                  (num_units, environment), False)
+
+
+@app.route('/transform/unit/id/<id>', methods=['GET'])
+def api_transform_unit_id_get(id):
+    """
+    Return a transform unit serialized to JSON.
+
+    **Example request**:
+
+    # .. sourcecode:: http
+
+    #     GET /transform/unit/id/61afc31f-11e2-74f8-d482-30acc85a9d33 HTTP/1.1
+    #     Host: somewhere.com
+    #     Header: francois@oscied.org:oscied
+    #     Accept: application/json
+
+    # **Example response**:
+
+    # .. sourcecode:: http
+
+    #     HTTP/1.1 200 OK
+    #     Vary: Accept
+    #     Content-Type: application/json
+
+    #     {
+    #       "status": 200,
+    #       "value": {
+    #         "_id": "61afc31f-11e2-74f8-d482-30acc85a9d33",
+    #         "title": "To MP4",
+    #         "description": "Convert to MP4 (container)",
+    #         "encoder_name": "ffmpeg",
+    #         "encoder_string": "-acodec copy -vcodec copy -f mp4"
+    #       }
+    #     }
+
+    :Allowed: Any user
+    :param id: id of unit to get
+    :statuscode 200: OK
+    :statuscode 401: Authenticate.
+    :statuscode 403: Authentication Failed.
+    :statuscode 404: No transform unit with id ``id``.
+    :statuscode 415: Wrong id format ``id``.
+    """
+    check_id(id)
+    requires_auth(request=request, allow_any=True)
+    unit = orchestra.get_transform_unit(specs={'_id': id})
+    if not unit:
+        abort(404, 'No transform unit with id %s.' % id)
+    return ok_200(unit, True)
+
+
+@app.route('/transform/unit/id/<id>', methods=['DELETE'])
+def api_transform_unit_id_delete(id):
+    """
+    Remove a transform unit.
+
+    **Example request**:
+
+    # .. sourcecode:: http
+
+    #     DELETE /transform/unit/id/61afc31f-11e2-74f8-d482-30acc85a9d33 HTTP/1.1
+    #     Host: somewhere.com
+    #     Header: dimitri@oscied.org:oscied
+    #     Accept: application/json
+
+    # **Example response**:
+
+    # .. sourcecode:: http
+
+    #     HTTP/1.1 200 OK
+    #     Vary: Accept
+    #     Content-Type: application/json
+
+    #     {
+    #       "status": 200,
+    #       "value": "The transform unit \\"61a(...)d33\\" has been removed."
+    #     }
+
+    :Allowed: Root and user with admin_platform attribute set
+    :param id: id of unit to remove
+    :statuscode 200: OK
+    :statuscode 401: Authenticate.
+    :statuscode 403: Authentication Failed.
+    :statuscode 404: No transform unit with id ``id``.
+    :statuscode 415: Wrong id format ``id``.
+    """
+    check_id(id)
+    requires_auth(request=request, allow_root=True, role='admin_platform')
+    orchestra.delete_transform_unit(specs={'_id': id})
+    return ok_200('The transform unit %s has been removed.' % id, False)
 
 
 # Transformation jobs (encoding) -------------------------------------------------------------------
@@ -1620,12 +1791,7 @@ def api_transform_job_post():
     :statuscode 501: Cannot launch the job, input media status is ``status``.
     """
     auth_user = requires_auth(request=request, allow_any=True)
-    try:
-        data = request.json
-    except:
-        abort(415, 'Requires valid json content-type.')
-    if not data:
-        abort(415, 'Requires json content-type.')
+    data = get_request_json(request)
     try:
         job_id = orchestra.launch_transform_job(auth_user._id, data['media_in_id'],
             data['profile_id'], data['virtual_filename'], data['metadata'], data['queue'],
@@ -1633,7 +1799,7 @@ def api_transform_job_post():
     except (ValueError, TypeError) as error:
         abort(400, str(error))
     except KeyError as error:
-        abort(400, 'Key ' + str(error) + ' not found.')
+        abort(400, 'Key %s not found.' % error)
     except IndexError as error:
         abort(404, str(error))
     except NotImplementedError as error:
@@ -1702,7 +1868,7 @@ def api_transform_job_id_head(id):
     requires_auth(request=request, allow_any=True)
     job = orchestra.get_transform_job(specs={'_id': id})
     if not job:
-        abort(404, 'No transform job with id ' + id + '.')
+        abort(404, 'No transform job with id %s.' % id)
     return ok_200(job, True)
 
 
@@ -1816,7 +1982,7 @@ def api_transform_job_id_get(id):
     requires_auth(request=request, allow_any=True)
     job = orchestra.get_transform_job(specs={'_id': id}, load_fields=True)
     if not job:
-        abort(404, 'No transform job with id ' + id + '.')
+        abort(404, 'No transform job with id %s.' % id)
     return ok_200(job, True)
 
 
@@ -1869,15 +2035,15 @@ def api_transform_job_id_delete(id):
     auth_user = requires_auth(request=request, allow_any=True)
     job = orchestra.get_transform_job(specs={'_id': id})
     if not job:
-        abort(404, 'No transform job with id ' + id + '.')
+        abort(404, 'No transform job with id %s.' % id)
     if auth_user._id != job.user_id:
-        abort(403, 'You are not allowed to revoke transform job with id ' + id + '.')
+        abort(403, 'You are not allowed to revoke transform job with id %s.' % id)
     try:
         orchestra.revoke_transform_job(job=job, terminate=True, remove=False, delete_media=True)
     except ValueError as error:
         abort(400, str(error))
-    return ok_200('The transform job "' + job._id +
-                  '" has been revoked. Corresponding output media will be deleted.', False)
+    return ok_200('The transform job "%s" has been revoked. Corresponding output media will be'
+                  ' deleted.' % job._id, False)
 
 
 # Publishing jobs ----------------------------------------------------------------------------------
@@ -2096,19 +2262,14 @@ def api_publish_job_post():
                      another job with id ``id``.
     """
     auth_user = requires_auth(request=request, allow_any=True)
-    try:
-        data = request.json
-    except:
-        abort(415, 'Requires valid json content-type.')
-    if not data:
-        abort(415, 'Requires json content-type.')
+    data = get_request_json(request)
     try:
         job_id = orchestra.launch_publish_job(auth_user._id, data['media_id'],
                                               data['queue'], '/publish/callback')
     except (ValueError, TypeError) as error:
         abort(400, str(error))
     except KeyError as error:
-        abort(400, 'Key ' + str(error) + ' not found.')
+        abort(400, 'Key %s not found.' % error)
     except IndexError as error:
         abort(404, str(error))
     except NotImplementedError as error:
@@ -2176,7 +2337,7 @@ def api_publish_job_id_head(id):
     requires_auth(request=request, allow_any=True)
     job = orchestra.get_publish_job(specs={'_id': id})
     if not job:
-        abort(404, 'No publish job with id ' + id + '.')
+        abort(404, 'No publish job with id %s.' % id)
     return ok_200(job, True)
 
 
@@ -2259,7 +2420,7 @@ def api_publish_job_id_get(id):
     requires_auth(request=request, allow_any=True)
     job = orchestra.get_publish_job(specs={'_id': id}, load_fields=True)
     if not job:
-        abort(404, 'No publish job with id ' + id + '.')
+        abort(404, 'No publish job with id %s.' % id)
     return ok_200(job, True)
 
 
@@ -2309,20 +2470,20 @@ def api_publish_job_id_delete(id):
     auth_user = requires_auth(request=request, allow_any=True)
     job = orchestra.get_publish_job(specs={'_id': id})
     if not job:
-        abort(404, 'No publish job with id ' + id + '.')
+        abort(404, 'No publish job with id %s.' % id)
     if auth_user._id != job.user_id:
-        abort(403, 'You are not allowed to revoke publish job with id ' + id + '.')
+        abort(403, 'You are not allowed to revoke publish job with id %s.' % id)
     orchestra.revoke_publish_job(job=job, terminate=True, remove=False)
     logging.info('here will be launched an unpublish job')
     #orchestra.launch_unpublish_job(auth_user._id, job, '/unpublish/callback')
-    return ok_200('The publish job "' + job._id + '" has been revoked. ' +
-                  'Corresponding media will be unpublished from here.', False)
+    return ok_200('The publish job "%s" has been revoked. Corresponding media will be unpublished'
+                  ' from here.' % job._id, False)
 
 
 # Workers (nodes) hooks ----------------------------------------------------------------------------
 
 @app.route('/transform/callback', methods=['POST'])
-def api_transform_job_hook_0():
+def api_transform_job_hook():
     """
     This method is called by transform workers when they finish their work.
 
@@ -2368,12 +2529,7 @@ def api_transform_job_hook_0():
     :statuscode 415: Requires (valid) json content-type.
     """
     requires_auth(request=request, allow_node=True)
-    try:
-        data = request.json
-    except:
-        abort(415, 'Requires valid json content-type.')
-    if not data:
-        abort(415, 'Requires json content-type.')
+    data = get_request_json(request)
     try:
         job_id = data['job_id']
         status = data['status']
@@ -2384,12 +2540,12 @@ def api_transform_job_hook_0():
     except (ValueError, TypeError) as error:
         abort(400, str(error))
     except KeyError as error:
-        abort(400, 'Key ' + str(error) + ' not found.')
+        abort(400, 'Key %s not found.' % error)
     return ok_200('Your work is much appreciated, thanks !', False)
 
 
 @app.route('/publish/callback', methods=['POST'])
-def api_publish_job_hook_0():
+def api_publish_job_hook():
     """
     This method is called by publisher workers when they finish their work.
 
@@ -2437,12 +2593,7 @@ def api_publish_job_hook_0():
     :statuscode 415: Requires (valid) json content-type.
     """
     requires_auth(request=request, allow_node=True)
-    try:
-        data = request.json
-    except:
-        abort(415, 'Requires valid json content-type.')
-    if not data:
-        abort(415, 'Requires json content-type.')
+    data = get_request_json(request)
     try:
         job_id = data['job_id']
         publish_uri = data['publish_uri'] if 'publish_uri' in data else None
@@ -2454,7 +2605,7 @@ def api_publish_job_hook_0():
     except (ValueError, TypeError) as error:
         abort(400, str(error))
     except KeyError as error:
-        abort(400, 'Key ' + str(error) + ' not found.')
+        abort(400, 'Key %s not found.' % error)
     return ok_200('Your work is much appreciated, thanks !', False)
 
 
