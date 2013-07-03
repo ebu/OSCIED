@@ -31,7 +31,7 @@ from celery import states
 #from celery.task.control import inspect
 from celery.task.control import revoke
 #from celery.events.state import state
-import Publisher, Transform
+import JuJu, Publisher, Transform
 from Callback import Callback
 from Media import Media
 from PublishJob import PublishJob
@@ -201,6 +201,22 @@ class Orchestra(object):
 
     def get_transform_profiles_count(self, specs=None):
         return self._db.transform_profiles.find(specs, {'_id': 1}).count()
+
+    # ----------------------------------------------------------------------------------------------
+
+    def add_or_deploy_transform_units(self, environment, num_units, data):
+        # FIXME generate_charms_config(data)
+        JuJu.add_or_deploy_units(environment, TRANSFORM_NAME, num_units,
+                                 config=self.config.charms_config, local=True,
+                                 release=self.config.charms_release,
+                                 repository=self.config.charms_repository)
+        # FIXME add-relation if own_environment == environment
+
+    def get_transform_units(self, environment):
+        return JuJu.get_units(environment, TRANSFORM_NAME)
+
+    def get_transform_units_count(self, environment):
+        return JuJu.get_units_count(environment, TRANSFORM_NAME)
 
     # ----------------------------------------------------------------------------------------------
 

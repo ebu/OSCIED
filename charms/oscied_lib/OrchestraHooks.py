@@ -142,7 +142,8 @@ class OrchestraHooks(CharmHooks_Storage):
         self.local_config.verbose = self.config.verbose
         self.local_config.api_url = self.api_url
         self.local_config.root_secret = self.config.root_secret
-        self.local_config.mongo_connection = self.mongo_admin_connection
+        self.local_config.mongo_admin_connection = self.mongo_admin_connection
+        self.local_config.mongo_nodes_connection = self.mongo_nodes_connection
         self.local_config.rabbit_connection = self.rabbit_connection
         infos = {
             'rabbit': str(self.rabbit_connection),

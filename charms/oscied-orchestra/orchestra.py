@@ -30,9 +30,8 @@
 import logging
 import sys
 from flask import Flask, abort, request, Response
-import oscied_lib.juju as juju
 from oscied_lib.Media import Media
-from oscied_lib.Orchestra import Orchestra, TRANSFORM_NAME
+from oscied_lib.Orchestra import Orchestra
 from oscied_lib.OrchestraConfig import OrchestraConfig
 from oscied_lib.TransformProfile import TransformProfile
 from oscied_lib.User import User
@@ -1404,7 +1403,7 @@ def api_transform_unit_count(environment):
     :statuscode 403: Authentication Failed.
     """
     requires_auth(request=request, allow_any=True)
-    return ok_200(juju.get_units_count(environment, TRANSFORM_NAME), False)
+    return ok_200(orchestra.get_transform_units_count(environment), False)
 
 
 @app.route('/transform/unit/environment/<environment>', methods=['GET'])
@@ -1440,7 +1439,7 @@ def api_transform_unit_get(environment):
     :statuscode 403: Authentication Failed.
     """
     requires_auth(request=request, allow_any=True)
-    return ok_200(juju.get_units(environment, TRANSFORM_NAME), False)
+    return ok_200(orchestra.get_transform_units(environment), False)
 
 
 @app.route('/transform/unit/environment/<environment>/num_units/<num_units>', methods=['POST'])
@@ -1474,104 +1473,103 @@ def api_transform_unit_post(environment, num_units):
     :statuscode 200: OK
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
+    :statuscode 415: Requires (valid) json content-type.
     """
     requires_auth(request=request, allow_root=True, role='admin_platform')
-    juju.add_or_deploy_units(environment, TRANSFORM_NAME, num_units,
-                             config=orchestra.config.charms_config, local=True,
-                             release=orchestra.config.charms_release,
-                             repository=orchestra.config.charms_repository)
+    data = get_request_json(request)
+    orchestra.add_or_deploy_transform_units(environment, num_units, data)
     return ok_200('Deployed %s transform units into environment "%s"' %
                   (num_units, environment), False)
 
 
-@app.route('/transform/unit/id/<id>', methods=['GET'])
-def api_transform_unit_id_get(id):
-    """
-    Return a transform unit serialized to JSON.
+# @app.route('/transform/unit/id/<id>', methods=['GET'])
+# def api_transform_unit_id_get(id):
+#     """
+#     Return a transform unit serialized to JSON.
 
-    **Example request**:
+#     **Example request**:
 
-    # .. sourcecode:: http
+#     # .. sourcecode:: http
 
-    #     GET /transform/unit/id/61afc31f-11e2-74f8-d482-30acc85a9d33 HTTP/1.1
-    #     Host: somewhere.com
-    #     Header: francois@oscied.org:oscied
-    #     Accept: application/json
+#     #     GET /transform/unit/id/61afc31f-11e2-74f8-d482-30acc85a9d33 HTTP/1.1
+#     #     Host: somewhere.com
+#     #     Header: francois@oscied.org:oscied
+#     #     Accept: application/json
 
-    # **Example response**:
+#     # **Example response**:
 
-    # .. sourcecode:: http
+#     # .. sourcecode:: http
 
-    #     HTTP/1.1 200 OK
-    #     Vary: Accept
-    #     Content-Type: application/json
+#     #     HTTP/1.1 200 OK
+#     #     Vary: Accept
+#     #     Content-Type: application/json
 
-    #     {
-    #       "status": 200,
-    #       "value": {
-    #         "_id": "61afc31f-11e2-74f8-d482-30acc85a9d33",
-    #         "title": "To MP4",
-    #         "description": "Convert to MP4 (container)",
-    #         "encoder_name": "ffmpeg",
-    #         "encoder_string": "-acodec copy -vcodec copy -f mp4"
-    #       }
-    #     }
+#     #     {
+#     #       "status": 200,
+#     #       "value": {
+#     #         "_id": "61afc31f-11e2-74f8-d482-30acc85a9d33",
+#     #         "title": "To MP4",
+#     #         "description": "Convert to MP4 (container)",
+#     #         "encoder_name": "ffmpeg",
+#     #         "encoder_string": "-acodec copy -vcodec copy -f mp4"
+#     #       }
+#     #     }
 
-    :Allowed: Any user
-    :param id: id of unit to get
-    :statuscode 200: OK
-    :statuscode 401: Authenticate.
-    :statuscode 403: Authentication Failed.
-    :statuscode 404: No transform unit with id ``id``.
-    :statuscode 415: Wrong id format ``id``.
-    """
-    check_id(id)
-    requires_auth(request=request, allow_any=True)
-    unit = orchestra.get_transform_unit(specs={'_id': id})
-    if not unit:
-        abort(404, 'No transform unit with id %s.' % id)
-    return ok_200(unit, True)
+#     :Allowed: Any user
+#     :param id: id of unit to get
+#     :statuscode 200: OK
+#     :statuscode 401: Authenticate.
+#     :statuscode 403: Authentication Failed.
+#     :statuscode 404: No transform unit with id ``id``.
+#     :statuscode 415: Wrong id format ``id``.
+#     """
+#     check_id(id)
+#     requires_auth(request=request, allow_any=True)
+#     unit = orchestra.get_transform_unit(specs={'_id': id})
+#     if not unit:
+#         abort(404, 'No transform unit with id %s.' % id)
+#     return ok_200(unit, True)
 
 
-@app.route('/transform/unit/id/<id>', methods=['DELETE'])
-def api_transform_unit_id_delete(id):
-    """
-    Remove a transform unit.
+# @app.route('/transform/unit/id/<id>', methods=['DELETE'])
+# def api_transform_unit_id_delete(id):
+#     """
+#     Remove a transform unit.
 
-    **Example request**:
+#     **Example request**:
 
-    # .. sourcecode:: http
+#     # .. sourcecode:: http
 
-    #     DELETE /transform/unit/id/61afc31f-11e2-74f8-d482-30acc85a9d33 HTTP/1.1
-    #     Host: somewhere.com
-    #     Header: dimitri@oscied.org:oscied
-    #     Accept: application/json
+#     #     DELETE /transform/unit/id/61afc31f-11e2-74f8-d482-30acc85a9d33 HTTP/1.1
+#     #     Host: somewhere.com
+#     #     Header: dimitri@oscied.org:oscied
+#     #     Accept: application/json
 
-    # **Example response**:
+#     # **Example response**:
 
-    # .. sourcecode:: http
+#     # .. sourcecode:: http
 
-    #     HTTP/1.1 200 OK
-    #     Vary: Accept
-    #     Content-Type: application/json
+#     #     HTTP/1.1 200 OK
+#     #     Vary: Accept
+#     #     Content-Type: application/json
 
-    #     {
-    #       "status": 200,
-    #       "value": "The transform unit \\"61a(...)d33\\" has been removed."
-    #     }
+#     #     {
+#     #       "status": 200,
+#     #       "value": "The transform unit \\"61a(...)d33\\" has been removed."
+#     #     }
 
-    :Allowed: Root and user with admin_platform attribute set
-    :param id: id of unit to remove
-    :statuscode 200: OK
-    :statuscode 401: Authenticate.
-    :statuscode 403: Authentication Failed.
-    :statuscode 404: No transform unit with id ``id``.
-    :statuscode 415: Wrong id format ``id``.
-    """
-    check_id(id)
-    requires_auth(request=request, allow_root=True, role='admin_platform')
-    orchestra.delete_transform_unit(specs={'_id': id})
-    return ok_200('The transform unit %s has been removed.' % id, False)
+#     :Allowed: Root and user with admin_platform attribute set
+#     :param id: id of unit to remove
+#     :statuscode 200: OK
+#     :statuscode 401: Authenticate.
+#     :statuscode 403: Authentication Failed.
+#     :statuscode 404: No transform unit with id ``id``.
+#     :statuscode 415: Wrong id format ``id``.
+#     """
+#     check_id(id)
+#     requires_auth(request=request, allow_root=True, role='admin_platform')
+#     orchestra.delete_transform_unit(specs={'_id': id})
+#     return ok_200('The transform unit %s has been removed.' % id, False)
 
 
 # Transformation jobs (encoding) -------------------------------------------------------------------

@@ -30,8 +30,9 @@ from CharmConfig_Storage import CharmConfig_Storage
 
 class OrchestraConfig(CharmConfig_Storage):
 
-    def __init__(self, api_url='', root_secret='', nodes_secret='', mongo_connection='',
-                 rabbit_connection='', celery_config_file='celeryconfig.py',
+    def __init__(self, api_url='', root_secret='', nodes_secret='', mongo_admin_connection='',
+                 mongo_nodes_connection='', rabbit_connection='',
+                 celery_config_file='celeryconfig.py',
                  celery_template_file='templates/celeryconfig.py.template',
                  mongo_config_file='/etc/mongodb.conf', own_environment='private',
                  charms_config='config.yaml', charms_release='raring', charms_repository='charms',
@@ -40,7 +41,8 @@ class OrchestraConfig(CharmConfig_Storage):
         self.api_url = api_url
         self.root_secret = root_secret
         self.nodes_secret = nodes_secret
-        self.mongo_connection = mongo_connection
+        self.mongo_admin_connection = mongo_admin_connection
+        self.mongo_nodes_connection = mongo_nodes_connection
         self.rabbit_connection = rabbit_connection
         self.celery_config_file = celery_config_file
         self.celery_template_file = celery_template_file
@@ -59,7 +61,7 @@ class OrchestraConfig(CharmConfig_Storage):
         return ('publisher_private', 'publisher_amazon',)
 
 ORCHESTRA_CONFIG_TEST = OrchestraConfig(api_url='http://127.0.0.1:5000', root_secret='toto',
-    nodes_secret='abcd', mongo_connection='...', rabbit_connection='...')
+    nodes_secret='abcd', mongo_admin_connection='...', rabbit_connection='...')
 
 # Main ---------------------------------------------------------------------------------------------
 
