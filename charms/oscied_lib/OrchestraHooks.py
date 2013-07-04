@@ -30,13 +30,15 @@ from configobj import ConfigObj
 from CharmHooks import DEFAULT_OS_ENV
 from CharmHooks_Storage import CharmHooks_Storage
 from OrchestraConfig import OrchestraConfig
-from pyutils.pyutils import first_that_exist, screen_launch, screen_list, screen_kill, try_makedirs
+from pyutils.pyutils import first_that_exist, rsync, screen_launch, screen_list, screen_kill, \
+    try_makedirs
 
 
 class OrchestraHooks(CharmHooks_Storage):
 
     PACKAGES = tuple(set(CharmHooks_Storage.PACKAGES +
                      ('ffmpeg', 'ntp', 'x264', 'mongodb', 'rabbitmq-server')))
+    JUJU_PACKAGES = ('lxc', 'apt-cacher-ng', 'libzookeeper-java', 'zookeeper', 'juju', 'juju-jitsu')
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(OrchestraHooks, self).__init__(metadata, default_config, default_os_env)
@@ -94,9 +96,11 @@ class OrchestraHooks(CharmHooks_Storage):
         self.hook_uninstall()
         self.info('Upgrade system and install prerequisites')
         self.cmd('apt-add-repository -y ppa:jon-severinsson/ffmpeg')
+        self.cmd('apt-add-repository -y ppa:juju/pkgs')
         self.cmd('apt-get -y update', fail=False)
         self.cmd('apt-get -y upgrade')
         self.cmd('apt-get -y install %s' % ' '.join(OrchestraHooks.PACKAGES))
+        self.cmd('apt-get -y install %s' % ' '.join(OrchestraHooks.JUJU_PACKAGES))
         self.info('Restart network time protocol service')
         self.cmd('service ntp restart')
         #pecho 'Checkout OSCIED charms locally'
@@ -120,8 +124,13 @@ class OrchestraHooks(CharmHooks_Storage):
 
     def hook_config_changed(self):
         self.info('Configure Secure Shell')
-        try_makedirs(os.path.dirname(self.local_config.ssh_config_file))
-        shutil.copy(self.local_config.ssh_config_template, self.local_config.ssh_config_file)
+        rsync(self.local_config.ssh_template_path, self.local_config.ssh_config_path,
+              recursive=True, log=self.debug)
+
+        self.info('Configure JuJu Service Orchestrator')
+        if not os.path.exists(self.local_config.juju_config_file):
+            try_makedirs(os.path.dirname(self.local_config.juju_config_file))
+            shutil.copy(self.local_config.juju_template_file, self.local_config.juju_config_file)
 
         self.info('Configure MongoDB Scalable NoSQL DB')
         with open('f.js', 'w') as mongo_f:

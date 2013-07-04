@@ -210,7 +210,7 @@ class Orchestra(object):
                                  config=self.config.charms_config, local=True,
                                  release=self.config.charms_release,
                                  repository=self.config.charms_repository)
-        # FIXME add-relation if own_environment == environment
+        # FIXME add-relation if juju_own_env == environment
 
     def get_transform_units(self, environment):
         return JuJu.get_units(environment, TRANSFORM_NAME)
