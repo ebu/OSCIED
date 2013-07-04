@@ -25,13 +25,16 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
+import os
 from CharmConfig_Storage import CharmConfig_Storage
 
 
 class OrchestraConfig(CharmConfig_Storage):
 
     def __init__(self, api_url='', root_secret='', nodes_secret='', mongo_connection='',
-                 rabbit_connection='', celery_config_file='celeryconfig.py',
+                 rabbit_connection='', ssh_config_file='~/.ssh/config',
+                 ssh_config_template='templates/config.template',
+                 celery_config_file='celeryconfig.py',
                  celery_template_file='templates/celeryconfig.py.template',
                  mongo_config_file='/etc/mongodb.conf', **kwargs):
         super(OrchestraConfig, self).__init__(**kwargs)
@@ -40,6 +43,8 @@ class OrchestraConfig(CharmConfig_Storage):
         self.nodes_secret = nodes_secret
         self.mongo_connection = mongo_connection
         self.rabbit_connection = rabbit_connection
+        self.ssh_config_file = os.path.expanduser(ssh_config_file)
+        self.ssh_config_template = ssh_config_template
         self.celery_config_file = celery_config_file
         self.celery_template_file = celery_template_file
         self.mongo_config_file = mongo_config_file

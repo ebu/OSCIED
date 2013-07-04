@@ -118,6 +118,10 @@ class OrchestraHooks(CharmHooks_Storage):
         self.open_port(5672, 'TCP')   # RabbitMQ service
 
     def hook_config_changed(self):
+        self.info('Configure Secure Shell')
+        try_makedirs(os.path.dirname(self.local_config.ssh_config_file))
+        shutil.copy(self.local_config.ssh_config_template, self.local_config.ssh_config_file)
+
         self.info('Configure MongoDB Scalable NoSQL DB')
         with open('f.js', 'w') as mongo_f:
             mongo_f.write("db.addUser('admin', '%s', false);" % self.config.mongo_admin_password)
