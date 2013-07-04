@@ -1477,7 +1477,7 @@ def api_transform_unit_post(environment, num_units):
     """
     requires_auth(request=request, allow_root=True, role='admin_platform')
     data = get_request_json(request)
-    orchestra.add_or_deploy_transform_units(environment, num_units, data)
+    orchestra.add_or_deploy_transform_units(environment, num_units, **data)
     return ok_200('Deployed %s transform units into environment "%s"' %
                   (num_units, environment), False)
 

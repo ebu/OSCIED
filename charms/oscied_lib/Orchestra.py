@@ -204,7 +204,7 @@ class Orchestra(object):
 
     # ----------------------------------------------------------------------------------------------
 
-    def add_or_deploy_transform_units(self, environment, num_units, data):
+    def add_or_deploy_transform_units(self, environment, num_units, **kwargs):
         # FIXME generate_charms_config(data)
         JuJu.add_or_deploy_units(environment, TRANSFORM_NAME, num_units,
                                  config=self.config.charms_config, local=True,
