@@ -25,13 +25,16 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import os, re, shutil, time
+import os, re, shutil, time, yaml
 from configobj import ConfigObj
+from six import string_types
 from CharmHooks import DEFAULT_OS_ENV
 from CharmHooks_Storage import CharmHooks_Storage
 from OrchestraConfig import OrchestraConfig
 from pyutils.pyutils import first_that_exist, rsync, screen_launch, screen_list, screen_kill, \
     try_makedirs
+
+DEFAULT_ENVIRONMENTS = os.path.expanduser('~/.juju/environments.yaml')
 
 
 class OrchestraHooks(CharmHooks_Storage):
@@ -40,9 +43,11 @@ class OrchestraHooks(CharmHooks_Storage):
                      ('ffmpeg', 'ntp', 'x264', 'mongodb', 'rabbitmq-server')))
     JUJU_PACKAGES = ('lxc', 'apt-cacher-ng', 'libzookeeper-java', 'zookeeper', 'juju', 'juju-jitsu')
 
-    def __init__(self, metadata, default_config, local_config_filename, default_os_env):
+    def __init__(self, metadata, default_config, local_config_filename, default_os_env,
+                 environments):
         super(OrchestraHooks, self).__init__(metadata, default_config, default_os_env)
         self.local_config = OrchestraConfig.read(local_config_filename, store_filename=True)
+        self.load_environments(environments)
         self.debug('My __dict__ is %s' % self.__dict__)
 
     # ----------------------------------------------------------------------------------------------
@@ -61,6 +66,10 @@ class OrchestraHooks(CharmHooks_Storage):
             (self.config.mongo_nodes_password, self.private_address)
 
     @property
+    def own_environment_name(self):
+        return self.environments['default']
+
+    @property
     def rabbit_connection(self):
         return 'amqp://nodes:%s@%s:5672/celery' % \
             (self.config.rabbit_password, self.private_address)
@@ -74,6 +83,21 @@ class OrchestraHooks(CharmHooks_Storage):
     def rabbit_vhosts(self):
         stdout = self.cmd('rabbitmqctl list_vhosts', fail=False)['stdout']
         return re.findall('^([a-z]+)$', stdout, re.MULTILINE)
+
+    # ----------------------------------------------------------------------------------------------
+
+    def load_environments(self, environments):
+        u"""
+        Set ``environments`` attribute with given environments, ``environments`` can be:
+
+        * The filename of a charm environments file (e.g. ``environments.yaml``)
+        * A dictionary containing the environments.
+        """
+        if isinstance(environments, string_types):
+            self.debug('Load environments from file %s' % environments)
+            with open(environments) as f:
+                environments = yaml.load(f)
+        self.environments = environments
 
     # ----------------------------------------------------------------------------------------------
 
@@ -120,7 +144,6 @@ class OrchestraHooks(CharmHooks_Storage):
         #self.open_port(27019, 'TCP') # MongoDB port when running with configsvr setting
         #self.open_port(28017, 'TCP') # MongoDB port for the web status page. This is always +1000
         self.open_port(5672, 'TCP')   # RabbitMQ service
-        # FIXME detect own_environment and save it to local_config
 
     def hook_config_changed(self):
         self.info('Configure Secure Shell')
@@ -251,4 +274,5 @@ if __name__ == '__main__':
     OrchestraHooks(first_that_exist('metadata.yaml',    '../oscied-orchestra/metadata.yaml'),
                    first_that_exist('config.yaml',      '../oscied-orchestra/config.yaml'),
                    first_that_exist('local_config.pkl', '../oscied-orchestra/local_config.pkl'),
-                   DEFAULT_OS_ENV).trigger()
+                   DEFAULT_OS_ENV, first_that_exist(DEFAULT_ENVIRONMENTS, 'environments.yaml',
+                   '../oscied-orchestra/environments.yaml')).trigger()
