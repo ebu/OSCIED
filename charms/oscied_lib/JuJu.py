@@ -65,6 +65,14 @@ def load_unit_config(config, log=None):
     return config
 
 
+def load_environments(environments):
+    environments_dict = yaml.load(open(environments))
+    environments = {}
+    for environment in environments_dict['environments'].iteritems():
+        environments[environment[0]] = environment[1]
+    return (environments, environments_dict['default'])
+
+
 def add_units(environment, service, num_units):
     return juju_do('add-unit', environment, ['--num-units', str(num_units), service])
 
@@ -114,7 +122,7 @@ def get_units_count(environment, service):
 
 
 def add_or_deploy_units(environment, service, num_units, **kwargs):
-    if get_units_count() == 0:
+    if get_units_count(environment, service) == 0:
         deploy_units(environment, service, num_units, **kwargs)
     else:
         add_units(environment, service, num_units)
