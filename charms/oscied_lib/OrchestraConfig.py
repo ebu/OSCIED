@@ -65,6 +65,19 @@ class OrchestraConfig(CharmConfig_Storage):
     def publisher_queues(self):
         return ('publisher_private', 'publisher_amazon',)
 
+    @property
+    def orchestra_service(self):
+        return 'oscied-orchestra'
+
+    @property
+    def transform_service(self):
+        return 'oscied-transform'
+
+    @property
+    def transform_config(self):
+        return join(self.charms_repository, self.charms_release, self.transform_service,
+                    'config.yaml')
+
 ORCHESTRA_CONFIG_TEST = OrchestraConfig(api_url='http://127.0.0.1:5000', root_secret='toto',
     nodes_secret='abcd', mongo_admin_connection='...', rabbit_connection='...')
 

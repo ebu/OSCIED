@@ -25,7 +25,7 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import logging, pymongo
+import logging, pymongo, yaml
 from celery import states
 #from celery import current_app
 #from celery.task.control import inspect
@@ -34,14 +34,13 @@ from celery.task.control import revoke
 import JuJu, Publisher, Transform
 from Callback import Callback
 from Media import Media
+from OrchestraConfig import OrchestraConfig
 from PublishJob import PublishJob
 from Storage import Storage
 from TransformProfile import TransformProfile, ENCODERS_NAMES
 from TransformJob import TransformJob
 from User import User
 from pyutils.pyutils import object2json, datetime_now, UUID_ZERO, valid_uuid
-
-TRANSFORM_NAME = 'oscied-transform'
 
 
 class Orchestra(object):
@@ -205,18 +204,40 @@ class Orchestra(object):
     # ----------------------------------------------------------------------------------------------
 
     def add_or_deploy_transform_units(self, environment, num_units, **kwargs):
-        # FIXME generate_charms_config(data)
-        JuJu.add_or_deploy_units(environment, TRANSFORM_NAME, num_units,
+        (environments, default) = JuJu.load_environments(self.config.juju_config_file)
+        print environments, default
+        same_environment = (environment == default)
+        config = JuJu.load_unit_config(self.config.transform_config)
+        config['rabbit_queues'] = 'transform_%s' % environment
+        if not same_environment:
+            raise NotImplementedError('Unable to launch transform units into non-default '
+                                      'environment %s (default is %s).' % (environment, default))
+            config['mongo_connection'] = self.config.mongo_nodes_connection
+            config['rabbit_connection'] = self.config.rabbit_connection
+            # FIXME copy storage configuration, first method
+            config['storage_address'] = self.config.storage_address
+            config['storage_fstype'] = self.config.storage_fstype
+            config['storage_mountpoint'] = self.config.storage_mountpoint
+            config['storage_options'] = self.config.storage_options
+        JuJu.add_or_deploy_units(environment, self.config.transform_service, num_units,
                                  config=self.config.charms_config, local=True,
                                  release=self.config.charms_release,
                                  repository=self.config.charms_repository)
-        # FIXME add-relation if juju_own_env == environment
+        if same_environment:
+            JuJu.add_relation(environment, self.config.orchestra_service,
+                              self.config.transform_service, 'transform', 'transform')
+            try:
+                JuJu.add_relation(environment, self.config.storage_service,
+                                  self.config_transform_service)
+            except Exception as e:
+                raise NotImplementedError('Storage service must be available and running on '
+                                          'default environment %s, reason : %s', (default, e))
 
     def get_transform_units(self, environment):
-        return JuJu.get_units(environment, TRANSFORM_NAME)
+        return JuJu.get_units(environment, self.config.transform_service)
 
     def get_transform_units_count(self, environment):
-        return JuJu.get_units_count(environment, TRANSFORM_NAME)
+        return JuJu.get_units_count(environment, self.config.transform_service)
 
     # ----------------------------------------------------------------------------------------------
 
