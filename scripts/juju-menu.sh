@@ -211,8 +211,6 @@ standalone()
 
   cd "$CHARMS_DEPLOY_PATH" || xecho "Unable to find path $CHARMS_DEPLOY_PATH"
 
-  find .
-
   if [ "$charm_auto" -a "$hook_auto" ]; then
     techo 'OSCIED Operations with JuJu > Charms Standalone [AUTO]'
     mecho "Charm is $charm_auto, hook is $hook_auto"
