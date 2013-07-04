@@ -26,6 +26,7 @@
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
 import yaml
+from six import string_types
 from pyutils.pyutils import cmd
 
 
@@ -38,6 +39,30 @@ def juju_do(command, environment, options=None):
     if result['returncode'] != 0:
         raise RuntimeError('Subprocess failed %s : %s.' % (' '.join(command), result['stderr']))
     return yaml.load(result['stdout'])
+
+
+def load_unit_config(config, log=None):
+    u"""
+    Returns a dictionary containing the options names as keys and options default values as values.
+    The parameter ``config`` can be:
+
+    * The filename of a charm configuration file (e.g. ``config.yaml``).
+    * A dictionary containing already loaded options names as keys and options values as values.
+    """
+    if isinstance(config, string_types):
+        if log is not None:
+            log('Load config from file %s' % config)
+        with open(config) as f:
+            options = yaml.load(f)['options']
+            config = {}
+            for option in options:
+                config[option] = options[option]['default']
+    for option, value in config.iteritems():
+        if str(value).lower() in ('false', 'true'):
+            config[option] = True if str(value).lower() == 'true' else False
+            if log is not None:
+                log('Convert boolean option %s %s -> %s' % (option, value, config[option]))
+    return config
 
 
 def add_units(environment, service, num_units):
@@ -93,3 +118,15 @@ def add_or_deploy_units(environment, service, num_units, **kwargs):
         deploy_units(environment, service, num_units, **kwargs)
     else:
         add_units(environment, service, num_units)
+
+
+def add_relation(environment, service1, service2, relation1=None, relation2=None):
+    member1 = service1 if relation1 is None else '%s:%s' % (service1, relation1)
+    member2 = service2 if relation2 is None else '%s:%s' % (service2, relation2)
+    return juju_do('add-relation', environment, [member1, member2])
+
+if __name__ == '__main__':
+    print('Testing JuJu with doctest')
+    import doctest
+    doctest.testmod(verbose=False)
+    print ('OK')
