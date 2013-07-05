@@ -25,7 +25,7 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import logging, pymongo, yaml
+import logging, pymongo
 from celery import states
 #from celery import current_app
 #from celery.task.control import inspect
@@ -34,7 +34,6 @@ from celery.task.control import revoke
 import JuJu, Publisher, Transform
 from Callback import Callback
 from Media import Media
-from OrchestraConfig import OrchestraConfig
 from PublishJob import PublishJob
 from Storage import Storage
 from TransformProfile import TransformProfile, ENCODERS_NAMES
@@ -49,7 +48,7 @@ class Orchestra(object):
 
     def __init__(self, config):
         self.config = config
-        self._db = pymongo.Connection(config.mongo_connection)['orchestra']
+        self._db = pymongo.Connection(config.mongo_admin_connection)['orchestra']
         self.root_user = User(UUID_ZERO, 'root', 'oscied', 'root@oscied.org',
                               self.config.root_secret, True)
         self.nodes_user = User(UUID_ZERO, 'nodes', 'oscied', 'nodes@oscied.org',

@@ -2645,7 +2645,7 @@ if __name__ == '__main__':
             logging.warning('Shared storage is not set in configuration ... exiting')
             sys.exit(0)
 
-        if not config.mongo_connection:
+        if not config.mongo_admin_connection:
             logging.warning('MongoDB is not set in configuration ... exiting')
             sys.exit(0)
 
