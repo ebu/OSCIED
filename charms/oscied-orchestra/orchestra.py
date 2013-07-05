@@ -1402,7 +1402,7 @@ def api_transform_unit_count(environment):
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     """
-    requires_auth(request=request, allow_any=True)
+    requires_auth(request=request, allow_root=True, allow_any=True)
     return ok_200(orchestra.get_transform_units_count(environment), False)
 
 
@@ -1438,11 +1438,11 @@ def api_transform_unit_get(environment):
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     """
-    requires_auth(request=request, allow_any=True)
+    requires_auth(request=request, allow_root=True, allow_any=True)
     return ok_200(orchestra.get_transform_units(environment), False)
 
 
-@app.route('/transform/unit/environment/<environment>/num_units/<num_units>', methods=['POST'])
+@app.route('/transform/unit/environment/<environment>/deploy/<num_units>', methods=['POST'])
 def api_transform_unit_post(environment, num_units):
     """
     Deploy ``num_units`` new transform units into environment ``environment``.
@@ -1451,7 +1451,7 @@ def api_transform_unit_post(environment, num_units):
 
     # .. sourcecode:: http
 
-    #     POST /transform/unit/environment/private/num_units/2 HTTP/1.1
+    #     POST /transform/unit/environment/private/deploy/2 HTTP/1.1
     #     Host: somewhere.com
     #     Header: daniel@oscied.org:oscied
     #     Accept: application/json
