@@ -196,7 +196,7 @@ class OrchestraHooks(CharmHooks_Storage):
             self.configure_rabbitmq()  # (see ticket #205 of my private TRAC ticket system)
             if screen_list('Orchestra', log=self.debug) == []:
                 screen_launch('Orchestra', ['python', 'orchestra.py'])
-            time.sleep(5)
+            time.sleep(10)
             #if screen_list('Orchestra', log=self.debug) == [] or
             if self.cmd('curl -s http://127.0.0.1:5000', fail=False)['returncode'] != 0:
                 raise RuntimeError('Orchestra is not ready')
