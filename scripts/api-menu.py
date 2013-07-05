@@ -26,6 +26,8 @@
 
 from __future__ import print_function
 
+import requests
+from pyutils.pyutils import object2json
 #import glob, re, shutil, os
 #from os.path import basename, dirname, join, splitext
 #from common import (
@@ -36,33 +38,53 @@ from __future__ import print_function
 #)
 #from pyutils.pyutils import cmd, try_makedirs, try_remove
 
-VALID_ACTIONS = ('deploy_transform')
+def api_method(args):
+    arg3 = '/%s' % args.arg3 if args.arg3 != 'list' else ''
+    env = '/environment/%s' % args.environment if hasattr(args, 'environment') else ''
+    num_units = '/%s' % args.num_units if hasattr(args, 'num_units') else ''
+    return 'http://%s:%s/%s/%s%s%s%s' % (args.host, args.port, args.arg1, args.arg2, env, arg3, num_units)
 
 if __name__ == '__main__':
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
-    parser = ArgumentParser(add_help=False,
-        formatter_class=ArgumentDefaultsHelpFormatter,
-        epilog='''TODO.''')
-    parser.add_argument('--username', action='store', default=None)
-    parser.add_argument('--password', action='store', default=None)
+    api = ArgumentParser(add_help=False)
+    api.add_argument('--host',     action='store', default=None, required=True)
+    api.add_argument('--port',     action='store', default=5000)
+    api.add_argument('--username', action='store', default=None)
+    api.add_argument('--password', action='store', default=None)
+    environment = ArgumentParser(add_help=False)
+    environment.add_argument('environment', action='store')
+
+    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter, epilog='''TODO.''')
     subparsers = parser.add_subparsers(dest='arg1')
-    transform_parser = subparsers.add_parser('transform', parents=[parser])
+    transform_parser = subparsers.add_parser('transform')
     transform_subparsers = transform_parser.add_subparsers(dest='arg2')
     transform_unit_parser = transform_subparsers.add_parser('unit')
     transform_unit_subparsers = transform_unit_parser.add_subparsers(dest='arg3')
-    transform_unit_list_parser = transform_unit_subparsers.add_parser('list')
-    transform_unit_list_parser.add_argument('environment', action='store')
-    transform_unit_count_parser = transform_unit_subparsers.add_parser('count')
-    transform_unit_count_parser.add_argument('environment', action='store')
+    transform_unit_list_parser = transform_unit_subparsers.add_parser('list', parents=[api, environment])
+    transform_unit_count_parser = transform_unit_subparsers.add_parser('count', parents=[api, environment])
+    transform_unit_deploy_parser = transform_unit_subparsers.add_parser('deploy', parents=[api, environment])
+    transform_unit_deploy_parser.add_argument('num_units', action='store', default=None)
 
     args = parser.parse_args()
+    username = args.username or 'anonymous'
+    auth = (args.username, args.password) if args.username and args.password else None
+    headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
 
-    print(args)
+    print(api_method(args))
 
     if args.arg1 == 'transform':
         if args.arg2 == 'unit':
             if args.arg3 == 'list':
-                print('list env ' + args.environment)
+                print('Listing transform units of environment %s as %s ...' % (args.environment, username))
+                r = requests.get(api_method(args), auth=auth)
+                print(r.json())
             elif args.arg3 == 'count':
-                print('count env ' + args.environment)
+                print('Counting transform units of environment %s as %s ...' % (args.environment, username))
+                r = requests.get(api_method(args), auth=auth)
+                print(r.json())
+            elif args.arg3 == 'deploy':
+                print('Deploy %s transform units into environment %s as %s ...' % (args.num_units, args.environment, username))
+                r = requests.post(api_method(args), data=object2json({'salut': 1}, False), auth=auth, headers=headers)
+                print(r)
+                print(r.json())
