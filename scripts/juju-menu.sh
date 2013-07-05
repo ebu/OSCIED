@@ -102,10 +102,10 @@ overwrite()
   overwrite_helper 'oscied-storage'   'oscied-storage'
   overwrite_helper 'oscied-transform' 'oscied-transform'
   overwrite_helper 'oscied-webui'     'oscied-webui'
-  overwrite_helper 'oscied-storage'   'oscied-orchestra/charms/oscied-storage'
-  overwrite_helper 'oscied-transform' 'oscied-orchestra/charms/oscied-transform'
-  overwrite_helper 'oscied-publisher' 'oscied-orchestra/charms/oscied-publisher'
-  overwrite_helper 'oscied-webui'     'oscied-orchestra/charms/oscied-webui'
+  overwrite_helper 'oscied-storage'   "oscied-orchestra/charms/$RELEASE/oscied-storage"
+  overwrite_helper 'oscied-transform' "oscied-orchestra/charms/$RELEASE/oscied-transform"
+  overwrite_helper 'oscied-publisher' "oscied-orchestra/charms/$RELEASE/oscied-publisher"
+  overwrite_helper 'oscied-webui'     "oscied-orchestra/charms/$RELEASE/oscied-webui"
   lu-importUtils "$CHARMS_DEPLOY_PATH"
 }
 
