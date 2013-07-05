@@ -218,19 +218,20 @@ class Orchestra(object):
             config['storage_fstype'] = self.config.storage_fstype
             config['storage_mountpoint'] = self.config.storage_mountpoint
             config['storage_options'] = self.config.storage_options
+        JuJu.save_unit_config(self.config.charms_config, self.config.transform_service, config)
         JuJu.add_or_deploy_units(environment, self.config.transform_service, num_units,
                                  config=self.config.charms_config, local=True,
                                  release=self.config.charms_release,
                                  repository=self.config.charms_repository)
-        if same_environment:
-            JuJu.add_relation(environment, self.config.orchestra_service,
-                              self.config.transform_service, 'transform', 'transform')
-            try:
-                JuJu.add_relation(environment, self.config.storage_service,
-                                  self.config_transform_service)
-            except Exception as e:
-                raise NotImplementedError('Storage service must be available and running on '
-                                          'default environment %s, reason : %s', (default, e))
+        # if same_environment:
+        #     JuJu.add_relation(environment, self.config.orchestra_service,
+        #                       self.config.transform_service, 'transform', 'transform')
+        #     try:
+        #         JuJu.add_relation(environment, self.config.storage_service,
+        #                           self.config_transform_service)
+        #     except Exception as e:
+        #         raise NotImplementedError('Storage service must be available and running on '
+        #                                   'default environment %s, reason : %s', (default, e))
 
     def get_transform_units(self, environment):
         return JuJu.get_units(environment, self.config.transform_service)
@@ -266,10 +267,9 @@ class Orchestra(object):
         # FIXME create a one-time password to avoid fixed secret authentication ...
         callback = Callback(self.config.api_url + callback_url, 'node', self.config.nodes_secret)
         result = Transform.transform_job.apply_async(
-            args=(
-                object2json(user, False), object2json(media_in, False),
-                object2json(media_out, False), object2json(profile, False),
-                object2json(callback, False)),
+            args=(object2json(user,      False), object2json(media_in, False),
+                  object2json(media_out, False), object2json(profile,  False),
+                  object2json(callback,  False)),
             queue=queue)
         if not result.id:
             raise ValueError('Unable to transmit job to workers of queue ' + queue + '.')
