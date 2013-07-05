@@ -663,7 +663,7 @@ rsync_helper()
   ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
   rsync -avhL --progress --delete -e "ssh -i '$ID_RSA'" --exclude=.git --exclude=config.json \
     --exclude=celeryconfig.py --exclude=*.pyc --exclude=local_config.pkl --exclude=charms \
-    --exclude=ssh --exclude=*.log "$CHARMS_PATH/$1/" "$host:$dest/"
+    --exclude=ssh --exclude=environments.yaml --exclude=*.log "$CHARMS_PATH/$1/" "$host:$dest/"
   ssh -i "$ID_RSA" "$host" -n "sudo chown root:root $dest -R"
 }
 
