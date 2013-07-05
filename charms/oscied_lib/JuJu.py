@@ -64,6 +64,14 @@ def load_unit_config(config, log=None):
                 log('Convert boolean option %s %s -> %s' % (option, value, config[option]))
     return config
 
+def save_unit_config(filename, service, config, log=None):
+    with open(filename, 'w') as f:
+        for option, value in config.iteritems():
+            if isinstance(value, bool):
+                config[option] = 'True' if value else 'False'
+        config = {service: config}
+        f.write(yaml.safe_dump(config))
+
 
 def load_environments(environments):
     environments_dict = yaml.load(open(environments))
@@ -90,6 +98,8 @@ def deploy_units(environment, service, num_units, config=None, constraints=None,
         service = 'local:%s' % service
     if repository is not None:
         options.extend(['--repository', repository])
+    options.extend([service])
+    return juju_do('deploy', environment, options)
 
 
 def get_unit(environment, service, number):
@@ -123,9 +133,9 @@ def get_units_count(environment, service):
 
 def add_or_deploy_units(environment, service, num_units, **kwargs):
     if get_units_count(environment, service) == 0:
-        deploy_units(environment, service, num_units, **kwargs)
+        return deploy_units(environment, service, num_units, **kwargs)
     else:
-        add_units(environment, service, num_units)
+        return add_units(environment, service, num_units)
 
 
 def add_relation(environment, service1, service2, relation1=None, relation2=None):
