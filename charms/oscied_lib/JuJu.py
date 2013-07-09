@@ -25,18 +25,20 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import yaml
+import uuid, yaml
 from six import string_types
 from pyutils.pyutils import cmd
+#from juju.environment.config import EnvironmentsConfig
 
 
-def juju_do(command, environment, options=None):
+def juju_do(command, environment, options=None, fail=True):
     # FIXME issue #61 - https://github.com/ebu/OSCIED/issues/61
     command = ['juju', command, '--environment', environment]
     if isinstance(options, list):
         command.extend(options)
+    print('Executing command %s' % command)
     result = cmd(command, fail=False)
-    if result['returncode'] != 0:
+    if result['returncode'] != 0 and fail:
         raise RuntimeError('Subprocess failed %s : %s.' % (' '.join(command), result['stderr']))
     return yaml.load(result['stdout'])
 
@@ -74,6 +76,52 @@ def save_unit_config(filename, service, config, log=None):
         f.write(yaml.safe_dump(config))
 
 
+# Environments -------------------------------------------------------------------------------------
+
+def add_environment(environments, name, type, region, access_key, secret_key, control_bucket,
+                    default_series):
+#    environments_dict = EnvironmentsConfig()
+#    environments_dict.load(environments)
+#    if environments_dict.get(name):
+#        raise ValueError('The name %s is already used by another environment.' % name)
+    environments_dict = yaml.load(open(environments))
+    if name in environments_dict['environments']:
+        raise ValueError('The name %s is already used by another environment.' % name)
+    if type == 'ec2':
+        environment = {
+            'type': type, 'region': region, 'access-key': access_key, 'secret-key': secret_key,
+            'control-bucket': control_bucket, 'default-series': default_series,
+            'ssl-hostname-verification': True, 'juju-origin': 'ppa',
+            'admin-secret': uuid.uuid4().hex}
+    else:
+        raise NotImplementedError('Registration of %s type of environment not yet implemented.' %
+                                  type)
+    environments_dict['environments'][name] = environment
+    open(environments, 'w').write(yaml.safe_dump(environments_dict))
+    try:
+        return juju_do('bootstrap', name)
+    except RuntimeError as e:
+        if 'configuration error' in str(e):
+            del environments_dict['environments'][name]
+            open(environments, 'w').write(yaml.safe_dump(environments_dict))
+            raise ValueError('Cannot add environment %s (%s).' % (name, e))
+        raise
+
+
+def destroy_environment(environments, name, remove=False):
+    environments_dict = yaml.load(open(environments))
+    if name not in environments_dict['environments']:
+        raise IndexError('No environment with name %s.' % name)
+    if name == environments_dict['default']:
+        raise NotImplementedError('Cannot remove default environment %s.' % name)
+    try:
+        return juju_do('destroy-environment', name)
+    finally:
+        # FIXME : check if environment destroyed otherwise a lot of trouble with $/€ !
+        if remove:
+            del environments_dict['environments'][name]
+            open(environments, 'w').write(yaml.safe_dump(environments_dict))
+
 #def get_environment_status(environment):
 #    return juju_do('status', environment)
 
@@ -89,13 +137,28 @@ def get_environments(environments, get_status=False):
     return (environments, environments_dict['default'])
 
 
+# Services -----------------------------------------------------------------------------------------
+
+def destroy_service(environment, service, fail=True):
+    return juju_do('destroy-service', environment, [service], fail=fail)
+
+
+# Units --------------------------------------------------------------------------------------------
+
 def add_units(environment, service, num_units):
     return juju_do('add-unit', environment, ['--num-units', str(num_units), service])
 
 
+def add_or_deploy_units(environment, service, num_units, **kwargs):
+    if get_units_count(environment, service) == 0:
+        return deploy_units(environment, service, num_units, **kwargs)
+    else:
+        return add_units(environment, service, num_units)
+
+
 def deploy_units(environment, service, num_units, config=None, constraints=None, local=False,
                  release=None, repository=None):
-    options = ['--num-units', num_units]
+    options = ['--num-units', str(num_units)]
     if config is not None:
         options.extend(['--config', config])
     if constraints is not None:
@@ -113,11 +176,6 @@ def deploy_units(environment, service, num_units, config=None, constraints=None,
 def get_unit(environment, service, number):
     name = '%s/%s' % (service, number)
     return juju_do('status', environment, [name])['services'][service]['units'][name]
-
-
-def remove_unit(environment, service, number):
-    name = '%s/%s' % (service, number)
-    return juju_do('remove-unit', environment, [name])
 
 
 def get_units(environment, service):
@@ -139,12 +197,20 @@ def get_units_count(environment, service):
         return 0
 
 
-def add_or_deploy_units(environment, service, num_units, **kwargs):
-    if get_units_count(environment, service) == 0:
-        return deploy_units(environment, service, num_units, **kwargs)
-    else:
-        return add_units(environment, service, num_units)
+def remove_unit(environment, service, number, terminate):
+    name = '%s/%s' % (service, number)
+    try:
+        unit_dict = get_unit(environment, service, number)
+    except KeyError:
+        raise IndexError('No unit with name %s/%s on environment %s.' %
+                         (service, number, environment))
+    if terminate:
+        juju_do('remove-unit', environment, [name])
+        return juju_do('terminate-machine', environment, [str(unit_dict['machine'])])
+    return juju_do('remove-unit', environment, [name])
 
+
+# Relations ----------------------------------------------------------------------------------------
 
 def add_relation(environment, service1, service2, relation1=None, relation2=None):
     member1 = service1 if relation1 is None else '%s:%s' % (service1, relation1)
@@ -152,9 +218,7 @@ def add_relation(environment, service1, service2, relation1=None, relation2=None
     return juju_do('add-relation', environment, [member1, member2])
 
 
-def destroy_service(environment, service):
-    return juju_do('destroy-service', environment, service)
-
+# --------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     print('Testing JuJu with doctest')
