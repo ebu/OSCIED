@@ -175,7 +175,7 @@ class Orchestra(object):
 
     def delete_environment(self, name, remove=False):
         u"""
-        .. warning:: TODO test & debug of environment methods
+        .. warning:: TODO test & debug of environment methods, especially delete !
         """
         return JuJu.destroy_environment(self.config.juju_config_file, name, remove)
 

@@ -137,6 +137,11 @@ def get_environments(environments, get_status=False):
     return (environments, environments_dict['default'])
 
 
+def get_environments_count(environments):
+    environments_dict = yaml.load(open(environments))
+    return len(environments_dict['environments'])
+
+
 # Services -----------------------------------------------------------------------------------------
 
 def destroy_service(environment, service, fail=True):

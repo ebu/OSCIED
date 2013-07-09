@@ -82,8 +82,12 @@ if __name__ == '__main__':
     headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
 
     if args.arg1 == 'environment':
-        if args.arg2 == 'list':
-            print('Listing environments ...')
+        if args.arg2 == 'count':
+            print('Counting environments as %s ...' % username)
+            r = requests.get(api_method(args, '{arg1}/{arg2}'), auth=auth)
+            pprint(r.json())
+        elif args.arg2 == 'list':
+            print('Listing environments as %s ...' % username)
             r = requests.get(api_method(args, '{arg1}'), auth=auth)
             pprint(r.json())
         elif args.arg2 == 'add':
@@ -97,13 +101,13 @@ if __name__ == '__main__':
             pprint(r.json())
     elif args.arg1 == 'transform':
         if args.arg2 == 'unit':
-            if args.arg3 == 'list':
-                print('Listing transform units of environment %s as %s ...' % (args.environment, username))
-                r = requests.get(api_method(args, '{arg1}/{arg2}/environment/{environment}'), auth=auth)
-                pprint(r.json())
-            elif args.arg3 == 'count':
+            if args.arg3 == 'count':
                 print('Counting transform units of environment %s as %s ...' % (args.environment, username))
                 r = requests.get(api_method(args, '{arg1}/{arg2}/environment/{environment}/{arg3}'), auth=auth)
+                pprint(r.json())
+            elif args.arg3 == 'list':
+                print('Listing transform units of environment %s as %s ...' % (args.environment, username))
+                r = requests.get(api_method(args, '{arg1}/{arg2}/environment/{environment}'), auth=auth)
                 pprint(r.json())
             elif args.arg3 == 'deploy':
                 print('Deploying %s transform units into environment %s as %s ...' %
@@ -119,4 +123,3 @@ if __name__ == '__main__':
                 r = requests.delete(api_method(args, '{arg1}/{arg2}/environment/{environment}'),
                                     data=data, auth=auth, headers=headers)
                 pprint(r.json())
-

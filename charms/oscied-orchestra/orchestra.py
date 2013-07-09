@@ -1148,8 +1148,24 @@ def api_media_id_delete(id):
 
 # Environments management --------------------------------------------------------------------------
 
+@app.route('/environment/count', methods=['GET'])
+def api_environment_count():
+    """
+    Return environments count.
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, allow_any=True)
+        return ok_200(orchestra.get_environments_count(), False)
+    except Exception as e:
+        map_exceptions(e)
+
+
 @app.route('/environment', methods=['GET'])
-def api_environment_post():
+def api_environment_get():
     """
     Return an array containing the environments serialized to JSON.
 
@@ -1166,7 +1182,7 @@ def api_environment_post():
 
 
 @app.route('/environment', methods=['POST'])
-def api_environment_get():
+def api_environment_post():
     """
     Add a new environment.
 
