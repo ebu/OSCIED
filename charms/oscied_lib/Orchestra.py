@@ -169,6 +169,26 @@ class Orchestra(object):
 
     # ----------------------------------------------------------------------------------------------
 
+    def add_environment(self, name, type, region, access_key, secret_key, control_bucket):
+        return JuJu.add_environment(self.config.juju_config_file, name, type, region, access_key,
+                                    secret_key, control_bucket, self.config.charms_release)
+
+    def delete_environment(self, name, remove=False):
+        u"""
+        .. warning:: TODO test & debug of environment methods
+        """
+        return JuJu.destroy_environment(self.config.juju_config_file, name, remove)
+
+    def get_environments(self):
+        return JuJu.get_environments(self.config.juju_config_file, get_status=False)
+
+    def get_environment(self, name):
+        (environments, default) = self.get_environments()
+        if name not in environments:
+            raise ValueError('No environment with name %s.' % name)
+
+    # ----------------------------------------------------------------------------------------------
+
     def get_transform_profile_encoders(self):
         return ENCODERS_NAMES
 
@@ -202,9 +222,8 @@ class Orchestra(object):
 
     # ----------------------------------------------------------------------------------------------
 
-    def add_or_deploy_transform_units(self, environment, num_units, **kwargs):
-        (environments, default) = JuJu.load_environments(self.config.juju_config_file)
-        print environments, default
+    def add_or_deploy_transform_units(self, environment, num_units):
+        environments, default = self.get_environments()
         same_environment = (environment == default)
         config = JuJu.load_unit_config(self.config.transform_config)
         config['rabbit_queues'] = 'transform_%s' % environment
@@ -223,21 +242,59 @@ class Orchestra(object):
                                  config=self.config.charms_config, local=True,
                                  release=self.config.charms_release,
                                  repository=self.config.charms_repository)
-        # if same_environment:
-        #     JuJu.add_relation(environment, self.config.orchestra_service,
-        #                       self.config.transform_service, 'transform', 'transform')
-        #     try:
-        #         JuJu.add_relation(environment, self.config.storage_service,
-        #                           self.config_transform_service)
-        #     except Exception as e:
-        #         raise NotImplementedError('Storage service must be available and running on '
-        #                                   'default environment %s, reason : %s', (default, e))
+        if same_environment:
+            try:
+                try:
+                    JuJu.add_relation(environment, self.config.orchestra_service,
+                                      self.config.transform_service, 'transform', 'transform')
+                except RuntimeError as e:
+                    raise NotImplementedError('Orchestra service must be available and running on '
+                                              'default environment %s, reason : %s', (default, e))
+                try:
+                    JuJu.add_relation(environment, self.config.storage_service,
+                                      self.config.transform_service)
+                except RuntimeError as e:
+                    raise NotImplementedError('Storage service must be available and running on '
+                                              'default environment %s, reason : %s', (default, e))
+            except NotImplementedError:
+                JuJu.destroy_service(environment, self.config.transform_service)
+                raise
+
+    def get_transform_unit(self, environment, number):
+        return JuJu.get_unit(environment, self.config.transform_service, number)
 
     def get_transform_units(self, environment):
         return JuJu.get_units(environment, self.config.transform_service)
 
     def get_transform_units_count(self, environment):
         return JuJu.get_units_count(environment, self.config.transform_service)
+
+    def remove_transform_unit(self, environment, number, terminate):
+        JuJu.remove_unit(environment, self.config.transform_service, number, terminate)
+        if self.get_transform_units_count(environment) == 0:
+            return JuJu.destroy_service(environment, self.config.transform_service, fail=False)
+
+    def remove_transform_units(self, environment, num_units, terminate):
+        u"""
+
+        .. warning::
+
+            FIXME implement more robust resources listing and removing, sometimes juju fail during a
+            call (e.g. remove_transform_units with num_units=10) and then some machines are not
+            terminated. Maybe implement a garbage collector method calleable by user when he want to
+            terminate useless machines ?
+        """
+        units = self.get_transform_units(environment)
+        numbers = []
+        for unit_number in units.iterkeys():
+            num_units -= 1
+            if num_units < 0:
+                break
+            JuJu.remove_unit(environment, self.config.transform_service, unit_number, terminate)
+            numbers.append(unit_number)
+        if self.get_transform_units_count(environment) == 0:
+            JuJu.destroy_service(environment, self.config.transform_service, fail=False)
+        return numbers
 
     # ----------------------------------------------------------------------------------------------
 
