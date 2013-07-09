@@ -53,7 +53,7 @@ S'templates/celeryconfig.py.template'
 p23
 sS'juju_config_file'
 p24
-S'/home/david/.juju/environments.yaml'
+S'/home/famille/.juju/environments.yaml'
 p25
 sS'ssh_template_path'
 p26
@@ -95,6 +95,6 @@ S'celeryconfig.py'
 p41
 sS'ssh_config_path'
 p42
-S'/home/david/.ssh'
+S'/home/famille/.ssh'
 p43
 sb.

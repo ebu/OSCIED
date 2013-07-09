@@ -70,6 +70,10 @@ class OrchestraConfig(CharmConfig_Storage):
         return 'oscied-orchestra'
 
     @property
+    def storage_service(self):
+        return 'oscied-storage'
+
+    @property
     def transform_service(self):
         return 'oscied-transform'
 
@@ -78,8 +82,9 @@ class OrchestraConfig(CharmConfig_Storage):
         return join(self.charms_repository, self.charms_release, self.transform_service,
                     'config.yaml')
 
-ORCHESTRA_CONFIG_TEST = OrchestraConfig(api_url='http://127.0.0.1:5000', root_secret='toto',
-    nodes_secret='abcd', mongo_admin_connection='...', rabbit_connection='...')
+ORCHESTRA_CONFIG_TEST = OrchestraConfig(
+    api_url='http://127.0.0.1:5000', root_secret='toto', nodes_secret='abcd',
+    mongo_admin_connection='...', rabbit_connection='...')
 
 # Main ---------------------------------------------------------------------------------------------
 
