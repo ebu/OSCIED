@@ -64,6 +64,7 @@ def load_unit_config(config, log=None):
                 log('Convert boolean option %s %s -> %s' % (option, value, config[option]))
     return config
 
+
 def save_unit_config(filename, service, config, log=None):
     with open(filename, 'w') as f:
         for option, value in config.iteritems():
@@ -73,11 +74,18 @@ def save_unit_config(filename, service, config, log=None):
         f.write(yaml.safe_dump(config))
 
 
-def load_environments(environments):
+#def get_environment_status(environment):
+#    return juju_do('status', environment)
+
+
+def get_environments(environments, get_status=False):
     environments_dict = yaml.load(open(environments))
     environments = {}
     for environment in environments_dict['environments'].iteritems():
-        environments[environment[0]] = environment[1]
+        informations = environment[1]
+        #if get_status:
+        #    informations['status'] = get_environment_status(environment[0])
+        environments[environment[0]] = informations
     return (environments, environments_dict['default'])
 
 
@@ -142,6 +150,11 @@ def add_relation(environment, service1, service2, relation1=None, relation2=None
     member1 = service1 if relation1 is None else '%s:%s' % (service1, relation1)
     member2 = service2 if relation2 is None else '%s:%s' % (service2, relation2)
     return juju_do('add-relation', environment, [member1, member2])
+
+
+def destroy_service(environment, service):
+    return juju_do('destroy-service', environment, service)
+
 
 if __name__ == '__main__':
     print('Testing JuJu with doctest')
