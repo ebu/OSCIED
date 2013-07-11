@@ -1,4 +1,4 @@
 OSCIED
 ======
 
-Open Source Cloud Infrastructure from Encoding to Distribution
+Open Source Cloud Infrastructure for Encoding and Distribution
