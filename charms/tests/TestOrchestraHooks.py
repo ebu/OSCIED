@@ -76,8 +76,8 @@ class TestOrchestraHooks(object):
         self.hooks.local_config.celery_config_file = 'celeryconfig.py'
         self.hooks.local_config.celery_template_file = os.path.join(
             '../oscied-orchestra', self.hooks.local_config.celery_template_file)
-        self.hooks.local_config.ssh_template_file = os.path.join(
-            '../oscied-orchestra', self.hooks.local_config.ssh_template_file)
+        self.hooks.local_config.ssh_template_path = os.path.join(
+            '../oscied-orchestra', self.hooks.local_config.ssh_template_path)
         self.hooks.local_config.mongo_config_file = 'mongodb_test.conf'
 
     def tearDown(self):
