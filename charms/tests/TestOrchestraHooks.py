@@ -42,9 +42,7 @@ from oscied_lib.OrchestraHooks import OrchestraHooks
 CONFIG = {
     'verbose': True, 'root_secret': 'toto', 'nodes_secret': 'abcd',
     'repositories_user': 'oscied', 'repositories_pass': '',
-    'webui_repository': 'https://github.com/EBU-TI/OSCIED/charms/oscied-webui',
-    'transform_repository': 'https://github.com/EBU-TI/OSCIED/charms/oscied-transform',
-    'publisher_repository': 'https://github.com/EBU-TI/OSCIED/charms/oscied-publisher',
+    'charms_repository': 'https://github.com/EBU-TI/OSCIED/charms',
     'mongo_admin_password': 'Mongo_admin_1234', 'mongo_nodes_password': 'Mongo_user_1234',
     'rabbit_password': 'Alice_in_wonderland', 'storage_address': '', 'storage_nat_address': '',
     'storage_fstype': '', 'storage_mountpoint': '', 'storage_options': ''
@@ -78,6 +76,8 @@ class TestOrchestraHooks(object):
         self.hooks.local_config.celery_config_file = 'celeryconfig.py'
         self.hooks.local_config.celery_template_file = os.path.join(
             '../oscied-orchestra', self.hooks.local_config.celery_template_file)
+        self.hooks.local_config.ssh_template_file = os.path.join(
+            '../oscied-orchestra', self.hooks.local_config.ssh_template_file)
         self.hooks.local_config.mongo_config_file = 'mongodb_test.conf'
 
     def tearDown(self):
