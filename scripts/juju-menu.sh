@@ -97,22 +97,25 @@ overwrite()
   fi
   ok=$true
 
-  overwrite_helper 'oscied-orchestra' || xecho 'Unable to overwrite Orchestra charm'
-  overwrite_helper 'oscied-publisher' || xecho 'Unable to overwrite Publisher charm'
-  overwrite_helper 'oscied-storage'   || xecho 'Unable to overwrite Storage charm'
-  overwrite_helper 'oscied-transform' || xecho 'Unable to overwrite Transform charm'
-  overwrite_helper 'oscied-webui'     || xecho 'Unable to overwrite Web UI charm'
+  overwrite_helper 'oscied-orchestra' 'oscied-orchestra'
+  overwrite_helper 'oscied-publisher' 'oscied-publisher'
+  overwrite_helper 'oscied-storage'   'oscied-storage'
+  overwrite_helper 'oscied-transform' 'oscied-transform'
+  overwrite_helper 'oscied-webui'     'oscied-webui'
+  overwrite_helper 'oscied-storage'   "oscied-orchestra/charms/$RELEASE/oscied-storage"
+  overwrite_helper 'oscied-transform' "oscied-orchestra/charms/$RELEASE/oscied-transform"
+  overwrite_helper 'oscied-publisher' "oscied-orchestra/charms/$RELEASE/oscied-publisher"
+  overwrite_helper 'oscied-webui'     "oscied-orchestra/charms/$RELEASE/oscied-webui"
   lu-importUtils "$CHARMS_DEPLOY_PATH"
 }
 
 overwrite_helper()
 {
-  [ $# -ne 1 ] && xecho 'OUPS !'
-  mkdir -p "$CHARMS_DEPLOY_PATH" 2>/dev/null
-  rm   -rf "$CHARMS_DEPLOY_PATH/$1" 2>/dev/null
+  [ $# -ne 2 ] && xecho 'OUPS !'
+  mkdir -p "$CHARMS_DEPLOY_PATH/$2" 2>/dev/null
   rsync -rtvh -LH --delete --progress --exclude='.git' --exclude='*.log' --exclude='*.pyc' \
     --exclude='celeryconfig.py' --exclude='build' --exclude='dist' --exclude='*.egg-info' \
-    "$CHARMS_PATH/$1/" "$CHARMS_DEPLOY_PATH/$1/"
+    "$CHARMS_PATH/$1/" "$CHARMS_DEPLOY_PATH/$2/" || xecho "Unable to overwrite $2 charm"
 }
 
 deploy()
@@ -141,9 +144,14 @@ deploy()
   fi
   $udo ufw disable # Fix master thesis ticket #80 - Juju stuck in pending when using LXC
 
+  pecho "Copy JuJu environments file & SSH keys to Orchestra charm's deployment path"
+  cp -f "$ID_RSA"         "$CHARMS_DEPLOY_PATH/oscied-orchestra/ssh/"
+  cp -f "$ID_RSA_PUB"     "$CHARMS_DEPLOY_PATH/oscied-orchestra/ssh/"
+  cp -f "$JUJU_ENVS_FILE" "$CHARMS_DEPLOY_PATH/oscied-orchestra/"
+
   cd "$CONFIG_SCENARIOS_PATH" || xecho "Unable to find path $CONFIG_SCENARIOS_PATH"
 
-  # Initialize scenarios menu
+  pecho 'Initialize scenarios menu'
   find . -type f -name '*.sh' | sort > $listing
   scenariosList=''
   while read scenario
@@ -210,8 +218,6 @@ standalone()
   ok=$true
 
   cd "$CHARMS_DEPLOY_PATH" || xecho "Unable to find path $CHARMS_DEPLOY_PATH"
-
-  find .
 
   if [ "$charm_auto" -a "$hook_auto" ]; then
     techo 'OSCIED Operations with JuJu > Charms Standalone [AUTO]'

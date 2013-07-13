@@ -30,13 +30,15 @@ from configobj import ConfigObj
 from CharmHooks import DEFAULT_OS_ENV
 from CharmHooks_Storage import CharmHooks_Storage
 from OrchestraConfig import OrchestraConfig
-from pyutils.pyutils import first_that_exist, screen_launch, screen_list, screen_kill, try_makedirs
+from pyutils.pyutils import first_that_exist, rsync, screen_launch, screen_list, screen_kill, \
+    try_makedirs
 
 
 class OrchestraHooks(CharmHooks_Storage):
 
     PACKAGES = tuple(set(CharmHooks_Storage.PACKAGES +
                      ('ffmpeg', 'ntp', 'x264', 'mongodb', 'rabbitmq-server')))
+    JUJU_PACKAGES = ('lxc', 'apt-cacher-ng', 'libzookeeper-java', 'zookeeper', 'juju', 'juju-jitsu')
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(OrchestraHooks, self).__init__(metadata, default_config, default_os_env)
@@ -94,9 +96,11 @@ class OrchestraHooks(CharmHooks_Storage):
         self.hook_uninstall()
         self.info('Upgrade system and install prerequisites')
         self.cmd('apt-add-repository -y ppa:jon-severinsson/ffmpeg')
+        self.cmd('apt-add-repository -y ppa:juju/pkgs')
         self.cmd('apt-get -y update', fail=False)
         self.cmd('apt-get -y upgrade')
         self.cmd('apt-get -y install %s' % ' '.join(OrchestraHooks.PACKAGES))
+        self.cmd('apt-get -y install %s' % ' '.join(OrchestraHooks.JUJU_PACKAGES))
         self.info('Restart network time protocol service')
         self.cmd('service ntp restart')
         #pecho 'Checkout OSCIED charms locally'
@@ -118,6 +122,15 @@ class OrchestraHooks(CharmHooks_Storage):
         self.open_port(5672, 'TCP')   # RabbitMQ service
 
     def hook_config_changed(self):
+        self.info('Configure Secure Shell')
+        rsync(self.local_config.ssh_template_path, self.local_config.ssh_config_path,
+              recursive=True, log=self.debug)
+
+        self.info('Configure JuJu Service Orchestrator')
+        if not os.path.exists(self.local_config.juju_config_file):
+            try_makedirs(os.path.dirname(self.local_config.juju_config_file))
+            shutil.copy(self.local_config.juju_template_file, self.local_config.juju_config_file)
+
         self.info('Configure MongoDB Scalable NoSQL DB')
         with open('f.js', 'w') as mongo_f:
             mongo_f.write("db.addUser('admin', '%s', false);" % self.config.mongo_admin_password)
@@ -141,7 +154,8 @@ class OrchestraHooks(CharmHooks_Storage):
         self.local_config.verbose = self.config.verbose
         self.local_config.api_url = self.api_url
         self.local_config.root_secret = self.config.root_secret
-        self.local_config.mongo_connection = self.mongo_admin_connection
+        self.local_config.mongo_admin_connection = self.mongo_admin_connection
+        self.local_config.mongo_nodes_connection = self.mongo_nodes_connection
         self.local_config.rabbit_connection = self.rabbit_connection
         infos = {
             'rabbit': str(self.rabbit_connection),
@@ -182,7 +196,7 @@ class OrchestraHooks(CharmHooks_Storage):
             self.configure_rabbitmq()  # (see ticket #205 of my private TRAC ticket system)
             if screen_list('Orchestra', log=self.debug) == []:
                 screen_launch('Orchestra', ['python', 'orchestra.py'])
-            time.sleep(5)
+            time.sleep(10)
             #if screen_list('Orchestra', log=self.debug) == [] or
             if self.cmd('curl -s http://127.0.0.1:5000', fail=False)['returncode'] != 0:
                 raise RuntimeError('Orchestra is not ready')

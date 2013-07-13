@@ -31,7 +31,7 @@ from celery import states
 #from celery.task.control import inspect
 from celery.task.control import revoke
 #from celery.events.state import state
-import Publisher, Transform
+import JuJu, Publisher, Transform
 from Callback import Callback
 from Media import Media
 from PublishJob import PublishJob
@@ -44,15 +44,23 @@ from pyutils.pyutils import object2json, datetime_now, UUID_ZERO, valid_uuid
 
 class Orchestra(object):
 
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Constructor >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
     def __init__(self, config):
         self.config = config
-        self._db = pymongo.Connection(config.mongo_connection)['orchestra']
+        self._db = pymongo.Connection(config.mongo_admin_connection)['orchestra']
         self.root_user = User(UUID_ZERO, 'root', 'oscied', 'root@oscied.org',
                               self.config.root_secret, True)
         self.nodes_user = User(UUID_ZERO, 'nodes', 'oscied', 'nodes@oscied.org',
                                self.config.nodes_secret, False)
 
-    # ----------------------------------------------------------------------------------------------
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Properties >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    @property
+    def about(self):
+        return ('Orchestra : EBU\'s OSCIED Orchestrator by David Fischer 2012-2013')
+
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Functions >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     def flush_db(self):
         self._db.drop_collection('users')
@@ -81,6 +89,12 @@ class Orchestra(object):
         return user if secret is None or user.verify_secret(secret) else None
 
     def delete_user(self, user):
+        # FIXME issue #16 (https://github.com/ebu/OSCIED/issues/16)
+        # entity = self.get_user({'_id': user_id}, {'secret': 0})
+        # if not entity:
+        #     raise IndexError('No user with id ' + id + '.')
+        # self._db.users.remove({'_id': entity._id})
+        # return User.load(object2json(entity, False))
         if valid_uuid(user, False):
             user = self.get_user({'_id': user}, {'secret': 0})
         user.is_valid(True)
@@ -155,6 +169,26 @@ class Orchestra(object):
 
     # ----------------------------------------------------------------------------------------------
 
+    def add_environment(self, name, type, region, access_key, secret_key, control_bucket):
+        return JuJu.add_environment(self.config.juju_config_file, name, type, region, access_key,
+                                    secret_key, control_bucket, self.config.charms_release)
+
+    def delete_environment(self, name, remove=False):
+        u"""
+        .. warning:: TODO test & debug of environment methods, especially delete !
+        """
+        return JuJu.destroy_environment(self.config.juju_config_file, name, remove)
+
+    def get_environments(self):
+        return JuJu.get_environments(self.config.juju_config_file, get_status=False)
+
+    def get_environment(self, name):
+        (environments, default) = self.get_environments()
+        if name not in environments:
+            raise ValueError('No environment with name %s.' % name)
+
+    # ----------------------------------------------------------------------------------------------
+
     def get_transform_profile_encoders(self):
         return ENCODERS_NAMES
 
@@ -188,6 +222,82 @@ class Orchestra(object):
 
     # ----------------------------------------------------------------------------------------------
 
+    def add_or_deploy_transform_units(self, environment, num_units):
+        environments, default = self.get_environments()
+        same_environment = (environment == default)
+        config = JuJu.load_unit_config(self.config.transform_config)
+        config['rabbit_queues'] = 'transform_%s' % environment
+        if not same_environment:
+            raise NotImplementedError('Unable to launch transform units into non-default '
+                                      'environment %s (default is %s).' % (environment, default))
+            config['mongo_connection'] = self.config.mongo_nodes_connection
+            config['rabbit_connection'] = self.config.rabbit_connection
+            # FIXME copy storage configuration, first method
+            config['storage_address'] = self.config.storage_address
+            config['storage_fstype'] = self.config.storage_fstype
+            config['storage_mountpoint'] = self.config.storage_mountpoint
+            config['storage_options'] = self.config.storage_options
+        JuJu.save_unit_config(self.config.charms_config, self.config.transform_service, config)
+        JuJu.add_or_deploy_units(environment, self.config.transform_service, num_units,
+                                 config=self.config.charms_config, local=True,
+                                 release=self.config.charms_release,
+                                 repository=self.config.charms_repository)
+        if same_environment:
+            try:
+                try:
+                    JuJu.add_relation(environment, self.config.orchestra_service,
+                                      self.config.transform_service, 'transform', 'transform')
+                except RuntimeError as e:
+                    raise NotImplementedError('Orchestra service must be available and running on '
+                                              'default environment %s, reason : %s', (default, e))
+                try:
+                    JuJu.add_relation(environment, self.config.storage_service,
+                                      self.config.transform_service)
+                except RuntimeError as e:
+                    raise NotImplementedError('Storage service must be available and running on '
+                                              'default environment %s, reason : %s', (default, e))
+            except NotImplementedError:
+                JuJu.destroy_service(environment, self.config.transform_service)
+                raise
+
+    def get_transform_unit(self, environment, number):
+        return JuJu.get_unit(environment, self.config.transform_service, number)
+
+    def get_transform_units(self, environment):
+        return JuJu.get_units(environment, self.config.transform_service)
+
+    def get_transform_units_count(self, environment):
+        return JuJu.get_units_count(environment, self.config.transform_service)
+
+    def remove_transform_unit(self, environment, number, terminate):
+        JuJu.remove_unit(environment, self.config.transform_service, number, terminate)
+        if self.get_transform_units_count(environment) == 0:
+            return JuJu.destroy_service(environment, self.config.transform_service, fail=False)
+
+    def remove_transform_units(self, environment, num_units, terminate):
+        u"""
+
+        .. warning::
+
+            FIXME implement more robust resources listing and removing, sometimes juju fail during a
+            call (e.g. remove_transform_units with num_units=10) and then some machines are not
+            terminated. Maybe implement a garbage collector method calleable by user when he want to
+            terminate useless machines ?
+        """
+        units = self.get_transform_units(environment)
+        numbers = []
+        for unit_number in units.iterkeys():
+            num_units -= 1
+            if num_units < 0:
+                break
+            JuJu.remove_unit(environment, self.config.transform_service, unit_number, terminate)
+            numbers.append(unit_number)
+        if self.get_transform_units_count(environment) == 0:
+            JuJu.destroy_service(environment, self.config.transform_service, fail=False)
+        return numbers
+
+    # ----------------------------------------------------------------------------------------------
+
     def get_transform_queues(self):
         return self.config.transform_queues
 
@@ -214,10 +324,9 @@ class Orchestra(object):
         # FIXME create a one-time password to avoid fixed secret authentication ...
         callback = Callback(self.config.api_url + callback_url, 'node', self.config.nodes_secret)
         result = Transform.transform_job.apply_async(
-            args=(
-                object2json(user, False), object2json(media_in, False),
-                object2json(media_out, False), object2json(profile, False),
-                object2json(callback, False)),
+            args=(object2json(user,      False), object2json(media_in, False),
+                  object2json(media_out, False), object2json(profile,  False),
+                  object2json(callback,  False)),
             queue=queue)
         if not result.id:
             raise ValueError('Unable to transmit job to workers of queue ' + queue + '.')
