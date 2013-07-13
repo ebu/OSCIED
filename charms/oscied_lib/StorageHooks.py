@@ -46,7 +46,7 @@ class StorageHooks(CharmHooks):
             allowed_ips = self.config.allowed_ips.split(',')
         except:
             allowed_ips = [self.config.allowed_ips]
-        return ','.join(list(filter(None, self.local_config.allowed_ips + allowed_ips)))
+        return ','.join(sorted(list(filter(None, self.local_config.allowed_ips + allowed_ips))))
 
     @property
     def brick(self):

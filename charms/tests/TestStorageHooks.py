@@ -56,23 +56,23 @@ class TestStorageHooks(object):
 
     def test_volume_set_allowed_ips_ok(self):
         self.hooks.config.allowed_ips = '192.168.1.*,10.10.*'
-        self.hooks.local_config.allowed_ips = '129.194.185.47'
+        self.hooks.local_config.allowed_ips = ['129.194.185.47']
         self.hooks.volume_do = mock_cmd(
             '\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started'
             '\nNumber of Bricks: 1\nTransport-type: tcp\nBricks:'
             '\nBrick1: ip-10-36-122-169.ec2.internal:/exp14\n'
-            'Options Reconfigured:\nauth.allow: 192.168.1.*,10.10.*,129.194.185.47\n')
+            'Options Reconfigured:\nauth.allow: 10.10.*,129.194.185.47,192.168.1.*\n')
         self.hooks.volume_set_allowed_ips()
         assert_equal(self.hooks.volume_do.call_args_list, [
             call('set', fail=False, volume='medias_volume_14',
-                 options='auth.allow "192.168.1.*,10.10.*,129.194.185.47"'),
+                 options='auth.allow "10.10.*,129.194.185.47,192.168.1.*"'),
             call('info', fail=False, volume='medias_volume_14'),
             call('info', fail=False, volume='medias_volume_14')])
 
     @raises(ValueError)
     def test_volume_set_allowed_ips_raise(self):
         self.hooks.config.allowed_ips = '192.168.1.*,10.10.*'
-        self.hooks.local_config.allowed_ips = '129.194.185.47'
+        self.hooks.local_config.allowed_ips = ['129.194.185.47']
         self.hooks.volume_do = mock_cmd(
             '\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started'
             '\nNumber of Bricks: 1\nTransport-type: tcp\nBricks:'

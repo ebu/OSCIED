@@ -38,7 +38,7 @@ class OrchestraHooks(CharmHooks_Storage):
 
     PACKAGES = tuple(set(CharmHooks_Storage.PACKAGES +
                      ('ffmpeg', 'ntp', 'x264', 'mongodb', 'rabbitmq-server')))
-    JUJU_PACKAGES = ('lxc', 'apt-cacher-ng', 'libzookeeper-java', 'zookeeper', 'juju', 'juju-jitsu')
+    JUJU_PACKAGES = ('juju', 'juju-jitsu')
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(OrchestraHooks, self).__init__(metadata, default_config, default_os_env)
