@@ -29,6 +29,7 @@
 
 import logging
 import sys
+from bson.objectid import ObjectId
 from flask import Flask, abort, request, Response
 from werkzeug.exceptions import HTTPException
 from oscied_lib.Media import Media
@@ -129,20 +130,23 @@ def requires_auth(request, allow_root=False, allow_node=False, allow_any=False, 
 
 
 def check_id(id):
-    if not valid_uuid(id, False):
-        abort(415, 'Wrong id format ' + id)
+    if valid_uuid(id, False, False):
+        return id
+    elif valid_uuid(id, True, False):
+        return ObjectId(id)
+    raise ValueError('Wrong id format %s' % id)
 
 
 def get_request_json(request, required_keys=[]):
     try:
         data = request.json
     except:
-        abort(415, 'Requires valid JSON content-type.')
+        raise ValueError('Requires valid JSON content-type.')
     for key in required_keys:
         if not key in data:
-            abort(400, 'Missing key "%s" from JSON content.' % key)
+            raise ValueError('Missing key "%s" from JSON content.' % key)
     if not data:
-        abort(415, 'Requires JSON content-type.')
+        raise ValueError('Requires JSON content-type.')
     return data
 
 
@@ -212,12 +216,14 @@ def ok_200(value, include_properties):
 def map_exceptions(e):
     if isinstance(e, HTTPException):
         raise
-    if isinstance(e, ValueError) or isinstance(e, TypeError):
+    if isinstance(e, TypeError):
         abort(400, str(e))
     elif isinstance(e, KeyError):
         abort(400, 'Key %s not found.' % e)
     elif isinstance(e, IndexError):
         abort(404, str(e))
+    elif isinstance(e, ValueError):
+        abort(415, str(e))
     elif isinstance(e, NotImplementedError):
         abort(501, str(e))
     abort(500, '%s %s %s' % (e.__class__.__name__, repr(e), str(e)))
@@ -619,15 +625,17 @@ def api_user_id_patch(id):
         if not user:
             raise IndexError('No user with id %s.' % id)
         old_name = user.name
-        first_name = data['first_name'] if 'first_name' in data else user.first_name
-        last_name = data['last_name'] if 'last_name' in data else user.last_name
-        mail = data['mail'] if 'mail' in data else user.mail
-        secret = data['secret'] if 'secret' in data else user.secret
-        ap = user.admin_platform
+        if 'first_name' in data:
+            user.first_name = data['first_name']
+        if 'last_name' in data:
+            user.last_name = data['last_name']
+        if 'mail' in data:
+            user.mail = data['mail']
+        if 'secret' in data:
+            user.secret = data['secret']
         if auth_user.admin_platform and 'admin_platform' in data:
-            ap = data['admin_platform']
-        new_user = User(id, first_name, last_name, mail, secret, ap)
-        orchestra.save_user(new_user, hash_secret=True)
+            user.admin_platform = data['admin_platform']
+        orchestra.save_user(user, hash_secret=True)
         return ok_200('The user "%s" has been updated.' % old_name, False)
     except Exception as e:
         map_exceptions(e)
@@ -2324,8 +2332,8 @@ def api_publish_job_post():
     try:
         auth_user = requires_auth(request=request, allow_any=True)
         data = get_request_json(request)
-        job_id = orchestra.launch_publish_job(
-            auth_user._id, data['media_id'], data['queue'], '/publish/callback')
+        job_id = orchestra.launch_publish_job(auth_user.id, data['media_id'], data['queue'],
+                                              '/publish/callback')
         return ok_200(job_id, True)
     except Exception as e:
         map_exceptions(e)
