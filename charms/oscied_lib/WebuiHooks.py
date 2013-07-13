@@ -32,7 +32,7 @@ from CharmHooks_Storage import CharmHooks_Storage
 from CharmHooks_Website import CharmHooks_Website
 from CharmConfig_Storage import MEDIAS_PATH, UPLOADS_PATH
 from WebuiConfig import WebuiConfig
-from pyutils.pyutils import chown, first_that_exist, rsync, try_makedirs
+from pyutils.pyutils import chown, first_that_exist, rsync, try_makedirs, try_symlink
 
 
 class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
@@ -159,8 +159,8 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
             self.info('Create uploads directory and symlink storage')
             try_makedirs(self.local_config.storage_uploads_path)
             chown(self.local_config.storage_uploads_path, 'www-data', 'www-data', recursive=True)
-            os.symlink(self.local_config.storage_medias_path(), self.local_config.www_medias_path)
-            os.symlink(self.local_config.storage_uploads_path, self.local_config.www_uploads_path)
+            try_symlink(self.local_config.storage_medias_path(), self.local_config.www_medias_path)
+            try_symlink(self.local_config.storage_uploads_path, self.local_config.www_uploads_path)
 
     def hook_uninstall(self):
         self.info('Uninstall prerequisities, unregister service and load default configuration')
