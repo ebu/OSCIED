@@ -25,17 +25,18 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import fcntl, os, re, select, shlex, subprocess, time
+import os, re, select, shlex, time
 from celery import current_task
 from celery.decorators import task
+from subprocess import Popen, PIPE
 from Callback import Callback
 from Media import Media
 from Storage import Storage
 from TransformConfig import TransformConfig
 from TransformProfile import TransformProfile
 from User import User
-from pyutils.ffmpeg import get_media_duration
-from pyutils.pyutils import object2json, datetime_now, duration2secs
+from pyutils.ffmpeg import get_media_duration, get_media_tracks
+from pyutils.pyutils import object2json, datetime_now, duration2secs, make_async, read_async
 
 
 @task(name='Transform.transform_job')
@@ -43,14 +44,12 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
 
     try:
         # Avoid 'referenced before assignment'
-        callback = None
-        media_out = None
+        callback = media_out = None
         encoder_out = ''
         request = current_task.request
 
         # Let's the task begin !
-        start_date = datetime_now()
-        start_time = time.time()
+        start_date, start_time = datetime_now(), time.time()
         print('%s Transform job started' % (request.id))
 
         # Read current configuration to translate files uri to local paths
@@ -82,11 +81,17 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
         if not media_out_path:
             raise NotImplementedError('Output media will not be written to shared storage : %s' %
                                       media_out.uri)
+        media_out_root = os.path.dirname(media_out_path)
         Storage.create_file_directory(media_out_path)
 
-        # Get input media duration to be able to estimate ETA
+        # Get input media size, duration and frames to be able to estimate ETA
         media_in_size = os.stat(media_in_path).st_size
         media_in_duration = get_media_duration(media_in_path)
+        try:
+            media_in_frames = \
+                int(get_media_tracks(media_in_path)['video']['0.0']['estimated_frames'])
+        except:
+            media_in_frames = None
 
         # NOT A REAL TRANSFORM : FILE COPY ---------------------------------------------------------
         if profile.encoder_name == 'copy':
@@ -128,58 +133,49 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
         # A REAL TRANSFORM : TRANSCODE WITH FFMPEG -------------------------------------------------
         elif profile.encoder_name == 'ffmpeg':
             # Create FFmpeg subprocess
-            cmd = 'ffmpeg -y -i "%s" %s "%s"' % (
-                media_in_path, profile.encoder_string, media_out_path)
-            ffmpeg = subprocess.Popen(shlex.split(cmd), stderr=subprocess.PIPE, close_fds=True)
-
-            # http://stackoverflow.com/questions/1388753/how-to-get-output-from-subprocess-popen
-            fcntl.fcntl(ffmpeg.stderr.fileno(), fcntl.F_SETFL,
-                        fcntl.fcntl(ffmpeg.stderr.fileno(), fcntl.F_GETFL) | os.O_NONBLOCK,)
+            ffmpeg = Popen(shlex.split('ffmpeg -y -i "%s" %s "%s"' % (media_in_path,
+                           profile.encoder_string, media_out_path)), stderr=PIPE, close_fds=True)
+            make_async(ffmpeg.stderr)
 
             # frame= 2071 fps=  0 q=-1.0 size=   34623kB time=00:01:25.89 bitrate=3302.3kbits/s
-            regex = re.compile("frame=\s*(?P<frame>\d+)" +
-                               "\s+fps=\s*(?P<fps>\d+)" +
-                               "\s+q=\s*(?P<q>\S+)" +
-                               "\s+\S*size=\s*(?P<size>\S+)" +
-                               "\s+time=\s*(?P<time>\S+)" +
-                               "\s+bitrate=\s*(?P<bitrate>\S+)")
+            regex = re.compile(r'frame=\s*(?P<frame>\d+)\s+fps=\s*(?P<fps>\d+)\s+q=\s*(?P<q>\S+)'
+                               r'\s+\S*size=\s*(?P<size>\S+)\s+time=\s*(?P<time>\S+)'
+                               r'\s+bitrate=\s*(?P<bitrate>\S+)')
 
             while True:
-                readeable = select.select([ffmpeg.stderr.fileno()], [], [])[0]
-                if readeable:
-                    chunk = ffmpeg.stderr.read()
-                    if chunk == '':
-                        break  # End of encoding reached
-                    encoder_out += chunk
-                    match = regex.match(chunk)
-                    if match:
-                        stats = match.groupdict()
-                        media_out_duration = stats['time']
-                        ratio = duration2secs(media_out_duration) / duration2secs(media_in_duration)
-                        elapsed_time = time.time() - start_time
-                        eta_time = int(elapsed_time * (1 - ratio) / ratio) if ratio > 0 else 0
-                        transform_job.update_state(
-                            state="PROGRESS",
-                            meta={'hostname': request.hostname,
-                                  'start_date': start_date,
-                                  'elapsed_time': elapsed_time,
-                                  'eta_time': eta_time,
-                                  'media_in_size': media_in_size,
-                                  'media_in_duration': media_in_duration,
-                                  'media_out_size': os.stat(media_out_path).st_size,
-                                  'media_out_duration': media_out_duration,
-                                  'percent': int(100 * ratio),
-                                  'encoding_frame': stats['frame'],
-                                  'encoding_fps': stats['fps'],
-                                  'encoding_bitrate': stats['bitrate'],
-                                  'encoding_quality': stats['q']})
-                time.sleep(1)  # FIXME put this number as parameter of the Transform charm (?)
+                # Wait for data to become available
+                select.select([ffmpeg.stderr], [], [])
+                chunk = ffmpeg.stderr.read()
+                encoder_out += chunk
+                match = regex.match(chunk)
+                if match:
+                    stats = match.groupdict()
+                    media_out_duration = stats['time']
+                    ratio = duration2secs(media_out_duration) / duration2secs(media_in_duration)
+                    elapsed_time = time.time() - start_time
+                    eta_time = int(elapsed_time * (1 - ratio) / ratio) if ratio > 0 else 0
+                    transform_job.update_state(
+                        state="PROGRESS",
+                        meta={'hostname': request.hostname,
+                              'start_date': start_date,
+                              'elapsed_time': elapsed_time,
+                              'eta_time': eta_time,
+                              'media_in_size': media_in_size,
+                              'media_in_duration': media_in_duration,
+                              'media_out_size': os.stat(media_out_path).st_size,
+                              'media_out_duration': media_out_duration,
+                              'percent': int(100 * ratio),
+                              'encoding_frame': stats['frame'],
+                              'encoding_fps': stats['fps'],
+                              'encoding_bitrate': stats['bitrate'],
+                              'encoding_quality': stats['q']})
+                returncode = ffmpeg.poll()
+                if returncode != None:
+                    break
 
-            # FFmpeg output sanity check (yes, this is parsing)
-            # video:78315kB audio:4876kB global headers:0kB muxing overhead 0.214781%
-            match = re.search("\s+muxing overhead\s*(?P<overhead>\S+)", encoder_out)
-            if not match:
-                raise OSError('Unable to parse FFmpeg output, encoding probably failed')
+            # FFmpeg output sanity check
+            if returncode != 0:
+                raise OSError('FFmpeg return code is %s, encoding probably failed' % returncode)
 
             # Output media file sanity check
 #            media_out_duration = get_media_duration(media_out_path)
@@ -188,7 +184,45 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
 
         # A REAL TRANSFORM : TRANSCODE WITH DASHCAST -----------------------------------------------
         elif profile.encoder_name == 'dashcast':
-            raise NotImplementedError('FIXME Encoding with DashCast not yet implemented')
+            # Create DashCast subprocess
+            dashcast = Popen(shlex.split('DashCast -av "%s" %s -out "%s" -mpd "%s"' % (
+                media_in_path, profile.encoder_string, media_out_root, media_out_path)),
+                stdout=PIPE, close_fds=True)
+            make_async(dashcast.stdout.fileno())
+
+            # Read video frame 4903
+            regex = re.compile(r'Read video frame (?P<frame>\d+)')
+
+            while True:
+                # Wait for data to become available
+                select.select([dashcast.stdout.fileno()], [], [])
+                chunk = read_async(dashcast.stdout)
+                encoder_out += chunk
+                match = regex.match(chunk)
+                if match:
+                    stats = match.groupdict()
+                    media_out_frames = int(stats['frame'])
+                    ratio = media_out_frames / media_in_frames
+                    elapsed_time = time.time() - start_time
+                    eta_time = int(elapsed_time * (1 - ratio) / ratio) if ratio > 0 else 0
+                    transform_job.update_state(
+                        state="PROGRESS",
+                        meta={'hostname': request.hostname,
+                              'start_date': start_date,
+                              'elapsed_time': elapsed_time,
+                              'eta_time': eta_time,
+                              'media_in_size': media_in_size,
+                              'media_in_duration': media_in_duration,
+                              #'media_out_size': os.stat(media_out_path).st_size,
+                              'percent': int(100 * ratio),
+                              'encoding_frame': media_out_frames})
+                returncode = dashcast.poll()
+                if returncode != None:
+                    break
+
+            # DashCast output sanity check
+            if returncode != 0:
+                raise OSError('DashCast return code is %s, encoding probably failed' % returncode)
 
         # Here all seem okay -----------------------------------------------------------------------
         media_out_size = os.stat(media_out_path).st_size
