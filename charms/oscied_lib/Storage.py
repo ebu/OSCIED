@@ -26,7 +26,7 @@
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
 import os, time
-from FFmpeg import get_media_duration
+from pyutils.ffmpeg import get_media_duration
 from pyutils.pyutils import try_makedirs
 
 

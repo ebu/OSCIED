@@ -31,7 +31,7 @@ from celery import states
 #from celery.task.control import inspect
 from celery.task.control import revoke
 #from celery.events.state import state
-import JuJu, Publisher, Transform
+import Publisher, Transform
 from Callback import Callback
 from Media import Media
 from PublishJob import PublishJob
@@ -39,6 +39,7 @@ from Storage import Storage
 from TransformProfile import TransformProfile, ENCODERS_NAMES
 from TransformJob import TransformJob
 from User import User
+import pyutils.juju as juju
 from pyutils.pyutils import object2json, datetime_now, UUID_ZERO, valid_uuid
 
 
@@ -170,17 +171,17 @@ class Orchestra(object):
     # ----------------------------------------------------------------------------------------------
 
     def add_environment(self, name, type, region, access_key, secret_key, control_bucket):
-        return JuJu.add_environment(self.config.juju_config_file, name, type, region, access_key,
+        return juju.add_environment(self.config.juju_config_file, name, type, region, access_key,
                                     secret_key, control_bucket, self.config.charms_release)
 
     def delete_environment(self, name, remove=False):
         u"""
         .. warning:: TODO test & debug of environment methods, especially delete !
         """
-        return JuJu.destroy_environment(self.config.juju_config_file, name, remove)
+        return juju.destroy_environment(self.config.juju_config_file, name, remove)
 
     def get_environments(self):
-        return JuJu.get_environments(self.config.juju_config_file, get_status=False)
+        return juju.get_environments(self.config.juju_config_file, get_status=False)
 
     def get_environment(self, name):
         (environments, default) = self.get_environments()
@@ -225,7 +226,7 @@ class Orchestra(object):
     def add_or_deploy_transform_units(self, environment, num_units):
         environments, default = self.get_environments()
         same_environment = (environment == default)
-        config = JuJu.load_unit_config(self.config.transform_config)
+        config = juju.load_unit_config(self.config.transform_config)
         config['rabbit_queues'] = 'transform_%s' % environment
         if not same_environment:
             raise NotImplementedError('Unable to launch transform units into non-default '
@@ -237,42 +238,42 @@ class Orchestra(object):
             config['storage_fstype'] = self.config.storage_fstype
             config['storage_mountpoint'] = self.config.storage_mountpoint
             config['storage_options'] = self.config.storage_options
-        JuJu.save_unit_config(self.config.charms_config, self.config.transform_service, config)
-        JuJu.add_or_deploy_units(environment, self.config.transform_service, num_units,
+        juju.save_unit_config(self.config.charms_config, self.config.transform_service, config)
+        juju.add_or_deploy_units(environment, self.config.transform_service, num_units,
                                  config=self.config.charms_config, local=True,
                                  release=self.config.charms_release,
                                  repository=self.config.charms_repository)
         if same_environment:
             try:
                 try:
-                    JuJu.add_relation(environment, self.config.orchestra_service,
+                    juju.add_relation(environment, self.config.orchestra_service,
                                       self.config.transform_service, 'transform', 'transform')
                 except RuntimeError as e:
                     raise NotImplementedError('Orchestra service must be available and running on '
                                               'default environment %s, reason : %s', (default, e))
                 try:
-                    JuJu.add_relation(environment, self.config.storage_service,
+                    juju.add_relation(environment, self.config.storage_service,
                                       self.config.transform_service)
                 except RuntimeError as e:
                     raise NotImplementedError('Storage service must be available and running on '
                                               'default environment %s, reason : %s', (default, e))
             except NotImplementedError:
-                JuJu.destroy_service(environment, self.config.transform_service)
+                juju.destroy_service(environment, self.config.transform_service)
                 raise
 
     def get_transform_unit(self, environment, number):
-        return JuJu.get_unit(environment, self.config.transform_service, number)
+        return juju.get_unit(environment, self.config.transform_service, number)
 
     def get_transform_units(self, environment):
-        return JuJu.get_units(environment, self.config.transform_service)
+        return juju.get_units(environment, self.config.transform_service)
 
     def get_transform_units_count(self, environment):
-        return JuJu.get_units_count(environment, self.config.transform_service)
+        return juju.get_units_count(environment, self.config.transform_service)
 
     def remove_transform_unit(self, environment, number, terminate):
-        JuJu.remove_unit(environment, self.config.transform_service, number, terminate)
+        juju.remove_unit(environment, self.config.transform_service, number, terminate)
         if self.get_transform_units_count(environment) == 0:
-            return JuJu.destroy_service(environment, self.config.transform_service, fail=False)
+            return juju.destroy_service(environment, self.config.transform_service, fail=False)
 
     def remove_transform_units(self, environment, num_units, terminate):
         u"""
@@ -290,10 +291,10 @@ class Orchestra(object):
             num_units -= 1
             if num_units < 0:
                 break
-            JuJu.remove_unit(environment, self.config.transform_service, unit_number, terminate)
+            juju.remove_unit(environment, self.config.transform_service, unit_number, terminate)
             numbers.append(unit_number)
         if self.get_transform_units_count(environment) == 0:
-            JuJu.destroy_service(environment, self.config.transform_service, fail=False)
+            juju.destroy_service(environment, self.config.transform_service, fail=False)
         return numbers
 
     # ----------------------------------------------------------------------------------------------

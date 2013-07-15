@@ -29,7 +29,7 @@
 
 import os, subprocess, sys, yaml
 from six import string_types
-import JuJu
+import pyutils.juju as juju
 from pyutils.pyutils import cmd
 
 try:
@@ -240,7 +240,7 @@ class CharmHooks(object):
         >>> hasattr(hooks.config, 'rabbit_password')
         True
         """
-        self.config.__dict__.update(JuJu.load_unit_config(config, log=self.debug))
+        self.config.__dict__.update(juju.load_unit_config(config, log=self.debug))
 
     def save_local_config(self):
         u"""
