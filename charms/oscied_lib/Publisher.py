@@ -44,9 +44,7 @@ def publish_job(user_json, media_json, callback_json):
 
     try:
         # Avoid 'referenced before assignment'
-        callback = None
-        media_path = None
-        publish_path = None
+        callback = media_path = publish_path = publish_root = None
         request = current_task.request
 
         # Let's the task begin !
