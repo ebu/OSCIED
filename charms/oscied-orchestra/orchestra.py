@@ -2329,7 +2329,7 @@ def api_publish_job_post():
     try:
         auth_user = requires_auth(request=request, allow_any=True)
         data = get_request_json(request)
-        job_id = orchestra.launch_publish_job(auth_user.id, data['media_id'], data['queue'],
+        job_id = orchestra.launch_publish_job(auth_user._id, data['media_id'], data['queue'],
                                               '/publish/callback')
         return ok_200(job_id, True)
     except Exception as e:
