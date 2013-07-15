@@ -51,7 +51,18 @@ class Media(object):
 
     @property
     def is_dash(self):
-        return os.path.splitext(self.filename)[1].lower() == 'mpd'
+        u"""
+        Returns True if the media's filename point to a MPEG-DASH MPD.
+
+        **Example usage**:
+
+        >>> import copy
+        >>> media = copy.copy(MEDIA_TEST)
+        >>> assert(not media.is_dash)
+        >>> media.filename = 'test.mpd'
+        >>> assert(media.is_dash)
+        """
+        return os.path.splitext(self.filename)[1].lower() == '.mpd'
 
     def is_valid(self, raise_exception):
         if not valid_uuid(self._id, none_allowed=False):
@@ -110,9 +121,13 @@ MEDIA_TEST.uri = ORCHESTRA_CONFIG_TEST.storage_medias_uri(MEDIA_TEST)
 MEDIA_TEST.add_metadata('title', 'not authorized overwrite', False)
 MEDIA_TEST.add_metadata('size', 4096, True)
 
-# --------------------------------------------------------------------------------------------------
+# Main ---------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     print object2json(MEDIA_TEST, True)
     MEDIA_TEST.is_valid(True)
     print str(Media.load(object2json(MEDIA_TEST, False)))
+    print('Testing Media with doctest')
+    import doctest
+    doctest.testmod(verbose=False)
+    print('OK')
