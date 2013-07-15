@@ -59,9 +59,16 @@ class Storage(object):
                     if the_error:
                         raise IndexError('An error occured : %s (%s -> %s).' %
                                          (the_error, media_src_path, media_dst_path))
-                return (os.stat(media_dst_path).st_size, get_media_duration(media_dst_path))
+                    try:
+                        size = os.stat(media_dst_path).st_size
+                    except OSError:
+                        raise ValueError('Unable to detect size of media %s.' % media_dst_path)
+                    duration = get_media_duration(media_dst_path)
+                    if duration is None:
+                        raise ValueError('Unable to detect duration of media %s.' % media_dst_path)                        
+                return (size, duration)
             else:
-                raise NotImplementedError('FIXME Add of external uri not implemented.')
+                raise NotImplementedError('FIXME Add of external URI not implemented.')
         return (0, None)
 
     @staticmethod
