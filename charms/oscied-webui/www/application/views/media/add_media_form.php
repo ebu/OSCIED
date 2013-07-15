@@ -10,8 +10,8 @@
    <?= form_hidden('form_id', md5(uniqid(rand(), true))); ?>
    <label for="title">Title</label>
    <?= form_input(array('name' => 'title', 'id' => 'title', 'class' => 'input-large')); ?>
-   <label for="virtual_filename">Virtual filename</label>
-   <?= form_input(array('name' => 'virtual_filename', 'id' => 'virtual_filename', 'class' => 'input-large')); ?>
+   <label for="filename">Filename</label>
+   <?= form_input(array('name' => 'filename', 'id' => 'filename', 'class' => 'input-large')); ?>
    <div id="attachments_div">
       <?= $this->load->view('fileupload/upload', array('table_id' => 'files')); ?>
    </div>

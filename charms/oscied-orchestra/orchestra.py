@@ -819,7 +819,7 @@ def api_media_post():
     Medias in the shared storage are renamed with the following convention:
         ``storage_root``/medias/``user_id``/``media_id``
 
-    When published or downloaded, media will be renamed to ``virtual_filename``.
+    When published or downloaded, media file-name will be ``filename``.
     Spaces ( ) are not allowed and they will be converted to underscores (_).
 
     Media's ``metadata`` must contain any valid JSON string. Only the ``title`` key is required.
@@ -842,7 +842,7 @@ def api_media_post():
         {
           "uri": "glusterfs://<address>/medias_volume/uploads/
                   Project London - Official Trailer [2009].mp4",
-          "virtual_filename": "Project_London_trailer_2009.mp4",
+          "filename": "Project_London_trailer_2009.mp4",
           "metadata":
           {
             "title": "Project London - Official Trailer (2009)"
@@ -866,7 +866,7 @@ def api_media_post():
             "uri": "glusterfs://<address>/medias_volume/medias/
                     <user_id>/<media_id>",
             "public_uris": null,
-            "virtual_filename": "Project_London_trailer_2009.mp4",
+            "filename": "Project_London_trailer_2009.mp4",
             "metadata": {
               "add_date": "2013-02-02 14:05",
               "duration": "00:02:44.88", "size": 54871886,
@@ -878,7 +878,7 @@ def api_media_post():
 
     :Allowed: Any user can do that
     :query uri: Media's source URI, actually only shared storage's URI are handled (required)
-    :query virtual_filename: Media's filename when downloaded or published (required)
+    :query filename: Media's filename when downloaded or published (required)
     :query metadata: JSON string containing metadatas about the media (required)
     :statuscode 200: OK
     :statuscode 400: on type or value error
@@ -894,8 +894,8 @@ def api_media_post():
     try:
         auth_user = requires_auth(request=request, allow_any=True)
         data = get_request_json(request)
-        media = Media(None, auth_user._id, None, data['uri'], None,
-                      data['virtual_filename'], data['metadata'], 'READY')
+        media = Media(None, auth_user._id, None, data['uri'], None, data['filename'],
+                      data['metadata'], 'READY')
         orchestra.save_media(media)
         return ok_200(media, True)
     except Exception as e:
@@ -934,7 +934,7 @@ def api_media_id_head(id):
             "uri": "glusterfs://<address>/medias_volume/medias/
                     <user_id>/<media_id>",
             "public_uris": null,
-            "virtual_filename": "Psy_gangnam_style.flv",
+            "filename": "Psy_gangnam_style.flv",
             "metadata": {
               "duration": "00:04:12.16",
               "add_date": "2013-02-11 22:37",
@@ -1005,7 +1005,7 @@ def api_media_id_get(id):
             "uri": "glusterfs://<address>/medias_volume/medias/
                     <user_id>/<media_id>",
             "public_uris": null,
-            "virtual_filename": "Psy_gangnam_style.flv",
+            "filename": "Psy_gangnam_style.flv",
             "metadata": {
               "duration": "00:04:12.16",
               "add_date": "2013-02-11 22:37",
@@ -1039,7 +1039,7 @@ def api_media_id_get(id):
 @app.route('/media/id/<id>', methods=['PATCH', 'PUT'])
 def api_media_id_patch(id):
     """
-    Update a media (only virtual_filename and metadata field can be updated).
+    Update a media (only metadata field can be updated).
 
    **Example request**:
 
@@ -1051,7 +1051,7 @@ def api_media_id_patch(id):
         Accept: application/json
         Content-Type: application/json
 
-        {"virtual_filename": "the_fifth_element.mp4"}
+        {"filename": "the_fifth_element.mp4"}
 
     **Example response**:
 
@@ -1068,7 +1068,7 @@ def api_media_id_patch(id):
 
     :Allowed: Only the author of the media
     :param id: media's id
-    :query virtual_filename: Media's filename when downloaded or published (optional)
+    :query filename: Media's filename when downloaded or published (optional)
     :query metadata: JSON string containing metadatas about the media (optional)
     :statuscode 200: OK
     :statuscode 400: Key ``key`` not found. *or* on type or value error
@@ -1088,13 +1088,10 @@ def api_media_id_patch(id):
             raise IndexError('No media with id %s.' % id)
         if auth_user._id != media.user_id:
             abort(403, 'You are not allowed to modify media with id %s.' % id)
-        old_virtual_filename = media.virtual_filename
-        if 'virtual_filename' in data:
-            media.virtual_filename = data['virtual_filename']
         if 'metadata' in data:
             media.metadata = data['metadata']
         orchestra.save_media(media)
-        return ok_200('The media "%s" has been updated.' % old_virtual_filename, False)
+        return ok_200('The media "%s" has been updated.' % media.filename, False)
     except Exception as e:
         map_exceptions(e)
 
@@ -1813,7 +1810,7 @@ def api_transform_job_post():
         {
           "media_in_id": "a396fe66-74ee-11e2-89ad-3085a9accbb8",
           "profile_id": "c316ff1a-74f8-11e2-82d4-3085a9accd33",
-          "virtual_filename": "avatar.mp4",
+          "filename": "avatar.mp4",
           "metadata": {"title": "Avatar (1080p)"},
           "queue": "transform_ebu-geneva"
         }
@@ -1831,7 +1828,7 @@ def api_transform_job_post():
     :Allowed: Any user
     :query media_in_id: New job input media's id (required)
     :query profile_id: New job profile's id (required)
-    :query virtual_filename: New job output media's virtual_filename (required)
+    :query filename: New job output media's filename (required)
     :query metadata: New  job output media's metadata (required)
     :query queue: The transform queue used to route the new job (required)
     :statuscode 200: OK
@@ -1850,7 +1847,7 @@ def api_transform_job_post():
         auth_user = requires_auth(request=request, allow_any=True)
         data = get_request_json(request)
         job_id = orchestra.launch_transform_job(
-            auth_user._id, data['media_in_id'], data['profile_id'], data['virtual_filename'],
+            auth_user._id, data['media_in_id'], data['profile_id'], data['filename'],
             data['metadata'], data['queue'], '/transform/callback')
         return ok_200(job_id, True)
     except Exception as e:
@@ -1978,7 +1975,7 @@ def api_transform_job_id_get(id):
                 "http://10.0.3.254/medias/<user_id>/<media_id>/
                  Project_London_trailer_2009.mp4"
               },
-              "virtual_filename": "Project_London_trailer_2009.mp4",
+              "filename": "Project_London_trailer_2009.mp4",
               "metadata": {
                 "add_date": "2013-02-11 22:37",
                 "duration": "00:02:44.88", "size": 54871886,
@@ -1993,7 +1990,7 @@ def api_transform_job_id_get(id):
               "uri": "glusterfs://<address>/medias_volume/medias/
                       <user_id>/<media_id>",
               "public_uris": null,
-              "virtual_filename": "project_london.mp2",
+              "filename": "project_london.mp2",
               "metadata": {
                 "add_date": "2013-02-11 22:44",
                 "duration": "00:00:01.95", "size": 25601528,
@@ -2453,7 +2450,7 @@ def api_publish_job_id_get(id):
                 "http://<address>/medias/<user_id>/<media_id>/
                  Project_London_trailer_2009.mp4"
               },
-              "virtual_filename": "Project_London_trailer_2009.mp4",
+              "filename": "Project_London_trailer_2009.mp4",
               "metadata": {
                 "duration": "00:02:44.88", "add_date": "2013-02-11 22:37",
                 "size": 54871886,

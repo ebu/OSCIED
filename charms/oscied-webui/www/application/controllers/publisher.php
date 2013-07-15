@@ -36,7 +36,7 @@ class Publisher extends MY_Controller
       }
       $data['medias'] = array();
       foreach ($response->value as $media) {
-         $data['medias'][$media->_id] = $media->metadata->title.' - '.$media->virtual_filename;
+         $data['medias'][$media->_id] = $media->metadata->title.' - '.$media->filename;
       }
       // Get the queues for the dropdown
       $response = $this->rest->get('publish/queue');

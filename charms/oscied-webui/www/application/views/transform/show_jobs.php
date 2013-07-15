@@ -23,8 +23,8 @@
       <tr>
          <td>
             <?php
-            $input = isset($job->media_in->virtual_filename)?$job->media_in->virtual_filename:'';
-            $output = isset($job->media_out->virtual_filename)?$job->media_out->virtual_filename:'';
+            $input = isset($job->media_in->filename)?$job->media_in->filename:'';
+            $output = isset($job->media_out->filename)?$job->media_out->filename:'';
             echo $input.'<br/>'.$output;
             ?>
          </td>

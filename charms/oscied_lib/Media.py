@@ -32,8 +32,7 @@ from pyutils.pyutils import json2object, object2json, valid_filename, valid_uuid
 
 class Media(object):
 
-    def __init__(self, _id, user_id, parent_id, uri, public_uris, virtual_filename, metadata,
-                 status):
+    def __init__(self, _id, user_id, parent_id, uri, public_uris, filename, metadata, status):
         if not _id:
             _id = str(uuid.uuid4())
         self._id = _id
@@ -42,9 +41,9 @@ class Media(object):
         self.uri = uri
         self.public_uris = public_uris
         try:
-            self.virtual_filename = str(virtual_filename).replace(' ', '_')
+            self.filename = str(filename).replace(' ', '_')
         except:
-            self.virtual_filename = None
+            self.filename = None
         self.metadata = metadata
         self.status = status
 
@@ -65,9 +64,9 @@ class Media(object):
         # FIXME check parent if loaded
         # FIXME check uri
         # FIXME check public_uris
-        if not valid_filename(self.virtual_filename):
+        if not valid_filename(self.filename):
             if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : virtual_filename is not a valid filename')
+                raise TypeError(self.__class__.__name__ + ' : filename is not a valid file-name')
             return False
         # FIXME check metadata
         if not self.status in ('PENDING', 'READY', 'PUBLISHED', 'DELETED'):

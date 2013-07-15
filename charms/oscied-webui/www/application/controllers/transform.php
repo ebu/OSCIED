@@ -36,7 +36,7 @@ class Transform extends MY_Controller
       }
       $data['medias'] = array();
       foreach ($response->value as $media) {
-         $data['medias'][$media->_id] = $media->metadata->title.' - '.$media->virtual_filename;
+         $data['medias'][$media->_id] = $media->metadata->title.' - '.$media->filename;
       }
       // Get the profiles for the dropdown
       $response = $this->rest->get('transform/profile');
@@ -123,7 +123,7 @@ class Transform extends MY_Controller
 
       $this->form_validation->set_rules('media_in_id', 'Input Media', 'required');
       $this->form_validation->set_rules('profile_id', 'Profile', 'required');
-      $this->form_validation->set_rules('virtual_filename', 'Virtual filename', 'required');
+      $this->form_validation->set_rules('filename', 'Filename', 'required');
       $this->form_validation->set_rules('title', 'Media title', 'required');
       $this->form_validation->set_rules('queue', 'Queue', 'required');
 
@@ -144,7 +144,7 @@ class Transform extends MY_Controller
             array(
                'media_in_id' => $this->input->post('media_in_id'),
                'profile_id' => $this->input->post('profile_id'),
-               'virtual_filename' => $this->input->post('virtual_filename'),
+               'filename' => $this->input->post('filename'),
                'metadata' => array('title' => $this->input->post('title')),
                'queue' => $this->input->post('queue')
             )
@@ -154,7 +154,7 @@ class Transform extends MY_Controller
             // Set the flash message
             $this->session->set_flashdata(
                'infos', 'The transform job for media "'.$this->input->post('title').' - '.
-                  $this->input->post('virtual_filename').'" has been launched.'
+                  $this->input->post('filename').'" has been launched.'
             );
             echo json_encode(array('redirect' => site_url('transform')));
          }

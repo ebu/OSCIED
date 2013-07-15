@@ -301,8 +301,8 @@ class Orchestra(object):
     def get_transform_queues(self):
         return self.config.transform_queues
 
-    def launch_transform_job(self, user_id, media_in_id, profile_id, virtual_filename, metadata,
-                             queue, callback_url):
+    def launch_transform_job(self, user_id, media_in_id, profile_id, filename, metadata, queue,
+                             callback_url):
         user = self.get_user({'_id': user_id}, {'secret': 0})
         if not user:
             raise IndexError('No user with id ' + user_id + '.')
@@ -317,8 +317,7 @@ class Orchestra(object):
         if not media_in.status in('READY', 'PUBLISHED',):
             raise NotImplementedError('Cannot launch the job, input media status is ' +
                                       media_in.status + '.')
-        media_out = Media(None, user_id, media_in_id, None, None, virtual_filename, metadata,
-                          'PENDING')
+        media_out = Media(None, user_id, media_in_id, None, None, filename, metadata, 'PENDING')
         media_out.uri = self.config.storage_medias_uri(media_out)
         self.save_media(media_out)  # Save pending output media
         # FIXME create a one-time password to avoid fixed secret authentication ...
@@ -493,13 +492,13 @@ class Orchestra(object):
         if status == 'SUCCESS':
             media_out.status = 'READY'
             self.save_media(media_out)
-            logging.info('%s Media %s is now READY' % (job_id, media_out.virtual_filename))
+            logging.info('%s Media %s is now READY' % (job_id, media_out.filename))
         else:
             self.delete_media(media_out)
             job.add_statistic('error_details', status.replace('\n', '\\n'), True)
             self._db.transform_jobs.save(job.__dict__)
             logging.info('%s Error: %s' % (job_id, status))
-            logging.info('%s Media %s is now deleted' % (job_id, media_out.virtual_filename))
+            logging.info('%s Media %s is now deleted' % (job_id, media_out.filename))
 
     def publish_callback(self, job_id, publish_uri, status):
         job = self.get_publish_job({'_id': job_id})
@@ -516,9 +515,9 @@ class Orchestra(object):
             media.public_uris[job_id] = publish_uri
             self._db.publish_jobs.save(job.__dict__)
             self.save_media(media)
-            logging.info('%s Media %s is now PUBLISHED' % (job_id, media.virtual_filename))
+            logging.info('%s Media %s is now PUBLISHED' % (job_id, media.filename))
         else:
             job.add_statistic('error_details', status.replace('\n', '\\n'), True)
             self._db.publish_jobs.save(job.__dict__)
             logging.info('%s Error: %s' % (job_id, status))
-            logging.info('%s Media %s is not modified' % (job_id, media.virtual_filename))
+            logging.info('%s Media %s is not modified' % (job_id, media.filename))

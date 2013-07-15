@@ -194,7 +194,7 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
         media_out_size = os.stat(media_out_path).st_size
         elapsed_time = time.time() - start_time
         print('%s Transform job successful' % (request.id))
-        print('%s Callback: Ask to update output media %s' % (request.id, media_out.virtual_filename))
+        print('%s Callback: Ask to update output media %s' % (request.id, media_out.filename))
         data_json = object2json({'job_id': request.id, 'status': 'SUCCESS'}, False)
         result = callback.post(data_json)
         print(
@@ -213,7 +213,7 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
 
         # Here something went wrong
         if media_out:
-            name = media_out.virtual_filename
+            name = media_out.filename
             try:
                 Storage.delete_media(config, media_out)
             except:

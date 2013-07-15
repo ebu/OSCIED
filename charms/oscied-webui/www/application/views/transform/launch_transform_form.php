@@ -8,7 +8,7 @@
          <tr>
             <th>Input Media</th>
             <th>Profile</th>
-            <th>Virtual Filename</th>
+            <th>Filename</th>
             <th>Media Title</th>
             <th>Queue</th>
          </tr>
@@ -17,7 +17,7 @@
          <tr>
             <td><?= form_dropdown('media_in_id', $medias, $this->input->post('media_in_id')) ?></td>
             <td><?= form_dropdown('profile_id', $profiles, $this->input->post('profile_id')) ?></td>
-            <td><?= form_input(array('name' => 'virtual_filename', 'class' => 'encoder_string input-large')) ?></td>
+            <td><?= form_input(array('name' => 'filename', 'class' => 'encoder_string input-large')) ?></td>
             <td><?= form_input(array('name' => 'title', 'class' => 'encoder_string input-large')) ?></td>
             <td><?= form_dropdown('queue', $queues, $this->input->post('queue')) ?></td>
          </tr>
