@@ -315,11 +315,9 @@ class Orchestra(object):
             raise IndexError('No profile with id ' + profile_id + '.')
         if not queue in self.config.transform_queues:
             raise IndexError('No transform queue with name ' + queue + '.')
-        if not media_in.status in('READY', 'PUBLISHED',):
-            raise NotImplementedError('Cannot launch the job, input media status is ' +
-                                      media_in.status + '.')
         media_out = Media(None, user_id, media_in_id, None, None, filename, metadata, 'PENDING')
         media_out.uri = self.config.storage_medias_uri(media_out)
+        TransformJob.validate_job(media_in, profile, media_out)
         self.save_media(media_out)  # Save pending output media
         # FIXME create a one-time password to avoid fixed secret authentication ...
         callback = Callback(self.config.api_url + callback_url, 'node', self.config.nodes_secret)

@@ -47,7 +47,6 @@ class TransformJob(object):
         self.statistic = statistic
         self.revoked = revoked
 
-
     def is_valid(self, raise_exception):
         if not valid_uuid(self._id, none_allowed=False):
             if raise_exception:
@@ -110,6 +109,20 @@ class TransformJob(object):
         job = TransformJob(None, None, None, None, None)
         json2object(json, job)
         return job
+
+    @staticmethod
+    def validate_job(media_in, profile, media_out):
+        if media_in.is_dash:
+            raise NotImplementedError('Cannot launch the job, input media is MPEG-DASH content.')
+        if not media_in.status in ('READY', 'PUBLISHED'):
+            raise NotImplementedError('Cannot launch the job, input media status is %s.' %
+                                      media_in.status)
+        if profile.is_dash and not media_out.is_dash:
+            raise ValueError('Cannot launch the job, output media is not a MPD but job is based '
+                             'on a MPEG-DASH encoder called %s.' % profile.encoder_name)
+        if not profile.is_dash and media_out.is_dash:
+            raise ValueError('Cannot launch the job, output media is a MPD but job is not based '
+                             'on a MPEG-DASH encoder called %s.' % profile.encoder_name)
 
 TRANSFORM_JOB_TEST = TransformJob(None, USER_TEST._id, MEDIA_TEST._id, MEDIA_TEST._id,
                                   TRANSFORM_PROFILE_TEST._id)
