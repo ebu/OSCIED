@@ -44,7 +44,7 @@ class TransformProfile(object):
 
     # FIXME test other fields
     def is_valid(self, raise_exception):
-        if not valid_uuid(self._id, False):
+        if not valid_uuid(self._id, none_allowed=False):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : _id is not a valid uuid string')
             return False

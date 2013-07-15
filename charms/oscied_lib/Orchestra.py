@@ -95,7 +95,7 @@ class Orchestra(object):
         #     raise IndexError('No user with id ' + id + '.')
         # self._db.users.remove({'_id': entity._id})
         # return User.load(object2json(entity, False))
-        if valid_uuid(user, False):
+        if valid_uuid(user, none_allowed=False):
             user = self.get_user({'_id': user}, {'secret': 0})
         user.is_valid(True)
         self._db.users.remove({'_id': user._id})
@@ -138,7 +138,7 @@ class Orchestra(object):
         return media
 
     def delete_media(self, media):
-        if valid_uuid(media, False):
+        if valid_uuid(media, none_allowed=False):
             media = self.get_media({'_id': media})
         media.is_valid(True)
         job = self.get_transform_job({'media_in_id': media._id}, append_result=True)
@@ -206,7 +206,7 @@ class Orchestra(object):
         return TransformProfile.load(object2json(entity, False))
 
     def delete_transform_profile(self, profile):
-        if valid_uuid(profile, False):
+        if valid_uuid(profile, none_allowed=False):
             profile = self.get_profile({'_id': profile})
         profile.is_valid(True)
         self._db.transform_profiles.remove({'_id': profile._id})
@@ -355,7 +355,7 @@ class Orchestra(object):
         actually running it will be cancelled if terminated = True. The output media will be deleted
         if corresponding argument, delete_media = True. """
         # FIXME verify that no pending jobs needs the media that will be created by the job !
-        if valid_uuid(job, False):
+        if valid_uuid(job, none_allowed=False):
             job = self.get_transform_job({'_id': job})
         job.is_valid(True)
         if job.revoked:
@@ -365,7 +365,7 @@ class Orchestra(object):
         job.revoked = True
         revoke(job._id, terminate=terminate)
         self._db.transform_jobs.save(job.__dict__)
-        if delete_media and valid_uuid(job.media_out_id, False):
+        if delete_media and valid_uuid(job.media_out_id, none_allowed=False):
             self.delete_media(job.media_out_id)
         if remove:
             self._db.transform_jobs.remove({'_id': job._id})
@@ -447,7 +447,7 @@ class Orchestra(object):
         in tasks database and broadcast revoke request to publisher units with celery. If the job is
         actually running it will be cancelled if terminated = True. The output media will be deleted
         """
-        if valid_uuid(job, False):
+        if valid_uuid(job, none_allowed=False):
             job = self.get_publish_job({'_id': job})
         job.is_valid(True)
         if job.revoked:

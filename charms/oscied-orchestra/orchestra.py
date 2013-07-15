@@ -130,9 +130,9 @@ def requires_auth(request, allow_root=False, allow_node=False, allow_any=False, 
 
 
 def check_id(id):
-    if valid_uuid(id, False, False):
+    if valid_uuid(id, objectid_allowed=False, none_allowed=False):
         return id
-    elif valid_uuid(id, True, False):
+    elif valid_uuid(id, objectid_allowed=True, none_allowed=False):
         return ObjectId(id)
     raise ValueError('Wrong id format %s' % id)
 

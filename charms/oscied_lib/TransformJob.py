@@ -49,26 +49,26 @@ class TransformJob(object):
 
 
     def is_valid(self, raise_exception):
-        if not valid_uuid(self._id, False):
+        if not valid_uuid(self._id, none_allowed=False):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : _id is not a valid uuid string')
             return False
-        if hasattr(self, 'user_id') and not valid_uuid(self.user_id, False):
+        if hasattr(self, 'user_id') and not valid_uuid(self.user_id, none_allowed=False):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : user_id is not a valid uuid string')
             return False
         # FIXME check user if loaded
-        if hasattr(self, 'media_in_id') and not valid_uuid(self.media_in_id, False):
+        if hasattr(self, 'media_in_id') and not valid_uuid(self.media_in_id, none_allowed=False):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : media_in_id is not a valid uuid string')
             return False
         # FIXME check media_in if loaded
-        if hasattr(self, 'media_out_id') and not valid_uuid(self.media_out_id, False):
+        if hasattr(self, 'media_out_id') and not valid_uuid(self.media_out_id, none_allowed=False):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : media_out_id is not a valid uuid string')
             return False
         # FIXME check media_out if loaded
-        if hasattr(self, 'profile_id') and not valid_uuid(self.profile_id, False):
+        if hasattr(self, 'profile_id') and not valid_uuid(self.profile_id, none_allowed=False):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : profile_id is not a valid uuid string')
             return False
