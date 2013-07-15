@@ -42,6 +42,17 @@ class TransformProfile(object):
         self.encoder_name = encoder_name
         self.encoder_string = encoder_string
 
+    @property
+    def is_dash(self):
+        u"""
+        >>> import copy
+        >>> profile = copy.copy(TRANSFORM_PROFILE_TEST)
+        >>> assert(not profile.is_dash)
+        >>> profile.encoder_name = 'dashcast'
+        >>> assert(profile.is_dash)
+        """
+        return self.encoder_name in ('dashcast')
+
     # FIXME test other fields
     def is_valid(self, raise_exception):
         if not valid_uuid(self._id, none_allowed=False):
@@ -69,3 +80,7 @@ if __name__ == '__main__':
     print object2json(TRANSFORM_PROFILE_TEST, True)
     TRANSFORM_PROFILE_TEST.is_valid(True)
     print str(TransformProfile.load(object2json(TRANSFORM_PROFILE_TEST, False)))
+    print('Testing TransformProfile with doctest')
+    import doctest
+    doctest.testmod(verbose=False)
+    print('OK')

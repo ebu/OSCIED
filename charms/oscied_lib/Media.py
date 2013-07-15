@@ -25,12 +25,14 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import uuid
+import os, uuid
 from OrchestraConfig import ORCHESTRA_CONFIG_TEST
 from pyutils.pyutils import json2object, object2json, valid_filename, valid_uuid
 
 
 class Media(object):
+
+    STATUS = ('PENDING', 'READY', 'PUBLISHED', 'DELETED')
 
     def __init__(self, _id, user_id, parent_id, uri, public_uris, filename, metadata, status):
         if not _id:
@@ -46,6 +48,10 @@ class Media(object):
             self.filename = None
         self.metadata = metadata
         self.status = status
+
+    @property
+    def is_dash(self):
+        return os.path.splitext(self.filename)[1].lower() == 'mpd'
 
     def is_valid(self, raise_exception):
         if not valid_uuid(self._id, none_allowed=False):
@@ -69,7 +75,7 @@ class Media(object):
                 raise TypeError(self.__class__.__name__ + ' : filename is not a valid file-name')
             return False
         # FIXME check metadata
-        if not self.status in ('PENDING', 'READY', 'PUBLISHED', 'DELETED'):
+        if not self.status in Media.STATUS:
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : status is not a valid status string')
             return False
