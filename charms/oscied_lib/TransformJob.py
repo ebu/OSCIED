@@ -112,11 +112,12 @@ class TransformJob(object):
 
     @staticmethod
     def validate_job(media_in, profile, media_out):
-        if media_in.is_dash:
-            raise NotImplementedError('Cannot launch the job, input media is MPEG-DASH content.')
         if not media_in.status in ('READY', 'PUBLISHED'):
             raise NotImplementedError('Cannot launch the job, input media status is %s.' %
                                       media_in.status)
+        if media_in.is_dash and profile.encoder_name != 'copy':
+            raise NotImplementedError('Cannot launch the job, input media is MPEG-DASH content and '
+                                      'encoder is not copy.')
         if profile.is_dash and not media_out.is_dash:
             raise ValueError('Cannot launch the job, output media is not a MPD but job is based '
                              'on a MPEG-DASH encoder called %s.' % profile.encoder_name)
