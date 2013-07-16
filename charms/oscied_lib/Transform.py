@@ -36,8 +36,8 @@ from TransformConfig import TransformConfig
 from TransformProfile import TransformProfile
 from User import User
 from pyutils.ffmpeg import get_media_duration, get_media_tracks
-from pyutils.pyutils import object2json, datetime_now, duration2secs, get_size, make_async, \
-    read_async
+from pyutils.filesystem import get_size
+from pyutils.pyutils import object2json, datetime_now, duration2secs, make_async, read_async
 
 
 @task(name='Transform.transform_job')

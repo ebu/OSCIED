@@ -27,7 +27,7 @@
 
 import os, time
 from CharmHooks import CharmHooks
-from pyutils.pyutils import try_makedirs
+from pyutils.filesystem import try_makedirs
 
 
 class CharmHooks_Storage(CharmHooks):

@@ -27,7 +27,7 @@
 
 import os, shutil, time
 from pyutils.ffmpeg import get_media_duration
-from pyutils.pyutils import get_size, try_makedirs
+from pyutils.filesystem import get_size, try_makedirs
 
 
 class Storage(object):
