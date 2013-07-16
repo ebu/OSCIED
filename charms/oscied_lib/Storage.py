@@ -25,9 +25,9 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import os, time
+import os, shutil, time
 from pyutils.ffmpeg import get_media_duration
-from pyutils.pyutils import try_makedirs
+from pyutils.pyutils import get_size, try_makedirs
 
 
 class Storage(object):
@@ -47,7 +47,7 @@ class Storage(object):
                     media.uri = config.storage_medias_uri(media)
                     Storage.create_file_directory(media_dst_path)
                     the_error = None
-                    for i in range(1, 5):
+                    for i in range(5):
                         try:
                             os.rename(media_src_path, media_dst_path)
                             # FIXME chown chmod
@@ -60,7 +60,7 @@ class Storage(object):
                         raise IndexError('An error occured : %s (%s -> %s).' %
                                          (the_error, media_src_path, media_dst_path))
                 try:
-                    size = os.stat(media_dst_path).st_size
+                    size = get_size(os.path.dirname(media_dst_path))
                 except OSError:
                     raise ValueError('Unable to detect size of media %s.' % media_dst_path)
                 duration = get_media_duration(media_dst_path)
@@ -75,9 +75,6 @@ class Storage(object):
     def delete_media(config, media):
         media_path = config.storage_medias_path(media, generate=False)
         if media_path:
-            try:
-                os.remove(media_path)
-            except:
-                pass
+            shutil.rmtree(os.path.dirname(media_path), ignore_errors=True)
         else:
             raise NotImplementedError('FIXME Delete of external uri not implemented.')
