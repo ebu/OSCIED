@@ -96,8 +96,7 @@ def publish_job(user_json, media_json, callback_json):
         infos = recursive_copy(media_root, publish_root, copy_callback, RATIO_DELTA, TIME_DELTA)
 
         # Here all seem okay
-        print('%s Publish job successful' % request.id)
-        print('%s Callback : Media published as %s' % (request.id, publish_uri))
+        print('%s Publish job successful, media published as %s' % (request.id, publish_uri))
         publish_callback('SUCCESS', publish_uri)
         return {'hostname': request.hostname, 'start_date': infos['start_date'],
                 'elapsed_time': infos['elapsed_time'], 'eta_time': 0,
@@ -106,7 +105,6 @@ def publish_job(user_json, media_json, callback_json):
     except Exception as error:
 
         # Here something went wrong
-        print('%s Publish job failed ' % request.id)
-        print('%s Callback : Something went wrong' % request.id)
+        print('%s Publish job failed' % request.id)
         publish_callback(str(error), None)
         raise
