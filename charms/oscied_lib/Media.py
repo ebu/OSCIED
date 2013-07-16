@@ -129,5 +129,5 @@ if __name__ == '__main__':
     print str(Media.load(object2json(MEDIA_TEST, False)))
     print('Testing Media with doctest')
     import doctest
-    doctest.testmod(verbose=False)
+    assert(doctest.testmod(verbose=False))
     print('OK')

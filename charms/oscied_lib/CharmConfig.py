@@ -67,5 +67,5 @@ class CharmConfig(PickleableObject):
 if __name__ == '__main__':
     print('Test CharmConfig with doctest')
     import doctest
-    doctest.testmod(verbose=False)
+    assert(doctest.testmod(verbose=False))
     print('OK')

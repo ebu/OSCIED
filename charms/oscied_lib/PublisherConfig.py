@@ -59,7 +59,7 @@ PUBLISHER_CONFIG_TEST = PublisherConfig(api_nat_socket='129.194.185.47:5000',
 if __name__ == '__main__':
     print('Test PublisherConfig with doctest')
     import doctest
-    doctest.testmod(verbose=False)
+    assert(doctest.testmod(verbose=False))
     print('OK')
     print('Write default publisher configuration')
     PublisherConfig().write('../oscied-publisher/local_config.pkl')

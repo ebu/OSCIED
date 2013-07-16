@@ -97,7 +97,7 @@ class PublishJob(object):
 
 PUBLISH_JOB_TEST = PublishJob(None, USER_TEST._id, MEDIA_TEST._id, 'http://amazon.com/salut.mpg')
 
-# --------------------------------------------------------------------------------------------------
+# Main ---------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     print object2json(PUBLISH_JOB_TEST, True)

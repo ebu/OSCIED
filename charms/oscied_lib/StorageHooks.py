@@ -235,6 +235,8 @@ class StorageHooks(CharmHooks):
     def hook_peer_relation_broken(self):
         self.remark('FIXME NOT IMPLEMENTED')
 
+# Main ---------------------------------------------------------------------------------------------
+
 if __name__ == '__main__':
     StorageHooks(first_that_exist('metadata.yaml', '../oscied-storage/metadata.yaml'),
                  first_that_exist('config.yaml', '../oscied-storage/config.yaml'),

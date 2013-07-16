@@ -140,5 +140,5 @@ USER_TEST = User(None, 'David', 'Fischer', 'david.fischer.ch@gmail.com', 'Secr4t
 if __name__ == '__main__':
     print('Testing User with doctest')
     import doctest
-    doctest.testmod(verbose=False)
+    assert(doctest.testmod(verbose=False))
     print('OK')

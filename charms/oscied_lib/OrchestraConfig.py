@@ -92,7 +92,7 @@ ORCHESTRA_CONFIG_TEST = OrchestraConfig(
 if __name__ == '__main__':
     print('Test OrchestraConfig with doctest')
     import doctest
-    doctest.testmod(verbose=False)
+    assert(doctest.testmod(verbose=False))
     print('OK')
     print('Write default orchestra configuration')
     OrchestraConfig().write('../oscied-orchestra/local_config.pkl')

@@ -7,3 +7,4 @@ To H.264 MP4;Transcode video track to H.264 -> MP4;ffmpeg;-acodec copy -vcodec l
 Deinterlace MP4;Deinterlace video track -> MP4;ffmpeg;-strict experimental -vf 'yadif=0.-1:0, scale=trunc(iw/2)*2:trunc(ih/2)*2' -sameq -f mp4
 Speed-up 2x MP4;Speed-up video track by a factor of 2, remove audio -> MP4;ffmpeg;-strict experimental -vf 'setpts=0.5*PTS' -sameq -f mp4
 Negate MP4;Negate video track -> MP4;ffmpeg;-strict experimental -vf 'negate' -sameq -f mp4
+DASH-1;From DashCast website;dashcast;-seg-dur 1000 -frag-dur 200

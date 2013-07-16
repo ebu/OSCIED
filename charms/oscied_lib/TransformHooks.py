@@ -99,6 +99,8 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
     def hook_stop(self):
         screen_kill('Transform', log=self.debug)
 
+# Main ---------------------------------------------------------------------------------------------
+
 if __name__ == '__main__':
     TransformHooks(first_that_exist('metadata.yaml',    '../oscied-transform/metadata.yaml'),
                    first_that_exist('config.yaml',      '../oscied-transform/config.yaml'),
