@@ -63,9 +63,13 @@ class TransformProfile(object):
 TRANSFORM_PROFILE_TEST = TransformProfile(None, 'HD 1080p', 'MP4 H.264 1080p, audio copy', 'ffmpeg',
                                           '-c:a copy ...')
 
-# --------------------------------------------------------------------------------------------------
+# Main ---------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     print object2json(TRANSFORM_PROFILE_TEST, True)
     TRANSFORM_PROFILE_TEST.is_valid(True)
     print str(TransformProfile.load(object2json(TRANSFORM_PROFILE_TEST, False)))
+    print('Testing TransformProfile with doctest')
+    import doctest
+    assert(doctest.testmod(verbose=False))
+    print('OK')

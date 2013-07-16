@@ -236,6 +236,8 @@ class OrchestraHooks(CharmHooks_Storage):
             return
         # FIXME something to do (register unit ?)
 
+# Main ---------------------------------------------------------------------------------------------
+
 if __name__ == '__main__':
     OrchestraHooks(first_that_exist('metadata.yaml',    '../oscied-orchestra/metadata.yaml'),
                    first_that_exist('config.yaml',      '../oscied-orchestra/config.yaml'),

@@ -66,7 +66,7 @@ WEBUI_CONFIG_TEST = WebuiConfig(api_url='10.10.4.3:5000', storage_address='10.1.
 if __name__ == '__main__':
     print('Test WebuiConfig with doctest')
     import doctest
-    doctest.testmod(verbose=False)
+    assert(doctest.testmod(verbose=False))
     print('OK')
     print('Write default web user interface configuration')
     WebuiConfig().write('../oscied-webui/local_config.pkl')

@@ -118,6 +118,8 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         screen_kill('Publisher', log=self.debug)
         self.cmd('service apache2 stop', fail=False)
 
+# Main ---------------------------------------------------------------------------------------------
+
 if __name__ == '__main__':
     PublisherHooks(first_that_exist('metadata.yaml',    '../oscied-publisher/metadata.yaml'),
                    first_that_exist('config.yaml',      '../oscied-publisher/config.yaml'),

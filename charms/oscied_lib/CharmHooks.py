@@ -338,8 +338,10 @@ class CharmHooks(object):
             if self.juju_ok:
                 charmhelpers.log_exit()
 
+# Main ---------------------------------------------------------------------------------------------
+
 if __name__ == '__main__':
     print('Testing CharmHooks with doctest')
     import doctest
-    doctest.testmod(verbose=False)
+    assert(doctest.testmod(verbose=False))
     print ('OK')

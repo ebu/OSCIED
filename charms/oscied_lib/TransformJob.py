@@ -114,7 +114,7 @@ class TransformJob(object):
 TRANSFORM_JOB_TEST = TransformJob(None, USER_TEST._id, MEDIA_TEST._id, MEDIA_TEST._id,
                                   TRANSFORM_PROFILE_TEST._id)
 
-# --------------------------------------------------------------------------------------------------
+# Main ---------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     print object2json(TRANSFORM_JOB_TEST, True)

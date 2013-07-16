@@ -45,7 +45,7 @@ TRANSFORM_CONFIG_TEST = TransformConfig(api_nat_socket='129.194.185.47:5000',
 if __name__ == '__main__':
     print('Test TransformConfig with doctest')
     import doctest
-    doctest.testmod(verbose=False)
+    assert(doctest.testmod(verbose=False))
     print('OK')
     print('Write default transform configuration')
     TransformConfig().write('../oscied-transform/local_config.pkl')

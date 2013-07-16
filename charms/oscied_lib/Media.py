@@ -105,9 +105,13 @@ MEDIA_TEST.uri = ORCHESTRA_CONFIG_TEST.storage_medias_uri(MEDIA_TEST)
 MEDIA_TEST.add_metadata('title', 'not authorized overwrite', False)
 MEDIA_TEST.add_metadata('size', 4096, True)
 
-# --------------------------------------------------------------------------------------------------
+# Main ---------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     print object2json(MEDIA_TEST, True)
     MEDIA_TEST.is_valid(True)
     print str(Media.load(object2json(MEDIA_TEST, False)))
+    print('Testing Media with doctest')
+    import doctest
+    assert(doctest.testmod(verbose=False))
+    print('OK')

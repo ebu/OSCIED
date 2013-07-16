@@ -144,5 +144,5 @@ class CharmConfig_Storage(CharmConfig):
 if __name__ == '__main__':
     print('Test TransformConfig with doctest')
     import doctest
-    doctest.testmod(verbose=False)
+    assert(doctest.testmod(verbose=False))
     print('OK')

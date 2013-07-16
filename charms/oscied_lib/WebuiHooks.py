@@ -192,6 +192,8 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         self.cmd('service apache2 stop', fail=False)
         self.cmd('service mysql stop',   fail=False)
 
+# Main ---------------------------------------------------------------------------------------------
+
 if __name__ == '__main__':
     WebuiHooks(first_that_exist('metadata.yaml',    '../oscied-webui/metadata.yaml'),
                first_that_exist('config.yaml',      '../oscied-webui/config.yaml'),
