@@ -39,7 +39,7 @@ from pyutils.pyutils import object2json, datetime_now, get_size
 @task(name='Publisher.publish_job')
 def publish_job(user_json, media_json, callback_json):
 
-    RATIO_DELTA = 0.05  # Update status if at least 5% of progress
+    RATIO_DELTA = 0.01  # Update status if at least 1% of progress
     TIME_DELTA = 1      # Update status if at least 1 second(s) elapsed
 
     try:
@@ -48,8 +48,7 @@ def publish_job(user_json, media_json, callback_json):
         request = current_task.request
 
         # Let's the task begin !
-        start_date = datetime_now()
-        start_time = time.time()
+        start_date, start_time = datetime_now(), time.time()
         print('%s Publish job started' % (request.id))
 
         # Read current configuration to translate files uri to local paths
@@ -96,13 +95,15 @@ def publish_job(user_json, media_json, callback_json):
                     block = src_file.read(block_size)
                     try:
                         ratio = float(publish_size) / media_size
+                        ratio = 0.0 if ratio < 0.0 else 1.0 if ratio > 1.0 else ratio
                     except ZeroDivisionError:
                         ratio = 1.0
                     elapsed_time = time.time() - start_time
+                    # Update status of job only if delta time or delta ratio is sufficient
                     if ratio - prev_ratio > RATIO_DELTA and elapsed_time - prev_time > TIME_DELTA:
                         prev_ratio = ratio
                         prev_time = elapsed_time
-                        eta_time = int(elapsed_time * (1 - ratio) / ratio) if ratio > 0 else 0
+                        eta_time = int(elapsed_time * (1.0 - ratio) / ratio) if ratio > 0 else 0
                         publish_job.update_state(
                             state='PROGRESS',
                             meta={'hostname': request.hostname,
