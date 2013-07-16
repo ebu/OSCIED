@@ -25,31 +25,48 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import time, os, shutil
+import os
 from celery import current_task
 from celery.decorators import task
 from Callback import Callback
 from Media import Media
 from PublisherConfig import PublisherConfig
-from Storage import Storage
 from User import User
-from pyutils.filesystem import get_size
-from pyutils.pyutils import object2json, datetime_now
+from pyutils.filesystem import recursive_copy
+from pyutils.pyutils import object2json
 
 
 @task(name='Publisher.publish_job')
 def publish_job(user_json, media_json, callback_json):
+
+    def copy_callback(start_date, elapsed_time, eta_time, src_size, dst_size, ratio):
+        publish_job.update_state(state='PROGRESS', meta={
+            'hostname': request.hostname, 'start_date': start_date, 'elapsed_time': elapsed_time,
+            'eta_time': eta_time, 'media_size': src_size, 'publish_size': dst_size,
+            'percent': int(100 * ratio)})
+
+    def publish_callback(status, publish_uri):
+        data = {'job_id': request.id, 'status': status}
+        if publish_uri:
+            data['publish_uri'] = publish_uri
+        data_json = object2json(data, False)
+        if callback is None:
+            print('%s [ERROR] Unable to callback orchestrator: %s' % (request.id, data_json))
+        else:
+            r = callback.post(data_json)
+            print('%s Code %s %s : %s' % (request.id, r.status_code, r.reason, r._content))
+
+    # ----------------------------------------------------------------------------------------------
 
     RATIO_DELTA = 0.01  # Update status if at least 1% of progress
     TIME_DELTA = 1      # Update status if at least 1 second(s) elapsed
 
     try:
         # Avoid 'referenced before assignment'
-        callback = media_path = publish_path = publish_root = None
+        callback = None
         request = current_task.request
 
         # Let's the task begin !
-        start_date, start_time = datetime_now(), time.time()
         print('%s Publish job started' % (request.id))
 
         # Read current configuration to translate files uri to local paths
@@ -75,88 +92,21 @@ def publish_job(user_json, media_json, callback_json):
                                       media.uri)
         publish_path, publish_uri = config.publish_point(media)
         media_root, publish_root = os.path.dirname(media_path), os.path.dirname(publish_path)
-        media_size, publish_size = get_size(media_root), 0
 
-        # Recursive copy of a media (directory of files or file) to the local path of the publisher
-        for root, dirnames, filenames in os.walk(media_root):
-            for filename in filenames:
-                dst_root = root.replace(media_root, publish_root)
-                src_path = os.path.join(root, filename)
-                dst_path = os.path.join(dst_root, filename)
-
-                # Initialize block-based copy
-                Storage.create_file_directory(dst_path)
-                block_size = 1024 * 1024
-                src_file = open(src_path, 'rb')
-                dst_file = open(dst_path, 'wb')
-
-                # Block-based copy loop
-                block_pos = prev_ratio = prev_time = 0
-                while True:
-                    block = src_file.read(block_size)
-                    try:
-                        ratio = float(publish_size) / media_size
-                        ratio = 0.0 if ratio < 0.0 else 1.0 if ratio > 1.0 else ratio
-                    except ZeroDivisionError:
-                        ratio = 1.0
-                    elapsed_time = time.time() - start_time
-                    # Update status of job only if delta time or delta ratio is sufficient
-                    if ratio - prev_ratio > RATIO_DELTA and elapsed_time - prev_time > TIME_DELTA:
-                        prev_ratio = ratio
-                        prev_time = elapsed_time
-                        eta_time = int(elapsed_time * (1.0 - ratio) / ratio) if ratio > 0 else 0
-                        publish_job.update_state(
-                            state='PROGRESS',
-                            meta={'hostname': request.hostname,
-                                  'start_date': start_date,
-                                  'elapsed_time': elapsed_time,
-                                  'eta_time': eta_time,
-                                  'media_size': media_size,
-                                  'publish_size': publish_size,
-                                  'percent': int(100 * ratio)})
-                    block_length = len(block)
-                    block_pos += block_length
-                    publish_size += block_length
-                    if not block:
-                        break  # End of input media reached
-                    dst_file.write(block)
-                src_file.close()
-                dst_file.close()  # FIXME maybe a finally block for that
-
-        # Output media file sanity check
-        publish_size = get_size(publish_root)
-        if publish_size != media_size:
-            raise IOError('Output media size does not match input (%s vs %s)' %
-                          (media_size, publish_size))
+        infos = recursive_copy(media_root, publish_root, copy_callback, RATIO_DELTA, TIME_DELTA)
 
         # Here all seem okay
-        elapsed_time = time.time() - start_time
-        print('%s Publish job successful' % (request.id))
+        print('%s Publish job successful' % request.id)
         print('%s Callback : Media published as %s' % (request.id, publish_uri))
-        data_json = object2json(
-            {'job_id': request.id, 'publish_uri': publish_uri, 'status': 'SUCCESS'}, False)
-        result = callback.post(data_json)
-        print('%s Code %s %s : %s' % (request.id, result.status_code, result.reason, result._content))
-        return {'hostname': request.hostname,
-                'start_date': start_date,
-                'elapsed_time': elapsed_time,
-                'eta_time': 0,
-                'media_size': media_size,
-                'publish_size': publish_size,
-                'percent': 100}
+        publish_callback('SUCCESS', publish_uri)
+        return {'hostname': request.hostname, 'start_date': infos['start_date'],
+                'elapsed_time': infos['elapsed_time'], 'eta_time': 0,
+                'media_size': infos['src_size'], 'publish_size': infos['src_size'], 'percent': 100}
 
     except Exception as error:
 
         # Here something went wrong
-        if publish_root:
-            shutil.rmtree(publish_root, ignore_errors=True)
-        print('%s Publish job failed ' % (request.id))
-        print('%s Callback : Something went wrong' % (request.id))
-        data_json = object2json({'job_id': request.id, 'status': str(error)}, False)
-        if callback is None:
-            print('%s [ERROR] Unable to callback orchestrator: %s' % (request.id, data_json))
-        else:
-            result = callback.post(data_json)
-            print('%s Code %s %s : %s' %
-                  (request.id, result.status_code, result.reason, result._content))
+        print('%s Publish job failed ' % request.id)
+        print('%s Callback : Something went wrong' % request.id)
+        publish_callback(str(error), None)
         raise
