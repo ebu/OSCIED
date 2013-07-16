@@ -33,10 +33,6 @@ from pyutils.filesystem import get_size, try_makedirs
 class Storage(object):
 
     @staticmethod
-    def create_file_directory(file_path):
-        return try_makedirs(os.path.dirname(file_path))
-
-    @staticmethod
     def add_media(config, media):
         if not media.status in ('PENDING',):
             media_src_path = config.storage_medias_path(media, generate=False)
@@ -45,7 +41,7 @@ class Storage(object):
                 if media_dst_path != media_src_path:
                     # Generate media storage uri and move it to media storage path + set permissions
                     media.uri = config.storage_medias_uri(media)
-                    Storage.create_file_directory(media_dst_path)
+                    try_makedirs(os.path.dirname(media_dst_path))
                     the_error = None
                     for i in range(5):
                         try:
