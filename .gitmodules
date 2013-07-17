@@ -25,3 +25,6 @@
 [submodule "docs/wiki/build"]
 	path = docs/wiki/build
 	url = git@github.com:ebu/OSCIED.wiki.git
+[submodule "tools/sqlalchemy-source"]
+	path = tools/sqlalchemy-source
+	url = https://github.com/zzzeek/sqlalchemy
