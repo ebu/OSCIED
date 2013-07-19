@@ -59,10 +59,10 @@ lib/PublisherConfig.py
     :linenos:
     :lines: 28-
 
-lib/PublishJob.py
------------------
+lib/PublishTask.py
+------------------
 
-.. literalinclude:: ../../../../charms/lib/PublishJob.py
+.. literalinclude:: ../../../../charms/lib/PublishTask.py
     :language: python
     :linenos:
     :lines: 28-
@@ -91,10 +91,10 @@ lib/TransformConfig.py
     :linenos:
     :lines: 28-
 
-lib/TransformJob.py
--------------------
+lib/TransformTask.py
+--------------------
 
-.. literalinclude:: ../../../../charms/lib/TransformJob.py
+.. literalinclude:: ../../../../charms/lib/TransformTask.py
     :language: python
     :linenos:
     :lines: 28-

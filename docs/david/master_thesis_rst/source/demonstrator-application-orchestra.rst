@@ -23,7 +23,7 @@ Introduction
 This component is the brain of the application, responsible of :
 
 * the RESTful API, to expose application's functionalities to user
-* the database, to store application's data (users, profiles, jobs, ...)
+* the database, to store application's data (users, profiles, tasks, ...)
 * the message broker, to communicate with workers (transform & publisher)
 * the cloud orchestrator, to manage other components [#orch1]_
 
@@ -63,7 +63,7 @@ You can start the charm without specifying any configuration (default values wil
 
 * **verbose** Set verbose logging
 * **root_secret** Secret key used by API clients to manage users
-* **nodes_secret** Secret key used by workers/nodes to callback API when they finish their job
+* **nodes_secret** Secret key used by workers/nodes to callback API when they finish their task
 * **repositories_user** OSCIED charms repositories client username
 * **repositories_pass** OSCIED charms repositories client password
 * **webui_repository**  OSCIED Web UI charm will be checked out locally under ~/charms/(release)/oscied-webui

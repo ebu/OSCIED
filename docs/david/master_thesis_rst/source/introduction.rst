@@ -12,7 +12,7 @@ One of the challenges they face is the transcoding of their on demand content li
 
 Another challenge is the scaling of distribution servers. This process is dominated by changing demands because traffic peaks during the day, is at a minimum at night and sometimes when a video becomes a hit it will peak also.
 
-Both these challenges are met by an encoding (or transcoding) and distribution environment that can up- or down-scale capacity easily. Ideally a distribution environment is downscaled at night and only upscaled at peak events. A transcoding environment needs to be upscaled when more transcoding jobs are waiting.
+Both these challenges are met by an encoding (or transcoding) and distribution environment that can up- or down-scale capacity easily. Ideally a distribution environment is downscaled at night and only upscaled at peak events. A transcoding environment needs to be upscaled when more transcoding tasks are waiting.
 
 The OSCIED (|OSCIED|) project that is described in this paper addresses exactly these use cases.
 
@@ -107,7 +107,7 @@ Needs
 
 These use cases are large libraries that needs to be encoded and transcoded all the time (due to new file formats and services). Therefore an adaptive elastic environment is needed that can migrate files to new file formats at certain moments. Virtualization makes it possible to add computing resources when needed and change codecs when needed.
 
-For example when broadcasters want to migrate their library to |DASH|_ they normally will buy new encoders that support the new file format. However it is much more efficient to rent virtual servers in the cloud during night blocks for the period of the job.
+For example when broadcasters want to migrate their library to |DASH|_ they normally will buy new encoders that support the new file format. However it is much more efficient to rent virtual servers in the cloud during night blocks for the period of the task.
 
 For distribution a flexible environment is great to upscale `Apache 2`_ servers when a lot of traffic is expected instead of having to support a full park that is scaled for a peak event.
 

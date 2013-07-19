@@ -204,10 +204,10 @@ publisher/show.php
     :language: php
     :linenos:
 
-publisher/show_jobs.php
-^^^^^^^^^^^^^^^^^^^^^^^
+publisher/show_tasks.php
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: ../../../../charms/oscied-webui/www/application/views/publisher/show_jobs.php
+.. literalinclude:: ../../../../charms/oscied-webui/www/application/views/publisher/show_tasks.php
     :language: php
     :linenos:
 
@@ -225,10 +225,10 @@ transform/show.php
     :language: php
     :linenos:
 
-transform/show_jobs.php
-^^^^^^^^^^^^^^^^^^^^^^^
+transform/show_tasks.php
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. literalinclude:: ../../../../charms/oscied-webui/www/application/views/transform/show_jobs.php
+.. literalinclude:: ../../../../charms/oscied-webui/www/application/views/transform/show_tasks.php
     :language: php
     :linenos:
 

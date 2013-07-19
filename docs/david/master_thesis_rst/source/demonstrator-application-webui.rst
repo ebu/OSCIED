@@ -219,7 +219,7 @@ Medias Tab
 Transform Profiles Tab
 ++++++++++++++++++++++
 
-.. |webui_tprofiles| replace:: List of available profiles that transform jobs can pick from (WebUI -> Profile)
+.. |webui_tprofiles| replace:: List of available profiles that transform tasks can pick from (WebUI -> Profile)
 
 .. only:: html
 
@@ -257,129 +257,129 @@ Transform Profiles Tab
 
         |sequence_tprofiles_crud|
 
-Transform Jobs Tab
-++++++++++++++++++
+Transform Tasks Tab
++++++++++++++++++++
 
-.. |webui_tjobs| replace:: List of transform jobs (encoding) with various status (WebUI -> Transform)
+.. |webui_ttasks| replace:: List of transform tasks (encoding) with various status (WebUI -> Transform)
 
 .. only:: html
 
-    .. figure:: ../screenshots/screen/webui_tjobs.png
+    .. figure:: ../screenshots/screen/webui_ttasks.png
         :width: 1198px
         :align: center
-        :alt: |webui_tjobs|
+        :alt: |webui_ttasks|
 
-        |webui_tjobs|
+        |webui_ttasks|
 
 .. only:: latex
 
-    .. figure:: ../screenshots/screen/webui_tjobs.png
+    .. figure:: ../screenshots/screen/webui_ttasks.png
         :scale: 100 %
-        :alt: |webui_tjobs|
+        :alt: |webui_ttasks|
 
-        |webui_tjobs|
+        |webui_ttasks|
 
 .. note::
 
     As you can see, here the components needs NTP time synchronization !
 
-.. |webui_tjobs_error| replace:: Details of the erroneous transform job (WebUI -> Transform)
+.. |webui_ttasks_error| replace:: Details of the erroneous transform task (WebUI -> Transform)
 
 .. only:: html
 
-    .. figure:: ../screenshots/screen/webui_tjobs_error.png
+    .. figure:: ../screenshots/screen/webui_ttasks_error.png
         :width: 1087px
         :align: center
-        :alt: |webui_tjobs_error|
+        :alt: |webui_ttasks_error|
 
-        |webui_tjobs_error|
+        |webui_ttasks_error|
 
 .. only:: latex
 
-    .. figure:: ../screenshots/screen/webui_tjobs_error.png
+    .. figure:: ../screenshots/screen/webui_ttasks_error.png
         :scale: 100 %
-        :alt: |webui_tjobs_error|
+        :alt: |webui_ttasks_error|
 
-        |webui_tjobs_error|
+        |webui_ttasks_error|
 
-.. |sequence_tjobs_crud| replace:: Sequence diagram of WebUI Transform Jobs Tab CRUD (Create Read (update) Delete)
+.. |sequence_ttasks_crud| replace:: Sequence diagram of WebUI Transform Tasks Tab CRUD (Create Read (update) Delete)
 
 .. only:: html
 
-    .. figure:: ../uml/sequence-tjobs-crud.png
+    .. figure:: ../uml/sequence-ttasks-crud.png
         :width: 1500px
         :align: center
-        :alt: |sequence_tjobs_crud|
+        :alt: |sequence_ttasks_crud|
 
-        |sequence_tjobs_crud|
+        |sequence_ttasks_crud|
 
 .. only:: latex
 
-    .. figure:: ../uml/sequence-tjobs-crud.png
+    .. figure:: ../uml/sequence-ttasks-crud.png
         :scale: 100 %
-        :alt: |sequence_tjobs_crud|
+        :alt: |sequence_ttasks_crud|
 
-        |sequence_tjobs_crud|
+        |sequence_ttasks_crud|
 
-Publish Jobs Tab
-++++++++++++++++
+Publish Tasks Tab
++++++++++++++++++
 
-.. |webui_pjobs| replace:: List of publish jobs (publication) with API input validity error shown (WebUI -> Publisher)
+.. |webui_ptasks| replace:: List of publish tasks (publication) with API input validity error shown (WebUI -> Publisher)
 
 .. only:: html
 
-    .. figure:: ../screenshots/screen/webui_pjobs.png
+    .. figure:: ../screenshots/screen/webui_ptasks.png
         :width: 1200px
         :align: center
-        :alt: |webui_pjobs|
+        :alt: |webui_ptasks|
 
-        |webui_pjobs|
+        |webui_ptasks|
 
 .. only:: latex
 
-    .. figure:: ../screenshots/screen/webui_pjobs.png
+    .. figure:: ../screenshots/screen/webui_ptasks.png
         :scale: 100 %
-        :alt: |webui_pjobs|
+        :alt: |webui_ptasks|
 
-        |webui_pjobs|
+        |webui_ptasks|
 
-.. |webui_pjobs_play| replace:: Play-out of a published media thanks to H.264 Streaming mod (WebUI -> Publisher)
+.. |webui_ptasks_play| replace:: Play-out of a published media thanks to H.264 Streaming mod (WebUI -> Publisher)
 
 .. only:: html
 
-    .. figure:: ../screenshots/screen/webui_pjobs_play.png
+    .. figure:: ../screenshots/screen/webui_ptasks_play.png
         :width: 1200px
         :align: center
-        :alt: |webui_pjobs_play|
+        :alt: |webui_ptasks_play|
 
-        |webui_pjobs_play|
+        |webui_ptasks_play|
 
 .. only:: latex
 
-    .. figure:: ../screenshots/screen/webui_pjobs_play.png
+    .. figure:: ../screenshots/screen/webui_ptasks_play.png
         :scale: 100 %
-        :alt: |webui_pjobs_play|
+        :alt: |webui_ptasks_play|
 
-        |webui_pjobs_play|
+        |webui_ptasks_play|
 
-.. |sequence_pjobs_crud| replace:: Sequence diagram WebUI Publish(er) Jobs Tab CRUD (Create Read (update) Delete)
+.. |sequence_ptasks_crud| replace:: Sequence diagram WebUI Publish(er) Tasks Tab CRUD (Create Read (update) Delete)
 
 .. only:: html
 
-    .. figure:: ../uml/sequence-pjobs-crud.png
+    .. figure:: ../uml/sequence-ptasks-crud.png
         :width: 1481px
         :align: center
-        :alt: |sequence_pjobs_crud|
+        :alt: |sequence_ptasks_crud|
 
-        |sequence_pjobs_crud|
+        |sequence_ptasks_crud|
 
 .. only:: latex
 
-    .. figure:: ../uml/sequence-pjobs-crud.png
+    .. figure:: ../uml/sequence-ptasks-crud.png
         :scale: 99 %
-        :alt: |sequence_pjobs_crud|
+        :alt: |sequence_ptasks_crud|
 
-        |sequence_pjobs_crud|
+        |sequence_ptasks_crud|
 
 .. raw:: latex
 

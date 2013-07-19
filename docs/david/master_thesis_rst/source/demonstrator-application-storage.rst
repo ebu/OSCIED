@@ -27,7 +27,7 @@ You can start the charm without specifying any configuration (default values wil
 
 * **verbose** Set verbose logging
 * **concurrency** Amount of tasks the worker can handle simultaneously
-* **rabbit_queues** Worker connect to queues to receive jobs
+* **rabbit_queues** Worker connect to queues to receive tasks
 * **max_upload_size** Maximum size for file uploads
 * **max_execution_time** Maximum time for PHP scripts
 * **max_input_time** Maximum time for HTTP post

@@ -9,7 +9,7 @@ Foreword
 You may have noticed they are missing *numbers* here. The reason is the only conclusions one would gather from *performance benchmarks* would be the following :
 
 * Actual storage charm cannot scale, this is the bottleneck of any deployment using it
-* Celery does work as expected, workers keep connection to queues and jobs are handled rapidly
+* Celery does work as expected, workers keep connection to queues and tasks are handled rapidly
 * Encoding : Sure, a Pentium IV is slower than a i7
 * ...
 
@@ -159,7 +159,7 @@ This scenario represent a typical *development purposes only* local deployment o
 :date: 2013-01-27 18:57:01,994
 :revision: 1110
 :juju: :download:`debug.log<../deployments/1110_lxc_3_2/debug.log>`
-:screen: :download:`init_and_jobs.mp4<../deployments/1110_lxc_3_2/init_and_jobs.mp4>`
+:screen: :download:`init_and_tasks.mp4<../deployments/1110_lxc_3_2/init_and_tasks.mp4>`
 
 Parallel deployment MaaS, Desktop, Amazon
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

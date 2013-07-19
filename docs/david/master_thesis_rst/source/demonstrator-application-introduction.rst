@@ -45,9 +45,9 @@ Here are the charms developed for this application :
    :widths: 20, 50, 15, 15
 
     "WebUI    ", "Provides a web based interface for the users of the platform (e.g. broadcasters)", "website", "storage api"
-    "Orchestra", "Provides the RESTful API and handles the DB & jobs scheduling (the brain)", "api transform publisher", "storage"
-    "Transform", "Handles media encoding jobs to transform medias from/to various formats", "(nothing)", "storage transform"
-    "Publisher", "Handles media publication jobs to make medias available for the audience", "(nothing)", "storage publisher"
+    "Orchestra", "Provides the RESTful API and handles the DB & tasks scheduling (the brain)", "api transform publisher", "storage"
+    "Transform", "Handles media encoding tasks to transform medias from/to various formats", "(nothing)", "storage transform"
+    "Publisher", "Handles media publication tasks to make medias available for the audience", "(nothing)", "storage publisher"
     "Storage  ", "Provides a shared medias storage mounted by other components of the application", "storage", "(nothing)"
 
 The *provides* and *requires* columns are the name of the relations required or provided by the charm.
@@ -87,7 +87,7 @@ Here are the relations :
     "publisher", "subordinate", "Send database & message broker connections", "Update config. & connect to broker"
     "storage", "mount", "Send parameters required to mount the storage", "Update config. & mount the storage"
 
-**Remark:** Don't panic, they are only the required credentials to access to jobs related database !
+**Remark:** Don't panic, they are only the required credentials to access to tasks related database !
 
 The application's charms can be connected to charms of the |juju_charms_store|_ thanks to the nice contributors behind every of the charms. For example, one can imagine to plug `Nginx charm`_ in front of (e.g. 5x) publication points and closer to the user to reduce load and network traffic of backend publication points !
 
@@ -181,7 +181,7 @@ The strengths and weaknesses of this project are :
         * (+) Is pluggable to charms developed by the community such as haproxy, nginx, nagios, ...
     * (+) The orchestrator provides a RESTful API, one can implement a higher-level tools based on OSCIED !
     * The distributed tasks queue Celery_ add some kind of magic to the orchestrator :
-        * (+) The enterprise business rules can be implemented by connecting the workers [#app2]_ to the right tasks queues and sending jobs to the right queues.
+        * (+) The enterprise business rules can be implemented by connecting the workers [#app2]_ to the right tasks queues and sending tasks to the right queues.
     * The preliminary demonstrator is not perfect, some work is required to make it better, actually :
         * (-) The storage charms doesn't handle clustering (not scalable)
         * (-) The orchestrator charm cannot be highly-available (not scalable)
@@ -189,7 +189,7 @@ The strengths and weaknesses of this project are :
         * (-) The orchestrator only uses the basic features of Celery_ !
 
 .. [#app1] This is true for the services that actually can scale-up/down such as the transform, publisher and webui charms.
-.. [#app2] They are actually two kind of workers, the transform (encoding jobs) and publisher (publication jobs).
+.. [#app2] They are actually two kind of workers, the transform (encoding tasks) and publisher (publication tasks).
 
 .. TODO Here I will show and explain the nice high-level OSCIED-Operational.RabbitMQ.png
 
