@@ -34,7 +34,8 @@ from common import (
     DAVID_REPORT_COMMON_FILE, DAVID_REPORT_REFERENCES_FILE, DAVID_REPORT_LINKS_FILE,
     WIKI_BUILD_PATH, WIKI_SOURCE_PATH, xprint
 )
-from pyutils.pyutils import cmd, try_makedirs, try_remove
+from pyutils.filesystem import try_makedirs, try_remove
+from pyutils.pyutils import cmd
 
 if __name__ == '__main__':
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
