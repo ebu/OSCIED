@@ -196,7 +196,7 @@ def transform_task(user_json, media_in_json, media_out_json, profile_json, callb
             media_in_size = get_size(media_in_root)
             try:
                 media_in_frames = \
-                    int(get_media_tracks(media_in_path)['video']['0.0']['estimated_frames'])
+                    int(get_media_tracks(media_in_path)['video']['0:0']['estimated_frames'])
             except:
                 media_in_frames = None
 
