@@ -39,20 +39,29 @@ from Storage import Storage
 from TransformProfile import TransformProfile, ENCODERS_NAMES
 from TransformJob import TransformJob
 from User import User
+import pyutils.juju as juju
 from pyutils.pyutils import object2json, datetime_now, UUID_ZERO, valid_uuid
 
 
 class Orchestra(object):
 
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Constructor >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
     def __init__(self, config):
         self.config = config
-        self._db = pymongo.Connection(config.mongo_connection)['orchestra']
+        self._db = pymongo.Connection(config.mongo_admin_connection)['orchestra']
         self.root_user = User(UUID_ZERO, 'root', 'oscied', 'root@oscied.org',
                               self.config.root_secret, True)
         self.nodes_user = User(UUID_ZERO, 'nodes', 'oscied', 'nodes@oscied.org',
                                self.config.nodes_secret, False)
 
-    # ----------------------------------------------------------------------------------------------
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Properties >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    @property
+    def about(self):
+        return ('Orchestra : EBU\'s OSCIED Orchestrator by David Fischer 2012-2013')
+
+    # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Functions >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     def flush_db(self):
         self._db.drop_collection('users')
@@ -81,7 +90,13 @@ class Orchestra(object):
         return user if secret is None or user.verify_secret(secret) else None
 
     def delete_user(self, user):
-        if valid_uuid(user, False):
+        # FIXME issue #16 (https://github.com/ebu/OSCIED/issues/16)
+        # entity = self.get_user({'_id': user_id}, {'secret': 0})
+        # if not entity:
+        #     raise IndexError('No user with id ' + id + '.')
+        # self._db.users.remove({'_id': entity._id})
+        # return User.load(object2json(entity, False))
+        if valid_uuid(user, none_allowed=False):
             user = self.get_user({'_id': user}, {'secret': 0})
         user.is_valid(True)
         self._db.users.remove({'_id': user._id})
@@ -124,7 +139,7 @@ class Orchestra(object):
         return media
 
     def delete_media(self, media):
-        if valid_uuid(media, False):
+        if valid_uuid(media, none_allowed=False):
             media = self.get_media({'_id': media})
         media.is_valid(True)
         job = self.get_transform_job({'media_in_id': media._id}, append_result=True)
@@ -155,6 +170,26 @@ class Orchestra(object):
 
     # ----------------------------------------------------------------------------------------------
 
+    def add_environment(self, name, type, region, access_key, secret_key, control_bucket):
+        return juju.add_environment(self.config.juju_config_file, name, type, region, access_key,
+                                    secret_key, control_bucket, self.config.charms_release)
+
+    def delete_environment(self, name, remove=False):
+        u"""
+        .. warning:: TODO test & debug of environment methods, especially delete !
+        """
+        return juju.destroy_environment(self.config.juju_config_file, name, remove)
+
+    def get_environments(self):
+        return juju.get_environments(self.config.juju_config_file, get_status=False)
+
+    def get_environment(self, name):
+        (environments, default) = self.get_environments()
+        if name not in environments:
+            raise ValueError('No environment with name %s.' % name)
+
+    # ----------------------------------------------------------------------------------------------
+
     def get_transform_profile_encoders(self):
         return ENCODERS_NAMES
 
@@ -172,7 +207,7 @@ class Orchestra(object):
         return TransformProfile.load(object2json(entity, False))
 
     def delete_transform_profile(self, profile):
-        if valid_uuid(profile, False):
+        if valid_uuid(profile, none_allowed=False):
             profile = self.get_profile({'_id': profile})
         profile.is_valid(True)
         self._db.transform_profiles.remove({'_id': profile._id})
@@ -188,11 +223,87 @@ class Orchestra(object):
 
     # ----------------------------------------------------------------------------------------------
 
+    def add_or_deploy_transform_units(self, environment, num_units):
+        environments, default = self.get_environments()
+        same_environment = (environment == default)
+        config = juju.load_unit_config(self.config.transform_config)
+        config['rabbit_queues'] = 'transform_%s' % environment
+        if not same_environment:
+            raise NotImplementedError('Unable to launch transform units into non-default '
+                                      'environment %s (default is %s).' % (environment, default))
+            config['mongo_connection'] = self.config.mongo_nodes_connection
+            config['rabbit_connection'] = self.config.rabbit_connection
+            # FIXME copy storage configuration, first method
+            config['storage_address'] = self.config.storage_address
+            config['storage_fstype'] = self.config.storage_fstype
+            config['storage_mountpoint'] = self.config.storage_mountpoint
+            config['storage_options'] = self.config.storage_options
+        juju.save_unit_config(self.config.charms_config, self.config.transform_service, config)
+        juju.add_or_deploy_units(environment, self.config.transform_service, num_units,
+                                 config=self.config.charms_config, local=True,
+                                 release=self.config.charms_release,
+                                 repository=self.config.charms_repository)
+        if same_environment:
+            try:
+                try:
+                    juju.add_relation(environment, self.config.orchestra_service,
+                                      self.config.transform_service, 'transform', 'transform')
+                except RuntimeError as e:
+                    raise NotImplementedError('Orchestra service must be available and running on '
+                                              'default environment %s, reason : %s', (default, e))
+                try:
+                    juju.add_relation(environment, self.config.storage_service,
+                                      self.config.transform_service)
+                except RuntimeError as e:
+                    raise NotImplementedError('Storage service must be available and running on '
+                                              'default environment %s, reason : %s', (default, e))
+            except NotImplementedError:
+                juju.destroy_service(environment, self.config.transform_service)
+                raise
+
+    def get_transform_unit(self, environment, number):
+        return juju.get_unit(environment, self.config.transform_service, number)
+
+    def get_transform_units(self, environment):
+        return juju.get_units(environment, self.config.transform_service)
+
+    def get_transform_units_count(self, environment):
+        return juju.get_units_count(environment, self.config.transform_service)
+
+    def remove_transform_unit(self, environment, number, terminate):
+        juju.remove_unit(environment, self.config.transform_service, number, terminate)
+        if self.get_transform_units_count(environment) == 0:
+            return juju.destroy_service(environment, self.config.transform_service, fail=False)
+
+    def remove_transform_units(self, environment, num_units, terminate):
+        u"""
+
+        .. warning::
+
+            FIXME implement more robust resources listing and removing, sometimes juju fail during a
+            call (e.g. remove_transform_units with num_units=10) and then some machines are not
+            terminated. Maybe implement a garbage collector method calleable by user when he want to
+            terminate useless machines ?
+        """
+        units = self.get_transform_units(environment)
+        numbers = []
+        for unit_number in units.iterkeys():
+            num_units -= 1
+            if num_units < 0:
+                break
+            juju.remove_unit(environment, self.config.transform_service, unit_number, terminate)
+            numbers.append(unit_number)
+        if self.get_transform_units_count(environment) == 0:
+            juju.destroy_service(environment, self.config.transform_service, fail=False)
+        return numbers
+
+    # ----------------------------------------------------------------------------------------------
+
     def get_transform_queues(self):
         return self.config.transform_queues
 
-    def launch_transform_job(self, user_id, media_in_id, profile_id, virtual_filename, metadata,
-                             queue, callback_url):
+    def launch_transform_job(self, user_id, media_in_id, profile_id, filename, metadata, queue,
+                             callback_url):
         user = self.get_user({'_id': user_id}, {'secret': 0})
         if not user:
             raise IndexError('No user with id ' + user_id + '.')
@@ -204,20 +315,16 @@ class Orchestra(object):
             raise IndexError('No profile with id ' + profile_id + '.')
         if not queue in self.config.transform_queues:
             raise IndexError('No transform queue with name ' + queue + '.')
-        if not media_in.status in('READY', 'PUBLISHED',):
-            raise NotImplementedError('Cannot launch the job, input media status is ' +
-                                      media_in.status + '.')
-        media_out = Media(None, user_id, media_in_id, None, None, virtual_filename, metadata,
-                          'PENDING')
+        media_out = Media(None, user_id, media_in_id, None, None, filename, metadata, 'PENDING')
         media_out.uri = self.config.storage_medias_uri(media_out)
+        TransformJob.validate_job(media_in, profile, media_out)
         self.save_media(media_out)  # Save pending output media
         # FIXME create a one-time password to avoid fixed secret authentication ...
         callback = Callback(self.config.api_url + callback_url, 'node', self.config.nodes_secret)
         result = Transform.transform_job.apply_async(
-            args=(
-                object2json(user, False), object2json(media_in, False),
-                object2json(media_out, False), object2json(profile, False),
-                object2json(callback, False)),
+            args=(object2json(user,      False), object2json(media_in, False),
+                  object2json(media_out, False), object2json(profile,  False),
+                  object2json(callback,  False)),
             queue=queue)
         if not result.id:
             raise ValueError('Unable to transmit job to workers of queue ' + queue + '.')
@@ -247,7 +354,7 @@ class Orchestra(object):
         actually running it will be cancelled if terminated = True. The output media will be deleted
         if corresponding argument, delete_media = True. """
         # FIXME verify that no pending jobs needs the media that will be created by the job !
-        if valid_uuid(job, False):
+        if valid_uuid(job, none_allowed=False):
             job = self.get_transform_job({'_id': job})
         job.is_valid(True)
         if job.revoked:
@@ -257,7 +364,7 @@ class Orchestra(object):
         job.revoked = True
         revoke(job._id, terminate=terminate)
         self._db.transform_jobs.save(job.__dict__)
-        if delete_media and valid_uuid(job.media_out_id, False):
+        if delete_media and valid_uuid(job.media_out_id, none_allowed=False):
             self.delete_media(job.media_out_id)
         if remove:
             self._db.transform_jobs.remove({'_id': job._id})
@@ -339,7 +446,7 @@ class Orchestra(object):
         in tasks database and broadcast revoke request to publisher units with celery. If the job is
         actually running it will be cancelled if terminated = True. The output media will be deleted
         """
-        if valid_uuid(job, False):
+        if valid_uuid(job, none_allowed=False):
             job = self.get_publish_job({'_id': job})
         job.is_valid(True)
         if job.revoked:
@@ -384,13 +491,13 @@ class Orchestra(object):
         if status == 'SUCCESS':
             media_out.status = 'READY'
             self.save_media(media_out)
-            logging.info('%s Media %s is now READY' % (job_id, media_out.virtual_filename))
+            logging.info('%s Media %s is now READY' % (job_id, media_out.filename))
         else:
             self.delete_media(media_out)
             job.add_statistic('error_details', status.replace('\n', '\\n'), True)
             self._db.transform_jobs.save(job.__dict__)
             logging.info('%s Error: %s' % (job_id, status))
-            logging.info('%s Media %s is now deleted' % (job_id, media_out.virtual_filename))
+            logging.info('%s Media %s is now deleted' % (job_id, media_out.filename))
 
     def publish_callback(self, job_id, publish_uri, status):
         job = self.get_publish_job({'_id': job_id})
@@ -407,9 +514,9 @@ class Orchestra(object):
             media.public_uris[job_id] = publish_uri
             self._db.publish_jobs.save(job.__dict__)
             self.save_media(media)
-            logging.info('%s Media %s is now PUBLISHED' % (job_id, media.virtual_filename))
+            logging.info('%s Media %s is now PUBLISHED' % (job_id, media.filename))
         else:
             job.add_statistic('error_details', status.replace('\n', '\\n'), True)
             self._db.publish_jobs.save(job.__dict__)
             logging.info('%s Error: %s' % (job_id, status))
-            logging.info('%s Media %s is not modified' % (job_id, media.virtual_filename))
+            logging.info('%s Media %s is not modified' % (job_id, media.filename))

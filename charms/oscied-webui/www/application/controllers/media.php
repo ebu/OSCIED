@@ -95,7 +95,7 @@ class Media extends MY_Controller
          )
       );
       $response = $this->rest->get('media/id/'.$id);
-      $name = isset($response->value->virtual_filename)?$response->value->virtual_filename:'Untitled';
+      $name = isset($response->value->filename)?$response->value->filename:'Untitled';
       $path = str_replace(
          $this->config->item('medias_uri'),
          $this->config->item('medias_path'),
@@ -114,7 +114,7 @@ class Media extends MY_Controller
       $form_id = $this->input->post('form_id');
 
       $this->form_validation->set_rules('title', 'Title', 'required');
-      $this->form_validation->set_rules('virtual_filename', 'Virtual filename', 'required');
+      $this->form_validation->set_rules('filename', 'Filename', 'required');
       $this->form_validation->set_rules('form_id', 'File', 'callback__file_check');
 
       if ($this->form_validation->run() === FALSE) {
@@ -148,7 +148,7 @@ class Media extends MY_Controller
                'uri' => str_replace(
                   $this->config->item('uploads_path'), $this->config->item('uploads_uri'), $new_dir
                ).$file['name'],
-               'virtual_filename' => $this->input->post('virtual_filename'), // $file['name'],
+               'filename' => $this->input->post('filename'), // $file['name'],
                'metadata' => array('title' => $this->input->post('title'))
             )
          );

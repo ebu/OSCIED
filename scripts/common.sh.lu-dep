@@ -84,6 +84,7 @@ CONFIG_JUJU_TEMPL_FILE="$CONFIG_JUJU_FILES_PATH/environments.yaml.template"
 CONFIG_SCENARIOS_PATH="$CONFIG_PATH/scenarios"
 
 ID_RSA="$HOME/.ssh/id_rsa"
+ID_RSA_PUB="$HOME/.ssh/id_rsa.pub"
 JUJU_PATH="$HOME/.juju"
 JUJU_STORAGE_PATH="$JUJU_PATH/storage/"
 JUJU_ENVS_FILE="$JUJU_PATH/environments.yaml"
@@ -289,7 +290,7 @@ json_media()
     xecho "Usage: $(basename $0).json_media uri vfilename title"
   fi
 
-  JSON="{\"uri\":\"$1\",\"virtual_filename\":\"$2\",\"metadata\":{\"title\":\"$3\"}}"
+  JSON="{\"uri\":\"$1\",\"filename\":\"$2\",\"metadata\":{\"title\":\"$3\"}}"
 }
 
 json_tprofile()
@@ -308,7 +309,7 @@ json_tjob()
   p='profile_id'
   q='queue'
   t='title'
-  v='virtual_filename'
+  v='filename'
   y='priority'
   if [ $# -ne 6 ]; then
     xecho "Usage: $(basename $0).json_tjob $m $p $v $t $q $y"

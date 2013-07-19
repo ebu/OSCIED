@@ -45,7 +45,7 @@ class PublisherConfig(CharmConfig_Storage):
         self.publish_path = publish_path
 
     def publish_point(self, media):
-        common = join(MEDIAS_PATH, media.user_id, media._id, media.virtual_filename)
+        common = join(MEDIAS_PATH, media.user_id, media._id, media.filename)
         return (join(self.publish_path, common), join(self.publish_uri, common))
 
     def update_publish_uri(self, public_address):

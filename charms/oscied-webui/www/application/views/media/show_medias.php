@@ -26,9 +26,9 @@
             <?php
                $status = isset($media->status)?strtoupper($media->status):'UNKNOWN';
                if ($status == 'READY' or $status == 'PUBLISHED'): ?>
-            <a href="<?= site_url('media/force_download/'.$media->_id) ?>"><?= isset($media->virtual_filename)?$media->virtual_filename:'Untitled' ?></a>
+            <a href="<?= site_url('media/force_download/'.$media->_id) ?>"><?= isset($media->filename)?$media->filename:'Untitled' ?></a>
             <?php else: ?>
-            <?= isset($media->virtual_filename)?$media->virtual_filename:'Untitled' ?>
+            <?= isset($media->filename)?$media->filename:'Untitled' ?>
             <?php endif; ?>
          </td>
          <td><?= (isset($media->metadata->size)?byte_format($media->metadata->size):'') ?></td>

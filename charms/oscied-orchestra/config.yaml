@@ -19,18 +19,10 @@ options:
     type: string
     default: ""
     description: OSCIED charms repositories client password.
-  webui_repository:
+  oscied_repository:
     type: string
-    default: "https://github.com/EBU-TI/OSCIED/charms/oscied-webui"
-    description: OSCIED Web UI charm will be checked out locally under ~/charms/(release)/oscied-webui.
-  transform_repository:
-    type: string
-    default: "https://github.com/EBU-TI/OSCIED/charms/oscied-transform"
-    description: OSCIED Transform charm will be checked out locally under ~/charms/(release)/oscied-transform.
-  publisher_repository:
-    type: string
-    default: "https://github.com/EBU-TI/OSCIED/charms/oscied-publisher"
-    description: OSCIED Publisher charm will be checked out locally under ~/charms/(release)/oscied-publisher.
+    default: "https://github.com/EBU-TI/OSCIED/charms"
+    description: OSCIED charms will be checked out locally under ~/charms/(release).
   mongo_admin_password:
     type: string
     default: "Mongo_admin_1234"

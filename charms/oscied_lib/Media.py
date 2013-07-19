@@ -25,15 +25,16 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import uuid
+import os, uuid
 from OrchestraConfig import ORCHESTRA_CONFIG_TEST
 from pyutils.pyutils import json2object, object2json, valid_filename, valid_uuid
 
 
 class Media(object):
 
-    def __init__(self, _id, user_id, parent_id, uri, public_uris, virtual_filename, metadata,
-                 status):
+    STATUS = ('PENDING', 'READY', 'PUBLISHED', 'DELETED')
+
+    def __init__(self, _id, user_id, parent_id, uri, public_uris, filename, metadata, status):
         if not _id:
             _id = str(uuid.uuid4())
         self._id = _id
@@ -42,35 +43,50 @@ class Media(object):
         self.uri = uri
         self.public_uris = public_uris
         try:
-            self.virtual_filename = str(virtual_filename).replace(' ', '_')
+            self.filename = str(filename).replace(' ', '_')
         except:
-            self.virtual_filename = None
+            self.filename = None
         self.metadata = metadata
         self.status = status
 
+    @property
+    def is_dash(self):
+        u"""
+        Returns True if the media's filename point to a MPEG-DASH MPD.
+
+        **Example usage**:
+
+        >>> import copy
+        >>> media = copy.copy(MEDIA_TEST)
+        >>> assert(not media.is_dash)
+        >>> media.filename = 'test.mpd'
+        >>> assert(media.is_dash)
+        """
+        return os.path.splitext(self.filename)[1].lower() == '.mpd'
+
     def is_valid(self, raise_exception):
-        if not valid_uuid(self._id, False):
+        if not valid_uuid(self._id, none_allowed=False):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : _id is not a valid uuid string')
             return False
-        if hasattr(self, 'user_id') and not valid_uuid(self.user_id, False):
+        if hasattr(self, 'user_id') and not valid_uuid(self.user_id, none_allowed=False):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : user_id is not a valid uuid string')
             return False
         # FIXME check use if loaded
-        if hasattr(self, 'parent_id') and not valid_uuid(self.parent_id, True):
+        if hasattr(self, 'parent_id') and not valid_uuid(self.parent_id, none_allowed=True):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : parent_id is not a valid uuid string')
             return False
         # FIXME check parent if loaded
         # FIXME check uri
         # FIXME check public_uris
-        if not valid_filename(self.virtual_filename):
+        if not valid_filename(self.filename):
             if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : virtual_filename is not a valid filename')
+                raise TypeError(self.__class__.__name__ + ' : filename is not a valid file-name')
             return False
         # FIXME check metadata
-        if not self.status in ('PENDING', 'READY', 'PUBLISHED', 'DELETED'):
+        if not self.status in Media.STATUS:
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : status is not a valid status string')
             return False

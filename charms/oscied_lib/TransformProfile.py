@@ -42,9 +42,20 @@ class TransformProfile(object):
         self.encoder_name = encoder_name
         self.encoder_string = encoder_string
 
+    @property
+    def is_dash(self):
+        u"""
+        >>> import copy
+        >>> profile = copy.copy(TRANSFORM_PROFILE_TEST)
+        >>> assert(not profile.is_dash)
+        >>> profile.encoder_name = 'dashcast'
+        >>> assert(profile.is_dash)
+        """
+        return self.encoder_name in ('dashcast')
+
     # FIXME test other fields
     def is_valid(self, raise_exception):
-        if not valid_uuid(self._id, False):
+        if not valid_uuid(self._id, none_allowed=False):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : _id is not a valid uuid string')
             return False

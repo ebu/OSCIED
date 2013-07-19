@@ -23,7 +23,7 @@
       <?php $job = $job; ?>
       <tr>
          <td>
-            <?php $media = isset($job->media->virtual_filename)?$job->media->virtual_filename:''; ?>
+            <?php $media = isset($job->media->filename)?$job->media->filename:''; ?>
             <?php if (isset($job->publish_uri)): ?>
             <a href="<?= $job->publish_uri ?>"><?= $media ?></a>
             <?php else: ?>

@@ -29,6 +29,7 @@
 
 import os, subprocess, sys, yaml
 from six import string_types
+import pyutils.juju as juju
 from pyutils.pyutils import cmd
 
 try:
@@ -222,10 +223,7 @@ class CharmHooks(object):
 
     def load_config(self, config):
         u"""
-        Updates ``config`` attribute with given configuration, ``config`` can be:
-
-        * The filename of a charm configuration file (e.g. ``config.yaml``)
-        * A dictionary containing the options names as keys and options values as values.
+        Updates ``config`` attribute with given configuration.
 
         **Example usage**:
 
@@ -242,18 +240,7 @@ class CharmHooks(object):
         >>> hasattr(hooks.config, 'rabbit_password')
         True
         """
-        if isinstance(config, string_types):
-            self.debug('Load config from file %s' % config)
-            with open(config) as f:
-                options = yaml.load(f)['options']
-                config = {}
-                for option in options:
-                    config[option] = options[option]['default']
-        for option, value in config.iteritems():
-            if str(value).lower() in ('false', 'true'):
-                config[option] = True if str(value).lower() == 'true' else False
-                self.debug('Convert boolean option %s %s -> %s' % (option, value, config[option]))
-        self.config.__dict__.update(config)
+        self.config.__dict__.update(juju.load_unit_config(config, log=self.debug))
 
     def save_local_config(self):
         u"""

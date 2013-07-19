@@ -46,16 +46,16 @@ class PublishJob(object):
 
 
     def is_valid(self, raise_exception):
-        if not valid_uuid(self._id, False):
+        if not valid_uuid(self._id, none_allowed=False):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : _id is not a valid uuid string')
             return False
-        if hasattr(self, 'user_id') and not valid_uuid(self.user_id, False):
+        if hasattr(self, 'user_id') and not valid_uuid(self.user_id, none_allowed=False):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : user_id is not a valid uuid string')
             return False
         # FIXME check user if loaded
-        if hasattr(self, 'media_id') and not valid_uuid(self.media_id, False):
+        if hasattr(self, 'media_id') and not valid_uuid(self.media_id, none_allowed=False):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : media_id is not a valid uuid string')
             return False

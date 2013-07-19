@@ -47,28 +47,27 @@ class TransformJob(object):
         self.statistic = statistic
         self.revoked = revoked
 
-
     def is_valid(self, raise_exception):
-        if not valid_uuid(self._id, False):
+        if not valid_uuid(self._id, none_allowed=False):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : _id is not a valid uuid string')
             return False
-        if hasattr(self, 'user_id') and not valid_uuid(self.user_id, False):
+        if hasattr(self, 'user_id') and not valid_uuid(self.user_id, none_allowed=False):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : user_id is not a valid uuid string')
             return False
         # FIXME check user if loaded
-        if hasattr(self, 'media_in_id') and not valid_uuid(self.media_in_id, False):
+        if hasattr(self, 'media_in_id') and not valid_uuid(self.media_in_id, none_allowed=False):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : media_in_id is not a valid uuid string')
             return False
         # FIXME check media_in if loaded
-        if hasattr(self, 'media_out_id') and not valid_uuid(self.media_out_id, False):
+        if hasattr(self, 'media_out_id') and not valid_uuid(self.media_out_id, none_allowed=False):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : media_out_id is not a valid uuid string')
             return False
         # FIXME check media_out if loaded
-        if hasattr(self, 'profile_id') and not valid_uuid(self.profile_id, False):
+        if hasattr(self, 'profile_id') and not valid_uuid(self.profile_id, none_allowed=False):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : profile_id is not a valid uuid string')
             return False
@@ -110,6 +109,21 @@ class TransformJob(object):
         job = TransformJob(None, None, None, None, None)
         json2object(json, job)
         return job
+
+    @staticmethod
+    def validate_job(media_in, profile, media_out):
+        if not media_in.status in ('READY', 'PUBLISHED'):
+            raise NotImplementedError('Cannot launch the job, input media status is %s.' %
+                                      media_in.status)
+        if media_in.is_dash and profile.encoder_name != 'copy':
+            raise NotImplementedError('Cannot launch the job, input media is MPEG-DASH content and '
+                                      'encoder is not copy.')
+        if profile.is_dash and not media_out.is_dash:
+            raise ValueError('Cannot launch the job, output media is not a MPD but job is based '
+                             'on a MPEG-DASH encoder called %s.' % profile.encoder_name)
+        if not profile.is_dash and media_out.is_dash:
+            raise ValueError('Cannot launch the job, output media is a MPD but job is not based '
+                             'on a MPEG-DASH encoder called %s.' % profile.encoder_name)
 
 TRANSFORM_JOB_TEST = TransformJob(None, USER_TEST._id, MEDIA_TEST._id, MEDIA_TEST._id,
                                   TRANSFORM_PROFILE_TEST._id)

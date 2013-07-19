@@ -29,7 +29,9 @@
 
 import logging
 import sys
+from bson.objectid import ObjectId
 from flask import Flask, abort, request, Response
+from werkzeug.exceptions import HTTPException
 from oscied_lib.Media import Media
 from oscied_lib.Orchestra import Orchestra
 from oscied_lib.OrchestraConfig import OrchestraConfig
@@ -128,8 +130,24 @@ def requires_auth(request, allow_root=False, allow_node=False, allow_any=False, 
 
 
 def check_id(id):
-    if not valid_uuid(id, False):
-        abort(415, 'Wrong id format ' + id)
+    if valid_uuid(id, objectid_allowed=False, none_allowed=False):
+        return id
+    elif valid_uuid(id, objectid_allowed=True, none_allowed=False):
+        return ObjectId(id)
+    raise ValueError('Wrong id format %s' % id)
+
+
+def get_request_json(request, required_keys=[]):
+    try:
+        data = request.json
+    except:
+        raise ValueError('Requires valid JSON content-type.')
+    for key in required_keys:
+        if not key in data:
+            raise ValueError('Missing key "%s" from JSON content.' % key)
+    if not data:
+        raise ValueError('Requires JSON content-type.')
+    return data
 
 
 @app.errorhandler(400)
@@ -172,6 +190,14 @@ def error_415(value=None):
     return response
 
 
+@app.errorhandler(500)
+def error_500(value=None):
+    response = Response(response=object2json({'status': 500, 'value': value}, False),
+                        status=500, mimetype="application/json")
+    response.status_code = 500
+    return response
+
+
 @app.errorhandler(501)
 def error_501(value=None):
     response = Response(response=object2json({'status': 501, 'value': value}, False),
@@ -185,6 +211,22 @@ def ok_200(value, include_properties):
                         status=200, mimetype="application/json")
     response.status_code = 200
     return response
+
+
+def map_exceptions(e):
+    if isinstance(e, HTTPException):
+        raise
+    if isinstance(e, TypeError):
+        abort(400, str(e))
+    elif isinstance(e, KeyError):
+        abort(400, 'Key %s not found.' % e)
+    elif isinstance(e, IndexError):
+        abort(404, str(e))
+    elif isinstance(e, ValueError):
+        abort(415, str(e))
+    elif isinstance(e, NotImplementedError):
+        abort(501, str(e))
+    abort(500, '%s %s %s' % (e.__class__.__name__, repr(e), str(e)))
 
 
 # Index --------------------------------------------------------------------------------------------
@@ -215,13 +257,16 @@ def api_root():
 
         {
           "status": 200, "value":
-          "Orchestra : EBU's OSCIED Orchestrator by David Fischer 2012\\n"
+          "Orchestra : EBU's OSCIED Orchestrator by David Fischer 2012-2013\\n"
         }
 
     :Allowed: Any user (including unauthenticated)
     :statuscode 200: OK
     """
-    return "Orchestra : EBU's OSCIED Orchestrator by David Fischer 2012\n"
+    try:
+        return orchestra.about
+    except Exception as e:
+        map_exceptions(e)
 
 
 # System management --------------------------------------------------------------------------------
@@ -257,9 +302,12 @@ def api_flush():
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     """
-    requires_auth(request=request, allow_root=True)
-    orchestra.flush_db()
-    return ok_200('Orchestra database flushed !', False)
+    try:
+        requires_auth(request=request, allow_root=True)
+        orchestra.flush_db()
+        return ok_200('Orchestra database flushed !', False)
+    except Exception as e:
+        map_exceptions(e)
 
 
 # Users management ---------------------------------------------------------------------------------
@@ -310,9 +358,12 @@ def api_user_login():
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     """
-    auth_user = requires_auth(request=request, allow_any=True)
-    delattr(auth_user, 'secret')  # do not send back user's secret
-    return ok_200(auth_user, True)
+    try:
+        auth_user = requires_auth(request=request, allow_any=True)
+        delattr(auth_user, 'secret')  # do not send back user's secret
+        return ok_200(auth_user, True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/user/count', methods=['GET'])
@@ -344,8 +395,11 @@ def api_user_count():
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     """
-    requires_auth(request=request, allow_root=True, allow_any=True)
-    return ok_200(orchestra.get_users_count(), False)
+    try:
+        requires_auth(request=request, allow_root=True, allow_any=True)
+        return ok_200(orchestra.get_users_count(), False)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/user', methods=['GET'])
@@ -380,8 +434,11 @@ def api_user_get():
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     """
-    requires_auth(request=request, allow_root=True, role='admin_platform')
-    return ok_200(orchestra.get_users(specs=None, fields={'secret': 0}), True)
+    try:
+        requires_auth(request=request, allow_root=True, role='admin_platform')
+        return ok_200(orchestra.get_users(specs=None, fields={'secret': 0}), True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/user', methods=['POST'])
@@ -441,23 +498,16 @@ def api_user_post():
     :statuscode 403: Authentication Failed.
     :statuscode 415: Requires (valid) json content-type.
     """
-    requires_auth(request=request, allow_root=True, role='admin_platform')
     try:
-        data = request.json
-        if not data:
-            abort(415, 'Requires json content-type.')
-    except:
-        abort(415, 'Requires valid json content-type.')
-    try:
+        requires_auth(request=request, allow_root=True, role='admin_platform')
+        data = get_request_json(request)
         user = User(None, data['first_name'], data['last_name'], data['mail'], data['secret'],
-                          data['admin_platform'])
+                    data['admin_platform'])
         orchestra.save_user(user, hash_secret=True)
-    except (ValueError, TypeError) as error:
-        abort(400, str(error))
-    except KeyError as error:
-        abort(400, 'Key ' + str(error) + ' not found.')
-    delattr(user, 'secret')  # do not send back user's secret
-    return ok_200(user, True)
+        delattr(user, 'secret')  # do not send back user's secret
+        return ok_200(user, True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/user/id/<id>', methods=['GET'])
@@ -502,12 +552,15 @@ def api_user_id_get(id):
     :statuscode 404: No user with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     """
-    check_id(id)
-    requires_auth(request=request, allow_root=True, allow_any=True)
-    user = orchestra.get_user(specs={'_id': id}, fields={'secret': 0})
-    if not user:
-        abort(404, 'No user with id ' + id + '.')
-    return ok_200(user, True)
+    try:
+        check_id(id)
+        requires_auth(request=request, allow_root=True, allow_any=True)
+        user = orchestra.get_user(specs={'_id': id}, fields={'secret': 0})
+        if not user:
+            raise IndexError('No user with id %s.' % id)
+        return ok_200(user, True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/user/id/<id>', methods=['PATCH', 'PUT'])
@@ -564,33 +617,28 @@ def api_user_id_patch(id):
     :statuscode 415: Wrong id format ``id``.
     :statuscode 415: Requires (valid) json content-type.
     """
-    check_id(id)
-    auth_user = requires_auth(request=request, allow_root=True, role='admin_platform', id=id)
-    user = orchestra.get_user(specs={'_id': id})
     try:
-        data = request.json
-    except:
-        abort(415, 'Requires valid json content-type.')
-    if not data:
-        abort(415, 'Requires json content-type.')
-    if not user:
-        abort(404, 'No user with id ' + id + '.')
-    try:
+        check_id(id)
+        auth_user = requires_auth(request=request, allow_root=True, role='admin_platform', id=id)
+        user = orchestra.get_user(specs={'_id': id})
+        data = get_request_json(request)
+        if not user:
+            raise IndexError('No user with id %s.' % id)
         old_name = user.name
-        first_name = data['first_name'] if 'first_name' in data else user.first_name
-        last_name = data['last_name'] if 'last_name' in data else user.last_name
-        mail = data['mail'] if 'mail' in data else user.mail
-        secret = data['secret'] if 'secret' in data else user.secret
-        ap = user.admin_platform
+        if 'first_name' in data:
+            user.first_name = data['first_name']
+        if 'last_name' in data:
+            user.last_name = data['last_name']
+        if 'mail' in data:
+            user.mail = data['mail']
+        if 'secret' in data:
+            user.secret = data['secret']
         if auth_user.admin_platform and 'admin_platform' in data:
-            ap = data['admin_platform']
-        new_user = User(id, first_name, last_name, mail, secret, ap)
-        orchestra.save_user(new_user, hash_secret=True)
-    except (ValueError, TypeError) as error:
-        abort(400, str(error))
-    except KeyError as error:
-        abort(400, 'Key ' + str(error) + ' not found.')
-    return ok_200('The user "' + old_name + '" has been updated.', False)
+            user.admin_platform = data['admin_platform']
+        orchestra.save_user(user, hash_secret=True)
+        return ok_200('The user "%s" has been updated.' % old_name, False)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/user/id/<id>', methods=['DELETE'])
@@ -628,13 +676,16 @@ def api_user_id_delete(id):
     :statuscode 404: No user with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     """
-    check_id(id)
-    requires_auth(request=request, allow_root=True, role='admin_platform', id=id)
-    user = orchestra.get_user(specs={'_id': id})
-    if not user:
-        abort(404, 'No user with id ' + id + '.')
-    orchestra.delete_user(user)
-    return ok_200('The user "' + user.name + '" has been deleted.', False)
+    try:
+        check_id(id)
+        requires_auth(request=request, allow_root=True, role='admin_platform', id=id)
+        user = orchestra.get_user(specs={'_id': id})
+        if not user:
+            raise IndexError('No user with id %s.' % id)
+        orchestra.delete_user(user)
+        return ok_200('The user "%s" has been deleted.' % user.name, False)
+    except Exception as e:
+        map_exceptions(e)
 
 
 # Medias management --------------------------------------------------------------------------------
@@ -668,8 +719,11 @@ def api_media_count():
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     """
-    requires_auth(request=request, allow_any=True)
-    return ok_200(orchestra.get_medias_count(), False)
+    try:
+        requires_auth(request=request, allow_any=True)
+        return ok_200(orchestra.get_medias_count(), False)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/media/HEAD', methods=['GET'])
@@ -704,8 +758,11 @@ def api_media_head():
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     """
-    requires_auth(request=request, allow_any=True)
-    return ok_200(orchestra.get_medias(), True)
+    try:
+        requires_auth(request=request, allow_any=True)
+        return ok_200(orchestra.get_medias(), True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/media', methods=['GET'])
@@ -743,8 +800,11 @@ def api_media_get():
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     """
-    requires_auth(request=request, allow_any=True)
-    return ok_200(orchestra.get_medias(load_fields=True), True)
+    try:
+        requires_auth(request=request, allow_any=True)
+        return ok_200(orchestra.get_medias(load_fields=True), True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/media', methods=['POST'])
@@ -759,7 +819,7 @@ def api_media_post():
     Medias in the shared storage are renamed with the following convention:
         ``storage_root``/medias/``user_id``/``media_id``
 
-    When published or downloaded, media will be renamed to ``virtual_filename``.
+    When published or downloaded, media file-name will be ``filename``.
     Spaces ( ) are not allowed and they will be converted to underscores (_).
 
     Media's ``metadata`` must contain any valid JSON string. Only the ``title`` key is required.
@@ -782,7 +842,7 @@ def api_media_post():
         {
           "uri": "glusterfs://<address>/medias_volume/uploads/
                   Project London - Official Trailer [2009].mp4",
-          "virtual_filename": "Project_London_trailer_2009.mp4",
+          "filename": "Project_London_trailer_2009.mp4",
           "metadata":
           {
             "title": "Project London - Official Trailer (2009)"
@@ -806,7 +866,7 @@ def api_media_post():
             "uri": "glusterfs://<address>/medias_volume/medias/
                     <user_id>/<media_id>",
             "public_uris": null,
-            "virtual_filename": "Project_London_trailer_2009.mp4",
+            "filename": "Project_London_trailer_2009.mp4",
             "metadata": {
               "add_date": "2013-02-02 14:05",
               "duration": "00:02:44.88", "size": 54871886,
@@ -818,7 +878,7 @@ def api_media_post():
 
     :Allowed: Any user can do that
     :query uri: Media's source URI, actually only shared storage's URI are handled (required)
-    :query virtual_filename: Media's filename when downloaded or published (required)
+    :query filename: Media's filename when downloaded or published (required)
     :query metadata: JSON string containing metadatas about the media (required)
     :statuscode 200: OK
     :statuscode 400: on type or value error
@@ -831,26 +891,15 @@ def api_media_post():
     :statuscode 415: Requires (valid) json content-type.
     :statuscode 501: FIXME Add of external uri not implemented.
     """
-    auth_user = requires_auth(request=request, allow_any=True)
     try:
-        data = request.json
-    except:
-        abort(415, 'Requires valid json content-type.')
-    if not data:
-        abort(415, 'Requires json content-type.')
-    try:
-        media = Media(None, auth_user._id, None, data['uri'], None,
-                      data['virtual_filename'], data['metadata'], 'READY')
+        auth_user = requires_auth(request=request, allow_any=True)
+        data = get_request_json(request)
+        media = Media(None, auth_user._id, None, data['uri'], None, data['filename'],
+                      data['metadata'], 'READY')
         orchestra.save_media(media)
-    except (ValueError, TypeError) as error:
-        abort(400, str(error))
-    except KeyError as error:
-        abort(400, 'Key ' + str(error) + ' not found.')
-    except IndexError as error:
-        abort(404, str(error))
-    except NotImplementedError as error:
-        abort(501, str(error))
-    return ok_200(media, True)
+        return ok_200(media, True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 # FIXME why HEAD verb doesn't work (curl: (18) transfer closed with 263 bytes remaining to read) ?
@@ -885,7 +934,7 @@ def api_media_id_head(id):
             "uri": "glusterfs://<address>/medias_volume/medias/
                     <user_id>/<media_id>",
             "public_uris": null,
-            "virtual_filename": "Psy_gangnam_style.flv",
+            "filename": "Psy_gangnam_style.flv",
             "metadata": {
               "duration": "00:04:12.16",
               "add_date": "2013-02-11 22:37",
@@ -904,12 +953,15 @@ def api_media_id_head(id):
     :statuscode 404: No media with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     """
-    check_id(id)
-    requires_auth(request=request, allow_any=True)
-    media = orchestra.get_media(specs={'_id': id})
-    if not media:
-        abort(404, 'No media with id ' + id + '.')
-    return ok_200(media, True)
+    try:
+        check_id(id)
+        requires_auth(request=request, allow_any=True)
+        media = orchestra.get_media(specs={'_id': id})
+        if not media:
+            raise IndexError('No media with id %s.' % id)
+        return ok_200(media, True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/media/id/<id>', methods=['GET'])
@@ -953,7 +1005,7 @@ def api_media_id_get(id):
             "uri": "glusterfs://<address>/medias_volume/medias/
                     <user_id>/<media_id>",
             "public_uris": null,
-            "virtual_filename": "Psy_gangnam_style.flv",
+            "filename": "Psy_gangnam_style.flv",
             "metadata": {
               "duration": "00:04:12.16",
               "add_date": "2013-02-11 22:37",
@@ -973,18 +1025,21 @@ def api_media_id_get(id):
     :statuscode 415: Wrong id format ``id``.
     :statuscode 415: Requires json content-type.
     """
-    check_id(id)
-    requires_auth(request=request, allow_any=True)
-    media = orchestra.get_media(specs={'_id': id}, load_fields=True)
-    if not media:
-        abort(404, 'No media with id ' + id + '.')
-    return ok_200(media, True)
+    try:
+        check_id(id)
+        requires_auth(request=request, allow_any=True)
+        media = orchestra.get_media(specs={'_id': id}, load_fields=True)
+        if not media:
+            raise IndexError('No media with id %s.' % id)
+        return ok_200(media, True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/media/id/<id>', methods=['PATCH', 'PUT'])
 def api_media_id_patch(id):
     """
-    Update a media (only virtual_filename and metadata field can be updated).
+    Update a media (only metadata field can be updated).
 
    **Example request**:
 
@@ -996,7 +1051,7 @@ def api_media_id_patch(id):
         Accept: application/json
         Content-Type: application/json
 
-        {"virtual_filename": "the_fifth_element.mp4"}
+        {"filename": "the_fifth_element.mp4"}
 
     **Example response**:
 
@@ -1013,7 +1068,7 @@ def api_media_id_patch(id):
 
     :Allowed: Only the author of the media
     :param id: media's id
-    :query virtual_filename: Media's filename when downloaded or published (optional)
+    :query filename: Media's filename when downloaded or published (optional)
     :query metadata: JSON string containing metadatas about the media (optional)
     :statuscode 200: OK
     :statuscode 400: Key ``key`` not found. *or* on type or value error
@@ -1024,31 +1079,21 @@ def api_media_id_patch(id):
     :statuscode 415: Wrong id format ``id``.
     :statuscode 415: Requires (valid) json content-type.
     """
-    check_id(id)
-    auth_user = requires_auth(request=request, allow_any=True)
-    media = orchestra.get_media(specs={'_id': id})
     try:
-        data = request.json
-    except:
-        abort(415, 'Requires valid json content-type.')
-    if not data:
-        abort(415, 'Requires json content-type.')
-    if not media:
-        abort(404, 'No media with id ' + id + '.')
-    if auth_user._id != media.user_id:
-        abort(403, 'You are not allowed to modify media with id ' + id + '.')
-    try:
-        old_virtual_filename = media.virtual_filename
-        if 'virtual_filename' in data:
-            media.virtual_filename = data['virtual_filename']
+        check_id(id)
+        auth_user = requires_auth(request=request, allow_any=True)
+        media = orchestra.get_media(specs={'_id': id})
+        data = get_request_json(request)
+        if not media:
+            raise IndexError('No media with id %s.' % id)
+        if auth_user._id != media.user_id:
+            abort(403, 'You are not allowed to modify media with id %s.' % id)
         if 'metadata' in data:
             media.metadata = data['metadata']
         orchestra.save_media(media)
-    except (ValueError, TypeError) as error:
-        abort(400, str(error))
-    except KeyError as error:
-        abort(400, 'Key ' + str(error) + ' not found.')
-    return ok_200('The media "' + old_virtual_filename + '" has been updated.', False)
+        return ok_200('The media "%s" has been updated.' % media.filename, False)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/media/id/<id>', methods=['DELETE'])
@@ -1092,20 +1137,87 @@ def api_media_id_delete(id):
     :statuscode 415: Wrong id format ``id``.
     :statuscode 501: FIXME Delete of external uri not implemented.
     """
-    check_id(id)
-    auth_user = requires_auth(request=request, allow_any=True)
-    media = orchestra.get_media(specs={'_id': id})
-    if not media:
-        abort(404, 'No media with id ' + id + '.')
-    if auth_user._id != media.user_id:
-        abort(403, 'You are not allowed to delete media with id ' + id + '.')
     try:
+        check_id(id)
+        auth_user = requires_auth(request=request, allow_any=True)
+        media = orchestra.get_media(specs={'_id': id})
+        if not media:
+            raise IndexError('No media with id %s.' % id)
+        if auth_user._id != media.user_id:
+            abort(403, 'You are not allowed to delete media with id %s.' % id)
         orchestra.delete_media(media)
-    except ValueError as error:
-        abort(400, str(error))
-    except NotImplementedError as error:
-        abort(501, str(error))
-    return ok_200('The media "' + media.metadata['title'] + '" has been deleted.', False)
+        return ok_200('The media "%s" has been deleted.' % media.metadata['title'], False)
+    except Exception as e:
+        map_exceptions(e)
+
+
+# Environments management --------------------------------------------------------------------------
+
+@app.route('/environment/count', methods=['GET'])
+def api_environment_count():
+    """
+    Return environments count.
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, allow_any=True)
+        return ok_200(orchestra.get_environments_count(), False)
+    except Exception as e:
+        map_exceptions(e)
+
+
+@app.route('/environment', methods=['GET'])
+def api_environment_get():
+    """
+    Return an array containing the environments serialized to JSON.
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, allow_any=True)
+        (environments, default) = orchestra.get_environments()
+        return ok_200({'environments': environments, 'default': default}, False)
+    except Exception as e:
+        map_exceptions(e)
+
+
+@app.route('/environment', methods=['POST'])
+def api_environment_post():
+    """
+    Add a new environment.
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, role='admin_platform')
+        data = get_request_json(request)
+        return ok_200(orchestra.add_environment(data['name'], data['type'], data['region'],
+                      data['access_key'], data['secret_key'], data['control_bucket']), False)
+    except Exception as e:
+        map_exceptions(e)
+
+
+@app.route('/environment/name/<name>', methods=['DELETE'])
+def api_environment_name_delete(name):
+    """
+    Remove an environment (destroy services and unregister it).
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, role='admin_platform')
+        return ok_200(orchestra.delete_environment(name, remove=True), False)
+    except Exception as e:
+        map_exceptions(e)
 
 
 # Transform profiles management --------------------------------------------------------------------
@@ -1142,8 +1254,11 @@ def api_transform_profile_encoder():
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     """
-    requires_auth(request=request, allow_any=True)
-    return ok_200(orchestra.get_transform_profile_encoders(), True)
+    try:
+        requires_auth(request=request, allow_any=True)
+        return ok_200(orchestra.get_transform_profile_encoders(), True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/transform/profile/count', methods=['GET'])
@@ -1175,8 +1290,11 @@ def api_transform_profile_count():
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     """
-    requires_auth(request=request, allow_any=True)
-    return ok_200(orchestra.get_transform_profiles_count(), False)
+    try:
+        requires_auth(request=request, allow_any=True)
+        return ok_200(orchestra.get_transform_profiles_count(), False)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/transform/profile', methods=['GET'])
@@ -1210,8 +1328,11 @@ def api_transform_profile_get():
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     """
-    requires_auth(request=request, allow_any=True)
-    return ok_200(orchestra.get_transform_profiles(), True)
+    try:
+        requires_auth(request=request, allow_any=True)
+        return ok_200(orchestra.get_transform_profiles(), True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/transform/profile', methods=['POST'])
@@ -1273,24 +1394,15 @@ def api_transform_profile_post():
     :statuscode 403: Authentication Failed.
     :statuscode 415: Requires (valid) json content-type.
     """
-    requires_auth(request=request, allow_any=True)
     try:
-        data = request.json
-    except:
-        abort(415, 'Requires valid json content-type.')
-    if not data:
-        abort(415, 'Requires json content-type.')
-    try:
+        requires_auth(request=request, allow_any=True)
+        data = get_request_json(request)
         profile = TransformProfile(None, data['title'], data['description'], data['encoder_name'],
                                    data['encoder_string'])
         orchestra.save_transform_profile(profile)
-    except (ValueError, TypeError) as error:
-        print str(error)
-        abort(400, str(error))
-    except KeyError as error:
-        print str(error)
-        abort(400, 'Key ' + str(error) + ' not found.')
-    return ok_200(profile, True)
+        return ok_200(profile, True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/transform/profile/id/<id>', methods=['GET'])
@@ -1334,12 +1446,15 @@ def api_transform_profile_id_get(id):
     :statuscode 404: No transform profile with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     """
-    check_id(id)
-    requires_auth(request=request, allow_any=True)
-    profile = orchestra.get_transform_profile(specs={'_id': id})
-    if not profile:
-        abort(404, 'No transform profile with id ' + id + '.')
-    return ok_200(profile, True)
+    try:
+        check_id(id)
+        requires_auth(request=request, allow_any=True)
+        profile = orchestra.get_transform_profile(specs={'_id': id})
+        if not profile:
+            raise IndexError('No transform profile with id %s.' % id)
+        return ok_200(profile, True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/transform/profile/id/<id>', methods=['DELETE'])
@@ -1377,30 +1492,127 @@ def api_transform_profile_id_delete(id):
     :statuscode 404: No transform profile with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     """
-    check_id(id)
-    requires_auth(request=request, allow_any=True)
-    profile = orchestra.get_transform_profile(specs={'_id': id})
-    if not profile:
-        abort(404, 'No transform profile with id ' + id)
-    orchestra.delete_transform_profile(profile)
-    return ok_200('The transform profile "' + profile.title + '" has been deleted.', False)
+    try:
+        check_id(id)
+        requires_auth(request=request, allow_any=True)
+        profile = orchestra.get_transform_profile(specs={'_id': id})
+        if not profile:
+            raise IndexError('No transform profile with id %s.' % id)
+        orchestra.delete_transform_profile(profile)
+        return ok_200('The transform profile "%s" has been deleted.' % profile.title, False)
+    except Exception as e:
+        map_exceptions(e)
 
 
-# Transformation workers (encoders) ----------------------------------------------------------------
+# Transformation units management (encoders) -------------------------------------------------------
 
-## return transform worker list
-#@app.route('/transform/worker', methods = ['GET'])
-#def api_transform_unit():
-#    return 'List of all transform units (TODO)\n'
+@app.route('/transform/unit/environment/<environment>/count', methods=['GET'])
+def api_transform_unit_count(environment):
+    """
+    Return transform units count of environment ``environment``.
 
-## return a transform worker
-#@app.route('/transform/worker/id/<id>', methods = ['GET'])
-#def api_transform_unit_show(id):
-#    try:
-#        unit_id = uuid.UUID('{'+id+'}');
-#    except ValueError:
-#         abort(415)
-#    return 'Informations about transform unit ' + str(unit_id)+' (TODO)\n'
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, allow_any=True)
+        return ok_200(orchestra.get_transform_units_count(environment), False)
+    except Exception as e:
+        map_exceptions(e)
+
+
+@app.route('/transform/unit/environment/<environment>', methods=['GET'])
+def api_transform_unit_get(environment):
+    """
+    Return an array containing the transform units of environment ``environment`` serialized to
+    JSON.
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, allow_any=True)
+        return ok_200(orchestra.get_transform_units(environment), False)
+    except Exception as e:
+        map_exceptions(e)
+
+
+@app.route('/transform/unit/environment/<environment>', methods=['POST'])
+def api_transform_unit_post(environment):
+    """
+    Deploy some new transform units into environment ``environment``.
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, role='admin_platform')
+        data = get_request_json(request)
+        orchestra.add_or_deploy_transform_units(environment, int(data['num_units']))
+        return ok_200('Deployed %s transform units into environment "%s"' %
+                      (data['num_units'], environment), False)
+    except Exception as e:
+        map_exceptions(e)
+
+
+@app.route('/transform/unit/environment/<environment>', methods=['DELETE'])
+def api_transform_unit_delete(environment):
+    """
+    Remove some transform units from environment ``environment``.
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, role='admin_platform')
+        data = get_request_json(request)
+        numbers = orchestra.remove_transform_units(environment, int(data['num_units']), True)
+        return ok_200('Removed %s (expected %s) transform units with number(s) %s from environment '
+                      '"%s"' % (len(numbers), data['num_units'], numbers, environment), False)
+    except Exception as e:
+        map_exceptions(e)
+
+
+@app.route('/transform/unit/environment/<environment>/number/<number>', methods=['GET'])
+def api_transform_unit_number_get(environment, number):
+    """
+    Return a transform unit serialized to JSON.
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, allow_any=True)
+        unit = orchestra.get_transform_unit(environment, number)
+        if not unit:
+            raise IndexError('Transform unit %s not found in environment %s.' %
+                             (number, environment))
+        return ok_200(unit, True)
+    except Exception as e:
+        map_exceptions(e)
+
+
+@app.route('/transform/unit/environment/<environment>/number/<number>', methods=['DELETE'])
+def api_transform_unit_number_delete(environment, number):
+    """
+    Remove transform unit number ``number`` from environment ``environment``.
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, role='admin_platform')
+        orchestra.remove_transform_unit(environment, number, True)
+        return ok_200('The transform unit %s has been removed of environment %s.' %
+                      (number, environment), False)
+    except Exception as e:
+        map_exceptions(e)
 
 
 # Transformation jobs (encoding) -------------------------------------------------------------------
@@ -1437,8 +1649,11 @@ def api_transform_queue():
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     """
-    requires_auth(request=request, allow_any=True)
-    return ok_200(orchestra.get_transform_queues(), True)
+    try:
+        requires_auth(request=request, allow_any=True)
+        return ok_200(orchestra.get_transform_queues(), True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/transform/job/count', methods=['GET'])
@@ -1470,8 +1685,11 @@ def api_transform_job_count():
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     """
-    requires_auth(request=request, allow_any=True)
-    return ok_200(orchestra.get_transform_jobs_count(), False)
+    try:
+        requires_auth(request=request, allow_any=True)
+        return ok_200(orchestra.get_transform_jobs_count(), False)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/transform/job/HEAD', methods=['GET'])
@@ -1508,8 +1726,11 @@ def api_transform_job_head():
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     """
-    requires_auth(request=request, allow_any=True)
-    return ok_200(orchestra.get_transform_jobs(), True)
+    try:
+        requires_auth(request=request, allow_any=True)
+        return ok_200(orchestra.get_transform_jobs(), True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/transform/job', methods=['GET'])
@@ -1549,8 +1770,11 @@ def api_transform_job_get():
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     """
-    requires_auth(request=request, allow_any=True)
-    return ok_200(orchestra.get_transform_jobs(load_fields=True), True)
+    try:
+        requires_auth(request=request, allow_any=True)
+        return ok_200(orchestra.get_transform_jobs(load_fields=True), True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/transform/job', methods=['POST'])
@@ -1586,7 +1810,7 @@ def api_transform_job_post():
         {
           "media_in_id": "a396fe66-74ee-11e2-89ad-3085a9accbb8",
           "profile_id": "c316ff1a-74f8-11e2-82d4-3085a9accd33",
-          "virtual_filename": "avatar.mp4",
+          "filename": "avatar.mp4",
           "metadata": {"title": "Avatar (1080p)"},
           "queue": "transform_ebu-geneva"
         }
@@ -1604,7 +1828,7 @@ def api_transform_job_post():
     :Allowed: Any user
     :query media_in_id: New job input media's id (required)
     :query profile_id: New job profile's id (required)
-    :query virtual_filename: New job output media's virtual_filename (required)
+    :query filename: New job output media's filename (required)
     :query metadata: New  job output media's metadata (required)
     :query queue: The transform queue used to route the new job (required)
     :statuscode 200: OK
@@ -1619,26 +1843,15 @@ def api_transform_job_post():
     :statuscode 415: Required (valid) json content-type.
     :statuscode 501: Cannot launch the job, input media status is ``status``.
     """
-    auth_user = requires_auth(request=request, allow_any=True)
     try:
-        data = request.json
-    except:
-        abort(415, 'Requires valid json content-type.')
-    if not data:
-        abort(415, 'Requires json content-type.')
-    try:
-        job_id = orchestra.launch_transform_job(auth_user._id, data['media_in_id'],
-            data['profile_id'], data['virtual_filename'], data['metadata'], data['queue'],
-            '/transform/callback')
-    except (ValueError, TypeError) as error:
-        abort(400, str(error))
-    except KeyError as error:
-        abort(400, 'Key ' + str(error) + ' not found.')
-    except IndexError as error:
-        abort(404, str(error))
-    except NotImplementedError as error:
-        abort(501, str(error))
-    return ok_200(job_id, True)
+        auth_user = requires_auth(request=request, allow_any=True)
+        data = get_request_json(request)
+        job_id = orchestra.launch_transform_job(
+            auth_user._id, data['media_in_id'], data['profile_id'], data['filename'],
+            data['metadata'], data['queue'], '/transform/callback')
+        return ok_200(job_id, True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 # FIXME why HEAD verb doesn't work (curl: (18) transfer closed with 263 bytes remaining to read) ?
@@ -1698,12 +1911,15 @@ def api_transform_job_id_head(id):
     :statuscode 404: No transform job with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     """
-    check_id(id)
-    requires_auth(request=request, allow_any=True)
-    job = orchestra.get_transform_job(specs={'_id': id})
-    if not job:
-        abort(404, 'No transform job with id ' + id + '.')
-    return ok_200(job, True)
+    try:
+        check_id(id)
+        requires_auth(request=request, allow_any=True)
+        job = orchestra.get_transform_job(specs={'_id': id})
+        if not job:
+            raise IndexError('No transform job with id %s.' % id)
+        return ok_200(job, True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/transform/job/id/<id>', methods=['GET'])
@@ -1759,7 +1975,7 @@ def api_transform_job_id_get(id):
                 "http://10.0.3.254/medias/<user_id>/<media_id>/
                  Project_London_trailer_2009.mp4"
               },
-              "virtual_filename": "Project_London_trailer_2009.mp4",
+              "filename": "Project_London_trailer_2009.mp4",
               "metadata": {
                 "add_date": "2013-02-11 22:37",
                 "duration": "00:02:44.88", "size": 54871886,
@@ -1774,7 +1990,7 @@ def api_transform_job_id_get(id):
               "uri": "glusterfs://<address>/medias_volume/medias/
                       <user_id>/<media_id>",
               "public_uris": null,
-              "virtual_filename": "project_london.mp2",
+              "filename": "project_london.mp2",
               "metadata": {
                 "add_date": "2013-02-11 22:44",
                 "duration": "00:00:01.95", "size": 25601528,
@@ -1812,12 +2028,15 @@ def api_transform_job_id_get(id):
     :statuscode 404: No transform job with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     """
-    check_id(id)
-    requires_auth(request=request, allow_any=True)
-    job = orchestra.get_transform_job(specs={'_id': id}, load_fields=True)
-    if not job:
-        abort(404, 'No transform job with id ' + id + '.')
-    return ok_200(job, True)
+    try:
+        check_id(id)
+        requires_auth(request=request, allow_any=True)
+        job = orchestra.get_transform_job(specs={'_id': id}, load_fields=True)
+        if not job:
+            raise IndexError('No transform job with id %s.' % id)
+        return ok_200(job, True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/transform/job/id/<id>', methods=['DELETE'])
@@ -1865,19 +2084,19 @@ def api_transform_job_id_delete(id):
     :statuscode 404: No transform job with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     """
-    check_id(id)
-    auth_user = requires_auth(request=request, allow_any=True)
-    job = orchestra.get_transform_job(specs={'_id': id})
-    if not job:
-        abort(404, 'No transform job with id ' + id + '.')
-    if auth_user._id != job.user_id:
-        abort(403, 'You are not allowed to revoke transform job with id ' + id + '.')
     try:
+        check_id(id)
+        auth_user = requires_auth(request=request, allow_any=True)
+        job = orchestra.get_transform_job(specs={'_id': id})
+        if not job:
+            raise IndexError('No transform job with id %s.' % id)
+        if auth_user._id != job.user_id:
+            abort(403, 'You are not allowed to revoke transform job with id %s.' % id)
         orchestra.revoke_transform_job(job=job, terminate=True, remove=False, delete_media=True)
-    except ValueError as error:
-        abort(400, str(error))
-    return ok_200('The transform job "' + job._id +
-                  '" has been revoked. Corresponding output media will be deleted.', False)
+        return ok_200('The transform job "%s" has been revoked. Corresponding output media will be '
+                      'deleted.' % job._id, False)
+    except Exception as e:
+        map_exceptions(e)
 
 
 # Publishing jobs ----------------------------------------------------------------------------------
@@ -1916,8 +2135,11 @@ def api_publish_queue():
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     """
-    requires_auth(request=request, allow_any=True)
-    return ok_200(orchestra.get_publisher_queues(), True)
+    try:
+        requires_auth(request=request, allow_any=True)
+        return ok_200(orchestra.get_publisher_queues(), True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/publish/job/count', methods=['GET'])
@@ -1949,8 +2171,11 @@ def api_publish_job_count():
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     """
-    requires_auth(request=request, allow_any=True)
-    return ok_200(orchestra.get_publish_jobs_count(), False)
+    try:
+        requires_auth(request=request, allow_any=True)
+        return ok_200(orchestra.get_publish_jobs_count(), False)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/publish/job/HEAD', methods=['GET'])
@@ -1987,8 +2212,11 @@ def api_publish_job_head():
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     """
-    requires_auth(request=request, allow_any=True)
-    return ok_200(orchestra.get_publish_jobs(), True)
+    try:
+        requires_auth(request=request, allow_any=True)
+        return ok_200(orchestra.get_publish_jobs(), True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/publish/job', methods=['GET'])
@@ -2028,8 +2256,11 @@ def api_publish_job_get():
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     """
-    requires_auth(request=request, allow_any=True)
-    return ok_200(orchestra.get_publish_jobs(load_fields=True), True)
+    try:
+        requires_auth(request=request, allow_any=True)
+        return ok_200(orchestra.get_publish_jobs(load_fields=True), True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/publish/job', methods=['POST'])
@@ -2095,25 +2326,14 @@ def api_publish_job_post():
     :statuscode 501: Cannot launch the job, input media will be published by
                      another job with id ``id``.
     """
-    auth_user = requires_auth(request=request, allow_any=True)
     try:
-        data = request.json
-    except:
-        abort(415, 'Requires valid json content-type.')
-    if not data:
-        abort(415, 'Requires json content-type.')
-    try:
-        job_id = orchestra.launch_publish_job(auth_user._id, data['media_id'],
-                                              data['queue'], '/publish/callback')
-    except (ValueError, TypeError) as error:
-        abort(400, str(error))
-    except KeyError as error:
-        abort(400, 'Key ' + str(error) + ' not found.')
-    except IndexError as error:
-        abort(404, str(error))
-    except NotImplementedError as error:
-        abort(501, str(error))
-    return ok_200(job_id, True)
+        auth_user = requires_auth(request=request, allow_any=True)
+        data = get_request_json(request)
+        job_id = orchestra.launch_publish_job(auth_user._id, data['media_id'], data['queue'],
+                                              '/publish/callback')
+        return ok_200(job_id, True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 # FIXME why HEAD verb doesn't work (curl: (18) transfer closed with 263 bytes remaining to read) ?
@@ -2172,12 +2392,15 @@ def api_publish_job_id_head(id):
     :statuscode 403: Authentication Failed.
     :statuscode 404: No publish job with id ``id``.
     """
-    check_id(id)
-    requires_auth(request=request, allow_any=True)
-    job = orchestra.get_publish_job(specs={'_id': id})
-    if not job:
-        abort(404, 'No publish job with id ' + id + '.')
-    return ok_200(job, True)
+    try:
+        check_id(id)
+        requires_auth(request=request, allow_any=True)
+        job = orchestra.get_publish_job(specs={'_id': id})
+        if not job:
+            raise IndexError('No publish job with id %s.' % id)
+        return ok_200(job, True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/publish/job/id/<id>', methods=['GET'])
@@ -2227,7 +2450,7 @@ def api_publish_job_id_get(id):
                 "http://<address>/medias/<user_id>/<media_id>/
                  Project_London_trailer_2009.mp4"
               },
-              "virtual_filename": "Project_London_trailer_2009.mp4",
+              "filename": "Project_London_trailer_2009.mp4",
               "metadata": {
                 "duration": "00:02:44.88", "add_date": "2013-02-11 22:37",
                 "size": 54871886,
@@ -2255,12 +2478,15 @@ def api_publish_job_id_get(id):
     :statuscode 403: Authentication Failed.
     :statuscode 404: No publish job with id ``id``.
     """
-    check_id(id)
-    requires_auth(request=request, allow_any=True)
-    job = orchestra.get_publish_job(specs={'_id': id}, load_fields=True)
-    if not job:
-        abort(404, 'No publish job with id ' + id + '.')
-    return ok_200(job, True)
+    try:
+        check_id(id)
+        requires_auth(request=request, allow_any=True)
+        job = orchestra.get_publish_job(specs={'_id': id}, load_fields=True)
+        if not job:
+            raise IndexError('No publish job with id %s.' % id)
+        return ok_200(job, True)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/publish/job/id/<id>', methods=['DELETE'])
@@ -2305,24 +2531,27 @@ def api_publish_job_id_delete(id):
     :statuscode 404: No publish job with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     """
-    check_id(id)
-    auth_user = requires_auth(request=request, allow_any=True)
-    job = orchestra.get_publish_job(specs={'_id': id})
-    if not job:
-        abort(404, 'No publish job with id ' + id + '.')
-    if auth_user._id != job.user_id:
-        abort(403, 'You are not allowed to revoke publish job with id ' + id + '.')
-    orchestra.revoke_publish_job(job=job, terminate=True, remove=False)
-    logging.info('here will be launched an unpublish job')
-    #orchestra.launch_unpublish_job(auth_user._id, job, '/unpublish/callback')
-    return ok_200('The publish job "' + job._id + '" has been revoked. ' +
-                  'Corresponding media will be unpublished from here.', False)
+    try:
+        check_id(id)
+        auth_user = requires_auth(request=request, allow_any=True)
+        job = orchestra.get_publish_job(specs={'_id': id})
+        if not job:
+            raise IndexError('No publish job with id %s.' % id)
+        if auth_user._id != job.user_id:
+            abort(403, 'You are not allowed to revoke publish job with id %s.' % id)
+        orchestra.revoke_publish_job(job=job, terminate=True, remove=False)
+        logging.info('here will be launched an unpublish job')
+        #orchestra.launch_unpublish_job(auth_user._id, job, '/unpublish/callback')
+        return ok_200('The publish job "%s" has been revoked. Corresponding media will be '
+                      'unpublished from here.' % job._id, False)
+    except Exception as e:
+        map_exceptions(e)
 
 
 # Workers (nodes) hooks ----------------------------------------------------------------------------
 
 @app.route('/transform/callback', methods=['POST'])
-def api_transform_job_hook_0():
+def api_transform_job_hook():
     """
     This method is called by transform workers when they finish their work.
 
@@ -2367,29 +2596,19 @@ def api_transform_job_hook_0():
     :statuscode 404: Unable to find output media with id ``id``.
     :statuscode 415: Requires (valid) json content-type.
     """
-    requires_auth(request=request, allow_node=True)
     try:
-        data = request.json
-    except:
-        abort(415, 'Requires valid json content-type.')
-    if not data:
-        abort(415, 'Requires json content-type.')
-    try:
-        job_id = data['job_id']
-        status = data['status']
+        requires_auth(request=request, allow_node=True)
+        data = get_request_json(request)
+        job_id, status = data['job_id'], data['status']
         logging.debug('job ' + job_id + ', status ' + status)
         orchestra.transform_callback(job_id, status)
-    except IndexError as error:
-        abort(404, str(error))
-    except (ValueError, TypeError) as error:
-        abort(400, str(error))
-    except KeyError as error:
-        abort(400, 'Key ' + str(error) + ' not found.')
-    return ok_200('Your work is much appreciated, thanks !', False)
+        return ok_200('Your work is much appreciated, thanks !', False)
+    except Exception as e:
+        map_exceptions(e)
 
 
 @app.route('/publish/callback', methods=['POST'])
-def api_publish_job_hook_0():
+def api_publish_job_hook():
     """
     This method is called by publisher workers when they finish their work.
 
@@ -2436,27 +2655,17 @@ def api_publish_job_hook_0():
     :statuscode 404: Unable to find media with id ``id``.
     :statuscode 415: Requires (valid) json content-type.
     """
-    requires_auth(request=request, allow_node=True)
     try:
-        data = request.json
-    except:
-        abort(415, 'Requires valid json content-type.')
-    if not data:
-        abort(415, 'Requires json content-type.')
-    try:
+        requires_auth(request=request, allow_node=True)
+        data = get_request_json(request)
         job_id = data['job_id']
         publish_uri = data['publish_uri'] if 'publish_uri' in data else None
         status = data['status']
         logging.debug('job ' + job_id + ', publish_uri ' + publish_uri + ', status ' + status)
         orchestra.publish_callback(job_id, publish_uri, status)
-    except IndexError as error:
-        abort(404, str(error))
-    except (ValueError, TypeError) as error:
-        abort(400, str(error))
-    except KeyError as error:
-        abort(400, 'Key ' + str(error) + ' not found.')
-    return ok_200('Your work is much appreciated, thanks !', False)
-
+        return ok_200('Your work is much appreciated, thanks !', False)
+    except Exception as e:
+        map_exceptions(e)
 
 # @app.route('/unpublish/callback', methods=['POST'])
 # def api_unpublish_job_hook_0():
@@ -2496,7 +2705,7 @@ if __name__ == '__main__':
             logging.warning('Shared storage is not set in configuration ... exiting')
             sys.exit(0)
 
-        if not config.mongo_connection:
+        if not config.mongo_admin_connection:
             logging.warning('MongoDB is not set in configuration ... exiting')
             sys.exit(0)
 
@@ -2506,6 +2715,7 @@ if __name__ == '__main__':
 
         orchestra = Orchestra(config)
         logging.info('Start REST API')
+        #app.config['PROPAGATE_EXCEPTIONS'] = True
         app.run(host='0.0.0.0', debug=orchestra.config.verbose)
 
     except Exception as error:
