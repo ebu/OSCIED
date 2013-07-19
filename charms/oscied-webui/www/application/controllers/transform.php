@@ -22,12 +22,12 @@ class Transform extends MY_Controller
             'http_user' => $this->user->mail(), 'http_pass' => $this->user->secret()
          )
       );
-      $response = $this->rest->get('transform/job');
+      $response = $this->rest->get('transform/task');
       if ($response->status != 200) {
          print_r($response->value);
          exit;
       }
-      $data['jobs'] = $response->value;
+      $data['tasks'] = $response->value;
       // Get the medias for the dropdown
       $response = $this->rest->get('media/HEAD');
       if ($response->status != 200) {
@@ -59,7 +59,7 @@ class Transform extends MY_Controller
          $data['queues'][$queue] = $queue;
       }
 
-      $this->add_content('page_title', 'OSCIED - Transform Jobs');
+      $this->add_content('page_title', 'OSCIED - Transformation Tasks');
       $this->add_view('main', 'transform/show', $data);
 
       $header_data['page'] = 'transform';
@@ -79,13 +79,13 @@ class Transform extends MY_Controller
             'http_user' => $this->user->mail(), 'http_pass' => $this->user->secret()
          )
       );
-      $response = $this->rest->get('transform/job');
+      $response = $this->rest->get('transform/task');
       if ($response->status != 200) {
          print_r($response->value);
          exit;
       }
-      $data['jobs'] = $response->value;
-      $this->load->view('transform/show_jobs', $data);
+      $data['tasks'] = $response->value;
+      $this->load->view('transform/show_tasks', $data);
    }
 
    /**
@@ -100,7 +100,7 @@ class Transform extends MY_Controller
             'http_user' => $this->user->mail(), 'http_pass' => $this->user->secret()
          )
       );
-      $response = $this->rest->delete('transform/job/id/'.$id);
+      $response = $this->rest->delete('transform/task/id/'.$id);
       // Set error or information message
       if ($response->status == 200) {
          $this->session->set_flashdata('infos', $response->value);
@@ -149,11 +149,11 @@ class Transform extends MY_Controller
                'queue' => $this->input->post('queue')
             )
          );
-         $response = $this->rest->post('transform/job', $params, 'json');
+         $response = $this->rest->post('transform/task', $params, 'json');
          if ($response->status == 200) {
             // Set the flash message
             $this->session->set_flashdata(
-               'infos', 'The transform job for media "'.$this->input->post('title').' - '.
+               'infos', 'The transformation task for media "'.$this->input->post('title').' - '.
                   $this->input->post('filename').'" has been launched.'
             );
             echo json_encode(array('redirect' => site_url('transform')));

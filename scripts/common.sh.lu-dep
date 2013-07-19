@@ -302,7 +302,7 @@ json_tprofile()
   JSON="{\"title\":\"$1\",\"description\":\"$2\",\"encoder_name\":\"$3\",\"encoder_string\":\"$4\"}"
 }
 
-json_tjob()
+json_ttask()
 {
   d='metadata'
   m='media_in_id'
@@ -312,16 +312,16 @@ json_tjob()
   v='filename'
   y='priority'
   if [ $# -ne 6 ]; then
-    xecho "Usage: $(basename $0).json_tjob $m $p $v $t $q $y"
+    xecho "Usage: $(basename $0).json_ttask $m $p $v $t $q $y"
   fi
 
   JSON="{\"$m\":\"$1\",\"$p\":\"$2\",\"$v\":\"$3\",\"$d\":{\"$t\":\"$4\"},\"$q\":\"$5\",\"$y\":\"$6\"}"
 }
 
-json_pjob()
+json_ptask()
 {
   if [ $# -ne 3 ]; then
-    xecho "Usage: $(basename $0).json_tjob media_id queue priority"
+    xecho "Usage: $(basename $0).json_ttask media_id queue priority"
   fi
 
   JSON="{\"media_id\":\"$1\",\"queue\":\"$2\",\"priority\":\"$3\"}"

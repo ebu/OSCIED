@@ -54,8 +54,8 @@ if __name__ == '__main__':
     media_in = MEDIA_TEST
     media_out = MEDIA_TEST
     profile = TRANSFORM_PROFILE_TEST
-    print 'Launch the transform job'
-    result = lib.Transform.transform_job.apply_async(
+    print 'Launch the transformation task'
+    result = lib.Transform.transform_task.apply_async(
         args=(user.json(), media_in.json(), media_out.json(), profile.json(),),
         queue='transform_private')
     print result.state
@@ -67,7 +67,7 @@ if __name__ == '__main__':
         for worker, tasks in dump.iteritems():
             print worker
             for task in tasks:
-                if task['name'] == 'Transform.transform_job':
+                if task['name'] == 'Transform.transform_task':
                     for key, value in task.iteritems():
                         print 'key ' + key + ' = ' + str(value)
                     #print 'THE Task ' + str(task)

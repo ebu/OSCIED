@@ -36,17 +36,17 @@ from pyutils.filesystem import recursive_copy
 from pyutils.pyutils import object2json
 
 
-@task(name='Publisher.publish_job')
-def publish_job(user_json, media_json, callback_json):
+@task(name='Publisher.publish_task')
+def publish_task(user_json, media_json, callback_json):
 
     def copy_callback(start_date, elapsed_time, eta_time, src_size, dst_size, ratio):
-        publish_job.update_state(state='PROGRESS', meta={
+        publish_task.update_state(state='PROGRESS', meta={
             'hostname': request.hostname, 'start_date': start_date, 'elapsed_time': elapsed_time,
             'eta_time': eta_time, 'media_size': src_size, 'publish_size': dst_size,
             'percent': int(100 * ratio)})
 
     def publish_callback(status, publish_uri):
-        data = {'job_id': request.id, 'status': status}
+        data = {'task_id': request.id, 'status': status}
         if publish_uri:
             data['publish_uri'] = publish_uri
         data_json = object2json(data, False)
@@ -67,7 +67,7 @@ def publish_job(user_json, media_json, callback_json):
         request = current_task.request
 
         # Let's the task begin !
-        print('%s Publish job started' % (request.id))
+        print('%s Publish task started' % (request.id))
 
         # Read current configuration to translate files uri to local paths
         config = PublisherConfig.read('local_config.pkl')
@@ -96,7 +96,7 @@ def publish_job(user_json, media_json, callback_json):
         infos = recursive_copy(media_root, publish_root, copy_callback, RATIO_DELTA, TIME_DELTA)
 
         # Here all seem okay
-        print('%s Publish job successful, media published as %s' % (request.id, publish_uri))
+        print('%s Publish task successful, media published as %s' % (request.id, publish_uri))
         publish_callback('SUCCESS', publish_uri)
         return {'hostname': request.hostname, 'start_date': infos['start_date'],
                 'elapsed_time': infos['elapsed_time'], 'eta_time': 0,
@@ -105,6 +105,6 @@ def publish_job(user_json, media_json, callback_json):
     except Exception as error:
 
         # Here something went wrong
-        print('%s Publish job failed' % request.id)
+        print('%s Publish task failed' % request.id)
         publish_callback(str(error), None)
         raise

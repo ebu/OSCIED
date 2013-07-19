@@ -66,21 +66,21 @@ main()
       [ "$ORCHESTRA_URL" ] && a='' || a='[DISABLED] '
       $DIALOG --backtitle 'OSCIED General Operations' \
               --menu 'Please select an operation' 0 0 0 \
-              install              'Download / update documents and tools'             \
-              cleanup              'Cleanup configuration of charms (deploy path)'     \
-              revup                "Increment all charm's revision (+1)"               \
-              api_init_setup       "${a}Initialize demo setup with Orchestra API"      \
-              api_launch_transform "${a}Launch a transform job with Orchestra API"     \
-              api_revoke_transform "${a}Revoke a transform job with Orchestra API"     \
-              api_launch_publish   "${a}Launch a publish job with Orchestra API"       \
-              api_revoke_publish   "${a}Revoke a publish job with Orchestra API"       \
-              api_test_all         "${a}Test the whole methods of Orchestra API"       \
-              api_get_all          "${a}Get listings of all things with Orchestra API" \
-              webui_test_common    'Test some functions of Web UI hooks'               \
-              rsync_orchestra      'Rsync local code to running Orchestra instance'    \
-              rsync_publisher      'Rsync local code to running Publisher instance'    \
-              rsync_storage        'Rsync local code to running Storage instance'      \
-              rsync_transform      'Rsync local code to running Transform instance'    \
+              install              'Download / update documents and tools'               \
+              cleanup              'Cleanup configuration of charms (deploy path)'       \
+              revup                "Increment all charm's revision (+1)"                 \
+              api_init_setup       "${a}Initialize demo setup with Orchestra API"        \
+              api_launch_transform "${a}Launch a transformation task with Orchestra API" \
+              api_revoke_transform "${a}Revoke a transformation task with Orchestra API" \
+              api_launch_publish   "${a}Launch a publication task with Orchestra API"    \
+              api_revoke_publish   "${a}Revoke a publication task with Orchestra API"    \
+              api_test_all         "${a}Test the whole methods of Orchestra API"         \
+              api_get_all          "${a}Get listings of all things with Orchestra API"   \
+              webui_test_common    'Test some functions of Web UI hooks'                 \
+              rsync_orchestra      'Rsync local code to running Orchestra instance'      \
+              rsync_publisher      'Rsync local code to running Publisher instance'      \
+              rsync_storage        'Rsync local code to running Storage instance'        \
+              rsync_transform      'Rsync local code to running Transform instance'      \
               rsync_webui          'Rsync local code to running Web UI instance' 2> $tmpfile
 
       retval=$?
@@ -316,12 +316,12 @@ api_launch_transform()
   get_id   'media1';    media1_id=$REPLY
   get_id   'tprofile2'; tprofile1_id=$REPLY
 
-  pecho 'Launch a transform job'
-  json_tjob "$media1_id" "$tprofile1_id" "tabby2.mpg" 'transcoded media1' 'transform_private' 'high'
+  pecho 'Launch a transformation task'
+  json_ttask "$media1_id" "$tprofile1_id" "tabby2.mpg" 'transcoded media1' 'transform_private' 'high'
   echo "$JSON"
-  test_api 200 POST $ORCHESTRA_URL/transform/job "$user1_auth" "$JSON"
-  save_id 'tjob1' "$ID"
-  get_id  'tjob1'
+  test_api 200 POST $ORCHESTRA_URL/transform/task "$user1_auth" "$JSON"
+  save_id 'ttask1' "$ID"
+  get_id  'ttask1'
   echo $REPLY
 }
 
@@ -335,11 +335,11 @@ api_revoke_transform()
   [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
 
   pecho 'Gather required authorizations and IDs'
-  get_auth 'user1'; user1_auth=$REPLY
-  get_id   'tjob1'; tjob1_id=$REPLY
+  get_auth 'user1';  user1_auth=$REPLY
+  get_id   'ttask1'; ttask1_id=$REPLY
 
-  pecho 'Revoke a transform job'
-  test_api 200 DELETE $ORCHESTRA_URL/transform/job/id/$tjob1_id "$user1_auth" ''
+  pecho 'Revoke a transform task'
+  test_api 200 DELETE $ORCHESTRA_URL/transform/task/id/$ttask1_id "$user1_auth" ''
 }
 
 api_launch_publish()
@@ -355,12 +355,12 @@ api_launch_publish()
   get_auth 'user1';  user1_auth=$REPLY
   get_id   'media1'; media1_id=$REPLY
 
-  pecho 'Launch a publish job'
-  json_pjob "$media1_id" 'publisher_private' 'high'
+  pecho 'Launch a publication task'
+  json_ptask "$media1_id" 'publisher_private' 'high'
   echo "$JSON"
-  test_api 200 POST $ORCHESTRA_URL/publish/job "$user1_auth" "$JSON"
-  save_id 'pjob1' "$ID"
-  get_id  'pjob1'
+  test_api 200 POST $ORCHESTRA_URL/publish/task "$user1_auth" "$JSON"
+  save_id 'ptask1' "$ID"
+  get_id  'ptask1'
   echo $REPLY
 }
 
@@ -375,10 +375,10 @@ api_revoke_publish()
 
   pecho 'Gather required authorizations and IDs'
   get_auth 'user1'; user1_auth=$REPLY
-  get_id   'pjob1'; pjob1_id=$REPLY
+  get_id   'ptask1'; ptask1_id=$REPLY
 
-  pecho 'Revoke a publish job'
-  test_api 200 DELETE $ORCHESTRA_URL/publish/job/id/$pjob1_id "$user1_auth" ''
+  pecho 'Revoke a publish task'
+  test_api 200 DELETE $ORCHESTRA_URL/publish/task/id/$ptask1_id "$user1_auth" ''
 }
 
 api_test_all()
@@ -422,7 +422,7 @@ api_test_all()
   api_test_user
   #api_test_media
   #api_test_tprofile
-  #api_test_tjob
+  #api_test_ttask
   mecho 'Unit test passed (Orchestrator API OK)'
 }
 
@@ -570,27 +570,27 @@ api_test_tprofile()
   test_api 415 GET $ORCHESTRA_URL/transform/profile/id/salut         "$user2_auth" ''
 }
 
-api_test_tjob()
+api_test_ttask()
 {
-  pecho 'Test transform job API'
-  #test_api 200 GET  $ORCHESTRA_URL/transform/job/count "$user2_auth" ''
-  #test_api 200 GET  $ORCHESTRA_URL/transform/job       "$user2_auth" ''
-  #test_api 404 POST $ORCHESTRA_URL/transform/job       "$user2_auth" "$tjob0_json"
-  #test_api 404 POST $ORCHESTRA_URL/transform/job       "$user2_auth" "$tjob0b_json"
-  #test_api 404 POST $ORCHESTRA_URL/transform/job       "$user2_auth" "$tjob1_json"
-  #test_api 200 POST $ORCHESTRA_URL/transform/job       "$user2_auth" "$tjob2_json"; tjob2_id=$ID
-  #echo $tjob2_id
-  #test_api 415 GET  $ORCHESTRA_URL/job/transform/1   "$admin" ''
-  #test_api 200 GET  $ORCHESTRA_URL/job/transform/$id "$admin" ''
-  #test_api 400 POST $ORCHESTRA_URL/transform/job     "$user2_auth"  "$tprofile1_json"
+  pecho 'Test transform task API'
+  #test_api 200 GET  $ORCHESTRA_URL/transform/task/count "$user2_auth" ''
+  #test_api 200 GET  $ORCHESTRA_URL/transform/task       "$user2_auth" ''
+  #test_api 404 POST $ORCHESTRA_URL/transform/task       "$user2_auth" "$ttask0_json"
+  #test_api 404 POST $ORCHESTRA_URL/transform/task       "$user2_auth" "$ttask0b_json"
+  #test_api 404 POST $ORCHESTRA_URL/transform/task       "$user2_auth" "$ttask1_json"
+  #test_api 200 POST $ORCHESTRA_URL/transform/task       "$user2_auth" "$ttask2_json"; ttask2_id=$ID
+  #echo $ttask2_id
+  #test_api 415 GET  $ORCHESTRA_URL/task/transform/1   "$admin" ''
+  #test_api 200 GET  $ORCHESTRA_URL/task/transform/$id "$admin" ''
+  #test_api 400 POST $ORCHESTRA_URL/transform/task     "$user2_auth"  "$tprofile1_json"
 
-  #while read post_job
+  #while read post_task
   #do
-  #  [ "$post_job" ] && test_api 0 POST $ORCHESTRA_URL/job/transform "$admin" "$post_job"
-  #done < "$ORCHESTRA_SCRIPTS_PATH/tests.jobs"
+  #  [ "$post_task" ] && test_api 0 POST $ORCHESTRA_URL/task/transform "$admin" "$post_task"
+  #done < "$ORCHESTRA_SCRIPTS_PATH/tests.tasks"
 
-  #test_api 501 PATCH  $ORCHESTRA_URL/job/transform/$id "$admin" ''
-  #test_api 200 DELETE $ORCHESTRA_URL/job/transform/$id "$admin" ''
+  #test_api 501 PATCH  $ORCHESTRA_URL/task/transform/$id "$admin" ''
+  #test_api 200 DELETE $ORCHESTRA_URL/task/transform/$id "$admin" ''
 }
 
 api_get_all()
@@ -612,15 +612,15 @@ api_get_all()
   test_api 200 GET $ORCHESTRA_URL/transform/profile/count "$user1_auth" ''
   test_api 200 GET $ORCHESTRA_URL/transform/profile       "$user1_auth" ''
   test_api 200 GET $ORCHESTRA_URL/transform/queue         "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/transform/job/count     "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/transform/job/HEAD      "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/transform/job           "$user1_auth" ''
+  test_api 200 GET $ORCHESTRA_URL/transform/task/count    "$user1_auth" ''
+  test_api 200 GET $ORCHESTRA_URL/transform/task/HEAD     "$user1_auth" ''
+  test_api 200 GET $ORCHESTRA_URL/transform/task          "$user1_auth" ''
   test_api 200 GET $ORCHESTRA_URL/publish/queue           "$user1_auth" ''
   test_api 200 GET $ORCHESTRA_URL/publisher/queue         "$user1_auth" ''
   test_api 200 GET $ORCHESTRA_URL/unpublish/queue         "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/publish/job/count       "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/publish/job/HEAD        "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/publish/job             "$user1_auth" ''
+  test_api 200 GET $ORCHESTRA_URL/publish/task/count      "$user1_auth" ''
+  test_api 200 GET $ORCHESTRA_URL/publish/task/HEAD       "$user1_auth" ''
+  test_api 200 GET $ORCHESTRA_URL/publish/task            "$user1_auth" ''
 }
 
 webui_test_common()

@@ -1,4 +1,4 @@
-<?php if (empty($jobs)): ?>
+<?php if (empty($tasks)): ?>
 
 <p>Be the first to publish a media !</p>
 
@@ -19,36 +19,36 @@
       </tr>
    </thead>
    <tbody>
-      <?php foreach ($jobs as $k => $job): ?>
-      <?php $job = $job; ?>
+      <?php foreach ($tasks as $k => $task): ?>
+      <?php $task = $task; ?>
       <tr>
          <td>
-            <?php $media = isset($job->media->filename)?$job->media->filename:''; ?>
-            <?php if (isset($job->publish_uri)): ?>
-            <a href="<?= $job->publish_uri ?>"><?= $media ?></a>
+            <?php $media = isset($task->media->filename)?$task->media->filename:''; ?>
+            <?php if (isset($task->publish_uri)): ?>
+            <a href="<?= $task->publish_uri ?>"><?= $media ?></a>
             <?php else: ?>
             <?= $media ?>
             <?php endif; ?>
          </td>
-         <td><?= (isset($job->user->name)?$job->user->name:'') ?></td>
+         <td><?= (isset($task->user->name)?$task->user->name:'') ?></td>
          <td>
             <?php
-            $add_date = isset($job->statistic->add_date)?$job->statistic->add_date:'';
-            $start_date = isset($job->statistic->start_date)?$job->statistic->start_date:'';
+            $add_date = isset($task->statistic->add_date)?$task->statistic->add_date:'';
+            $start_date = isset($task->statistic->start_date)?$task->statistic->start_date:'';
             echo $add_date.'<br/>'.$start_date
             ?>
          </td>
-         <td><?= (isset($job->statistic->hostname)?$job->statistic->hostname:'') ?></td>
+         <td><?= (isset($task->statistic->hostname)?$task->statistic->hostname:'') ?></td>
          <td>
             <?php
-            $elapsed = intval(isset($job->statistic->elapsed_time)?$job->statistic->elapsed_time:0);
-            $eta = intval(isset($job->statistic->eta_time)?$job->statistic->eta_time:0);
+            $elapsed = intval(isset($task->statistic->elapsed_time)?$task->statistic->elapsed_time:0);
+            $eta = intval(isset($task->statistic->eta_time)?$task->statistic->eta_time:0);
             echo gmdate('H:i:s',$elapsed).'<br/>'.gmdate('H:i:s',$eta);
             ?>
          </td>
          <td>
             <?php
-            $status = isset($job->status)?strtoupper($job->status):'UNKNOWN';
+            $status = isset($task->status)?strtoupper($task->status):'UNKNOWN';
             switch ($status) {
                case 'PENDING':  $class = 'progress progress-striped progress-info';        break;
                case 'PROGRESS': $class = 'progress progress-striped progress-info active'; break;
@@ -61,10 +61,10 @@
             }
             ?>
             <div class="<?= $class ?>">
-               <div class="bar" style="width: <?= isset($job->statistic->percent)?$job->statistic->percent:0 ?>%;"></div>
+               <div class="bar" style="width: <?= isset($task->statistic->percent)?$task->statistic->percent:0 ?>%;"></div>
             </div>
          </td>
-         <td><?= (isset($job->statistic->error)?print_r($job->statistic->error):'') ?></td>
+         <td><?= (isset($task->statistic->error)?print_r($task->statistic->error):'') ?></td>
          <td>
             <?php
             switch ($status) {
@@ -81,8 +81,8 @@
             <span class="<?= $class ?>"><?= $status ?></span>
          </td>
          <td>
-            <?php if (($status != 'SUCCESS') && ($status != 'FAILURE') && ($status != 'REVOKED') && ($job->user->_id == $this->user->id())): ?>
-            <a class="revoke" title="<?= $job->_id ?>" href="<?= site_url('publisher/revoke/'.$job->_id) ?>"><button class="btn btn-mini btn-danger">Revoke</button></a>
+            <?php if (($status != 'SUCCESS') && ($status != 'FAILURE') && ($status != 'REVOKED') && ($task->user->_id == $this->user->id())): ?>
+            <a class="revoke" title="<?= $task->_id ?>" href="<?= site_url('publisher/revoke/'.$task->_id) ?>"><button class="btn btn-mini btn-danger">Revoke</button></a>
             <?php endif; ?>
          </td>
       </tr>
@@ -99,7 +99,7 @@ $(document).ready(function() {
          $.get(
             "<?= site_url('publisher/refresh') ?>",
             function(data) {
-               $('#publisher_jobs').html(data);
+               $('#publisher_tasks').html(data);
             },
             'html'
          );

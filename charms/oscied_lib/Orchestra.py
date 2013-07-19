@@ -34,10 +34,10 @@ from celery.task.control import revoke
 import Publisher, Transform
 from Callback import Callback
 from Media import Media
-from PublishJob import PublishJob
+from PublishTask import PublishTask
 from Storage import Storage
 from TransformProfile import TransformProfile, ENCODERS_NAMES
-from TransformJob import TransformJob
+from TransformTask import TransformTask
 from User import User
 import pyutils.juju as juju
 from pyutils.pyutils import object2json, datetime_now, UUID_ZERO, valid_uuid
@@ -67,9 +67,9 @@ class Orchestra(object):
         self._db.drop_collection('users')
         self._db.drop_collection('medias')
         self._db.drop_collection('transform_profiles')
-        self._db.drop_collection('transform_jobs')
-        self._db.drop_collection('publish_jobs')
-        self._db.drop_collection('unpublish_jobs')
+        self._db.drop_collection('transform_tasks')
+        self._db.drop_collection('publish_tasks')
+        self._db.drop_collection('unpublish_tasks')
         logging.info("Orchestra database's collections dropped !")
 
     # ----------------------------------------------------------------------------------------------
@@ -142,14 +142,14 @@ class Orchestra(object):
         if valid_uuid(media, none_allowed=False):
             media = self.get_media({'_id': media})
         media.is_valid(True)
-        job = self.get_transform_job({'media_in_id': media._id}, append_result=True)
-        if job and (job.status in states.UNREADY_STATES or job.status == 'PROGRESS'):
+        task = self.get_transform_task({'media_in_id': media._id}, append_result=True)
+        if task and (task.status in states.UNREADY_STATES or task.status == 'PROGRESS'):
             raise ValueError('Cannot delete the media, it is actually in use by transform ' +
-                             'job with id ' + job._id + ' and status ' + job.status + '.')
-        job = self.get_publish_job({'media_id': media._id}, append_result=True)
-        if job and (job.status in states.UNREADY_STATES or job.status == 'PROGRESS'):
+                             'task with id ' + task._id + ' and status ' + task.status + '.')
+        task = self.get_publish_task({'media_id': media._id}, append_result=True)
+        if task and (task.status in states.UNREADY_STATES or task.status == 'PROGRESS'):
             raise ValueError('Cannot delete the media, it is actually in use by publish ' +
-                             'job with id ' + job._id + ' and status ' + job.status + '.')
+                             'task with id ' + task._id + ' and status ' + task.status + '.')
         media.status = 'DELETED'
         self.save_media(media)
         #self._db.medias.remove({'_id': media._id})
@@ -302,8 +302,8 @@ class Orchestra(object):
     def get_transform_queues(self):
         return self.config.transform_queues
 
-    def launch_transform_job(self, user_id, media_in_id, profile_id, filename, metadata, queue,
-                             callback_url):
+    def launch_transform_task(self, user_id, media_in_id, profile_id, filename, metadata, queue,
+                              callback_url):
         user = self.get_user({'_id': user_id}, {'secret': 0})
         if not user:
             raise IndexError('No user with id ' + user_id + '.')
@@ -317,86 +317,86 @@ class Orchestra(object):
             raise IndexError('No transform queue with name ' + queue + '.')
         media_out = Media(None, user_id, media_in_id, None, None, filename, metadata, 'PENDING')
         media_out.uri = self.config.storage_medias_uri(media_out)
-        TransformJob.validate_job(media_in, profile, media_out)
+        TransformTask.validate_task(media_in, profile, media_out)
         self.save_media(media_out)  # Save pending output media
         # FIXME create a one-time password to avoid fixed secret authentication ...
         callback = Callback(self.config.api_url + callback_url, 'node', self.config.nodes_secret)
-        result = Transform.transform_job.apply_async(
+        result = Transform.transform_task.apply_async(
             args=(object2json(user,      False), object2json(media_in, False),
                   object2json(media_out, False), object2json(profile,  False),
                   object2json(callback,  False)),
             queue=queue)
         if not result.id:
-            raise ValueError('Unable to transmit job to workers of queue ' + queue + '.')
-        logging.info('New transform job ' + result.id + ' launched.')
-        job = TransformJob(result.id, user._id, media_in._id, media_out._id, profile._id)
-        job.add_statistic('add_date', datetime_now(), True)
-        self._db.transform_jobs.save(job.__dict__)
+            raise ValueError('Unable to transmit task to workers of queue ' + queue + '.')
+        logging.info('New transform task ' + result.id + ' launched.')
+        task = TransformTask(result.id, user._id, media_in._id, media_out._id, profile._id)
+        task.add_statistic('add_date', datetime_now(), True)
+        self._db.transform_tasks.save(task.__dict__)
         return result.id
 
-    def get_transform_job(self, specs, fields=None, load_fields=False, append_result=True):
-        entity = self._db.transform_jobs.find_one(specs, fields)
+    def get_transform_task(self, specs, fields=None, load_fields=False, append_result=True):
+        entity = self._db.transform_tasks.find_one(specs, fields)
         if not entity:
             return None
-        job = TransformJob.load(object2json(entity, False))
+        task = TransformTask.load(object2json(entity, False))
         if load_fields:
-            job.load_fields(self.get_user({'_id': job.user_id}, {'secret': 0}),
-                            self.get_media({'_id': job.media_in_id}),
-                            self.get_media({'_id': job.media_out_id}),
-                            self.get_transform_profile({'_id': job.profile_id}))
+            task.load_fields(self.get_user({'_id': task.user_id}, {'secret': 0}),
+                             self.get_media({'_id': task.media_in_id}),
+                             self.get_media({'_id': task.media_out_id}),
+                             self.get_transform_profile({'_id': task.profile_id}))
         if append_result:
-            job.append_async_result()
-        return job
+            task.append_async_result()
+        return task
 
-    def revoke_transform_job(self, job, terminate=False, remove=False, delete_media=False):
-        """ This do not delete jobs from jobs database (if remove=False) but set revoked attribute
-        in jobs database and broadcast revoke request to transform units with Celery. If the job is
-        actually running it will be cancelled if terminated = True. The output media will be deleted
-        if corresponding argument, delete_media = True. """
-        # FIXME verify that no pending jobs needs the media that will be created by the job !
-        if valid_uuid(job, none_allowed=False):
-            job = self.get_transform_job({'_id': job})
-        job.is_valid(True)
-        if job.revoked:
-            raise ValueError('Transform job ' + job._id + ' is already revoked !')
-        if job.status in states.READY_STATES:
-            raise ValueError('Cannot revoke a transform job with status ' + job.status + '.')
-        job.revoked = True
-        revoke(job._id, terminate=terminate)
-        self._db.transform_jobs.save(job.__dict__)
-        if delete_media and valid_uuid(job.media_out_id, none_allowed=False):
-            self.delete_media(job.media_out_id)
+    def revoke_transform_task(self, task, terminate=False, remove=False, delete_media=False):
+        """ This do not delete tasks from tasks database (if remove=False) but set revoked attribute
+        in tasks database and broadcast revoke request to transform units with Celery. If the task
+        is actually running it will be cancelled if terminated = True. The output media will be
+        deleted if corresponding argument, delete_media = True. """
+        # FIXME verify that no pending tasks needs the media that will be created by the task !
+        if valid_uuid(task, none_allowed=False):
+            task = self.get_transform_task({'_id': task})
+        task.is_valid(True)
+        if task.revoked:
+            raise ValueError('Transform task ' + task._id + ' is already revoked !')
+        if task.status in states.READY_STATES:
+            raise ValueError('Cannot revoke a transform task with status ' + task.status + '.')
+        task.revoked = True
+        revoke(task._id, terminate=terminate)
+        self._db.transform_tasks.save(task.__dict__)
+        if delete_media and valid_uuid(task.media_out_id, none_allowed=False):
+            self.delete_media(task.media_out_id)
         if remove:
-            self._db.transform_jobs.remove({'_id': job._id})
+            self._db.transform_tasks.remove({'_id': task._id})
 
-    def get_transform_jobs(self, specs=None, fields=None, load_fields=False, append_result=True):
-        jobs = []
-        for entity in list(self._db.transform_jobs.find(specs, fields)):
-            job = TransformJob.load(object2json(entity, False))
+    def get_transform_tasks(self, specs=None, fields=None, load_fields=False, append_result=True):
+        tasks = []
+        for entity in list(self._db.transform_tasks.find(specs, fields)):
+            task = TransformTask.load(object2json(entity, False))
             if load_fields:
-                job.load_fields(self.get_user({'_id': job.user_id}, {'secret': 0}),
-                                self.get_media({'_id': job.media_in_id}),
-                                self.get_media({'_id': job.media_out_id}),
-                                self.get_transform_profile({'_id': job.profile_id}))
+                task.load_fields(self.get_user({'_id': task.user_id}, {'secret': 0}),
+                                 self.get_media({'_id': task.media_in_id}),
+                                 self.get_media({'_id': task.media_out_id}),
+                                 self.get_transform_profile({'_id': task.profile_id}))
             if append_result:
-                job.append_async_result()
-            jobs.append(job)
-        return jobs
+                task.append_async_result()
+            tasks.append(task)
+        return tasks
         # FIXME this is celery's way to do that:
         #for task in state.itertasks():
         #    print task
         #for entity in entities:
-        #    job = get_transform_job_helper(entity._id)
+        #    task = get_transform_task_helper(entity._id)
 
-    def get_transform_jobs_count(self, specs=None):
-        return self._db.transform_jobs.find(specs, {'_id': 1}).count()
+    def get_transform_tasks_count(self, specs=None):
+        return self._db.transform_tasks.find(specs, {'_id': 1}).count()
 
     # ----------------------------------------------------------------------------------------------
 
     def get_publisher_queues(self):
         return self.config.publisher_queues
 
-    def launch_publish_job(self, user_id, media_id, queue, callback_url):
+    def launch_publish_task(self, user_id, media_id, queue, callback_url):
         user = self.get_user({'_id': user_id}, {'secret': 0})
         if not user:
             raise IndexError('No user with id ' + user_id + '.')
@@ -406,117 +406,118 @@ class Orchestra(object):
         if not queue in self.config.publisher_queues:
             raise IndexError('No publisher queue with name ' + queue + '.')
         if not media.status in ('READY',):
-            raise NotImplementedError('Cannot launch the job, input media status is ' +
+            raise NotImplementedError('Cannot launch the task, input media status is ' +
                                       media.status + '.')
-        other = self.get_publish_job({'media_id': media._id})
+        other = self.get_publish_task({'media_id': media._id})
         if other and other.status not in states.READY_STATES and not other.revoked:
-            raise NotImplementedError('Cannot launch the job, input media will be published by '
-                                      + 'another job with id ' + other._id + '.')
+            raise NotImplementedError('Cannot launch the task, input media will be published by '
+                                      + 'another task with id ' + other._id + '.')
         # FIXME create a one-time password to avoid fixed secret authentication ...
         callback = Callback(self.config.api_url + callback_url, 'node', self.config.nodes_secret)
-        result = Publisher.publish_job.apply_async(
+        result = Publisher.publish_task.apply_async(
             args=(object2json(user, False), object2json(media, False),
                   object2json(callback, False)),
             queue=queue)
         if not result.id:
-            raise ValueError('Unable to transmit job to workers of queue ' + queue + '.')
-        logging.info('New publish job ' + result.id + ' launched.')
-        job = PublishJob(result.id, user._id, media._id, None)
-        job.add_statistic('add_date', datetime_now(), True)
-        self._db.publish_jobs.save(job.__dict__)
+            raise ValueError('Unable to transmit task to workers of queue ' + queue + '.')
+        logging.info('New publish task ' + result.id + ' launched.')
+        task = PublishTask(result.id, user._id, media._id, None)
+        task.add_statistic('add_date', datetime_now(), True)
+        self._db.publish_tasks.save(task.__dict__)
         return result.id
 
-    def get_publish_job(self, specs, fields=None, load_fields=False, append_result=True):
-        entity = self._db.publish_jobs.find_one(specs, fields)
+    def get_publish_task(self, specs, fields=None, load_fields=False, append_result=True):
+        entity = self._db.publish_tasks.find_one(specs, fields)
         if not entity:
             return None
-        job = PublishJob.load(object2json(entity, False))
+        task = PublishTask.load(object2json(entity, False))
         if load_fields:
-            job.load_fields(self.get_user({'_id': job.user_id}, {'secret': 0}),
-                            self.get_media({'_id': job.media_id}))
+            task.load_fields(self.get_user({'_id': task.user_id}, {'secret': 0}),
+                            self.get_media({'_id': task.media_id}))
         if append_result:
-            job.append_async_result()
-        return job
+            task.append_async_result()
+        return task
 
-    def update_publish_job(self, job):
+    def update_publish_task(self, task):
         raise NotImplementedError('maybe in a near future.')
 
-    def revoke_publish_job(self, job, terminate=False, remove=False):
-        """ This do not delete jobs from jobs database (if remove=False) but set revoked attribute
-        in tasks database and broadcast revoke request to publisher units with celery. If the job is
-        actually running it will be cancelled if terminated = True. The output media will be deleted
+    def revoke_publish_task(self, task, terminate=False, remove=False):
+        """ This do not delete tasks from tasks database (if remove=False) but set revoked attribute
+        in tasks database and broadcast revoke request to publisher units with celery. If the task
+        is actually running it will be cancelled if terminated = True. The output media will be
+        deleted
         """
-        if valid_uuid(job, none_allowed=False):
-            job = self.get_publish_job({'_id': job})
-        job.is_valid(True)
-        if job.revoked:
-            raise ValueError('Publish job ' + job._id + ' is already revoked !')
-        if job.status in states.READY_STATES:
-            raise ValueError('Cannot revoke a publish job with status ' + job.status + '.')
-        job.revoked = True
-        revoke(job._id, terminate=terminate)
-        self._db.publish_jobs.save(job.__dict__)
+        if valid_uuid(task, none_allowed=False):
+            task = self.get_publish_task({'_id': task})
+        task.is_valid(True)
+        if task.revoked:
+            raise ValueError('Publish task ' + task._id + ' is already revoked !')
+        if task.status in states.READY_STATES:
+            raise ValueError('Cannot revoke a publish task with status ' + task.status + '.')
+        task.revoked = True
+        revoke(task._id, terminate=terminate)
+        self._db.publish_tasks.save(task.__dict__)
         if remove:
-            self._db.publish_jobs.remove({'_id': job._id})
+            self._db.publish_tasks.remove({'_id': task._id})
 
-    def get_publish_jobs(self, specs=None, fields=None, load_fields=False, append_result=True):
-        jobs = []
-        for entity in list(self._db.publish_jobs.find(specs, fields)):
-            job = PublishJob.load(object2json(entity, False))
+    def get_publish_tasks(self, specs=None, fields=None, load_fields=False, append_result=True):
+        tasks = []
+        for entity in list(self._db.publish_tasks.find(specs, fields)):
+            task = PublishTask.load(object2json(entity, False))
             if load_fields:
-                job.load_fields(self.get_user({'_id': job.user_id}, {'secret': 0}),
-                                self.get_media({'_id': job.media_id}))
+                task.load_fields(self.get_user({'_id': task.user_id}, {'secret': 0}),
+                                 self.get_media({'_id': task.media_id}))
             if append_result:
-                job.append_async_result()
-            jobs.append(job)
-        return jobs
+                task.append_async_result()
+            tasks.append(task)
+        return tasks
         # FIXME this is celery's way to do that:
         #for task in state.itertasks():
         #    print task
         #for entity in entities:
-        #    job = get_publish_job_helper(entity._id)
+        #    task = get_publish_task_helper(entity._id)
 
-    def get_publish_jobs_count(self, specs=None):
-        return self._db.publish_jobs.find(specs, {'_id': 1}).count()
+    def get_publish_tasks_count(self, specs=None):
+        return self._db.publish_tasks.find(specs, {'_id': 1}).count()
 
     # ----------------------------------------------------------------------------------------------
 
-    def transform_callback(self, job_id, status):
-        job = self.get_transform_job({'_id': job_id})
-        if not job:
-            raise IndexError('No transform job with id ' + job_id + '.')
-        media_out = self.get_media({'_id': job.media_out_id})
+    def transform_callback(self, task_id, status):
+        task = self.get_transform_task({'_id': task_id})
+        if not task:
+            raise IndexError('No transform task with id ' + task_id + '.')
+        media_out = self.get_media({'_id': task.media_out_id})
         if not media_out:
-            raise IndexError('Unable to find output media with id ' + job.media_out_id + '.')
+            raise IndexError('Unable to find output media with id ' + task.media_out_id + '.')
         if status == 'SUCCESS':
             media_out.status = 'READY'
             self.save_media(media_out)
-            logging.info('%s Media %s is now READY' % (job_id, media_out.filename))
+            logging.info('%s Media %s is now READY' % (task_id, media_out.filename))
         else:
             self.delete_media(media_out)
-            job.add_statistic('error_details', status.replace('\n', '\\n'), True)
-            self._db.transform_jobs.save(job.__dict__)
-            logging.info('%s Error: %s' % (job_id, status))
-            logging.info('%s Media %s is now deleted' % (job_id, media_out.filename))
+            task.add_statistic('error_details', status.replace('\n', '\\n'), True)
+            self._db.transform_tasks.save(task.__dict__)
+            logging.info('%s Error: %s' % (task_id, status))
+            logging.info('%s Media %s is now deleted' % (task_id, media_out.filename))
 
-    def publish_callback(self, job_id, publish_uri, status):
-        job = self.get_publish_job({'_id': job_id})
-        if not job:
-            raise IndexError('No publish job with id ' + job_id + '.')
-        media = self.get_media({'_id': job.media_id})
+    def publish_callback(self, task_id, publish_uri, status):
+        task = self.get_publish_task({'_id': task_id})
+        if not task:
+            raise IndexError('No publish task with id ' + task_id + '.')
+        media = self.get_media({'_id': task.media_id})
         if not media:
-            raise IndexError('Unable to find media with id ' + job.media_id + '.')
+            raise IndexError('Unable to find media with id ' + task.media_id + '.')
         if status == 'SUCCESS':
             media.status = 'PUBLISHED'
             if not media.public_uris:
                 media.public_uris = {}
-            job.publish_uri = publish_uri
-            media.public_uris[job_id] = publish_uri
-            self._db.publish_jobs.save(job.__dict__)
+            task.publish_uri = publish_uri
+            media.public_uris[task_id] = publish_uri
+            self._db.publish_tasks.save(task.__dict__)
             self.save_media(media)
-            logging.info('%s Media %s is now PUBLISHED' % (job_id, media.filename))
+            logging.info('%s Media %s is now PUBLISHED' % (task_id, media.filename))
         else:
-            job.add_statistic('error_details', status.replace('\n', '\\n'), True)
-            self._db.publish_jobs.save(job.__dict__)
-            logging.info('%s Error: %s' % (job_id, status))
-            logging.info('%s Media %s is not modified' % (job_id, media.filename))
+            task.add_statistic('error_details', status.replace('\n', '\\n'), True)
+            self._db.publish_tasks.save(task.__dict__)
+            logging.info('%s Error: %s' % (task_id, status))
+            logging.info('%s Media %s is not modified' % (task_id, media.filename))

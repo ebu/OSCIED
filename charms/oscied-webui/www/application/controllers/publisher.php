@@ -22,12 +22,12 @@ class Publisher extends MY_Controller
             'http_user' => $this->user->mail(), 'http_pass' => $this->user->secret()
          )
       );
-      $response = $this->rest->get('publish/job');
+      $response = $this->rest->get('publish/task');
       if ($response->status != 200) {
          print_r($response->value);
          exit;
       }
-      $data['jobs'] = $response->value;
+      $data['tasks'] = $response->value;
       // Get the medias for the dropdown
       $response = $this->rest->get('media/HEAD');
       if ($response->status != 200) {
@@ -49,7 +49,7 @@ class Publisher extends MY_Controller
          $data['queues'][$queue] = $queue;
       }
 
-   	  $this->add_content('page_title', 'OSCIED - Publisher Jobs');
+   	  $this->add_content('page_title', 'OSCIED - Publication Tasks');
       $this->add_view('main', 'publisher/show', $data);
 
       $header_data['page'] = 'publisher';
@@ -69,12 +69,12 @@ class Publisher extends MY_Controller
             'http_user' => $this->user->mail(), 'http_pass' => $this->user->secret()
          )
       );
-      $response = $this->rest->get('publish/job');
+      $response = $this->rest->get('publish/task');
       if ($response->status != 200) {
          print_r($response->value);
          exit;
       }
-      $data['jobs'] = $response->value;
+      $data['tasks'] = $response->value;
       // Get the medias for the dropdown
       $response = $this->rest->get('media/HEAD');
       if ($response->status != 200) {
@@ -82,7 +82,7 @@ class Publisher extends MY_Controller
          exit;
       }
       $data['medias'] = array();
-      $this->load->view('publisher/show_jobs', $data);
+      $this->load->view('publisher/show_tasks', $data);
    }
 
    /**
@@ -97,7 +97,7 @@ class Publisher extends MY_Controller
             'http_user' => $this->user->mail(), 'http_pass' => $this->user->secret()
          )
       );
-      $response = $this->rest->delete('publish/job/id/'.$id);
+      $response = $this->rest->delete('publish/task/id/'.$id);
       // Set error or information message
       if ($response->status == 200) {
          $this->session->set_flashdata('infos', $response->value);
@@ -140,11 +140,11 @@ class Publisher extends MY_Controller
                'queue' => $this->input->post('queue')
             )
          );
-         $response = $this->rest->post('publish/job', $params, 'json');
+         $response = $this->rest->post('publish/task', $params, 'json');
          if ($response->status == 200) {
             // Set the flash message
             $this->session->set_flashdata(
-               'infos', 'The publish job for media "'.$this->input->post('media_in_id').'" has been launched.'
+               'infos', 'The publication task for media "'.$this->input->post('media_id').'" has been launched.'
             );
             echo json_encode(array('redirect' => site_url('publisher')));
          }

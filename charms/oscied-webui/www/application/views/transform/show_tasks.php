@@ -1,4 +1,4 @@
-<?php if (empty($jobs)): ?>
+<?php if (empty($tasks)): ?>
 
 <p>Be the first to transform a media !</p>
 
@@ -19,40 +19,40 @@
       </tr>
    </thead>
    <tbody>
-      <?php foreach ($jobs as $k => $job): ?>
+      <?php foreach ($tasks as $k => $task): ?>
       <tr>
          <td>
             <?php
-            $input = isset($job->media_in->filename)?$job->media_in->filename:'';
-            $output = isset($job->media_out->filename)?$job->media_out->filename:'';
+            $input = isset($task->media_in->filename)?$task->media_in->filename:'';
+            $output = isset($task->media_out->filename)?$task->media_out->filename:'';
             echo $input.'<br/>'.$output;
             ?>
          </td>
          <td>
             <?php
-            $profile = isset($job->profile->title)?$job->profile->title:'';
-            $user = isset($job->user->name)?$job->user->name:'';
+            $profile = isset($task->profile->title)?$task->profile->title:'';
+            $user = isset($task->user->name)?$task->user->name:'';
             echo $profile.'<br/>'.$user;
             ?>
          </td>
          <td>
             <?php
-            $add_date = isset($job->statistic->add_date)?$job->statistic->add_date:'';
-            $start_date = isset($job->statistic->start_date)?$job->statistic->start_date:'';
+            $add_date = isset($task->statistic->add_date)?$task->statistic->add_date:'';
+            $start_date = isset($task->statistic->start_date)?$task->statistic->start_date:'';
             echo $add_date.'<br/>'.$start_date
             ?>
          </td>
-         <td><?= (isset($job->statistic->hostname)?$job->statistic->hostname:'') ?></td>
+         <td><?= (isset($task->statistic->hostname)?$task->statistic->hostname:'') ?></td>
          <td>
             <?php
-            $elapsed = intval(isset($job->statistic->elapsed_time)?$job->statistic->elapsed_time:0);
-            $eta = intval(isset($job->statistic->eta_time)?$job->statistic->eta_time:0);
+            $elapsed = intval(isset($task->statistic->elapsed_time)?$task->statistic->elapsed_time:0);
+            $eta = intval(isset($task->statistic->eta_time)?$task->statistic->eta_time:0);
             echo gmdate('H:i:s',$elapsed).'<br/>'.gmdate('H:i:s',$eta);
             ?>
          </td>
          <td>
             <?php
-            $status = isset($job->status)?strtoupper($job->status):'UNKNOWN';
+            $status = isset($task->status)?strtoupper($task->status):'UNKNOWN';
             switch ($status) {
                case 'PENDING':  $class = 'progress progress-striped progress-info';        break;
                case 'PROGRESS': $class = 'progress progress-striped progress-info active'; break;
@@ -65,13 +65,13 @@
             }
             ?>
             <div class="<?= $class ?>">
-               <div class="bar" style="width: <?= isset($job->statistic->percent)?$job->statistic->percent:0 ?>%;"></div>
+               <div class="bar" style="width: <?= isset($task->statistic->percent)?$task->statistic->percent:0 ?>%;"></div>
             </div>
          </td>
-         <td><?= (isset($job->statistic->error)?print_r($job->statistic->error):'') ?></td>
+         <td><?= (isset($task->statistic->error)?print_r($task->statistic->error):'') ?></td>
          <td>
             <?php
-            $title = isset($job->statistic->error_details)?$job->statistic->error_details:'';
+            $title = isset($task->statistic->error_details)?$task->statistic->error_details:'';
             switch ($status) {
                case 'PENDING':  $class = 'label label-warning';   break;
                case 'PROGRESS': $class = 'label label-info';      break;
@@ -86,8 +86,8 @@
             <span class="<?= $class ?>" title="<?= $title ?>"><?= $status ?></span>
          </td>
          <td>
-            <?php if (($status != 'SUCCESS') && ($status != 'FAILURE') && ($status != 'REVOKED') && ($job->user->_id == $this->user->id())): ?>
-            <a class="revoke" title="<?= $job->_id ?>" href="<?= site_url('transform/revoke/'.$job->_id) ?>"><button class="btn btn-mini btn-danger">Revoke</button></a>
+            <?php if (($status != 'SUCCESS') && ($status != 'FAILURE') && ($status != 'REVOKED') && ($task->user->_id == $this->user->id())): ?>
+            <a class="revoke" title="<?= $task->_id ?>" href="<?= site_url('transform/revoke/'.$task->_id) ?>"><button class="btn btn-mini btn-danger">Revoke</button></a>
             <?php endif; ?>
          </td>
       </tr>
@@ -104,7 +104,7 @@ $(document).ready(function() {
          $.get(
             "<?= site_url('transform/refresh') ?>",
             function(data) {
-               $('#transform_jobs').html(data);
+               $('#transform_tasks').html(data);
             },
             'html'
          );

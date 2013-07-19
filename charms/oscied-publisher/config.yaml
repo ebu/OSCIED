@@ -10,7 +10,7 @@ options:
   rabbit_queues:
     type: string
     default: "publisher_private"
-    description: Worker connect to queues to receive jobs.  (e.g. "publisher_amazon" for amazon, "publisher_private,publisher_amazon" for both)
+    description: Worker connect to queues to receive tasks.  (e.g. "publisher_amazon" for amazon, "publisher_private,publisher_amazon" for both)
   max_upload_size:
     type: int
     default: 4294967296

@@ -47,17 +47,17 @@ FFMPEG_REGEX = re.compile(
     r'time=\s*(?P<time>\S+)\s+bitrate=\s*(?P<bitrate>\S+)')
 
 
-@task(name='Transform.transform_job')
-def transform_job(user_json, media_in_json, media_out_json, profile_json, callback_json):
+@task(name='Transform.transform_task')
+def transform_task(user_json, media_in_json, media_out_json, profile_json, callback_json):
 
     def copy_callback(start_date, elapsed_time, eta_time, src_size, dst_size, ratio):
-        transform_job.update_state(state='PROGRESS', meta={
+        transform_task.update_state(state='PROGRESS', meta={
             'hostname': request.hostname, 'start_date': start_date, 'elapsed_time': elapsed_time,
             'eta_time': eta_time, 'media_in_size': src_size, 'media_out_size': dst_size,
             'percent': int(100 * ratio)})
 
     def transform_callback(status):
-        data_json = object2json({'job_id': request.id, 'status': status}, False)
+        data_json = object2json({'task_id': request.id, 'status': status}, False)
         if callback is None:
             print('%s [ERROR] Unable to callback orchestrator: %s' % (request.id, data_json))
         else:
@@ -75,7 +75,7 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
         request = current_task.request
 
         # Let's the task begin !
-        print('%s Transform job started' % request.id)
+        print('%s Transform task started' % request.id)
 
         # Read current configuration to translate files uri to local paths
         config = TransformConfig.read('local_config.pkl')
@@ -154,11 +154,11 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
                     except ZeroDivisionError:
                         ratio = 1.0
                     elapsed_time = time.time() - start_time
-                    # Update status of job only if delta time or delta ratio is sufficient
+                    # Update status of task only if delta time or delta ratio is sufficient
                     if ratio - prev_ratio > RATIO_DELTA and elapsed_time - prev_time > TIME_DELTA:
                         prev_ratio, prev_time = ratio, elapsed_time
                         eta_time = int(elapsed_time * (1.0 - ratio) / ratio) if ratio > 0 else 0
-                        transform_job.update_state(
+                        transform_task.update_state(
                             state='PROGRESS',
                             meta={'hostname': request.hostname,
                                   'start_date': start_date,
@@ -221,11 +221,11 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
                     except ZeroDivisionError:
                         ratio = 1.0
                     elapsed_time = time.time() - start_time
-                    # Update status of job only if delta time or delta ratio is sufficient
+                    # Update status of task only if delta time or delta ratio is sufficient
                     if ratio - prev_ratio > RATIO_DELTA and elapsed_time - prev_time > TIME_DELTA:
                         prev_ratio, prev_time = ratio, elapsed_time
                         eta_time = int(elapsed_time * (1.0 - ratio) / ratio) if ratio > 0 else 0
-                        transform_job.update_state(
+                        transform_task.update_state(
                             state='PROGRESS',
                             meta={'hostname': request.hostname,
                                   'start_date': start_date,
@@ -251,7 +251,7 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
         # Here all seem okay -----------------------------------------------------------------------
         media_out_size = get_size(media_out_root)
         media_out_duration = get_media_duration(media_out_path)
-        print('%s Transform job successful, output media %s' % (request.id, media_out.filename))
+        print('%s Transform task successful, output media %s' % (request.id, media_out.filename))
         transform_callback('SUCCESS')
         return {'hostname': request.hostname, 'start_date': start_date,
                 'elapsed_time': elapsed_time, 'eta_time': 0, 'media_in_size': media_in_size,
@@ -261,6 +261,6 @@ def transform_job(user_json, media_in_json, media_out_json, profile_json, callba
     except Exception as error:
 
         # Here something went wrong
-        print('%s Transform job failed ' % request.id)
+        print('%s Transform task failed ' % request.id)
         transform_callback('ERROR\n%s\n\nOUTPUT\n%s' % (str(error), encoder_out))
         raise

@@ -1,13 +1,13 @@
-<h1 class="page-header">Publish(er) jobs</h1>
+<h1 class="page-header">Publish(er) tasks</h1>
 
-<div id="publisher_jobs">
-   <?= $this->load->view('publisher/show_jobs'); ?>
+<div id="publisher_tasks">
+   <?= $this->load->view('publisher/show_tasks'); ?>
 </div>
 
 <script type="text/javascript">
 /*<!-- Set the action for file deletion -->*/
 $('body').on('click', '.revoke', function () {
-   if (confirm('Do you really want to revoke the job "' + $(this).attr('title') + '"?')) {
+   if (confirm('Do you really want to revoke the task "' + $(this).attr('title') + '"?')) {
       $.get(
          $(this).attr('href'),
          function (data) {

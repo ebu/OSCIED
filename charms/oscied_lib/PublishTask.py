@@ -28,24 +28,22 @@
 import uuid
 from celery.result import AsyncResult
 from Media import MEDIA_TEST
-from TransformProfile import TRANSFORM_PROFILE_TEST
 from User import USER_TEST
 from pyutils.pyutils import json2object, object2json, valid_uuid
 
 
-class TransformJob(object):
+class PublishTask(object):
 
-    def __init__(self, _id, user_id, media_in_id, media_out_id, profile_id, statistic={},
-                 revoked=False):
+    def __init__(self, _id, user_id, media_id, publish_uri, statistic={}, revoked=False):
         if not _id:
             _id = str(uuid.uuid4())
         self._id = _id
         self.user_id = user_id
-        self.media_in_id = media_in_id
-        self.media_out_id = media_out_id
-        self.profile_id = profile_id
+        self.media_id = media_id
+        self.publish_uri = publish_uri
         self.statistic = statistic
         self.revoked = revoked
+
 
     def is_valid(self, raise_exception):
         if not valid_uuid(self._id, none_allowed=False):
@@ -57,21 +55,12 @@ class TransformJob(object):
                 raise TypeError(self.__class__.__name__ + ' : user_id is not a valid uuid string')
             return False
         # FIXME check user if loaded
-        if hasattr(self, 'media_in_id') and not valid_uuid(self.media_in_id, none_allowed=False):
+        if hasattr(self, 'media_id') and not valid_uuid(self.media_id, none_allowed=False):
             if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : media_in_id is not a valid uuid string')
+                raise TypeError(self.__class__.__name__ + ' : media_id is not a valid uuid string')
             return False
-        # FIXME check media_in if loaded
-        if hasattr(self, 'media_out_id') and not valid_uuid(self.media_out_id, none_allowed=False):
-            if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : media_out_id is not a valid uuid string')
-            return False
-        # FIXME check media_out if loaded
-        if hasattr(self, 'profile_id') and not valid_uuid(self.profile_id, none_allowed=False):
-            if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : profile_id is not a valid uuid string')
-            return False
-        # FIXME check profile if loaded
+        # FIXME check media if loaded
+        # FIXME check publish_uri
         # FIXME check statistic
         # FIXME check revoked
         return True
@@ -94,43 +83,23 @@ class TransformJob(object):
         else:
             self.status = 'UNDEF'
 
-    def load_fields(self, user, media_in, media_out, profile):
+    def load_fields(self, user, media):
         self.user = user
-        self.media_in = media_in
-        self.media_out = media_out
-        self.profile = profile
+        self.media = media
         delattr(self, 'user_id')
-        delattr(self, 'media_in_id')
-        delattr(self, 'media_out_id')
-        delattr(self, 'profile_id')
+        delattr(self, 'media_id')
 
     @staticmethod
     def load(json):
-        job = TransformJob(None, None, None, None, None)
-        json2object(json, job)
-        return job
+        task = PublishTask(None, None, None, None)
+        json2object(json, task)
+        return task
 
-    @staticmethod
-    def validate_job(media_in, profile, media_out):
-        if not media_in.status in ('READY', 'PUBLISHED'):
-            raise NotImplementedError('Cannot launch the job, input media status is %s.' %
-                                      media_in.status)
-        if media_in.is_dash and profile.encoder_name != 'copy':
-            raise NotImplementedError('Cannot launch the job, input media is MPEG-DASH content and '
-                                      'encoder is not copy.')
-        if profile.is_dash and not media_out.is_dash:
-            raise ValueError('Cannot launch the job, output media is not a MPD but job is based '
-                             'on a MPEG-DASH encoder called %s.' % profile.encoder_name)
-        if not profile.is_dash and media_out.is_dash:
-            raise ValueError('Cannot launch the job, output media is a MPD but job is not based '
-                             'on a MPEG-DASH encoder called %s.' % profile.encoder_name)
-
-TRANSFORM_JOB_TEST = TransformJob(None, USER_TEST._id, MEDIA_TEST._id, MEDIA_TEST._id,
-                                  TRANSFORM_PROFILE_TEST._id)
+PUBLISH_JOB_TEST = PublishTask(None, USER_TEST._id, MEDIA_TEST._id, 'http://amazon.com/salut.mpg')
 
 # Main ---------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    print object2json(TRANSFORM_JOB_TEST, True)
-    TRANSFORM_JOB_TEST.is_valid(True)
-    print str(TransformJob.load(object2json(TRANSFORM_JOB_TEST, False)))
+    print object2json(PUBLISH_JOB_TEST, True)
+    PUBLISH_JOB_TEST.is_valid(True)
+    print str(PublishTask.load(object2json(PUBLISH_JOB_TEST, False)))

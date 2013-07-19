@@ -1128,8 +1128,8 @@ def api_media_id_delete(id):
     :Allowed: Only the author of the media
     :param id: id of media to delete
     :statuscode 200: OK
-    :statuscode 400: Cannot delete the media, it is actually in use by transform job with id ``id`` and status ``status``.
-    :statuscode 400: Cannot delete the media, it is actually in use by publish job with id ``id`` and status ``status``.
+    :statuscode 400: Cannot delete the media, it is actually in use by transform task with id ``id`` and status ``status``.
+    :statuscode 400: Cannot delete the media, it is actually in use by publish task with id ``id`` and status ``status``.
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     :statuscode 403: You are not allowed to delete media with id ``id``.
@@ -1615,7 +1615,7 @@ def api_transform_unit_number_delete(environment, number):
         map_exceptions(e)
 
 
-# Transformation jobs (encoding) -------------------------------------------------------------------
+# Transformation tasks (encoding) ------------------------------------------------------------------
 
 @app.route('/transform/queue', methods=['GET'])
 def api_transform_queue():
@@ -1656,16 +1656,16 @@ def api_transform_queue():
         map_exceptions(e)
 
 
-@app.route('/transform/job/count', methods=['GET'])
-def api_transform_job_count():
+@app.route('/transform/task/count', methods=['GET'])
+def api_transform_task_count():
     """
-    Return transform jobs count.
+    Return transform tasks count.
 
     **Example request**:
 
     .. sourcecode:: http
 
-        GET /transform/job/count HTTP/1.1
+        GET /transform/task/count HTTP/1.1
         Host: somewhere.com
         Header: marylene@oscied.org:oscied
         Accept: application/json
@@ -1687,23 +1687,23 @@ def api_transform_job_count():
     """
     try:
         requires_auth(request=request, allow_any=True)
-        return ok_200(orchestra.get_transform_jobs_count(), False)
+        return ok_200(orchestra.get_transform_tasks_count(), False)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/transform/job/HEAD', methods=['GET'])
-def api_transform_job_head():
+@app.route('/transform/task/HEAD', methods=['GET'])
+def api_transform_task_head():
     """
-    Return an array containing the transform jobs serialized as JSON.
+    Return an array containing the transform tasks serialized as JSON.
 
-    The transform jobs attributes are appended with the Celery's ``async result`` of the jobs.
+    The transform tasks attributes are appended with the Celery's ``async result`` of the tasks.
 
     **Example request**:
 
     .. sourcecode:: http
 
-        GET /transform/job/HEAD HTTP/1.1
+        GET /transform/task/HEAD HTTP/1.1
         Host: somewhere.com
         Header: thomas@oscied.org:oscied
         Accept: application/json
@@ -1728,17 +1728,17 @@ def api_transform_job_head():
     """
     try:
         requires_auth(request=request, allow_any=True)
-        return ok_200(orchestra.get_transform_jobs(), True)
+        return ok_200(orchestra.get_transform_tasks(), True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/transform/job', methods=['GET'])
-def api_transform_job_get():
+@app.route('/transform/task', methods=['GET'])
+def api_transform_task_get():
     """
-    Return an array containing the transform jobs serialized to JSON.
+    Return an array containing the transform tasks serialized to JSON.
 
-    The transform jobs attributes are appended with the Celery's ``async result`` of the jobs.
+    The transform tasks attributes are appended with the Celery's ``async result`` of the tasks.
 
     All ``thing_id`` fields are replaced by corresponding ``thing``.
     For example ``user_id`` is replaced by ``user``'s data.
@@ -1747,7 +1747,7 @@ def api_transform_job_get():
 
     .. sourcecode:: http
 
-        GET /transform/job HTTP/1.1
+        GET /transform/task HTTP/1.1
         Host: somewhere.com
         Header: antoinette@oscied.org:oscied
         Accept: application/json
@@ -1772,17 +1772,17 @@ def api_transform_job_get():
     """
     try:
         requires_auth(request=request, allow_any=True)
-        return ok_200(orchestra.get_transform_jobs(load_fields=True), True)
+        return ok_200(orchestra.get_transform_tasks(load_fields=True), True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/transform/job', methods=['POST'])
-def api_transform_job_post():
+@app.route('/transform/task', methods=['POST'])
+def api_transform_task_post():
     """
-    Launch a transform job.
+    Launch a transform task.
 
-    Any user can launch a transform job using any media as input and any transform profile.
+    Any user can launch a transform task using any media as input and any transform profile.
     This is linked to media and transform profile API methods access policies.
 
     The output media is registered to the database with the PENDING status and the ``parent_id``
@@ -1795,13 +1795,13 @@ def api_transform_job_post():
         Interesting enhancement would be to :
 
         * Schedule obs by specifying start time (...) ;
-        * Handle the registration of jobs related to PENDING medias ;
+        * Handle the registration of tasks related to PENDING medias ;
 
     **Example request**:
 
     .. sourcecode:: http
 
-        POST /transform/job HTTP/1.1
+        POST /transform/task HTTP/1.1
         Host: somewhere.com
         Header: tabby@bernex.ch:miaow
         Accept: application/json
@@ -1826,14 +1826,14 @@ def api_transform_job_post():
         {"status": 200, "value": "ea9088f0-74f8-11e2-b780-3085a9acccb2a"}
 
     :Allowed: Any user
-    :query media_in_id: New job input media's id (required)
-    :query profile_id: New job profile's id (required)
-    :query filename: New job output media's filename (required)
-    :query metadata: New  job output media's metadata (required)
-    :query queue: The transform queue used to route the new job (required)
+    :query media_in_id: New task input media's id (required)
+    :query profile_id: New task profile's id (required)
+    :query filename: New task output media's filename (required)
+    :query metadata: New  task output media's metadata (required)
+    :query queue: The transform queue used to route the new task (required)
     :statuscode 200: OK
     :statuscode 400: Key ``key`` not found. *or* on type or value error
-    :statuscode 400: Unable to transmit job to workers of queue ``queue``.
+    :statuscode 400: Unable to transmit task to workers of queue ``queue``.
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     :statuscode 404: No user with id ``id``.
@@ -1841,32 +1841,32 @@ def api_transform_job_post():
     :statuscode 404: No profile with id ``profile_id``.
     :statuscode 404: No transform queue with name ``queue``.
     :statuscode 415: Required (valid) json content-type.
-    :statuscode 501: Cannot launch the job, input media status is ``status``.
+    :statuscode 501: Cannot launch the task, input media status is ``status``.
     """
     try:
         auth_user = requires_auth(request=request, allow_any=True)
         data = get_request_json(request)
-        job_id = orchestra.launch_transform_job(
+        task_id = orchestra.launch_transform_task(
             auth_user._id, data['media_in_id'], data['profile_id'], data['filename'],
             data['metadata'], data['queue'], '/transform/callback')
-        return ok_200(job_id, True)
+        return ok_200(task_id, True)
     except Exception as e:
         map_exceptions(e)
 
 
 # FIXME why HEAD verb doesn't work (curl: (18) transfer closed with 263 bytes remaining to read) ?
-@app.route('/transform/job/id/<id>/HEAD', methods=['GET'])
-def api_transform_job_id_head(id):
+@app.route('/transform/task/id/<id>/HEAD', methods=['GET'])
+def api_transform_task_id_head(id):
     """
-    Return a transform job serialized to JSON.
+    Return a transform task serialized to JSON.
 
-    The transform job attributes are appended with the Celery's ``async result`` of the job.
+    The transform task attributes are appended with the Celery's ``async result`` of the task.
 
     **Example request**:
 
     .. sourcecode:: http
 
-        GET /transform/job/id/48c111c8-74f8-11e2-a7a8-3085a9acc6c4/HEAD HTTP/1.1
+        GET /transform/task/id/48c111c8-74f8-11e2-a7a8-3085a9acc6c4/HEAD HTTP/1.1
         Host: somewhere.com
         Header: edoardo@oscied.org:oscied
         Accept: application/json
@@ -1904,30 +1904,30 @@ def api_transform_job_id_head(id):
         }
 
     :Allowed: Any user
-    :param id: id of job to get
+    :param id: id of task to get
     :statuscode 200: OK
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 404: No transform job with id ``id``.
+    :statuscode 404: No transform task with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     """
     try:
         check_id(id)
         requires_auth(request=request, allow_any=True)
-        job = orchestra.get_transform_job(specs={'_id': id})
-        if not job:
-            raise IndexError('No transform job with id %s.' % id)
-        return ok_200(job, True)
+        task = orchestra.get_transform_task(specs={'_id': id})
+        if not task:
+            raise IndexError('No transform task with id %s.' % id)
+        return ok_200(task, True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/transform/job/id/<id>', methods=['GET'])
-def api_transform_job_id_get(id):
+@app.route('/transform/task/id/<id>', methods=['GET'])
+def api_transform_task_id_get(id):
     """
-    Return a transform job serialized to JSON.
+    Return a transform task serialized to JSON.
 
-    The transform job attributes are appended with the Celery's ``async result`` of the job.
+    The transform task attributes are appended with the Celery's ``async result`` of the task.
 
     All ``thing_id`` fields are replaced by corresponding ``thing``.
     For example ``user_id`` is replaced by ``user``'s data.
@@ -1936,7 +1936,7 @@ def api_transform_job_id_get(id):
 
     .. sourcecode:: http
 
-        GET /transform/job/id/ea9088f0-74f8-11e2-b780-3085a9acccb2a HTTP/1.1
+        GET /transform/task/id/ea9088f0-74f8-11e2-b780-3085a9acccb2a HTTP/1.1
         Host: somewhere.com
         Header: claire@oscied.org:oscied
         Accept: application/json
@@ -2021,38 +2021,38 @@ def api_transform_job_id_get(id):
         }
 
     :Allowed: Any user
-    :param id: id of job to get
+    :param id: id of task to get
     :statuscode 200: OK
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 404: No transform job with id ``id``.
+    :statuscode 404: No transform task with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     """
     try:
         check_id(id)
         requires_auth(request=request, allow_any=True)
-        job = orchestra.get_transform_job(specs={'_id': id}, load_fields=True)
-        if not job:
-            raise IndexError('No transform job with id %s.' % id)
-        return ok_200(job, True)
+        task = orchestra.get_transform_task(specs={'_id': id}, load_fields=True)
+        if not task:
+            raise IndexError('No transform task with id %s.' % id)
+        return ok_200(task, True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/transform/job/id/<id>', methods=['DELETE'])
-def api_transform_job_id_delete(id):
+@app.route('/transform/task/id/<id>', methods=['DELETE'])
+def api_transform_task_id_delete(id):
     """
-    Revoke a transform job.
+    Revoke a transform task.
 
-    This method do not delete jobs from jobs database but set ``revoked`` attribute in jobs database
-    and broadcast revoke request to transform units with Celery. If the job is actually running it
-    will be canceled. The output media will be deleted.
+    This method do not delete tasks from tasks database but set ``revoked`` attribute in tasks
+    database and broadcast revoke request to transform units with Celery. If the task is actually
+    running it will be canceled. The output media will be deleted.
 
     **Example request**:
 
     .. sourcecode:: http
 
-        DELETE /transform/job/id/ea9088f0-74f8-11e2-b780-3085a9acccb2a HTTP/1.1
+        DELETE /transform/task/id/ea9088f0-74f8-11e2-b780-3085a9acccb2a HTTP/1.1
         Host: somewhere.com
         Header: tabby@bernex.ch:miaow
         Accept: application/json
@@ -2068,38 +2068,38 @@ def api_transform_job_id_delete(id):
 
         {
           "status": 200,
-          "value": "The transform job \\"<job_id>\\" has been revoked.
+          "value": "The transform task \\"<task_id>\\" has been revoked.
                     Corresponding output media will be deleted."
         }
 
-    :Allowed: Only author of the job
-    :param id: id of job to delete
+    :Allowed: Only author of the task
+    :param id: id of task to delete
     :statuscode 200: OK
     :statuscode 400: on value error
-    :statuscode 400: Transform job ``id`` is already revoked !
-    :statuscode 400: Cannot revoke a transform job with status ``status``.
+    :statuscode 400: Transform task ``id`` is already revoked !
+    :statuscode 400: Cannot revoke a transform task with status ``status``.
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 403: You are not allowed to revoke transform job with id ``id``.
-    :statuscode 404: No transform job with id ``id``.
+    :statuscode 403: You are not allowed to revoke transform task with id ``id``.
+    :statuscode 404: No transform task with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     """
     try:
         check_id(id)
         auth_user = requires_auth(request=request, allow_any=True)
-        job = orchestra.get_transform_job(specs={'_id': id})
-        if not job:
-            raise IndexError('No transform job with id %s.' % id)
-        if auth_user._id != job.user_id:
-            abort(403, 'You are not allowed to revoke transform job with id %s.' % id)
-        orchestra.revoke_transform_job(job=job, terminate=True, remove=False, delete_media=True)
-        return ok_200('The transform job "%s" has been revoked. Corresponding output media will be '
-                      'deleted.' % job._id, False)
+        task = orchestra.get_transform_task(specs={'_id': id})
+        if not task:
+            raise IndexError('No transform task with id %s.' % id)
+        if auth_user._id != task.user_id:
+            abort(403, 'You are not allowed to revoke transform task with id %s.' % id)
+        orchestra.revoke_transform_task(task=task, terminate=True, remove=False, delete_media=True)
+        return ok_200('The transform task "%s" has been revoked. Corresponding output media will be'
+                      ' deleted.' % task._id, False)
     except Exception as e:
         map_exceptions(e)
 
 
-# Publishing jobs ----------------------------------------------------------------------------------
+# Publishing tasks ---------------------------------------------------------------------------------
 
 @app.route('/publish/queue', methods=['GET'])
 @app.route('/publisher/queue', methods=['GET'])
@@ -2142,16 +2142,16 @@ def api_publish_queue():
         map_exceptions(e)
 
 
-@app.route('/publish/job/count', methods=['GET'])
-def api_publish_job_count():
+@app.route('/publish/task/count', methods=['GET'])
+def api_publish_task_count():
     """
-    Return publish jobs count.
+    Return publish tasks count.
 
     **Example request**:
 
     .. sourcecode:: http
 
-        GET /publish/job/count HTTP/1.1
+        GET /publish/task/count HTTP/1.1
         Host: somewhere.com
         Header: sophie@oscied.org:oscied
         Accept: application/json
@@ -2173,23 +2173,23 @@ def api_publish_job_count():
     """
     try:
         requires_auth(request=request, allow_any=True)
-        return ok_200(orchestra.get_publish_jobs_count(), False)
+        return ok_200(orchestra.get_publish_tasks_count(), False)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/publish/job/HEAD', methods=['GET'])
-def api_publish_job_head():
+@app.route('/publish/task/HEAD', methods=['GET'])
+def api_publish_task_head():
     """
-    Return an array containing the publish jobs serialized as JSON.
+    Return an array containing the publish tasks serialized as JSON.
 
-    The publish jobs attributes are appended with the Celery's ``async result`` of the jobs.
+    The publish tasks attributes are appended with the Celery's ``async result`` of the tasks.
 
     **Example request**:
 
     .. sourcecode:: http
 
-        GET /publish/job/HEAD HTTP/1.1
+        GET /publish/task/HEAD HTTP/1.1
         Host: somewhere.com
         Header: antonin@oscied.org:oscied
         Accept: application/json
@@ -2214,17 +2214,17 @@ def api_publish_job_head():
     """
     try:
         requires_auth(request=request, allow_any=True)
-        return ok_200(orchestra.get_publish_jobs(), True)
+        return ok_200(orchestra.get_publish_tasks(), True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/publish/job', methods=['GET'])
-def api_publish_job_get():
+@app.route('/publish/task', methods=['GET'])
+def api_publish_task_get():
     """
-    Return an array containing the publish jobs serialized to JSON.
+    Return an array containing the publish tasks serialized to JSON.
 
-    The publish jobs attributes are appended with the Celery's ``async result`` of the jobs.
+    The publish tasks attributes are appended with the Celery's ``async result`` of the tasks.
 
     All ``thing_id`` fields are replaced by corresponding ``thing``.
     For example ``user_id`` is replaced by ``user``'s data.
@@ -2233,7 +2233,7 @@ def api_publish_job_get():
 
     .. sourcecode:: http
 
-        GET /publish/job HTTP/1.1
+        GET /publish/task HTTP/1.1
         Host: somewhere.com
         Header: melanie@oscied.org:oscied
         Accept: application/json
@@ -2258,17 +2258,17 @@ def api_publish_job_get():
     """
     try:
         requires_auth(request=request, allow_any=True)
-        return ok_200(orchestra.get_publish_jobs(load_fields=True), True)
+        return ok_200(orchestra.get_publish_tasks(load_fields=True), True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/publish/job', methods=['POST'])
-def api_publish_job_post():
+@app.route('/publish/task', methods=['POST'])
+def api_publish_task_post():
     """
-    Launch a publish job.
+    Launch a publish task.
 
-    Any user can launch a publish job using any media as input.
+    Any user can launch a publish task using any media as input.
     This is linked to media API methods access policy.
 
     The orchestrator will automatically add ``add_date`` to ``statistic``.
@@ -2277,8 +2277,8 @@ def api_publish_job_post():
 
         Interesting enhancements would be to :
 
-        * Schedule jobs by specifying start time (...)
-        * Handle the registration of jobs related to PENDING medias
+        * Schedule tasks by specifying start time (...)
+        * Handle the registration of tasks related to PENDING medias
         * Permit to publish a media on more than one (1) publication queue
         * Permit to unpublish a media vbia a unpublish (broadcast) message
 
@@ -2286,7 +2286,7 @@ def api_publish_job_post():
 
     .. sourcecode:: http
 
-        POST /publish/job HTTP/1.1
+        POST /publish/task HTTP/1.1
         Host: somewhere.com
         Header: tabby@bernex.ch:miaow
         Accept: application/json
@@ -2311,44 +2311,44 @@ def api_publish_job_post():
         }
 
     :Allowed: Any user
-    :query media_id: New job input media's id (required)
-    :query queue: The publish queue used to route job (required)
+    :query media_id: New task input media's id (required)
+    :query queue: The publish queue used to route task (required)
     :statuscode 200: OK
     :statuscode 400: Key ``key`` not found. *or* on type or value error
-    :statuscode 400: Unable to transmit job to workers of queue ``queue``.
+    :statuscode 400: Unable to transmit task to workers of queue ``queue``.
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     :statuscode 404: No user with id ``id``.
     :statuscode 404: No media with id ``media_id``.
     :statuscode 404: No publish queue with name ``queue``.
     :statuscode 415: Required (valid) json content-type.
-    :statuscode 501: Cannot launch the job, input media status is ``status``.
-    :statuscode 501: Cannot launch the job, input media will be published by
-                     another job with id ``id``.
+    :statuscode 501: Cannot launch the task, input media status is ``status``.
+    :statuscode 501: Cannot launch the task, input media will be published by
+                     another task with id ``id``.
     """
     try:
         auth_user = requires_auth(request=request, allow_any=True)
         data = get_request_json(request)
-        job_id = orchestra.launch_publish_job(auth_user._id, data['media_id'], data['queue'],
-                                              '/publish/callback')
-        return ok_200(job_id, True)
+        task_id = orchestra.launch_publish_task(auth_user._id, data['media_id'], data['queue'],
+                                                '/publish/callback')
+        return ok_200(task_id, True)
     except Exception as e:
         map_exceptions(e)
 
 
 # FIXME why HEAD verb doesn't work (curl: (18) transfer closed with 263 bytes remaining to read) ?
-@app.route('/publish/job/id/<id>/HEAD', methods=['GET'])
-def api_publish_job_id_head(id):
+@app.route('/publish/task/id/<id>/HEAD', methods=['GET'])
+def api_publish_task_id_head(id):
     """
-    Return a publish job serialized to JSON.
+    Return a publish task serialized to JSON.
 
-    The publish job attributes are appended with the Celery's ``async result`` of the job.
+    The publish task attributes are appended with the Celery's ``async result`` of the task.
 
     **Example request**:
 
     .. sourcecode:: http
 
-        GET /publish/job/id/c697f528-74f7-11e2-96a3-3085a9accc5d/HEAD HTTP/1.1
+        GET /publish/task/id/c697f528-74f7-11e2-96a3-3085a9accc5d/HEAD HTTP/1.1
         Host: somewhere.com
         Header: tabby@bernex.ch:miaow
         Accept: application/json
@@ -2386,29 +2386,29 @@ def api_publish_job_id_head(id):
         }
 
     :Allowed: Any user
-    :param id: id of job to get
+    :param id: id of task to get
     :statuscode 200: OK
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 404: No publish job with id ``id``.
+    :statuscode 404: No publish task with id ``id``.
     """
     try:
         check_id(id)
         requires_auth(request=request, allow_any=True)
-        job = orchestra.get_publish_job(specs={'_id': id})
-        if not job:
-            raise IndexError('No publish job with id %s.' % id)
-        return ok_200(job, True)
+        task = orchestra.get_publish_task(specs={'_id': id})
+        if not task:
+            raise IndexError('No publish task with id %s.' % id)
+        return ok_200(task, True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/publish/job/id/<id>', methods=['GET'])
-def api_publish_job_id_get(id):
+@app.route('/publish/task/id/<id>', methods=['GET'])
+def api_publish_task_id_get(id):
     """
-    Return a publish job serialized to JSON.
+    Return a publish task serialized to JSON.
 
-    The publish job attributes are appended with the Celery's ``async result`` of the job.
+    The publish task attributes are appended with the Celery's ``async result`` of the task.
 
     All ``thing_id`` fields are replaced by corresponding ``thing``.
     For example ``user_id`` is replaced by ``user``'s data.
@@ -2418,7 +2418,7 @@ def api_publish_job_id_get(id):
 
     .. sourcecode:: http
 
-        GET /publish/job/id/c697f528-74f7-11e2-96a3-3085a9accc5d HTTP/1.1
+        GET /publish/task/id/c697f528-74f7-11e2-96a3-3085a9accc5d HTTP/1.1
         Host: somewhere.com
         Header: tabby@bernex.ch:miaow
         Accept: application/json
@@ -2472,37 +2472,37 @@ def api_publish_job_id_get(id):
         }
 
     :Allowed: Any user
-    :param id: id of job to get
+    :param id: id of task to get
     :statuscode 200: OK
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 404: No publish job with id ``id``.
+    :statuscode 404: No publish task with id ``id``.
     """
     try:
         check_id(id)
         requires_auth(request=request, allow_any=True)
-        job = orchestra.get_publish_job(specs={'_id': id}, load_fields=True)
-        if not job:
-            raise IndexError('No publish job with id %s.' % id)
-        return ok_200(job, True)
+        task = orchestra.get_publish_task(specs={'_id': id}, load_fields=True)
+        if not task:
+            raise IndexError('No publish task with id %s.' % id)
+        return ok_200(task, True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/publish/job/id/<id>', methods=['DELETE'])
-def api_publish_job_id_delete(id):
+@app.route('/publish/task/id/<id>', methods=['DELETE'])
+def api_publish_task_id_delete(id):
     """
-    Revoke a publish job.
+    Revoke a publish task.
 
-    This method do not delete jobs from jobs database but set ``revoked`` attribute in jobs database
-    and broadcast revoke request to publisher units with Celery. If the job is actually running it
-    will be canceled. The output publication media will be deleted.
+    This method do not delete tasks from tasks database but set ``revoked`` attribute in tasks
+    database and broadcast revoke request to publisher units with Celery. If the task is actually
+    running it will be canceled. The output publication media will be deleted.
 
     **Example request**:
 
     .. sourcecode:: http
 
-        DELETE /pulish/job/id/c697f528-74f7-11e2-96a3-3085a9accc5d HTTP/1.1
+        DELETE /pulish/task/id/c697f528-74f7-11e2-96a3-3085a9accc5d HTTP/1.1
         Host: somewhere.com
         Header: tabby@bernex.ch:miaow
         Accept: application/json
@@ -2518,32 +2518,32 @@ def api_publish_job_id_delete(id):
 
         {
           "status": 200,
-          "value": "The publish job \\"<job_id>\\" has been revoked.
+          "value": "The publish task \\"<task_id>\\" has been revoked.
                     Corresponding media will be unpublished from here."
         }
 
-    :Allowed: Only author of the job
-    :param id: id of job to delete
+    :Allowed: Only author of the task
+    :param id: id of task to delete
     :statuscode 200: OK
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 403: You are not allowed to revoke publish job with id ``id``.
-    :statuscode 404: No publish job with id ``id``.
+    :statuscode 403: You are not allowed to revoke publish task with id ``id``.
+    :statuscode 404: No publish task with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     """
     try:
         check_id(id)
         auth_user = requires_auth(request=request, allow_any=True)
-        job = orchestra.get_publish_job(specs={'_id': id})
-        if not job:
-            raise IndexError('No publish job with id %s.' % id)
-        if auth_user._id != job.user_id:
-            abort(403, 'You are not allowed to revoke publish job with id %s.' % id)
-        orchestra.revoke_publish_job(job=job, terminate=True, remove=False)
-        logging.info('here will be launched an unpublish job')
-        #orchestra.launch_unpublish_job(auth_user._id, job, '/unpublish/callback')
-        return ok_200('The publish job "%s" has been revoked. Corresponding media will be '
-                      'unpublished from here.' % job._id, False)
+        task = orchestra.get_publish_task(specs={'_id': id})
+        if not task:
+            raise IndexError('No publish task with id %s.' % id)
+        if auth_user._id != task.user_id:
+            abort(403, 'You are not allowed to revoke publish task with id %s.' % id)
+        orchestra.revoke_publish_task(task=task, terminate=True, remove=False)
+        logging.info('here will be launched an unpublish task')
+        #orchestra.launch_unpublish_task(auth_user._id, task, '/unpublish/callback')
+        return ok_200('The publish task "%s" has been revoked. Corresponding media will be '
+                      'unpublished from here.' % task._id, False)
     except Exception as e:
         map_exceptions(e)
 
@@ -2551,14 +2551,14 @@ def api_publish_job_id_delete(id):
 # Workers (nodes) hooks ----------------------------------------------------------------------------
 
 @app.route('/transform/callback', methods=['POST'])
-def api_transform_job_hook():
+def api_transform_task_hook():
     """
     This method is called by transform workers when they finish their work.
 
-    If job is successful, the orchestrator will set media's status to READY.
-    Else, the orchestrator will append ``error_details`` to ``statistic`` attribute of job.
+    If task is successful, the orchestrator will set media's status to READY.
+    Else, the orchestrator will append ``error_details`` to ``statistic`` attribute of task.
 
-    The media will be deleted if job failed (even the worker already take care of that).
+    The media will be deleted if task failed (even the worker already take care of that).
 
     **Example request**:
 
@@ -2571,7 +2571,7 @@ def api_transform_job_hook():
         Content-Type: application/json
 
         {
-          "job_id": "1b96dcd6-7460-11e2-a06d-3085a9accb47",
+          "task_id": "1b96dcd6-7460-11e2-a06d-3085a9accb47",
           "status": "SUCCESS"
         }
 
@@ -2586,35 +2586,35 @@ def api_transform_job_hook():
         {"status": 200, "value": "Your work is much appreciated, thanks !"}
 
     :Allowed: Node
-    :query job_id: Job's id (required)
-    :query status: Job's status (SUCCESS) or error's details (required)
+    :query task_id: Task's id (required)
+    :query status: Task's status (SUCCESS) or error's details (required)
     :statuscode 200: OK
     :statuscode 400: Key ``key`` not found. *or* on type or value error
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 404: No transform job with id ``id``.
+    :statuscode 404: No transform task with id ``id``.
     :statuscode 404: Unable to find output media with id ``id``.
     :statuscode 415: Requires (valid) json content-type.
     """
     try:
         requires_auth(request=request, allow_node=True)
         data = get_request_json(request)
-        job_id, status = data['job_id'], data['status']
-        logging.debug('job ' + job_id + ', status ' + status)
-        orchestra.transform_callback(job_id, status)
+        task_id, status = data['task_id'], data['status']
+        logging.debug('task ' + task_id + ', status ' + status)
+        orchestra.transform_callback(task_id, status)
         return ok_200('Your work is much appreciated, thanks !', False)
     except Exception as e:
         map_exceptions(e)
 
 
 @app.route('/publish/callback', methods=['POST'])
-def api_publish_job_hook():
+def api_publish_task_hook():
     """
     This method is called by publisher workers when they finish their work.
 
-    If job is successful, the orchestrator will update ``publish_uri`` attribute of job,
+    If task is successful, the orchestrator will update ``publish_uri`` attribute of task,
     set media's status to SUCCESS and update ``public_uris`` attribute.
-    Else, the orchestrator will append ``error_details`` to ``statistic`` attribute of job.
+    Else, the orchestrator will append ``error_details`` to ``statistic`` attribute of task.
 
     **Example request**:
 
@@ -2627,7 +2627,7 @@ def api_publish_job_hook():
         Content-Type: application/json
 
         {
-          "job_id": "1b96dcd6-7460-11e2-a06d-3085a9accb47",
+          "task_id": "1b96dcd6-7460-11e2-a06d-3085a9accb47",
           "publish_uri": "http://<address>/medias/<user_id>/<media_id>/
                           Project_London_trailer_2009.mp4",
           "status": "SUCCESS"
@@ -2644,31 +2644,31 @@ def api_publish_job_hook():
         {"status": 200, "value": "Your work is much appreciated, thanks !"}
 
     :Allowed: Node
-    :query job_id: Job's id (required)
+    :query task_id: Task's id (required)
     :query publish_uri: Publication URI of the media (required)
-    :query status: Job's status (SUCCESS) or error's details (required)
+    :query status: Task's status (SUCCESS) or error's details (required)
     :statuscode 200: OK
     :statuscode 400: Key ``key`` not found. *or* on type or value error
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 404: No publish job with id ``id``.
+    :statuscode 404: No publish task with id ``id``.
     :statuscode 404: Unable to find media with id ``id``.
     :statuscode 415: Requires (valid) json content-type.
     """
     try:
         requires_auth(request=request, allow_node=True)
         data = get_request_json(request)
-        job_id = data['job_id']
+        task_id = data['task_id']
         publish_uri = data['publish_uri'] if 'publish_uri' in data else None
         status = data['status']
-        logging.debug('job ' + job_id + ', publish_uri ' + publish_uri + ', status ' + status)
-        orchestra.publish_callback(job_id, publish_uri, status)
+        logging.debug('task ' + task_id + ', publish_uri ' + publish_uri + ', status ' + status)
+        orchestra.publish_callback(task_id, publish_uri, status)
         return ok_200('Your work is much appreciated, thanks !', False)
     except Exception as e:
         map_exceptions(e)
 
 # @app.route('/unpublish/callback', methods=['POST'])
-# def api_unpublish_job_hook_0():
+# def api_unpublish_task_hook_0():
 
 #     # This method will be ALWAYS called by publisher workers when they finish their work.
 #     # The orchestrator will update it's internal state (only workers/nodes can do that)
@@ -2678,11 +2678,11 @@ def api_publish_job_hook():
 #         if not data:
 #             abort(415, 'Requires json content-type')
 #         try:
-#             job_id = data['job_id']
-#             publish_job_id = data['publish_job_id']
+#             task_id = data['task_id']
+#             publish_task_id = data['publish_task_id']
 #             status = data['status']
-#             logging.debug('job ' + job_id + ', publish_job_id ' + publish_job_id + ', status ' + status)
-#             orchestra.unpublish_callback(job_id, publish_job_id, status)
+#             logging.debug('task ' + task_id + ', publish_task_id ' + publish_task_id + ', status ' + status)
+#             orchestra.unpublish_callback(task_id, publish_task_id, status)
 #         except (ValueError, TypeError) as error:
 #             abort(400, str(error))
 #         except KeyError as error:

@@ -1,13 +1,13 @@
-<h1 class="page-header">Transform jobs</h1>
+<h1 class="page-header">Transform tasks</h1>
 
-<div id="transform_jobs">
-   <?= $this->load->view('transform/show_jobs'); ?>
+<div id="transform_tasks">
+   <?= $this->load->view('transform/show_tasks'); ?>
 </div>
 
 <script type="text/javascript">
 /*<!-- Set the action for file deletion -->*/
 $('body').on('click', '.revoke', function () {
-   if (confirm('Do you really want to revoke the job "' + $(this).attr('title') + '"?')) {
+   if (confirm('Do you really want to revoke the task "' + $(this).attr('title') + '"?')) {
       $.get(
          $(this).attr('href'),
          function (data) {

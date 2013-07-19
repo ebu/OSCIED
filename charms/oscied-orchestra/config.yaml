@@ -10,7 +10,7 @@ options:
   nodes_secret:
     type: string
     default: "abcd"
-    description: Secret key used by workers/nodes to callback API when they finish their job.  Please change it in production.
+    description: Secret key used by workers/nodes to callback API when they finish their task.  Please change it in production.
   repositories_user:
     type: string
     default: "oscied"
