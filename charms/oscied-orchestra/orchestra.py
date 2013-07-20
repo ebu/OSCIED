@@ -1812,6 +1812,7 @@ def api_transform_task_post():
           "profile_id": "c316ff1a-74f8-11e2-82d4-3085a9accd33",
           "filename": "avatar.mp4",
           "metadata": {"title": "Avatar (1080p)"},
+          "send_email": "true",
           "queue": "transform_ebu-geneva"
         }
 
@@ -1830,6 +1831,7 @@ def api_transform_task_post():
     :query profile_id: New task profile's id (required)
     :query filename: New task output media's filename (required)
     :query metadata: New  task output media's metadata (required)
+    :query send_email: Toggle e-mail delivery (required)
     :query queue: The transform queue used to route the new task (required)
     :statuscode 200: OK
     :statuscode 400: Key ``key`` not found. *or* on type or value error
@@ -1848,7 +1850,7 @@ def api_transform_task_post():
         data = get_request_json(request)
         task_id = orchestra.launch_transform_task(
             auth_user._id, data['media_in_id'], data['profile_id'], data['filename'],
-            data['metadata'], data['queue'], '/transform/callback')
+            data['metadata'], data['send_email'], data['queue'], '/transform/callback')
         return ok_200(task_id, True)
     except Exception as e:
         map_exceptions(e)
@@ -2294,6 +2296,7 @@ def api_publish_task_post():
 
         {
           "media_id": "a396fe66-74ee-11e2-89ad-3085a9accbb8",
+          "send_email": "true",
           "queue": "publish_london"
         }
 
@@ -2312,6 +2315,7 @@ def api_publish_task_post():
 
     :Allowed: Any user
     :query media_id: New task input media's id (required)
+    :query send_email: Toggle e-mail delivery (required)
     :query queue: The publish queue used to route task (required)
     :statuscode 200: OK
     :statuscode 400: Key ``key`` not found. *or* on type or value error
@@ -2329,8 +2333,8 @@ def api_publish_task_post():
     try:
         auth_user = requires_auth(request=request, allow_any=True)
         data = get_request_json(request)
-        task_id = orchestra.launch_publish_task(auth_user._id, data['media_id'], data['queue'],
-                                                '/publish/callback')
+        task_id = orchestra.launch_publish_task(auth_user._id, data['media_id'], data['send_email'],
+                                                data['queue'], '/publish/callback')
         return ok_200(task_id, True)
     except Exception as e:
         map_exceptions(e)

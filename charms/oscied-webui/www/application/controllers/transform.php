@@ -146,6 +146,7 @@ class Transform extends MY_Controller
                'profile_id' => $this->input->post('profile_id'),
                'filename' => $this->input->post('filename'),
                'metadata' => array('title' => $this->input->post('title')),
+               'send_email' => 'true',  # FIXME hardcoded
                'queue' => $this->input->post('queue')
             )
          );

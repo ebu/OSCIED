@@ -137,6 +137,7 @@ class Publisher extends MY_Controller
          $params = json_encode(
             array(
                'media_id' => $this->input->post('media_id'),
+               'send_email' => 'true',
                'queue' => $this->input->post('queue')
             )
          );

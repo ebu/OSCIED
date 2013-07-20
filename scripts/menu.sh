@@ -317,7 +317,7 @@ api_launch_transform()
   get_id   'tprofile2'; tprofile1_id=$REPLY
 
   pecho 'Launch a transformation task'
-  json_ttask "$media1_id" "$tprofile1_id" "tabby2.mpg" 'transcoded media1' 'transform_private' 'high'
+  json_ttask "$media1_id" "$tprofile1_id" "tabby2.mpg" 'transcoded media1' 'true' 'transform_private' 'high'
   echo "$JSON"
   test_api 200 POST $ORCHESTRA_URL/transform/task "$user1_auth" "$JSON"
   save_id 'ttask1' "$ID"
@@ -356,7 +356,7 @@ api_launch_publish()
   get_id   'media1'; media1_id=$REPLY
 
   pecho 'Launch a publication task'
-  json_ptask "$media1_id" 'publisher_private' 'high'
+  json_ptask "$media1_id" 'true' 'publisher_private' 'high'
   echo "$JSON"
   test_api 200 POST $ORCHESTRA_URL/publish/task "$user1_auth" "$JSON"
   save_id 'ptask1' "$ID"

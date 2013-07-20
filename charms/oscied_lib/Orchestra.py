@@ -25,12 +25,14 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import logging, pymongo
+import logging, smtplib, pymongo
 from celery import states
 #from celery import current_app
 #from celery.task.control import inspect
 from celery.task.control import revoke
 #from celery.events.state import state
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import Publisher, Transform
 from Callback import Callback
 from Media import Media
@@ -71,6 +73,28 @@ class Orchestra(object):
         self._db.drop_collection('publish_tasks')
         self._db.drop_collection('unpublish_tasks')
         logging.info("Orchestra database's collections dropped !")
+
+    def send_email(self, to_addresses, subject, text_plain, text_html=None):
+        if self.local_config.email_server:
+            logging.debug('E-mail delivery is disabled in configuration.')
+            return {}
+        part1 = MIMEText(text_plain, 'plain')
+        part2 = MIMEText(text_html, 'html') if text_html else None
+        msg = part1 if not part2 else MIMEMultipart('alternative')
+        msg['Subject'] = subject
+        msg['From'] = self.local_config.email_address
+        msg['To'] = ', '.join(to_addresses)
+        if part2:
+            msg.attach(part1)
+            msg.attach(part2)
+        try:
+            server = smtplib.SMTP(self.local_config.email_server)
+            if self.local_config.email_tls:
+                server.starttls()
+            server.login(self.local_config.email_username, self.local_config.email_password)
+            return server.sendmail(self.local_config.email_address, to_addresses, msg.as_string())
+        finally:
+            server.quit()
 
     # ----------------------------------------------------------------------------------------------
 
@@ -302,8 +326,8 @@ class Orchestra(object):
     def get_transform_queues(self):
         return self.config.transform_queues
 
-    def launch_transform_task(self, user_id, media_in_id, profile_id, filename, metadata, queue,
-                              callback_url):
+    def launch_transform_task(self, user_id, media_in_id, profile_id, filename, metadata,
+                              send_email, queue, callback_url):
         user = self.get_user({'_id': user_id}, {'secret': 0})
         if not user:
             raise IndexError('No user with id ' + user_id + '.')
@@ -329,7 +353,8 @@ class Orchestra(object):
         if not result.id:
             raise ValueError('Unable to transmit task to workers of queue ' + queue + '.')
         logging.info('New transform task ' + result.id + ' launched.')
-        task = TransformTask(result.id, user._id, media_in._id, media_out._id, profile._id)
+        task = TransformTask(result.id, user._id, media_in._id, media_out._id, profile._id,
+                             send_email=send_email)
         task.add_statistic('add_date', datetime_now(), True)
         self._db.transform_tasks.save(task.__dict__)
         return result.id
@@ -396,7 +421,7 @@ class Orchestra(object):
     def get_publisher_queues(self):
         return self.config.publisher_queues
 
-    def launch_publish_task(self, user_id, media_id, queue, callback_url):
+    def launch_publish_task(self, user_id, media_id, send_email, queue, callback_url):
         user = self.get_user({'_id': user_id}, {'secret': 0})
         if not user:
             raise IndexError('No user with id ' + user_id + '.')
@@ -421,7 +446,7 @@ class Orchestra(object):
         if not result.id:
             raise ValueError('Unable to transmit task to workers of queue ' + queue + '.')
         logging.info('New publish task ' + result.id + ' launched.')
-        task = PublishTask(result.id, user._id, media._id, None)
+        task = PublishTask(result.id, user._id, media._id, None, send_email=send_email)
         task.add_statistic('add_date', datetime_now(), True)
         self._db.publish_tasks.save(task.__dict__)
         return result.id
@@ -433,7 +458,7 @@ class Orchestra(object):
         task = PublishTask.load(object2json(entity, False))
         if load_fields:
             task.load_fields(self.get_user({'_id': task.user_id}, {'secret': 0}),
-                            self.get_media({'_id': task.media_id}))
+                             self.get_media({'_id': task.media_id}))
         if append_result:
             task.append_async_result()
         return task
@@ -486,27 +511,49 @@ class Orchestra(object):
         task = self.get_transform_task({'_id': task_id})
         if not task:
             raise IndexError('No transform task with id ' + task_id + '.')
+        user = self.get_user({'_id': task.user_id}, {'mail': 1})
+        if not user:
+            raise IndexError('Unable to find user with id ' + task.user_id + '.')
+        media_in = self.get_media({'_id': task.media_in_id})
+        if not media_in:
+            raise IndexError('Unable to find input media with id ' + task.media_in_id + '.')
         media_out = self.get_media({'_id': task.media_out_id})
         if not media_out:
             raise IndexError('Unable to find output media with id ' + task.media_out_id + '.')
+        profile = self.get_media({'_id': task.profile_id})
+        if not profile:
+            raise IndexError('Unable to find profile with id ' + task.profile_id + '.')
+        task.load_fields(user, media_in, media_out, profile)
         if status == 'SUCCESS':
             media_out.status = 'READY'
             self.save_media(media_out)
             logging.info('%s Media %s is now READY' % (task_id, media_out.filename))
+            if task.send_email:
+                task.append_async_result()
+                self.send_email(task.user.mail, 'OSCIED - Transformation task %s SUCCESS' % task._id,
+                                str(task.__dict__))
         else:
             self.delete_media(media_out)
             task.add_statistic('error_details', status.replace('\n', '\\n'), True)
             self._db.transform_tasks.save(task.__dict__)
             logging.info('%s Error: %s' % (task_id, status))
             logging.info('%s Media %s is now deleted' % (task_id, media_out.filename))
+            if task.send_email:
+                task.append_async_result()
+                self.send_email(task.user.mail, 'OSCIED - Transformation task %s ERROR' % task._id,
+                                str(task.__dict__))
 
     def publish_callback(self, task_id, publish_uri, status):
         task = self.get_publish_task({'_id': task_id})
         if not task:
             raise IndexError('No publish task with id ' + task_id + '.')
+        user = self.get_user({'_id': task.user_id}, {'mail': 1})
+        if not user:
+            raise IndexError('Unable to find user with id ' + task.user_id + '.')
         media = self.get_media({'_id': task.media_id})
         if not media:
             raise IndexError('Unable to find media with id ' + task.media_id + '.')
+        task.load_fields(user, media)
         if status == 'SUCCESS':
             media.status = 'PUBLISHED'
             if not media.public_uris:
@@ -516,8 +563,16 @@ class Orchestra(object):
             self._db.publish_tasks.save(task.__dict__)
             self.save_media(media)
             logging.info('%s Media %s is now PUBLISHED' % (task_id, media.filename))
+            if task.send_email:
+                task.append_async_result()
+                self.send_email(task.user.mail, 'OSCIED - Transformation task %s SUCCESS' % task._id,
+                                str(task.__dict__))
         else:
             task.add_statistic('error_details', status.replace('\n', '\\n'), True)
             self._db.publish_tasks.save(task.__dict__)
             logging.info('%s Error: %s' % (task_id, status))
             logging.info('%s Media %s is not modified' % (task_id, media.filename))
+            if task.send_email:
+                task.append_async_result()
+                self.send_email(task.user.mail, 'OSCIED - Publication task %s ERROR' % task._id,
+                                str(task.__dict__))
