@@ -38,7 +38,9 @@ class OrchestraConfig(CharmConfig_Storage):
                  mongo_config_file='/etc/mongodb.conf', ssh_config_path='~/.ssh',
                  ssh_template_path='ssh', juju_config_file='~/.juju/environments.yaml',
                  juju_template_file='environments.yaml', charms_config='config.yaml',
-                 charms_release='raring', charms_repository='charms', **kwargs):
+                 charms_release='raring', charms_repository='charms',
+                 email_server='', email_tls=False, email_username='', email_password='',
+                 email_address='', **kwargs):
         super(OrchestraConfig, self).__init__(**kwargs)
         self.api_url = api_url
         self.root_secret = root_secret
@@ -56,6 +58,11 @@ class OrchestraConfig(CharmConfig_Storage):
         self.charms_config = charms_config
         self.charms_release = charms_release
         self.charms_repository = charms_repository
+        self.email_server = email_server
+        self.email_tls = email_tls
+        self.email_address = email_address
+        self.email_username = email_username
+        self.email_password = email_password
 
     @property
     def transform_queues(self):

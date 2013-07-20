@@ -36,7 +36,7 @@ from pyutils.pyutils import json2object, object2json, valid_uuid
 class TransformTask(object):
 
     def __init__(self, _id, user_id, media_in_id, media_out_id, profile_id, statistic={},
-                 revoked=False):
+                 revoked=False, send_email=False):
         if not _id:
             _id = str(uuid.uuid4())
         self._id = _id
@@ -46,6 +46,7 @@ class TransformTask(object):
         self.profile_id = profile_id
         self.statistic = statistic
         self.revoked = revoked
+        self.send_email = send_email
 
     def is_valid(self, raise_exception):
         if not valid_uuid(self._id, none_allowed=False):
@@ -106,7 +107,7 @@ class TransformTask(object):
 
     @staticmethod
     def load(json):
-        task = TransformTask(None, None, None, None, None)
+        task = TransformTask(None, None, None, None, None, None)
         json2object(json, task)
         return task
 

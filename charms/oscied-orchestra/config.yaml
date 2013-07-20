@@ -35,6 +35,26 @@ options:
     type: string
     default: "Alice_in_wonderland"
     description: Messaging queue user's password.  This secret is then forwared by the coordinator to managed units (transform, publish).
+  email_server:
+    type: string
+    default: ""
+    description: SMTP mailing server address.  Please set to enable mailing functionnalitiy.
+  email_tls:
+    type: string
+    default: "true"
+    description: Enable TLS layer.
+  email_address:
+    type: string
+    default: "someone@oscied.org"
+    description: Sender e-mail address of any mail sended by the orchestrator.
+  email_username:
+    type: string
+    default: "someone"
+    description: Sender e-mail account username.
+  email_password:
+    type: string
+    default: "1234"
+    description: Sender e-mail account password.
   storage_address:
     type: string
     default: ""

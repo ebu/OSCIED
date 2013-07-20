@@ -307,24 +307,25 @@ json_ttask()
   d='metadata'
   m='media_in_id'
   p='profile_id'
+  s='send_email'
   q='queue'
   t='title'
   v='filename'
   y='priority'
-  if [ $# -ne 6 ]; then
-    xecho "Usage: $(basename $0).json_ttask $m $p $v $t $q $y"
+  if [ $# -ne 7 ]; then
+    xecho "Usage: $(basename $0).json_ttask $m $p $v $t $s $q $y"
   fi
 
-  JSON="{\"$m\":\"$1\",\"$p\":\"$2\",\"$v\":\"$3\",\"$d\":{\"$t\":\"$4\"},\"$q\":\"$5\",\"$y\":\"$6\"}"
+  JSON="{\"$m\":\"$1\",\"$p\":\"$2\",\"$v\":\"$3\",\"$d\":{\"$t\":\"$4\"},\"$s\":\"$5\",\"$q\":\"$6\",\"$y\":\"$7\"}"
 }
 
 json_ptask()
 {
-  if [ $# -ne 3 ]; then
-    xecho "Usage: $(basename $0).json_ttask media_id queue priority"
+  if [ $# -ne 4 ]; then
+    xecho "Usage: $(basename $0).json_ttask media_id send_email queue priority"
   fi
 
-  JSON="{\"media_id\":\"$1\",\"queue\":\"$2\",\"priority\":\"$3\"}"
+  JSON="{\"media_id\":\"$1\",\"send_email\":\"$2\",\"queue\":\"$3\",\"priority\":\"$4\"}"
 }
 
 # Used to call / test Orchestra REST API -----------------------------------------------------------

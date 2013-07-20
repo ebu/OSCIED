@@ -34,7 +34,8 @@ from pyutils.pyutils import json2object, object2json, valid_uuid
 
 class PublishTask(object):
 
-    def __init__(self, _id, user_id, media_id, publish_uri, statistic={}, revoked=False):
+    def __init__(self, _id, user_id, media_id, publish_uri, statistic={}, revoked=False,
+                 send_email=False):
         if not _id:
             _id = str(uuid.uuid4())
         self._id = _id
@@ -43,6 +44,7 @@ class PublishTask(object):
         self.publish_uri = publish_uri
         self.statistic = statistic
         self.revoked = revoked
+        self.send_email = send_email
 
 
     def is_valid(self, raise_exception):
@@ -91,7 +93,7 @@ class PublishTask(object):
 
     @staticmethod
     def load(json):
-        task = PublishTask(None, None, None, None)
+        task = PublishTask(None, None, None, None, None)
         json2object(json, task)
         return task
 
