@@ -102,7 +102,7 @@ def requires_auth(request, **kwargs):
 
 # Index --------------------------------------------------------------------------------------------
 
-@action('/', template=None, methods=['GET'])
+@action('/', template='medias/home.html', methods=['GET'])
 @json_only()
 def api_root(request):
     """
@@ -118,7 +118,7 @@ def api_root(request):
 
 # System management --------------------------------------------------------------------------------
 
-@action('/flush', template=None, methods=['POST'])
+@action('/flush', template='medias/home.html', methods=['POST'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_flush(request):
@@ -135,7 +135,7 @@ def api_flush(request):
 
 # Medias management --------------------------------------------------------------------------------
 
-@action('/media/count', template=None, methods=['GET'])
+@action('/media/count', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_media_count(request):
@@ -149,7 +149,7 @@ def api_media_count(request):
         map_exceptions(e)
 
 
-@action('/media/HEAD', template=None, methods=['GET'])
+@action('/media/HEAD', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_media_head(request):
@@ -163,7 +163,7 @@ def api_media_head(request):
         map_exceptions(e)
 
 
-@action('/media', template=None, methods=['GET'])
+@action('/media', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_media_get(request):
@@ -180,7 +180,7 @@ def api_media_get(request):
         map_exceptions(e)
 
 
-@action('/media', template=None, methods=['POST'])
+@action('/media', template='medias/home.html', methods=['POST'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_media_post(request):
@@ -216,7 +216,7 @@ def api_media_post(request):
 
 
 # FIXME why HEAD verb doesn't work (curl: (18) transfer closed with 263 bytes remaining to read) ?
-@action('/media/id/<id>/HEAD', template=None, methods=['GET'])
+@action('/media/id/<id>/HEAD', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_media_id_head(request, id):
@@ -234,7 +234,7 @@ def api_media_id_head(request, id):
         map_exceptions(e)
 
 
-@action('/media/id/<id>', template=None, methods=['GET'])
+@action('/media/id/<id>', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_media_id_get(request, id):
@@ -255,7 +255,7 @@ def api_media_id_get(request, id):
         map_exceptions(e)
 
 
-@action('/media/id/<id>', template=None, methods=['PATCH', 'PUT'])
+@action('/media/id/<id>', template='medias/home.html', methods=['PATCH', 'PUT'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_media_id_patch(request, id):
@@ -279,7 +279,7 @@ def api_media_id_patch(request, id):
         map_exceptions(e)
 
 
-@action('/media/id/<id>', template=None, methods=['DELETE'])
+@action('/media/id/<id>', template='medias/home.html', methods=['DELETE'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_media_id_delete(request, id):
@@ -304,7 +304,7 @@ def api_media_id_delete(request, id):
 
 # Environments management --------------------------------------------------------------------------
 
-@action('/environment/count', template=None, methods=['GET'])
+@action('/environment/count', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_environment_count(request):
@@ -320,7 +320,7 @@ def api_environment_count(request):
         map_exceptions(e)
 
 
-@action('/environment', template=None, methods=['GET'])
+@action('/environment', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_environment_get(request):
@@ -337,7 +337,7 @@ def api_environment_get(request):
         map_exceptions(e)
 
 
-@action('/environment', template=None, methods=['POST'])
+@action('/environment', template='medias/home.html', methods=['POST'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_environment_post(request):
@@ -355,7 +355,7 @@ def api_environment_post(request):
         map_exceptions(e)
 
 
-@action('/environment/name/<name>', template=None, methods=['DELETE'])
+@action('/environment/name/<name>', template='medias/home.html', methods=['DELETE'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_environment_name_delete(request, name):
@@ -373,7 +373,7 @@ def api_environment_name_delete(request, name):
 
 # Transform profiles management --------------------------------------------------------------------
 
-@action('/transform/profile/encoder', template=None, methods=['GET'])
+@action('/transform/profile/encoder', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_profile_encoder(request):
@@ -387,7 +387,7 @@ def api_transform_profile_encoder(request):
         map_exceptions(e)
 
 
-@action('/transform/profile/count', template=None, methods=['GET'])
+@action('/transform/profile/count', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_profile_count(request):
@@ -401,7 +401,7 @@ def api_transform_profile_count(request):
         map_exceptions(e)
 
 
-@action('/transform/profile', template=None, methods=['GET'])
+@action('/transform/profile', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_profile_get(request):
@@ -415,7 +415,7 @@ def api_transform_profile_get(request):
         map_exceptions(e)
 
 
-@action('/transform/profile', template=None, methods=['POST'])
+@action('/transform/profile', template='medias/home.html', methods=['POST'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_profile_post(request):
@@ -439,7 +439,7 @@ def api_transform_profile_post(request):
         map_exceptions(e)
 
 
-@action('/transform/profile/id/<id>', template=None, methods=['GET'])
+@action('/transform/profile/id/<id>', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_profile_id_get(request, id):
@@ -457,7 +457,7 @@ def api_transform_profile_id_get(request, id):
         map_exceptions(e)
 
 
-@action('/transform/profile/id/<id>', template=None, methods=['DELETE'])
+@action('/transform/profile/id/<id>', template='medias/home.html', methods=['DELETE'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_profile_id_delete(request, id):
@@ -478,7 +478,7 @@ def api_transform_profile_id_delete(request, id):
 
 # Transformation units management (encoders) -------------------------------------------------------
 
-@action('/transform/unit/environment/<environment>/count', template=None, methods=['GET'])
+@action('/transform/unit/environment/<environment>/count', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_unit_count(request, environment):
@@ -492,7 +492,7 @@ def api_transform_unit_count(request, environment):
         map_exceptions(e)
 
 
-@action('/transform/unit/environment/<environment>', template=None, methods=['GET'])
+@action('/transform/unit/environment/<environment>', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_unit_get(request, environment):
@@ -507,7 +507,7 @@ def api_transform_unit_get(request, environment):
         map_exceptions(e)
 
 
-@action('/transform/unit/environment/<environment>', template=None, methods=['POST'])
+@action('/transform/unit/environment/<environment>', template='medias/home.html', methods=['POST'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_unit_post(request, environment):
@@ -524,7 +524,7 @@ def api_transform_unit_post(request, environment):
         map_exceptions(e)
 
 
-@action('/transform/unit/environment/<environment>', template=None, methods=['DELETE'])
+@action('/transform/unit/environment/<environment>', template='medias/home.html', methods=['DELETE'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_unit_delete(request, environment):
@@ -541,7 +541,7 @@ def api_transform_unit_delete(request, environment):
         map_exceptions(e)
 
 
-@action('/transform/unit/environment/<environment>/number/<number>', template=None, methods=['GET'])
+@action('/transform/unit/environment/<environment>/number/<number>', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_unit_number_get(request, environment, number):
@@ -559,7 +559,7 @@ def api_transform_unit_number_get(request, environment, number):
         map_exceptions(e)
 
 
-@action('/transform/unit/environment/<environment>/number/<number>', template=None, methods=['DELETE'])
+@action('/transform/unit/environment/<environment>/number/<number>', template='medias/home.html', methods=['DELETE'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_unit_number_delete(request, environment, number):
@@ -577,7 +577,7 @@ def api_transform_unit_number_delete(request, environment, number):
 
 # Transformation tasks (encoding) ------------------------------------------------------------------
 
-@action('/transform/queue', template=None, methods=['GET'])
+@action('/transform/queue', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_queue(request):
@@ -591,7 +591,7 @@ def api_transform_queue(request):
         map_exceptions(e)
 
 
-@action('/transform/task/count', template=None, methods=['GET'])
+@action('/transform/task/count', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_task_count(request):
@@ -605,7 +605,7 @@ def api_transform_task_count(request):
         map_exceptions(e)
 
 
-@action('/transform/task/HEAD', template=None, methods=['GET'])
+@action('/transform/task/HEAD', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_task_head(request):
@@ -621,7 +621,7 @@ def api_transform_task_head(request):
         map_exceptions(e)
 
 
-@action('/transform/task', template=None, methods=['GET'])
+@action('/transform/task', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_task_get(request):
@@ -640,7 +640,7 @@ def api_transform_task_get(request):
         map_exceptions(e)
 
 
-@action('/transform/task', template=None, methods=['POST'])
+@action('/transform/task', template='medias/home.html', methods=['POST'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_task_post(request):
@@ -674,7 +674,7 @@ def api_transform_task_post(request):
 
 
 # FIXME why HEAD verb doesn't work (curl: (18) transfer closed with 263 bytes remaining to read) ?
-@action('/transform/task/id/<id>/HEAD', template=None, methods=['GET'])
+@action('/transform/task/id/<id>/HEAD', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_task_id_head(request, id):
@@ -694,7 +694,7 @@ def api_transform_task_id_head(request, id):
         map_exceptions(e)
 
 
-@action('/transform/task/id/<id>', template=None, methods=['GET'])
+@action('/transform/task/id/<id>', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_task_id_get(request, id):
@@ -717,7 +717,7 @@ def api_transform_task_id_get(request, id):
         map_exceptions(e)
 
 
-@action('/transform/task/id/<id>', template=None, methods=['DELETE'])
+@action('/transform/task/id/<id>', template='medias/home.html', methods=['DELETE'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_task_id_delete(request, id):
@@ -745,9 +745,9 @@ def api_transform_task_id_delete(request, id):
 
 # Publishing tasks ---------------------------------------------------------------------------------
 
-@action('/publish/queue', template=None, methods=['GET'])
-@action('/publisher/queue', template=None, methods=['GET'])
-@action('/unpublish/queue', template=None, methods=['GET'])
+@action('/publish/queue', template='medias/home.html', methods=['GET'])
+@action('/publisher/queue', template='medias/home.html', methods=['GET'])
+@action('/unpublish/queue', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_publish_queue(request):
@@ -761,7 +761,7 @@ def api_publish_queue(request):
         map_exceptions(e)
 
 
-@action('/publish/task/count', template=None, methods=['GET'])
+@action('/publish/task/count', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_publish_task_count(request):
@@ -775,7 +775,7 @@ def api_publish_task_count(request):
         map_exceptions(e)
 
 
-@action('/publish/task/HEAD', template=None, methods=['GET'])
+@action('/publish/task/HEAD', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_publish_task_head(request):
@@ -791,7 +791,7 @@ def api_publish_task_head(request):
         map_exceptions(e)
 
 
-@action('/publish/task', template=None, methods=['GET'])
+@action('/publish/task', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_publish_task_get(request):
@@ -810,7 +810,7 @@ def api_publish_task_get(request):
         map_exceptions(e)
 
 
-@action('/publish/task', template=None, methods=['POST'])
+@action('/publish/task', template='medias/home.html', methods=['POST'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_publish_task_post(request):
@@ -842,7 +842,7 @@ def api_publish_task_post(request):
 
 
 # FIXME why HEAD verb doesn't work (curl: (18) transfer closed with 263 bytes remaining to read) ?
-@action('/publish/task/id/<id>/HEAD', template=None, methods=['GET'])
+@action('/publish/task/id/<id>/HEAD', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_publish_task_id_head(request, id):
@@ -862,7 +862,7 @@ def api_publish_task_id_head(request, id):
         map_exceptions(e)
 
 
-@action('/publish/task/id/<id>', template=None, methods=['GET'])
+@action('/publish/task/id/<id>', template='medias/home.html', methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_publish_task_id_get(request, id):
@@ -885,7 +885,7 @@ def api_publish_task_id_get(request, id):
         map_exceptions(e)
 
 
-@action('/publish/task/id/<id>', template=None, methods=['DELETE'])
+@action('/publish/task/id/<id>', template='medias/home.html', methods=['DELETE'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_publish_task_id_delete(request, id):
@@ -915,7 +915,7 @@ def api_publish_task_id_delete(request, id):
 
 # Workers (nodes) hooks ----------------------------------------------------------------------------
 
-@action('/transform/callback', template=None, methods=['POST'])
+@action('/transform/callback', template='medias/home.html', methods=['POST'])
 @json_only()
 def api_transform_task_hook(request):
     """
@@ -937,7 +937,7 @@ def api_transform_task_hook(request):
         map_exceptions(e)
 
 
-@action('/publish/callback', template=None, methods=['POST'])
+@action('/publish/callback', template='medias/home.html', methods=['POST'])
 @json_only()
 def api_publish_task_hook(request):
     """
@@ -979,4 +979,6 @@ def medias_list(request):
     u"""
     Show the medias list page.
     """
-    return api_media_get(request)
+    response = api_media_get(request)
+    logging.debug('Return %s' % response.__dict__)
+    return response
