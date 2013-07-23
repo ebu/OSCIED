@@ -962,7 +962,7 @@ def api_publish_task_hook():
 # --------------------------------------------------------------------------------------------------
 
 @action(route="/medias", template="medias/home.html", methods=['GET'])
-@only_logged_user
+@only_logged_user()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def medias(request):
     u"""
@@ -972,7 +972,7 @@ def medias(request):
 
 
 @action(route="/medias/list", template="medias/list.html", methods=['GET'])
-@only_logged_user
+@only_logged_user()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def medias_list(request):
     u"""
