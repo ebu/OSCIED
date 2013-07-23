@@ -1,0 +1,60 @@
+{% if not value %}
+
+   <p>There is currently no media available.</p>
+
+{% else %}
+
+<table class="table table-bordered table-condensed table-striped">
+   <thead>
+      <tr>
+         <th>Title</th>
+         <th>Virtual Filename</th>
+         <th>File size</th>
+         <th>Duration</th>
+         <th>Added on</th>
+         <th>Added by</th>
+         <th>Status</th>
+         <th></th>
+      </tr>
+   </thead>
+   <tbody>
+      {% for media in value %}
+      <tr>
+         <td>{{media.metadata.title|default:"" %}</td>
+         <td>
+            {% if media.status|upper == 'READY' or media.status|upper == 'PUBLISHED'}
+               <a href="{{ebuio_baseUrl}}medias/force_download/{{media._id}}">{{media.filename|default:"Untitled"}}</a>
+            {% else %}
+               {{media.filename|default:"Untitled"}}
+            {% endif %}
+         </td>
+         <td>{{media.metadata.size|filesizeformat}}</td>
+         <td>{{media.metadata.duration|default:""}}</td>
+         <td>{{media.metadata.add_date|default:""}}</td>
+         <td>{{media.metadata.user.name|default:""}}</td>
+         <td>
+            <span class="label {% if media.status|upper == 'PENDING' %}label-warning{% elif  media.status|upper == 'READY' %}label-warning{% elif media.status|upper == 'UNKNOWN' %}{% else %}label-inverse{% endif %}">{{media.status|upper}}</span>
+         </td>
+         <td>
+            {% if ebuio_u.username == media.user.username and (media.status|upper == 'READY' or media.status|upper == 'PUBLISHED') %}
+               <a class="delete" title="{{media.metadata.title}}" href="{{ebuio_baseUrl}}medias/delete/{{media._id}}"><button class="btn btn-mini btn-danger">Delete</button></a>
+            {% endif %}
+         </td>
+      </tr>
+      {% endfor %}
+   </tbody>
+</table>
+
+{% endif %}
+
+<script type="text/javascript">
+$(document).ready(function() {
+   setTimeout(
+      function() {
+         loadMedias();
+      },
+      
+      {# Fixme <?= $this->config->item('medias_refresh') * 1000 ?> #}
+   );
+});
+</script>
