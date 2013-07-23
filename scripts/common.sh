@@ -338,12 +338,26 @@ test_api()
   code=$1; m=$2; c=$3; u=$4; d=$5
   aa='Accept: application/json'
   ct='Content-type: application/json'
+  if [ "$u" ]; then
+    um=$(echo "$u" | cut -d':' -f1)
+    us=$(echo "$u" | cut -d':' -f2)
+  fi
   if [ "$u" -a "$d" ]; then
     mecho "\nTest $code : $m $c auth: $u data: $d"
-    result=$(curl -H "$aa" -H "$ct" -u "$u" -d "$d" -X "$m" "$c" --write-out %{http_code})
+    if [ "$um" != 'root' ]; then
+      c="$c?ebuio_u_email=$um&ebuio_u_username=$um&ebuio_u_first_name=$um&ebuio_u_last_name=$um"
+      #result=$(curl -H "$aa" -H "$ct" -u "$u" -d "$d" -X "$m" "$c" --write-out %{http_code})
+      mecho "\nUpdated method URL : $c"
+    fi
+    result=$(curl -H "$aa" -H "$ct" -d "$d" -X "$m" "$c" --write-out %{http_code})
   elif [ "$u" ]; then
     mecho "\nTest $code : $m $c auth: $u"
-    result=$(curl -H "$aa" -H "$ct" -u "$u" -X "$m" "$c" --write-out %{http_code})
+    if [ "$um" != 'root' ]; then
+      c="$c?ebuio_u_email=$um&ebuio_u_username=$um&ebuio_u_first_name=$um&ebuio_u_last_name=$um"
+      #result=$(curl -H "$aa" -H "$ct" -u "$u" -X "$m" "$c" --write-out %{http_code})
+    fi
+    mecho "\nUpdated method URL : $c"
+    result=$(curl -H "$aa" -H "$ct" -X "$m" "$c" --write-out %{http_code})
   elif [ "$d" ]; then
     mecho "\nTest $code : $m $c data: $d"
     result=$(curl -H "$aa" -H "$ct" -d "$d" -X "$m" "$c" --write-out %{http_code})
