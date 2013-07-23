@@ -50,7 +50,7 @@ PI_API_VERSION = '1'
 PI_API_NAME = 'EBUio-PlugIt'
 
 #
-PLUGIT_PREFIX = '/ceciestsecret/'
+PLUGIT_PREFIX = '/'  # FIXME '/ceciestsecret/'
 
 app = Flask(__name__, static_folder='media')
 
