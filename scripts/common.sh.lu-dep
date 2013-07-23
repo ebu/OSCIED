@@ -175,7 +175,7 @@ get_orchestra_url()
   else
     xecho "Usage: $(basename $0).get_orchestra_url (number)"
   fi
-  [ "$REPLY" ] && REPLY="http://$REPLY:5000"
+  [ "$REPLY" ] && REPLY="http://$REPLY:5000/action"
 }
 
 get_storage_uploads_url()
