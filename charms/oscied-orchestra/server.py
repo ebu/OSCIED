@@ -207,7 +207,7 @@ def error_501(value=None):
 
 
 def ok_200(value, include_properties):
-    return json_response(200, value, include_properties)
+    return {'status': 200, 'value': value}
 
 # Main ---------------------------------------------------------------------------------------------
 
