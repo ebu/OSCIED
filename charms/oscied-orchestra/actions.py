@@ -31,7 +31,7 @@ from oscied_lib.Orchestra import Orchestra
 from oscied_lib.OrchestraConfig import OrchestraConfig
 from oscied_lib.TransformProfile import TransformProfile
 from oscied_lib.User import User
-from oscied_lib.pyutils.flask import check_id, get_request_json, map_exceptions
+from oscied_lib.pyutils.flaski import check_id, get_request_json, map_exceptions
 from oscied_lib.pyutils.pyutils import object2json, setup_logging
 from utils import action, json_only, user_info
 from server import ok_200

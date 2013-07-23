@@ -31,7 +31,7 @@ from flask.views import View
 
 import actions
 from utils import md5Checksum
-from pyutils.flask import json_response
+from oscied_lib.pyutils.flaski import json_response
 
 
 # PlugIt Parameters
