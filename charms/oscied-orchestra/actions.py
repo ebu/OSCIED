@@ -45,6 +45,7 @@ orchestra = None
 # Main ---------------------------------------------------------------------------------------------
 
 def main(flask_app):
+    global orchestra
     try:
         config = OrchestraConfig.read('local_config.pkl')
         setup_logging(filename='orchestra.log', console=True, level=config.log_level)
@@ -103,7 +104,7 @@ def requires_auth(request, **kwargs):
 
 @action('/', template=None, methods=['GET'])
 @json_only()
-def api_root():
+def api_root(request):
     """
     Return an about string.
 
@@ -120,7 +121,7 @@ def api_root():
 @action('/flush', template=None, methods=['POST'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_flush():
+def api_flush(request):
     """
     Flush Orchestrator's database. This method is useful for testing / development purposes.
     """
@@ -137,7 +138,7 @@ def api_flush():
 @action('/media/count', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_media_count():
+def api_media_count(request):
     """
     Return medias count.
     """
@@ -151,7 +152,7 @@ def api_media_count():
 @action('/media/HEAD', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_media_head():
+def api_media_head(request):
     """
     Return an array containing the medias serialized to JSON.
     """
@@ -165,7 +166,7 @@ def api_media_head():
 @action('/media', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_media_get():
+def api_media_get(request):
     """
     Return an array containing the medias serialized to JSON.
 
@@ -182,7 +183,7 @@ def api_media_get():
 @action('/media', template=None, methods=['POST'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_media_post():
+def api_media_post(request):
     """
     Add a media.
 
@@ -218,7 +219,7 @@ def api_media_post():
 @action('/media/id/<id>/HEAD', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_media_id_head(id):
+def api_media_id_head(request, id):
     """
     Return a media serialized to JSON.
     """
@@ -236,7 +237,7 @@ def api_media_id_head(id):
 @action('/media/id/<id>', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_media_id_get(id):
+def api_media_id_get(request, id):
     """
     Return a media serialized to JSON.
 
@@ -257,7 +258,7 @@ def api_media_id_get(id):
 @action('/media/id/<id>', template=None, methods=['PATCH', 'PUT'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_media_id_patch(id):
+def api_media_id_patch(request, id):
     """
     Update a media (only metadata field can be updated).
     """
@@ -281,7 +282,7 @@ def api_media_id_patch(id):
 @action('/media/id/<id>', template=None, methods=['DELETE'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_media_id_delete(id):
+def api_media_id_delete(request, id):
     """
     Delete a media.
 
@@ -306,7 +307,7 @@ def api_media_id_delete(id):
 @action('/environment/count', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_environment_count():
+def api_environment_count(request):
     """
     Return environments count.
 
@@ -322,7 +323,7 @@ def api_environment_count():
 @action('/environment', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_environment_get():
+def api_environment_get(request):
     """
     Return an array containing the environments serialized to JSON.
 
@@ -339,7 +340,7 @@ def api_environment_get():
 @action('/environment', template=None, methods=['POST'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_environment_post():
+def api_environment_post(request):
     """
     Add a new environment.
 
@@ -357,7 +358,7 @@ def api_environment_post():
 @action('/environment/name/<name>', template=None, methods=['DELETE'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_environment_name_delete(name):
+def api_environment_name_delete(request, name):
     """
     Remove an environment (destroy services and unregister it).
 
@@ -375,7 +376,7 @@ def api_environment_name_delete(name):
 @action('/transform/profile/encoder', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_transform_profile_encoder():
+def api_transform_profile_encoder(request):
     """
     Return an array containing the names of the transform profile encoders.
     """
@@ -389,7 +390,7 @@ def api_transform_profile_encoder():
 @action('/transform/profile/count', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_transform_profile_count():
+def api_transform_profile_count(request):
     """
     Return profiles count.
     """
@@ -403,7 +404,7 @@ def api_transform_profile_count():
 @action('/transform/profile', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_transform_profile_get():
+def api_transform_profile_get(request):
     """
     Return an array containing the transform profiles serialized to JSON.
     """
@@ -417,7 +418,7 @@ def api_transform_profile_get():
 @action('/transform/profile', template=None, methods=['POST'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_transform_profile_post():
+def api_transform_profile_post(request):
     """
     Add a transform profile.
 
@@ -441,7 +442,7 @@ def api_transform_profile_post():
 @action('/transform/profile/id/<id>', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_transform_profile_id_get(id):
+def api_transform_profile_id_get(request, id):
     """
     Return a transform profile serialized to JSON.
     """
@@ -459,7 +460,7 @@ def api_transform_profile_id_get(id):
 @action('/transform/profile/id/<id>', template=None, methods=['DELETE'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_transform_profile_id_delete(id):
+def api_transform_profile_id_delete(request, id):
     """
     Delete a transform profile.
     """
@@ -480,7 +481,7 @@ def api_transform_profile_id_delete(id):
 @action('/transform/unit/environment/<environment>/count', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_transform_unit_count(environment):
+def api_transform_unit_count(request, environment):
     """
     Return transform units count of environment ``environment``.
     """
@@ -494,7 +495,7 @@ def api_transform_unit_count(environment):
 @action('/transform/unit/environment/<environment>', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_transform_unit_get(environment):
+def api_transform_unit_get(request, environment):
     """
     Return an array containing the transform units of environment ``environment`` serialized to
     JSON.
@@ -509,7 +510,7 @@ def api_transform_unit_get(environment):
 @action('/transform/unit/environment/<environment>', template=None, methods=['POST'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_transform_unit_post(environment):
+def api_transform_unit_post(request, environment):
     """
     Deploy some new transform units into environment ``environment``.
     """
@@ -526,7 +527,7 @@ def api_transform_unit_post(environment):
 @action('/transform/unit/environment/<environment>', template=None, methods=['DELETE'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_transform_unit_delete(environment):
+def api_transform_unit_delete(request, environment):
     """
     Remove some transform units from environment ``environment``.
     """
@@ -543,7 +544,7 @@ def api_transform_unit_delete(environment):
 @action('/transform/unit/environment/<environment>/number/<number>', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_transform_unit_number_get(environment, number):
+def api_transform_unit_number_get(request, environment, number):
     """
     Return a transform unit serialized to JSON.
     """
@@ -561,7 +562,7 @@ def api_transform_unit_number_get(environment, number):
 @action('/transform/unit/environment/<environment>/number/<number>', template=None, methods=['DELETE'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_transform_unit_number_delete(environment, number):
+def api_transform_unit_number_delete(request, environment, number):
     """
     Remove transform unit number ``number`` from environment ``environment``.
     """
@@ -579,7 +580,7 @@ def api_transform_unit_number_delete(environment, number):
 @action('/transform/queue', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_transform_queue():
+def api_transform_queue(request):
     """
     Return an array containing the transform queues serialized to JSON.
     """
@@ -593,7 +594,7 @@ def api_transform_queue():
 @action('/transform/task/count', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_transform_task_count():
+def api_transform_task_count(request):
     """
     Return transform tasks count.
     """
@@ -607,7 +608,7 @@ def api_transform_task_count():
 @action('/transform/task/HEAD', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_transform_task_head():
+def api_transform_task_head(request):
     """
     Return an array containing the transform tasks serialized as JSON.
 
@@ -623,7 +624,7 @@ def api_transform_task_head():
 @action('/transform/task', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_transform_task_get():
+def api_transform_task_get(request):
     """
     Return an array containing the transform tasks serialized to JSON.
 
@@ -642,7 +643,7 @@ def api_transform_task_get():
 @action('/transform/task', template=None, methods=['POST'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_transform_task_post():
+def api_transform_task_post(request):
     """
     Launch a transform task.
 
@@ -676,7 +677,7 @@ def api_transform_task_post():
 @action('/transform/task/id/<id>/HEAD', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_transform_task_id_head(id):
+def api_transform_task_id_head(request, id):
     """
     Return a transform task serialized to JSON.
 
@@ -696,7 +697,7 @@ def api_transform_task_id_head(id):
 @action('/transform/task/id/<id>', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_transform_task_id_get(id):
+def api_transform_task_id_get(request, id):
     """
     Return a transform task serialized to JSON.
 
@@ -719,7 +720,7 @@ def api_transform_task_id_get(id):
 @action('/transform/task/id/<id>', template=None, methods=['DELETE'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_transform_task_id_delete(id):
+def api_transform_task_id_delete(request, id):
     """
     Revoke a transform task.
 
@@ -749,7 +750,7 @@ def api_transform_task_id_delete(id):
 @action('/unpublish/queue', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_publish_queue():
+def api_publish_queue(request):
     """
     Return an array containing the publish queues.
     """
@@ -763,7 +764,7 @@ def api_publish_queue():
 @action('/publish/task/count', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_publish_task_count():
+def api_publish_task_count(request):
     """
     Return publish tasks count.
     """
@@ -777,7 +778,7 @@ def api_publish_task_count():
 @action('/publish/task/HEAD', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_publish_task_head():
+def api_publish_task_head(request):
     """
     Return an array containing the publish tasks serialized as JSON.
 
@@ -793,7 +794,7 @@ def api_publish_task_head():
 @action('/publish/task', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_publish_task_get():
+def api_publish_task_get(request):
     """
     Return an array containing the publish tasks serialized to JSON.
 
@@ -812,7 +813,7 @@ def api_publish_task_get():
 @action('/publish/task', template=None, methods=['POST'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_publish_task_post():
+def api_publish_task_post(request):
     """
     Launch a publish task.
 
@@ -844,7 +845,7 @@ def api_publish_task_post():
 @action('/publish/task/id/<id>/HEAD', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_publish_task_id_head(id):
+def api_publish_task_id_head(request, id):
     """
     Return a publish task serialized to JSON.
 
@@ -864,7 +865,7 @@ def api_publish_task_id_head(id):
 @action('/publish/task/id/<id>', template=None, methods=['GET'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_publish_task_id_get(id):
+def api_publish_task_id_get(request, id):
     """
     Return a publish task serialized to JSON.
 
@@ -887,7 +888,7 @@ def api_publish_task_id_get(id):
 @action('/publish/task/id/<id>', template=None, methods=['DELETE'])
 @json_only()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def api_publish_task_id_delete(id):
+def api_publish_task_id_delete(request, id):
     """
     Revoke a publish task.
 
@@ -916,7 +917,7 @@ def api_publish_task_id_delete(id):
 
 @action('/transform/callback', template=None, methods=['POST'])
 @json_only()
-def api_transform_task_hook():
+def api_transform_task_hook(request):
     """
     This method is called by transform workers when they finish their work.
 
@@ -938,7 +939,7 @@ def api_transform_task_hook():
 
 @action('/publish/callback', template=None, methods=['POST'])
 @json_only()
-def api_publish_task_hook():
+def api_publish_task_hook(request):
     """
     This method is called by publisher workers when they finish their work.
 
@@ -978,4 +979,4 @@ def medias_list(request):
     u"""
     Show the medias list page.
     """
-    return api_media_get()
+    return api_media_get(request)
