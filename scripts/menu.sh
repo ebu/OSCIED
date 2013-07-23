@@ -231,24 +231,24 @@ api_init_setup()
   fi
   test_api 200 POST $ORCHESTRA_URL/flush "$ROOT_AUTH" ''
 
-  pecho 'Add users'
-  count=1
-  savedIFS=$IFS
-  IFS=';'
-  while read fname lname mail secret aplatform
-  do
-    if [ ! "$fname" -o ! "$lname" -o ! "$mail" -o ! "$secret" -o ! "$aplatform" ]; then
-      xecho "Line $count : Bad line format !"
-    fi
-    json_user "$fname" "$lname" "$mail" "$secret" "$aplatform"
-    echo "$JSON"
-    test_api 200 POST $ORCHESTRA_URL/user "$ROOT_AUTH" "$JSON"
-    save_auth "user$count" "$mail:$secret"
-    save_json "user$count" "$JSON"
-    save_id   "user$count" "$ID"
-    count=$((count+1))
-  done < "$CONFIG_API_USERS_FILE"
-  IFS=$savedIFS
+  # pecho 'Add users'
+  # count=1
+  # savedIFS=$IFS
+  # IFS=';'
+  # while read fname lname mail secret aplatform
+  # do
+  #   if [ ! "$fname" -o ! "$lname" -o ! "$mail" -o ! "$secret" -o ! "$aplatform" ]; then
+  #     xecho "Line $count : Bad line format !"
+  #   fi
+  #   json_user "$fname" "$lname" "$mail" "$secret" "$aplatform"
+  #   echo "$JSON"
+  #   test_api 200 POST $ORCHESTRA_URL/user "$ROOT_AUTH" "$JSON"
+  #   save_auth "user$count" "$mail:$secret"
+  #   save_json "user$count" "$JSON"
+  #   save_id   "user$count" "$ID"
+  #   count=$((count+1))
+  # done < "$CONFIG_API_USERS_FILE"
+  # IFS=$savedIFS
 
   get_auth 'user1'; user1_auth=$REPLY
 
