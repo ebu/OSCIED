@@ -41,6 +41,8 @@ app = Flask(__name__, static_folder='media')
 
 def check_ip(request):
 
+    return True
+
     def addressInNetwork(ip, net):
         "Is an address in a network"
         #http://stackoverflow.com/questions/819355/how-can-i-check-if-an-ip-is-in-a-network-in-python
@@ -233,6 +235,7 @@ def error_501(value=None):
 
 
 def ok_200(value, include_properties):
+    # FIXME include_properties not yet handled
     return {'status': 200, 'value': value}
 
 # Main ---------------------------------------------------------------------------------------------

@@ -32,7 +32,7 @@ from oscied_lib.OrchestraConfig import OrchestraConfig, ORCHESTRA_CONFIG_TEST
 from oscied_lib.TransformProfile import TransformProfile
 from oscied_lib.User import User
 from oscied_lib.pyutils.flaski import check_id, get_request_json, map_exceptions
-from oscied_lib.pyutils.pyutils import object2dict, object2json, setup_logging
+from oscied_lib.pyutils.pyutils import object2json, setup_logging
 from utils import action, json_only, only_logged_user, user_info
 from server import ok_200
 
@@ -110,6 +110,22 @@ def requires_auth(request, **kwargs):
         return user
     # This is probably a worker node (transform of publisher) that want to trigger a callback
     return None
+
+
+def response2dict(response, remove_underscore):
+    value = []
+    for thing in response['value']:
+        value.append(object2dict(thing, remove_underscore))
+    response['value'] = value
+    return response
+
+
+def object2dict(something, remove_underscore):
+    something_dict = something.__dict__
+    if remove_underscore:
+        # FIXME this only works on _id
+        something_dict['id'] = something_dict.pop('_id')
+    return something_dict
 
 
 # Index --------------------------------------------------------------------------------------------
@@ -991,5 +1007,4 @@ def medias_list(request):
     u"""
     Show the medias list page.
     """
-    return object2dict(api_media_get(request), include_properties=False, remove_underscore=True)
-
+    return response2dict(api_media_get(request), remove_underscore=True)
