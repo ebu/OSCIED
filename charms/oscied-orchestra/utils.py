@@ -7,7 +7,7 @@ import hashlib
 # Decorators
 
 
-def action(route, template, methods=['GET']):
+def action(route, template='', methods=['GET']):
     """Decorator to create an action"""
     def real_decorator(function):
         function.pi_api_action = True
@@ -88,3 +88,13 @@ class PlugItRedirect():
     def __init__(self, url, no_prefix=False):
         self.url = url
         self.no_prefix = no_prefix
+
+
+class PlugItSendFile():
+    """Object to send a file to the client browser"""
+    """Use the flask function send_file to send the file to the PlugIt client"""
+    def __init__(self, filename, mimetype, as_attachment=False, attachment_filename=''):
+        self.mimetype = mimetype
+        self.filename = filename
+        self.as_attachment = as_attachment
+        self.attachment_filename = attachment_filename

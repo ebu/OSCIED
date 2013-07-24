@@ -1,42 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#**************************************************************************************************#
-#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : ORCHESTRA
-#
-#  Authors   : David Fischer
-#  Contact   : david.fischer.ch@gmail.com / david.fischer@hesge.ch
-#  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
-#  Copyright : 2012-2013 OSCIED Team. All rights reserved.
-#**************************************************************************************************#
-#
-# This file is part of EBU/UER OSCIED Project.
-#
-# This project is free software: you can redistribute it and/or modify it under the terms of the
-# GNU General Public License as published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-#
-# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
-# even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License along with this project.
-# If not, see <http://www.gnu.org/licenses/>
-#
-# Retrieved from https://github.com/EBU-TI/OSCIED
-
-from datetime import datetime, timedelta
-from flask import Flask, jsonify, request, send_from_directory, make_response
+from flask import Flask, jsonify, request, send_from_directory, make_response, abort, send_file
 from flask.views import View
 
 import actions
-from utils import md5Checksum
+from utils import md5Checksum, PlugItRedirect, PlugItSendFile
+
+from datetime import datetime, timedelta
+
 from oscied_lib.pyutils.flaski import json_response
 
-
-# PlugIt Parameters
+# Global parameters
 DEBUG = True
 MOCK = True
+
+# PlugIt Parameters
 
 # PI_META_CACHE specify the number of seconds meta informations should be cached
 if DEBUG:
@@ -44,25 +23,55 @@ if DEBUG:
 else:
     PI_META_CACHE = 5 * 60  # 5 minutes
 
+# Allow the API to be located at another endpoint (to share call with another API)
+PI_BASE_URL = '/'
+
+# IP allowed to use the PlugIt API.
+PI_ALLOWED_NETWORKS = ['127.0.0.1/32']
+
 ## Does not edit code bellow !
 
 # API version parameters
 PI_API_VERSION = '1'
 PI_API_NAME = 'EBUio-PlugIt'
 
-#
-PLUGIT_PREFIX = '/'  # FIXME '/ceciestsecret/'
 
 app = Flask(__name__, static_folder='media')
 
 
-@app.route(PLUGIT_PREFIX + "ping")
+def check_ip(request):
+
+    def addressInNetwork(ip, net):
+        "Is an address in a network"
+        #http://stackoverflow.com/questions/819355/how-can-i-check-if-an-ip-is-in-a-network-in-python
+        import socket
+        import struct
+        ipaddr = struct.unpack('L', socket.inet_aton(ip))[0]
+        netaddr, bits = net.split('/')
+        if int(bits) == 0:
+            return True
+        netmask = struct.unpack('L', socket.inet_aton(netaddr))[0] & ((2L << int(bits)-1) - 1)
+        return ipaddr & netmask == netmask
+
+    for net in PI_ALLOWED_NETWORKS:
+        if addressInNetwork(request.remote_addr, net):
+            return True
+    # Ip not found
+    abort(404)
+    return False
+
+
+@app.route(PI_BASE_URL + "ping")
 def ping():
     """The ping method: Just return the data provided"""
+
+    if not check_ip(request):
+        return
+
     return jsonify(data=request.args.get('data', ''))
 
 
-@app.route(PLUGIT_PREFIX + "version")
+@app.route(PI_BASE_URL + "version")
 def version():
     """The version method: Return current information about the version"""
     return jsonify(result='Ok', version=PI_API_VERSION, protocol=PI_API_NAME)
@@ -75,6 +84,10 @@ class MetaView(View):
         self.action = action
 
     def dispatch_request(self, *args, **kwargs):
+
+        if not check_ip(request):
+            return
+
         objResponse = {}
 
         # Template information
@@ -128,6 +141,10 @@ class TemplateView(View):
         self.action = action
 
     def dispatch_request(self, *args, **kwargs):
+
+        if not check_ip(request):
+            return
+
         # We just return the content of the template
         return send_from_directory('templates/', self.action.pi_api_template)
 
@@ -139,15 +156,23 @@ class ActionView(View):
         self.action = action
 
     def dispatch_request(self, *args, **kwargs):
+
+        if not check_ip(request):
+            return
+
         # Call the action
         result = self.action(request, *args, **kwargs)
 
         # Is it a redirect ?
-        if result.__class__.__name__ == 'PlugItRedirect':
+        if result.__class__ == PlugItRedirect:
             response = make_response("")
             response.headers['EbuIo-PlugIt-Redirect'] = result.url
             if result.no_prefix:
                 response.headers['EbuIo-PlugIt-Redirect-NoPrefix'] = 'True'
+            return response
+        elif result.__class__ == PlugItSendFile:
+            response = send_file(result.filename, mimetype=result.mimetype, as_attachment=result.as_attachment, attachment_filename=result.attachment_filename)
+            response.headers['EbuIo-PlugIt-ItAFile'] = 'True'
             return response
 
         return jsonify(result)
@@ -161,13 +186,13 @@ for act in dir(actions):
         # We found an action and we can now add it to our routes
 
         # Meta
-        app.add_url_rule(PLUGIT_PREFIX + 'meta' + obj.pi_api_route, view_func=MetaView.as_view('meta_' + act, action=obj))
+        app.add_url_rule(PI_BASE_URL + 'meta' + obj.pi_api_route, view_func=MetaView.as_view('meta_' + act, action=obj))
 
         # Template
-        app.add_url_rule(PLUGIT_PREFIX + 'template' + obj.pi_api_route, view_func=TemplateView.as_view('template_' + act, action=obj))
+        app.add_url_rule(PI_BASE_URL + 'template' + obj.pi_api_route, view_func=TemplateView.as_view('template_' + act, action=obj))
 
         # Action
-        app.add_url_rule(PLUGIT_PREFIX + 'action' + obj.pi_api_route, view_func=ActionView.as_view('action_' + act, action=obj), methods=obj.pi_api_methods)
+        app.add_url_rule(PI_BASE_URL + 'action' + obj.pi_api_route, view_func=ActionView.as_view('action_' + act, action=obj), methods=obj.pi_api_methods)
 
 
 # Responses ----------------------------------------------------------------------------------------
