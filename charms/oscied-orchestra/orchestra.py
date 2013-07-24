@@ -2706,8 +2706,7 @@ if __name__ == '__main__':
             sys.exit(0)
 
         if not config.mongo_admin_connection:
-            logging.warning('MongoDB is not set in configuration ... exiting')
-            sys.exit(0)
+            logging.warning('MongoDB is not set in configuration ... mocking')
 
         if not config.rabbit_connection:
             logging.warning('RabbitMQ is not set in configuration ... exiting')
