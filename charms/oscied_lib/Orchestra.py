@@ -25,7 +25,7 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import logging, pymongo
+import logging, mongomock, pymongo
 from celery import states
 #from celery import current_app
 #from celery.task.control import inspect
@@ -49,7 +49,10 @@ class Orchestra(object):
 
     def __init__(self, config):
         self.config = config
-        self._db = pymongo.Connection(config.mongo_admin_connection)['orchestra']
+        if config.mongo_connection:
+            self._db = pymongo.Connection(config.mongo_admin_connection)['orchestra']
+        else:
+            self._db = mongomock.Connection().orchestra
         self.root_user = User(UUID_ZERO, 'root', 'oscied', 'root@oscied.org',
                               self.config.root_secret, True)
         self.nodes_user = User(UUID_ZERO, 'nodes', 'oscied', 'nodes@oscied.org',
@@ -433,7 +436,7 @@ class Orchestra(object):
         task = PublishTask.load(object2json(entity, False))
         if load_fields:
             task.load_fields(self.get_user({'_id': task.user_id}, {'secret': 0}),
-                            self.get_media({'_id': task.media_id}))
+                             self.get_media({'_id': task.media_id}))
         if append_result:
             task.append_async_result()
         return task
