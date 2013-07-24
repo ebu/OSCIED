@@ -550,6 +550,11 @@ def get_test_orchestra(api_init_csv_directory):
         print('Adding media %s' % media.metadata['title'])
         orchestra.save_media(media)
         i = (i + 1) % len(users)
+    reader = unicode_csv_reader(os.path.join(api_init_csv_directory, 'tprofiles.csv'))
+    for title, description, encoder_name, encoder_string in reader:
+        profile = TransformProfile(None, title, description, encoder_name, encoder_string)
+        print('Adding transform profile %s' % profile.title)
+        orchestra.save_transform_profile(profile)
     return orchestra
 
 
@@ -559,3 +564,4 @@ if __name__ == '__main__':
     orchestra = get_test_orchestra('../../config/api')
     print('They are %s registered users.' % len(orchestra.get_users()))
     print('They are %s available medias.' % len(orchestra.get_medias()))
+    print('They are %s available transform profiles.' % len(orchestra.get_transform_profiles()))
