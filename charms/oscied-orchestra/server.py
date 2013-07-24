@@ -36,6 +36,7 @@ from oscied_lib.pyutils.flaski import json_response
 
 # PlugIt Parameters
 DEBUG = True
+MOCK = True
 
 # PI_META_CACHE specify the number of seconds meta informations should be cached
 if DEBUG:
@@ -212,4 +213,4 @@ def ok_200(value, include_properties):
 # Main ---------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    actions.main(flask_app=app)
+    actions.main(flask_app=app, mock=MOCK)

@@ -27,12 +27,12 @@
 import logging, sys, uuid
 from flask import abort
 from oscied_lib.Media import Media
-from oscied_lib.Orchestra import Orchestra
-from oscied_lib.OrchestraConfig import OrchestraConfig
+from oscied_lib.Orchestra import Orchestra, get_test_orchestra
+from oscied_lib.OrchestraConfig import OrchestraConfig, ORCHESTRA_CONFIG_TEST
 from oscied_lib.TransformProfile import TransformProfile
 from oscied_lib.User import User
 from oscied_lib.pyutils.flaski import check_id, get_request_json, map_exceptions
-from oscied_lib.pyutils.pyutils import object2json, setup_logging
+from oscied_lib.pyutils.pyutils import object2dict, object2json, setup_logging
 from utils import action, json_only, only_logged_user, user_info
 from server import ok_200
 
@@ -44,10 +44,10 @@ orchestra = None
 
 # Main ---------------------------------------------------------------------------------------------
 
-def main(flask_app):
+def main(flask_app, mock):
     global orchestra
     try:
-        config = OrchestraConfig.read('local_config.pkl')
+        config = ORCHESTRA_CONFIG_TEST if mock else OrchestraConfig.read('local_config.pkl')
         setup_logging(filename='orchestra.log', console=True, level=config.log_level)
         logging.info('OSCIED Orchestra by David Fischer 2013')
         logging.info('Configuration : ' + str(object2json(config, True)))
@@ -63,7 +63,10 @@ def main(flask_app):
             logging.warning('RabbitMQ is not set in configuration ... exiting')
             sys.exit(0)
 
-        orchestra = Orchestra(config)
+        orchestra = get_test_orchestra('../../config/api') if mock else Orchestra(config)
+        print('They are %s registered users.' % len(orchestra.get_users()))
+        print('They are %s available medias.' % len(orchestra.get_medias()))
+        print('They are %s available transform profiles.' % len(orchestra.get_transform_profiles()))
         logging.info('Start REST API')
         #flask_app.config['PROPAGATE_EXCEPTIONS'] = True
         flask_app.run(host='0.0.0.0', debug=orchestra.config.verbose)
@@ -86,15 +89,24 @@ def requires_auth(request, **kwargs):
         Removed description from branch called issue75_ebuio.
     """
     if request.args.get('ebuio_u_username'):
-        user = User(None,
-                    first_name=request.args['ebuio_u_first_name'],
-                    last_name=request.args['ebuio_u_last_name'],
-                    mail=request.args['ebuio_u_email'],
-                    admin_platform=request.args.get('ebuio_u_ebuio_admin') == 'True')
-        if not user.is_valid(False):
-            raise ValueError('Missing on or more informations about EBU-io user.')
-        user._id = user.secret = uuid.uuid5(uuid.NAMESPACE_DNS, request.args['ebuio_u_username'])
-        orchestra.save_user(user)  # Ensure that user's informations are available in our database
+        logging.info('User is %s' % request.args['ebuio_u_username'])
+        user = orchestra.get_user(specs={'mail': request.args['ebuio_u_email']})
+        if user is None:
+            user = User(None,
+                        first_name=request.args.get('ebuio_u_first_name') or 'First name',
+                        last_name=request.args.get('ebuio_u_last_name') or 'Last name',
+                        mail=request.args['ebuio_u_email'],
+                        secret=str(uuid.uuid4()),
+                        admin_platform=request.args.get('ebuio_u_ebuio_admin') == 'True')
+            logging.info('Create new EBU-io user %s' % user.name)
+            if not user.is_valid(False):
+                msg = 'Missing on or more informations about EBU-io user.'
+                logging.exception(msg)
+                raise ValueError(msg)
+            # Ensure that user's informations are available in our database
+            orchestra.save_user(user, hash_secret=True)
+        else:
+            logging.info('Use existing EBU-io user %s' % user.name)
         return user
     # This is probably a worker node (transform of publisher) that want to trigger a callback
     return None
@@ -175,7 +187,7 @@ def api_media_get(request):
     """
     try:
         requires_auth(request=request, allow_any=True)
-        return ok_200(orchestra.get_medias(load_fields=True), True)
+        return ok_200(orchestra.get_medias(load_fields=False), True)  # FIXME enable load_fields
     except Exception as e:
         map_exceptions(e)
 
@@ -979,6 +991,5 @@ def medias_list(request):
     u"""
     Show the medias list page.
     """
-    response = api_media_get(request)
-    logging.debug('Return %s' % response.__dict__)
-    return response
+    return object2dict(api_media_get(request), include_properties=False, remove_underscore=True)
+
