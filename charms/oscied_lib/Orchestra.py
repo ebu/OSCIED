@@ -25,7 +25,7 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import csv, logging, mongomock, os, pymongo
+import logging, mongomock, os, pymongo
 from celery import states
 #from celery import current_app
 #from celery.task.control import inspect
@@ -41,7 +41,7 @@ from TransformProfile import TransformProfile, ENCODERS_NAMES
 from TransformTask import TransformTask
 from User import User
 import pyutils.juju as juju
-from pyutils.pyutils import object2json, datetime_now, UUID_ZERO, valid_uuid
+from pyutils.pyutils import object2json, datetime_now, UUID_ZERO, unicode_csv_reader, valid_uuid
 
 
 class Orchestra(object):
@@ -538,12 +538,18 @@ class Orchestra(object):
 def get_test_orchestra(api_init_csv_directory):
     from OrchestraConfig import ORCHESTRA_CONFIG_TEST
     orchestra = Orchestra(ORCHESTRA_CONFIG_TEST)
-    with open(os.path.join(api_init_csv_directory, 'users.csv')) as users_file:
-        csv_users = csv.reader(users_file, delimiter=';', quotechar='"')
-        for csv_user in csv_users:
-            user = User(None, csv_user[0], csv_user[1], csv_user[2], csv_user[3], csv_user[4])
-            print('Adding user %s' % user.name)
-            orchestra.save_user(user, hash_secret=True)
+    reader = unicode_csv_reader(os.path.join(api_init_csv_directory, 'users.csv'))
+    for first_name, last_name, email, secret, admin_platform in reader:
+        user = User(None, first_name, last_name, email, secret, admin_platform)
+        print('Adding user %s' % user.name)
+        orchestra.save_user(user, hash_secret=True)
+    users = orchestra.get_users()
+    i, reader = 0, unicode_csv_reader(os.path.join(api_init_csv_directory, 'medias.csv'))
+    for uri, filename, title in reader:
+        media = Media(None, users[i]._id, None, uri, None, filename, {'title': title}, 'PENDING')
+        print('Adding media %s' % media.metadata['title'])
+        orchestra.save_media(media)
+        i = (i + 1) % len(users)
     return orchestra
 
 
@@ -552,3 +558,4 @@ def get_test_orchestra(api_init_csv_directory):
 if __name__ == '__main__':
     orchestra = get_test_orchestra('../../config/api')
     print('They are %s registered users.' % len(orchestra.get_users()))
+    print('They are %s available medias.' % len(orchestra.get_medias()))
