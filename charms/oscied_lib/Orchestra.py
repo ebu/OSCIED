@@ -31,6 +31,7 @@ from celery import states
 #from celery.task.control import inspect
 from celery.task.control import revoke
 #from celery.events.state import state
+from random import randint
 import Publisher, Transform
 from Callback import Callback
 from Media import Media
@@ -49,16 +50,20 @@ class Orchestra(object):
 
     def __init__(self, config):
         self.config = config
-        if config.mongo_connection:
-            self._db = pymongo.Connection(config.mongo_admin_connection)['orchestra']
-        else:
+        if self.is_mock:
             self._db = mongomock.Connection().orchestra
+        else:
+            self._db = pymongo.Connection(config.mongo_admin_connection)['orchestra']
         self.root_user = User(UUID_ZERO, 'root', 'oscied', 'root@oscied.org',
                               self.config.root_secret, True)
         self.nodes_user = User(UUID_ZERO, 'nodes', 'oscied', 'nodes@oscied.org',
                                self.config.nodes_secret, False)
 
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Properties >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    @property
+    def is_mock(self):
+        return not self.config.mongo_admin_connection
 
     @property
     def about(self):
@@ -122,7 +127,11 @@ class Orchestra(object):
         if not media.get_metadata('title'):
             raise ValueError('Title key is required in media metadata.')
         if media.status not in ('DELETED'):
-            size, duration = Storage.add_media(self.config, media)
+            if self.is_mock:
+                size = randint(10*1024*1024, 10*1024*1024*1024)
+                duration = '%02d:%02d:%02d' % (randint(0, 2), randint(0, 59), randint(0, 59))
+            else:
+                size, duration = Storage.add_media(self.config, media)
         else:
             size, duration = (0, 0)
         media.add_metadata('size', size, True)
