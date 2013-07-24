@@ -25,7 +25,7 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import logging, mongomock, pymongo
+import csv, logging, mongomock, os, pymongo
 from celery import states
 #from celery import current_app
 #from celery.task.control import inspect
@@ -533,3 +533,22 @@ class Orchestra(object):
             self._db.publish_tasks.save(task.__dict__)
             logging.info('%s Error: %s' % (task_id, status))
             logging.info('%s Media %s is not modified' % (task_id, media.filename))
+
+
+def get_test_orchestra(api_init_csv_directory):
+    from OrchestraConfig import ORCHESTRA_CONFIG_TEST
+    orchestra = Orchestra(ORCHESTRA_CONFIG_TEST)
+    with open(os.path.join(api_init_csv_directory, 'users.csv')) as users_file:
+        csv_users = csv.reader(users_file, delimiter=';', quotechar='"')
+        for csv_user in csv_users:
+            user = User(None, csv_user[0], csv_user[1], csv_user[2], csv_user[3], csv_user[4])
+            print('Adding user %s' % user.name)
+            orchestra.save_user(user, hash_secret=True)
+    return orchestra
+
+
+# Main ---------------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+    orchestra = get_test_orchestra('../../config/api')
+    print('They are %s registered users.' % len(orchestra.get_users()))
