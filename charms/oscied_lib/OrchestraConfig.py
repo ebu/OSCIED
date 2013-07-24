@@ -92,7 +92,7 @@ class OrchestraConfig(CharmConfig_Storage):
 ORCHESTRA_CONFIG_TEST = OrchestraConfig(
     storage_address='127.0.0.1', storage_fstype='glusterfs', storage_mountpoint='medias_volume_0',
     api_url='http://127.0.0.1:5000', root_secret='toto', nodes_secret='abcd',
-    mongo_admin_connection='...', mongo_nodes_connection='...', rabbit_connection='...')
+    mongo_admin_connection='', mongo_nodes_connection='...', rabbit_connection='...')
 
 # Main ---------------------------------------------------------------------------------------------
 

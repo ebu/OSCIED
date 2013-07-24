@@ -25,7 +25,7 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import logging, smtplib, pymongo
+import logging, mongomock, os, smtplib, pymongo
 from celery import states
 #from celery import current_app
 #from celery.task.control import inspect
@@ -33,6 +33,7 @@ from celery.task.control import revoke
 #from celery.events.state import state
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from random import randint
 import Publisher, Transform
 from Callback import Callback
 from Media import Media
@@ -42,7 +43,7 @@ from TransformProfile import TransformProfile, ENCODERS_NAMES
 from TransformTask import TransformTask
 from User import User
 import pyutils.juju as juju
-from pyutils.pyutils import object2json, datetime_now, UUID_ZERO, valid_uuid
+from pyutils.pyutils import object2json, datetime_now, UUID_ZERO, unicode_csv_reader, valid_uuid
 
 
 class Orchestra(object):
@@ -51,13 +52,20 @@ class Orchestra(object):
 
     def __init__(self, config):
         self.config = config
-        self._db = pymongo.Connection(config.mongo_admin_connection)['orchestra']
+        if self.is_mock:
+            self._db = mongomock.Connection().orchestra
+        else:
+            self._db = pymongo.Connection(config.mongo_admin_connection)['orchestra']
         self.root_user = User(UUID_ZERO, 'root', 'oscied', 'root@oscied.org',
                               self.config.root_secret, True)
         self.nodes_user = User(UUID_ZERO, 'nodes', 'oscied', 'nodes@oscied.org',
                                self.config.nodes_secret, False)
 
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Properties >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+    @property
+    def is_mock(self):
+        return not self.config.mongo_admin_connection
 
     @property
     def about(self):
@@ -143,7 +151,11 @@ class Orchestra(object):
         if not media.get_metadata('title'):
             raise ValueError('Title key is required in media metadata.')
         if media.status not in ('DELETED'):
-            size, duration = Storage.add_media(self.config, media)
+            if self.is_mock:
+                size = randint(10*1024*1024, 10*1024*1024*1024)
+                duration = '%02d:%02d:%02d' % (randint(0, 2), randint(0, 59), randint(0, 59))
+            else:
+                size, duration = Storage.add_media(self.config, media)
         else:
             size, duration = (0, 0)
         media.add_metadata('size', size, True)
@@ -576,3 +588,35 @@ class Orchestra(object):
                 task.append_async_result()
                 self.send_email(task.user.mail, 'OSCIED - Publication task %s ERROR' % task._id,
                                 str(task.__dict__))
+
+
+def get_test_orchestra(api_init_csv_directory):
+    from OrchestraConfig import ORCHESTRA_CONFIG_TEST
+    orchestra = Orchestra(ORCHESTRA_CONFIG_TEST)
+    reader = unicode_csv_reader(os.path.join(api_init_csv_directory, 'users.csv'))
+    for first_name, last_name, email, secret, admin_platform in reader:
+        user = User(None, first_name, last_name, email, secret, admin_platform)
+        print('Adding user %s' % user.name)
+        orchestra.save_user(user, hash_secret=True)
+    users = orchestra.get_users()
+    i, reader = 0, unicode_csv_reader(os.path.join(api_init_csv_directory, 'medias.csv'))
+    for uri, filename, title in reader:
+        media = Media(None, users[i]._id, None, uri, None, filename, {'title': title}, 'PENDING')
+        print('Adding media %s' % media.metadata['title'])
+        orchestra.save_media(media)
+        i = (i + 1) % len(users)
+    reader = unicode_csv_reader(os.path.join(api_init_csv_directory, 'tprofiles.csv'))
+    for title, description, encoder_name, encoder_string in reader:
+        profile = TransformProfile(None, title, description, encoder_name, encoder_string)
+        print('Adding transform profile %s' % profile.title)
+        orchestra.save_transform_profile(profile)
+    return orchestra
+
+
+# Main ---------------------------------------------------------------------------------------------
+
+if __name__ == '__main__':
+    orchestra = get_test_orchestra('../../config/api')
+    print('They are %s registered users.' % len(orchestra.get_users()))
+    print('They are %s available medias.' % len(orchestra.get_medias()))
+    print('They are %s available transform profiles.' % len(orchestra.get_transform_profiles()))
