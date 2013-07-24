@@ -25,7 +25,7 @@
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
 import logging, sys, uuid
-from flask import abort, request
+from flask import abort
 from oscied_lib.Media import Media
 from oscied_lib.Orchestra import Orchestra
 from oscied_lib.OrchestraConfig import OrchestraConfig
@@ -74,6 +74,7 @@ def main(flask_app):
         logging.exception('Orchestra ... exiting')
         sys.exit(1)
 
+
 # --------------------------------------------------------------------------------------------------
 # http://publish.luisrei.com/articles/flaskrest.html
 
@@ -87,13 +88,13 @@ def requires_auth(request, **kwargs):
     """
     if request.args.get('ebuio_u_username'):
         user = User(None,
-                    first_name=request.args.get('ebuio_u_first_name'),
-                    last_name=request.args.get('ebuio_u_last_name'),
-                    mail=request.args.get('ebuio_u_email'),
+                    first_name=request.args['ebuio_u_first_name'],
+                    last_name=request.args['ebuio_u_last_name'],
+                    mail=request.args['ebuio_u_email'],
                     admin_platform=request.args.get('ebuio_u_ebuio_admin') == 'True')
         if not user.is_valid(False):
             raise ValueError('Missing on or more informations about EBU-io user.')
-        user._id = user.secret = uuid.uuid5(uuid.NAMESPACE_DNS, user.mail)
+        user._id = user.secret = uuid.uuid5(uuid.NAMESPACE_DNS, request.args['ebuio_u_username'])
         orchestra.save_user(user)  # Ensure that user's informations are available in our database
         return user
     # This is probably a worker node (transform of publisher) that want to trigger a callback
