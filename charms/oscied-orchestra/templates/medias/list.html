@@ -20,10 +20,10 @@
    <tbody>
       {% for media in value %}
       <tr>
-         <td>{{media.metadata.title|default:"" %}</td>
+         <td>{{media.metadata.title|default:"" }}</td>
          <td>
-            {% if media.status|upper == 'READY' or media.status|upper == 'PUBLISHED'}
-               <a href="{{ebuio_baseUrl}}medias/force_download/{{media._id}}">{{media.filename|default:"Untitled"}}</a>
+            {% if media.status|upper == 'READY' or media.status|upper == 'PUBLISHED' %}
+               <a href="{{ebuio_baseUrl}}medias/force_download/{{media.id}}">{{media.filename|default:"Untitled"}}</a>
             {% else %}
                {{media.filename|default:"Untitled"}}
             {% endif %}
@@ -36,8 +36,10 @@
             <span class="label {% if media.status|upper == 'PENDING' %}label-warning{% elif  media.status|upper == 'READY' %}label-warning{% elif media.status|upper == 'UNKNOWN' %}{% else %}label-inverse{% endif %}">{{media.status|upper}}</span>
          </td>
          <td>
-            {% if ebuio_u.username == media.user.username and (media.status|upper == 'READY' or media.status|upper == 'PUBLISHED') %}
-               <a class="delete" title="{{media.metadata.title}}" href="{{ebuio_baseUrl}}medias/delete/{{media._id}}"><button class="btn btn-mini btn-danger">Delete</button></a>
+            {% if ebuio_u.username == media.user.username %}
+		{% if media.status|upper == 'READY' or media.status|upper == 'PUBLISHED' %}
+	               <a class="delete" title="{{media.metadata.title}}" href="{{ebuio_baseUrl}}medias/delete/{{media.id}}"><button class="btn btn-mini btn-danger">Delete</button></a>
+		{% endif %}
             {% endif %}
          </td>
       </tr>

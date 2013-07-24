@@ -13,13 +13,15 @@
 
    function loadMedias() {
       $.get(
-         '{{ebuio_baseUrl}}/medias/list',
+         '{{ebuio_baseUrl}}medias/list',
          function (data) {
             $('#medias').html(data);
          }
 
       );
    }
+
+   loadMedias();
 
    /*<!-- Set the action for file deletion -->*/
    $('body').on('click', '.delete', function () {
@@ -39,20 +41,20 @@
 
    <!-- Ajout de media -->
 
-   <!--<link rel="stylesheet" href="<?php echo base_url(); ?>assets/css/fileupload/jquery-ui.css" id="theme">
-<link rel="stylesheet" href="<?= base_url(); ?>assets/css/fileupload/jquery.fileupload-ui.css">-->
-   <?= $this->css_js->load_css('assets/css/fileupload/jquery-ui.css', 'theme'); ?>
-   <?= $this->css_js->load_css('assets/css/fileupload/jquery.fileupload-ui.css'); ?>
-
+    <link rel="stylesheet" href="{{ebuio_baseUrl}}media/css/fileupload/jquery-ui.css" id="theme">
+    <link rel="stylesheet" href="{{ebuio_baseUrl}}media/css/fileupload/jquery.fileupload-ui.css">
+   
    <h3>Add a media</h3>
 
    <div id="add_media_errors" class="alert alert-error hidden"></div>
-   <?= form_open_multipart('upload_files/upload_video', array('id' => 'fileupload', 'name' => 'fileupload', 'data-upload-template-id' => 'template-upload', 'data-download-template-id' => 'template_download')); ?>   
-      <?= form_hidden('form_id', md5(uniqid(rand(), true))); ?>
+   
+    <form name="fileupload" action="{{ebuio_baseUrl}}upload_files/upload_video" id="fileupload" data-upload-template-id="template-upload" data-download-templateid="template_download" enctype="multipart/form-data">   
+      {% csrf_token %}
+
       <label for="title">Title</label>
-      <?= form_input(array('name' => 'title', 'id' => 'title', 'class' => 'input-large')); ?>
+      <input name="title" id="title" class="input-large">
       <label for="filename">Filename</label>
-      <?= form_input(array('name' => 'filename', 'id' => 'filename', 'class' => 'input-large')); ?>
+      <input name="filename" id="filename" class="input-large">
       <div id="attachments_div">
          <?= $this->load->view('fileupload/upload', array('table_id' => 'files')); ?>
       </div>
@@ -66,7 +68,7 @@
    /*<!-- Post data with AJAX -->*/
    $('#add_media_submit').click(function() {
       $.post(
-         "<?= site_url('media/add_media') ?>",
+         "{{ebuio_baseUrl}}medias/add_media') ?>",
          $('#fileupload').serialize(),
          function(data) {
             if (data.errors) {
@@ -100,7 +102,7 @@
          if (confirm('Do you really want to delete the file "' + $(this).attr('title') + '"?')) {
             var row = $(this).closest('tr');
             $.get(
-               '<?= base_url() ?>media/delete_file/' + $(this).attr('file_id') + '/tmp',
+               '{{ebuio_baseUrl}}medias/delete_file/' + $(this).attr('file_id') + '/tmp',
                function (data) {
                   row.remove();
                   $('#fileupload').fileupload(
