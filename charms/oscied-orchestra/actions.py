@@ -121,10 +121,13 @@ def response2dict(response, remove_underscore):
 
 
 def object2dict(something, remove_underscore):
-    something_dict = something.__dict__
+    something_dict = something.__dict__ if hasattr(something, '__dict__') else something
     if remove_underscore:
         # FIXME this only works on _id
-        something_dict['id'] = something_dict.pop('_id')
+        try:
+            something_dict['id'] = something_dict.pop('_id')
+        except AttributeError:
+            pass
     return something_dict
 
 
