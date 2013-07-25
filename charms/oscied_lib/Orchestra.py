@@ -25,7 +25,7 @@
 #
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
-import logging, mongomock, os, pymongo
+import logging, mongomock, os, pymongo, uuid
 from celery import states
 #from celery import current_app
 #from celery.task.control import inspect
@@ -333,18 +333,22 @@ class Orchestra(object):
         self.save_media(media_out)  # Save pending output media
         # FIXME create a one-time password to avoid fixed secret authentication ...
         callback = Callback(self.config.api_url + callback_url, 'node', self.config.nodes_secret)
-        result = Transform.transform_task.apply_async(
-            args=(object2json(user,      False), object2json(media_in, False),
-                  object2json(media_out, False), object2json(profile,  False),
-                  object2json(callback,  False)),
-            queue=queue)
-        if not result.id:
-            raise ValueError('Unable to transmit task to workers of queue ' + queue + '.')
-        logging.info('New transform task ' + result.id + ' launched.')
-        task = TransformTask(result.id, user._id, media_in._id, media_out._id, profile._id)
+        if self.is_mock:
+            result_id = str(uuid.uuid4())
+        else:
+            result = Transform.transform_task.apply_async(
+                args=(object2json(user,      False), object2json(media_in, False),
+                      object2json(media_out, False), object2json(profile,  False),
+                      object2json(callback,  False)),
+                queue=queue)
+            result_id = result.id
+        if not result_id:
+            raise ValueError('Unable to transmit task to workers of queue %s.' % queue)
+        logging.info('New transformation task %s launched.' % result_id)
+        task = TransformTask(result_id, user._id, media_in._id, media_out._id, profile._id)
         task.add_statistic('add_date', datetime_now(), True)
         self._db.transform_tasks.save(task.__dict__)
-        return result.id
+        return result_id
 
     def get_transform_task(self, specs, fields=None, load_fields=False, append_result=True):
         entity = self._db.transform_tasks.find_one(specs, fields)
@@ -357,7 +361,10 @@ class Orchestra(object):
                              self.get_media({'_id': task.media_out_id}),
                              self.get_transform_profile({'_id': task.profile_id}))
         if append_result:
-            task.append_async_result()
+            if self.is_mock:
+                pass  # FIXME TODO
+            else:
+                task.append_async_result()
         return task
 
     def revoke_transform_task(self, task, terminate=False, remove=False, delete_media=False):
@@ -374,7 +381,10 @@ class Orchestra(object):
         if task.status in states.READY_STATES:
             raise ValueError('Cannot revoke a transformation task with status %s.' % task.status)
         task.revoked = True
-        revoke(task._id, terminate=terminate)
+        if self.is_mock:
+            pass  # FIXME TODO
+        else:
+            revoke(task._id, terminate=terminate)
         self._db.transform_tasks.save(task.__dict__)
         if delete_media and valid_uuid(task.media_out_id, none_allowed=False):
             self.delete_media(task.media_out_id)
@@ -391,7 +401,10 @@ class Orchestra(object):
                                  self.get_media({'_id': task.media_out_id}),
                                  self.get_transform_profile({'_id': task.profile_id}))
             if append_result:
-                task.append_async_result()
+                if self.is_mock:
+                    pass  # FIXME TODO
+                else:
+                    task.append_async_result()
             tasks.append(task)
         return tasks
         # FIXME this is celery's way to do that:
@@ -426,17 +439,21 @@ class Orchestra(object):
                                       'another task with id %s.' % other._id)
         # FIXME create a one-time password to avoid fixed secret authentication ...
         callback = Callback(self.config.api_url + callback_url, 'node', self.config.nodes_secret)
-        result = Publisher.publish_task.apply_async(
-            args=(object2json(user, False), object2json(media, False),
-                  object2json(callback, False)),
-            queue=queue)
-        if not result.id:
-            raise ValueError('Unable to transmit task to workers of queue ' + queue + '.')
-        logging.info('New publish task ' + result.id + ' launched.')
-        task = PublishTask(result.id, user._id, media._id, None)
+        if self.is_mock:
+            result_id = str(uuid.uuid4())
+        else:
+            result = Publisher.publish_task.apply_async(
+                args=(object2json(user, False), object2json(media, False),
+                      object2json(callback, False)),
+                queue=queue)
+            result_id = result.id
+        if not result_id:
+            raise ValueError('Unable to transmit task to workers of queue %s.' % queue)
+        logging.info('New publication task %s launched.' % result.id)
+        task = PublishTask(result_id, user._id, media._id, None)
         task.add_statistic('add_date', datetime_now(), True)
         self._db.publish_tasks.save(task.__dict__)
-        return result.id
+        return result_id
 
     def get_publish_task(self, specs, fields=None, load_fields=False, append_result=True):
         entity = self._db.publish_tasks.find_one(specs, fields)
@@ -447,7 +464,10 @@ class Orchestra(object):
             task.load_fields(self.get_user({'_id': task.user_id}, {'secret': 0}),
                              self.get_media({'_id': task.media_id}))
         if append_result:
-            task.append_async_result()
+            if self.is_mock:
+                pass  # FIXME TODO
+            else:
+                task.append_async_result()
         return task
 
     def update_publish_task(self, task):
@@ -467,7 +487,10 @@ class Orchestra(object):
         if task.status in states.READY_STATES:
             raise ValueError('Cannot revoke a publication task with status %s.' % task.status)
         task.revoked = True
-        revoke(task._id, terminate=terminate)
+        if self.is_mock:
+            pass  # FIXME TODO
+        else:
+            revoke(task._id, terminate=terminate)
         self._db.publish_tasks.save(task.__dict__)
         if remove:
             self._db.publish_tasks.remove({'_id': task._id})
@@ -480,7 +503,10 @@ class Orchestra(object):
                 task.load_fields(self.get_user({'_id': task.user_id}, {'secret': 0}),
                                  self.get_media({'_id': task.media_id}))
             if append_result:
-                task.append_async_result()
+                if self.is_mock:
+                    pass  # FIXME TODO
+                else:
+                    task.append_async_result()
             tasks.append(task)
         return tasks
         # FIXME this is celery's way to do that:
@@ -546,15 +572,31 @@ def get_test_orchestra(api_init_csv_directory):
     users = orchestra.get_users()
     i, reader = 0, unicode_csv_reader(os.path.join(api_init_csv_directory, 'medias.csv'))
     for uri, filename, title in reader:
-        media = Media(None, users[i]._id, None, uri, None, filename, {'title': title}, 'PENDING')
+        media = Media(None, users[i]._id, None, uri, None, filename, {'title': title}, 'READY')
         print('Adding media %s' % media.metadata['title'])
         orchestra.save_media(media)
         i = (i + 1) % len(users)
     reader = unicode_csv_reader(os.path.join(api_init_csv_directory, 'tprofiles.csv'))
     for title, description, encoder_name, encoder_string in reader:
         profile = TransformProfile(None, title, description, encoder_name, encoder_string)
-        print('Adding transform profile %s' % profile.title)
+        print('Adding transformation profile %s' % profile.title)
         orchestra.save_transform_profile(profile)
+    reader = unicode_csv_reader(os.path.join(api_init_csv_directory, 'ttasks.csv'))
+    for user_email, in_filename, profile_title, out_filename, out_title, queue in reader:
+        user = orchestra.get_user({'mail': user_email})
+        if not user:
+            raise IndexError('No user with e-mail address %s.' % user_email)
+        media_in = orchestra.get_media({'filename': in_filename})
+        if not media_in:
+            raise IndexError('No media with filename %s.' % in_filename)
+        profile = orchestra.get_transform_profile({'title': profile_title})
+        if not profile:
+            raise IndexError('No transformation profile with title %s.' % profile_title)
+        print('Launching transformation task %s with profile %s' %
+              (media_in.metadata['title'], profile.title))
+        metadata = {'title': out_title}
+        orchestra.launch_transform_task(user._id, media_in._id, profile._id, out_filename, metadata,
+                                        queue, '/transform/callback')
     return orchestra
 
 
@@ -564,4 +606,5 @@ if __name__ == '__main__':
     orchestra = get_test_orchestra('../../config/api')
     print('They are %s registered users.' % len(orchestra.get_users()))
     print('They are %s available medias.' % len(orchestra.get_medias()))
-    print('They are %s available transform profiles.' % len(orchestra.get_transform_profiles()))
+    print('They are %s available transformation profiles.' % len(orchestra.get_transform_profiles()))
+    print('They are %s launched transformation tasks.' % len(orchestra.get_transform_tasks()))
