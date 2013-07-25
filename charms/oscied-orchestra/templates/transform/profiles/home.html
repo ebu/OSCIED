@@ -54,7 +54,11 @@
                   <option value="dashcast">dashcast</option>
                   </select></td>
                {% endcomment %}
-               <td>{# FIXME <?= form_dropdown('encoder_name', $encoders, $this->input->post('encoder_name')) ?> #}</td>
+               <td><select name="encoder_name">
+                  {% for encoder in encoders %}
+                  <option value="{{encoder}}">{{encoder}}</option>
+                  {% endfor %}
+               </td>
                <td><input type="text" name="encoder_string" value="" class="encoder_string input-large"  /></td>
             </tr>
          </tbody>

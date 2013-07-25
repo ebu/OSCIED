@@ -1021,7 +1021,8 @@ def view_transform_profiles(request):
     u"""
     Show the transformation profiles home page.
     """
-    return {}
+    encoders = response2dict(api_transform_profile_encoder(request), remove_underscore=True)
+    return {'encoders': encoders}
 
 
 @action(route="/transform/profiles/list", template="transform/profiles/list.html", methods=['GET'])
@@ -1032,8 +1033,7 @@ def view_transform_profiles_list(request):
     Show the transformation profiles list page.
     """
     profiles = response2dict(api_transform_profile_get(request), remove_underscore=True)
-    encoders = response2dict(api_transform_profile_encoder(request), remove_underscore=True)
-    return {'profiles': profiles, 'encoders': encoders}
+    return {'profiles': profiles}
 
 
 @action(route="/transform/tasks", template="transform/tasks/home.html", methods=['GET'])
