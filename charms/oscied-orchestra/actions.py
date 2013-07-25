@@ -122,14 +122,34 @@ def response2dict(response, remove_underscore):
 
 
 def object2dict(something, remove_underscore):
-    something_dict = something.__dict__ if hasattr(something, '__dict__') else something
-    if remove_underscore:
-        # FIXME this only works on _id
-        try:
-            something_dict['id'] = something_dict.pop('_id')
-        except AttributeError:
-            pass
-    return something_dict
+    if isinstance(something, dict):
+        something_dict = {}
+        for key, value in something.iteritems():
+            if remove_underscore and key[0] == '_':
+                key = key[1:]
+            something_dict[key] = object2dict(value, remove_underscore)
+        return something_dict
+    elif hasattr(something, "__iter__"):
+        return [object2dict(value, remove_underscore) for value in something]
+    elif hasattr(something, "__dict__"):
+        something_dict = {}
+        for key, value in something.__dict__.iteritems():
+            if remove_underscore and key[0] == '_':
+                key = key[1:]
+            something_dict[key] = object2dict(value, remove_underscore)
+        return something_dict
+    return something
+
+
+# def object2dict(something, remove_underscore):
+#     something_dict = something.__dict__ if hasattr(something, '__dict__') else something
+#     if remove_underscore:
+#         # FIXME this only works on _id
+#         try:
+#             something_dict['id'] = something_dict.pop('_id')
+#         except AttributeError:
+#             pass
+#     return something_dict
 
 
 # Index --------------------------------------------------------------------------------------------
