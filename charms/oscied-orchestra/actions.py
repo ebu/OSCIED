@@ -67,6 +67,7 @@ def main(flask_app, mock):
         print('They are %s registered users.' % len(orchestra.get_users()))
         print('They are %s available medias.' % len(orchestra.get_medias()))
         print('They are %s available transform profiles.' % len(orchestra.get_transform_profiles()))
+        print('They are %s launched transformation tasks.' % len(orchestra.get_transform_tasks()))
         logging.info('Start REST API')
         #flask_app.config['PROPAGATE_EXCEPTIONS'] = True
         flask_app.run(host='0.0.0.0', debug=orchestra.config.verbose)
@@ -1011,7 +1012,7 @@ def view_medias_list(request):
     Show the media assets list page.
     """
     medias = response2dict(api_media_get(request), remove_underscore=True)
-    return {'medias': medias}
+    return {'medias': medias, 'refresh_rate': 5}
 
 
 @action(route="/transform/profiles", template="transform/profiles/home.html", methods=['GET'])
@@ -1033,7 +1034,7 @@ def view_transform_profiles_list(request):
     Show the transformation profiles list page.
     """
     profiles = response2dict(api_transform_profile_get(request), remove_underscore=True)
-    return {'profiles': profiles}
+    return {'profiles': profiles, 'refresh_rate': 5}
 
 
 @action(route="/transform/tasks", template="transform/tasks/home.html", methods=['GET'])
@@ -1043,7 +1044,10 @@ def view_transform_units(request):
     u"""
     Show the transformation tasks home page.
     """
-    return {}
+    medias = response2dict(api_media_head(request), remove_underscore=True)
+    profiles = response2dict(api_transform_profile_get(request), remove_underscore=True)
+    queues = response2dict(api_transform_queue(request), remove_underscore=True)
+    return {'medias': medias, 'profiles': profiles, 'queues': queues}
 
 
 @action(route="/transform/tasks/list", template="transform/tasks/list.html", methods=['GET'])
@@ -1054,4 +1058,4 @@ def view_transform_units_list(request):
     Show the transformation tasks list page.
     """
     tasks = response2dict(api_transform_task_get(request), remove_underscore=True)
-    return {'tasks': tasks}
+    return {'tasks': tasks, 'refresh_rate': 5}
