@@ -1,6 +1,6 @@
 {% if not medias %}
 
-   <p>There is currently no media available.</p>
+<p>There is currently no media available.</p>
 
 {% else %}
 
@@ -20,26 +20,28 @@
    <tbody>
       {% for media in medias %}
       <tr>
-         <td>{{media.metadata.title|default:"" }}</td>
+         <td>{{media.metadata.title}}</td>
          <td>
             {% if media.status|upper == 'READY' or media.status|upper == 'PUBLISHED' %}
-               <a href="{{ebuio_baseUrl}}medias/force_download/{{media.id}}">{{media.filename|default:"Untitled"}}</a>
+            <a href="{{ebuio_baseUrl}}medias/force_download/{{media.id}}">{{media.filename|default:"Untitled"}}</a>
             {% else %}
-               {{media.filename|default:"Untitled"}}
+            {{media.filename|default:"Untitled"}}
             {% endif %}
          </td>
          <td>{{media.metadata.size|filesizeformat}}</td>
-         <td>{{media.metadata.duration|default:""}}</td>
-         <td>{{media.metadata.add_date|default:""}}</td>
-         <td>{{media.metadata.user.name|default:""}}</td>
+         <td>{{media.metadata.duration}}</td>
+         <td>{{media.metadata.add_date}}</td>
+         <td>{{media.metadata.user.name}}</td>
          <td>
-            <span class="label {% if media.status|upper == 'PENDING' %}label-warning{% elif  media.status|upper == 'READY' %}label-warning{% elif media.status|upper == 'UNKNOWN' %}{% else %}label-inverse{% endif %}">{{media.status|upper}}</span>
+            <span class="label {% if media.status|upper == 'PENDING' %}label-warning{% elif media.status|upper == 'READY' %}label-success{% elif media.status|upper == 'UNKNOWN' %}{% else %}label-inverse{% endif %}">{{media.status|upper}}</span>
          </td>
          <td>
             {% if ebuio_u.username == media.user.username %}
-		{% if media.status|upper == 'READY' or media.status|upper == 'PUBLISHED' %}
-	               <a class="delete" title="{{media.metadata.title}}" href="{{ebuio_baseUrl}}medias/delete/{{media.id}}"><button class="btn btn-mini btn-danger">Delete</button></a>
-		{% endif %}
+            {% if media.status|upper == 'READY' or media.status|upper == 'PUBLISHED' %}
+            <a class="delete" title="{{media.metadata.title}}" href="{{ebuio_baseUrl}}medias/delete/{{media.id}}">
+               <button class="btn btn-mini btn-danger">Delete</button>
+            </a>
+            {% endif %}
             {% endif %}
          </td>
       </tr>
@@ -50,12 +52,5 @@
 {% endif %}
 
 <script type="text/javascript">
-$(document).ready(function() {
-   setTimeout(
-      function() {
-         loadMedias();
-      },
-      {# FIXME <?= $this->config->item('medias_refresh') * 1000 ?> #}
-   );
-});
+$(document).ready(function() { setTimeout(function() { loadMedias(); }, {{refresh_rate}} * 1000); });
 </script>
