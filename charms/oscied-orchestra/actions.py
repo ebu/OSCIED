@@ -1060,7 +1060,7 @@ def view_transform_profiles_list(request):
 @action(route="/transform/tasks", template="transform/tasks/home.html", methods=['GET'])
 @only_logged_user()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def view_transform_units(request):
+def view_transform_tasks(request):
     u"""
     Show the transformation tasks home page.
     """
@@ -1073,9 +1073,10 @@ def view_transform_units(request):
 @action(route="/transform/tasks/list", template="transform/tasks/list.html", methods=['GET'])
 @only_logged_user()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def view_transform_units_list(request):
+def view_transform_tasks_list(request):
     u"""
     Show the transformation tasks list page.
     """
     tasks = response2dict(api_transform_task_get(request), remove_underscore=True)
+    print(tasks)
     return {'tasks': tasks, 'refresh_rate': 5}
