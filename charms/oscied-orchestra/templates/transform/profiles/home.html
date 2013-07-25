@@ -30,8 +30,9 @@
    <h3>Add a transform profile</h3>
 
    <div id="add_profile_errors" class="alert alert-error hidden"></div>
-   <?= form_open('profile/add_profile', array('id' => 'form_add_profile')); ?>
-      <?= form_hidden('form_id', md5(uniqid(rand(), true))); ?>
+
+   <form name="form_add_profile" action="{{ebuio_baseUrl}}transform/profiles/add" method="post" accept-charset="utf-8" id="form_add_profile" enctype="multipart/form-data">
+      {% csrf_token %}
       <table class="table table-bordered table-condensed">
          <thead>
             <tr>
@@ -43,14 +44,22 @@
          </thead>
          <tbody>
             <tr>
-               <td><input name="title" class="title input-medium"></td>
-               <td><input name="description" class="description input-medium"></td>
-               <td><?= form_dropdown('encoder_name', $encoders, $this->input->post('encoder_name')) ?></td>
-               <td><input name="encoder_string" class="encoder_string input-large"></td>
+               <td><input type="text" name="title" value="" class="title input-medium"  /></td>
+               <td><input type="text" name="description" value="" class="description input-medium"  /></td>
+               {% comment %}
+                  FIXME this is the dropdown
+                  <td><select name="encoder_name">
+                  <option value="copy">copy</option>
+                  <option value="ffmpeg">ffmpeg</option>
+                  <option value="dashcast">dashcast</option>
+                  </select></td>
+               {% endcomment %}
+               <td>{# FIXME <?= form_dropdown('encoder_name', $encoders, $this->input->post('encoder_name')) ?> #}</td>
+               <td><input type="text" name="encoder_string" value="" class="encoder_string input-large"  /></td>
             </tr>
          </tbody>
       </table>
-      {# FIXME  form_submit('submit', 'Add profile', 'id="add_profile_submit" class="btn btn-primary"'); #}
+      <input type="submit" name="submit" value="Add profile" id="add_profile_submit" class="btn btn-primary" /></form>
    </form>
 
    <script type="text/javascript">
@@ -74,6 +83,5 @@
       return false;
    });
    </script>
-
 
 {% endblock %}

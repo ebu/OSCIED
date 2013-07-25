@@ -1,4 +1,4 @@
-{% if not value %}
+{% if not medias %}
 
    <p>There is currently no media available.</p>
 
@@ -18,7 +18,7 @@
       </tr>
    </thead>
    <tbody>
-      {% for media in value %}
+      {% for media in medias %}
       <tr>
          <td>{{media.metadata.title|default:"" }}</td>
          <td>

@@ -1,4 +1,4 @@
-{% if not value %}
+{% if not profiles %}
 
    <p>There is currently no profile available.</p>
 
@@ -15,14 +15,14 @@
       </tr>
    </thead>
    <tbody>
-      {% for profile in value %}
+      {% for profile in profiles %}
       <tr>
          <td>{{profile.title|default:""}}</td>
          <td>{{profile.description|default:""}}</td>
          <td>{{profile.encoder_name|default:""}}</td>
          <td>{{profile.encoder_string|default:""}}</td>
          <td>
-            <a class="delete" title="{{profile.title}}" href="{# FIXME <?= site_url('profile/delete/'.$profile->_id) ?> #}"><button class="btn btn-mini btn-danger">Delete</button></a>
+            <a class="delete" title="{{profile.title}}" href="{{ebuio_baseUrl}}transform/profiles/delete/{{profile.id}}"><button class="btn btn-mini btn-danger">Delete</button></a>
          </td>
       </tr>
       {% endfor %}

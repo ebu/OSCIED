@@ -114,10 +114,10 @@ def requires_auth(request, **kwargs):
 
 def response2dict(response, remove_underscore):
     value = []
-    for thing in response['value']:
-        value.append(object2dict(thing, remove_underscore))
-    response['value'] = value
-    return response
+    if response['status'] == 200:
+        for thing in response['value']:
+            value.append(object2dict(thing, remove_underscore))
+    return value
 
 
 def object2dict(something, remove_underscore):
@@ -1010,7 +1010,8 @@ def view_medias_list(request):
     u"""
     Show the media assets list page.
     """
-    return response2dict(api_media_get(request), remove_underscore=True)
+    medias = response2dict(api_media_get(request), remove_underscore=True)
+    return {'medias': medias}
 
 
 @action(route="/transform/profiles", template="transform/profiles/home.html", methods=['GET'])
@@ -1030,4 +1031,27 @@ def view_transform_profiles_list(request):
     u"""
     Show the transformation profiles list page.
     """
-    return response2dict(api_transform_profile_get(request), remove_underscore=True)
+    profiles = response2dict(api_transform_profile_get(request), remove_underscore=True)
+    encoders = response2dict(api_transform_profile_encoder(request), remove_underscore=True)
+    return {'profiles': profiles, 'encoders': encoders}
+
+
+@action(route="/transform/tasks", template="transform/tasks/home.html", methods=['GET'])
+@only_logged_user()
+@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+def view_transform_units(request):
+    u"""
+    Show the transformation tasks home page.
+    """
+    return {}
+
+
+@action(route="/transform/tasks/list", template="transform/tasks/list.html", methods=['GET'])
+@only_logged_user()
+@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+def view_transform_units_list(request):
+    u"""
+    Show the transformation tasks list page.
+    """
+    tasks = response2dict(api_transform_task_get(request), remove_underscore=True)
+    return {'tasks': tasks}
