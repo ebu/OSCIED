@@ -993,9 +993,9 @@ def api_publish_task_hook(request):
 @action(route="/medias", template="medias/home.html", methods=['GET'])
 @only_logged_user()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def medias(request):
+def view_medias(request):
     u"""
-    Show the medias home page.
+    Show the media assets home page.
     """
     return {}
 
@@ -1003,8 +1003,28 @@ def medias(request):
 @action(route="/medias/list", template="medias/list.html", methods=['GET'])
 @only_logged_user()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
-def medias_list(request):
+def view_medias_list(request):
     u"""
-    Show the medias list page.
+    Show the media assets list page.
     """
     return response2dict(api_media_get(request), remove_underscore=True)
+
+
+@action(route="/transform/profiles", template="transform/profiles/home.html", methods=['GET'])
+@only_logged_user()
+@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+def view_transform_profiles(request):
+    u"""
+    Show the transformation profiles home page.
+    """
+    return {}
+
+
+@action(route="/transform/profiles/list", template="transform/profiles/list.html", methods=['GET'])
+@only_logged_user()
+@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+def view_transform_profiles_list(request):
+    u"""
+    Show the transformation profiles list page.
+    """
+    return response2dict(api_transform_profile_get(request), remove_underscore=True)

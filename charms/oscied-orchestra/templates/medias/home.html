@@ -2,22 +2,17 @@
 
 {% block title %}OSCIED :: Media{% endblock %}
 
-{% block content %} 
+{% block content %}
    <h2 class="page-header">Available media assets</h2>
 
-   <div id="medias">
-   </div>
-
+   <div id="medias"></div>
 
    <script type="text/javascript">
 
    function loadMedias() {
       $.get(
          '{{ebuio_baseUrl}}medias/list',
-         function (data) {
-            $('#medias').html(data);
-         }
-
+         function (data) { $('#medias').html(data); }
       );
    }
 
@@ -26,43 +21,145 @@
    /*<!-- Set the action for file deletion -->*/
    $('body').on('click', '.delete', function () {
       if (confirm('Do you really want to delete the media "' + $(this).attr('title') + '"?')) {
-         $.get(
-            $(this).attr('href'),
-            function (data) {
-               window.location = data.redirect;
-            },
-            'json'
-         );
+         $.get($(this).attr('href'), function (data) { window.location = data.redirect; }, 'json');
       }
       return false;
    });
    </script>
 
-
-   <!-- Ajout de media -->
-
+   <!-- Add a media -->
     <link rel="stylesheet" href="{{ebuio_baseUrl}}media/css/fileupload/jquery-ui.css" id="theme">
     <link rel="stylesheet" href="{{ebuio_baseUrl}}media/css/fileupload/jquery.fileupload-ui.css">
-   
+
    <h3>Add a media</h3>
 
    <div id="add_media_errors" class="alert alert-error hidden"></div>
-   
-    <form name="fileupload" action="{{ebuio_baseUrl}}upload_files/upload_video" id="fileupload" data-upload-template-id="template-upload" data-download-templateid="template_download" enctype="multipart/form-data">   
-      {% csrf_token %}
 
+    <form name="fileupload" action="{{ebuio_baseUrl}}upload_files/upload_video" id="fileupload" data-upload-template-id="template-upload" data-download-templateid="template_download" enctype="multipart/form-data">
+      {% csrf_token %}
       <label for="title">Title</label>
       <input name="title" id="title" class="input-large">
       <label for="filename">Filename</label>
       <input name="filename" id="filename" class="input-large">
       <div id="attachments_div">
-         <?= $this->load->view('fileupload/upload', array('table_id' => 'files')); ?>
+
+         {# FIXME this view should sit into fileupload/upload.html #}
+         <div class="row fileupload-buttonbar">
+            <div class="span7">
+               <span class="btn btn-success fileinput-button">
+                  <i class="icon-plus icon-white"></i> Add
+                  <input type="file" name="userfile" multiple>
+               </span>
+               <!-- <button type="submit" class="btn btn-primary start">
+                  <i class="icon-upload icon-white"></i> Upload all
+               </button> -->
+               <button type="reset" class="btn btn-warning cancel">
+                  <i class="icon-ban-circle icon-white"></i> Cancel all
+               </button>
+            </div>
+            <div class="span5">
+               <div class="fileupload-progress progress progress-success progress-striped active fade">
+                  <div class="bar" style="width:0%;"></div>
+               </div>
+            </div>
+         </div>
+         <b>You can drap and drop your files here</b><br>
+         <div class="fileupload-loading"></div>
+         <br>
+         <table id="files" class="table table-striped">
+            <tbody class="files" data-toggle="modal-gallery" data-target="#modal-gallery"></tbody>
+         </table>
+         {# End of fileupload/upload.html #}
+
       </div>
       <br id="space" class="hide" />
-      <?= form_submit('submit', 'Add media', 'id="add_media_submit" class="btn btn-primary"'); ?>
-   <?= form_close("\n") ?>
+      {# FIXME form_submit('submit', 'Add media', 'id="add_media_submit" class="btn btn-primary"'); #}
+   </form>
 
-   <?= $this->load->view('fileupload/scripts', array('upload_id' => 'template-upload', 'download_id' => 'template_download')); ?>
+   {% comment %}
+   FIXME this view should sit into fileupload/scripts.html
+   <!-- The template to display files available for upload -->
+   <script id="template-upload" type="text/x-tmpl">
+   {# FIXME this make django crazy, the solution is : https://github.com/sigurdga/django-jquery-file-upload
+   {% for (var i=0, files=o.files, l=files.length, file=files[0]; i< l; file=files[++i]) { %}
+   <tr class="template-upload fade">
+      <td class="preview"><span class="fade"></span></td>
+      <td class="name">{%=file.title%}</td>
+      <td class="size">{%=o.formatFileSize(file.size)%}</td>
+      {% if (file.error) { %}
+      <td class="error" colspan="2"><span class="label label-important">{%=locale.fileupload.error%}</span> {%=locale.fileupload.errors[file.error] || file.error%}</td>
+      {% } else if (o.files.valid && !i) { %}
+      <td>
+         <div class="progress progress-success progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="bar" style="width:0%;"></div></div>
+      </td>
+      <td class="start">{% if (!o.options.autoUpload) { %}
+         <button class="btn btn-primary">
+            <i class="icon-upload icon-white"></i>
+            <span>{%=locale.fileupload.start%}</span>
+         </button>
+      {% } %}</td>
+      {% } else { %}
+      <td colspan="2"></td>
+      {% } %}
+      <td class="cancel">{% if (!i) { %}
+         <button class="btn btn-warning">
+            <i class="icon-ban-circle icon-white"></i> {%=locale.fileupload.cancel%}
+         </button>
+      {% } %}</td>
+   </tr>
+   {% } %}
+   #}
+   </script>
+
+   <!-- The template to display files uploaded -->
+   <script id="template_download" type="text/x-tmpl">
+   {% for (var i=0, files=o.files, l=files.length, file=files[0]; i< l; file=files[++i]) { %}
+   <tr class="template_download template-download fade">
+      {% if (file.error) { %}
+      <td></td>
+      <td class="name">{%=file.title%}</td>
+      <td class="size">{%=o.formatFileSize(file.size)%}</td>
+      <td class="error" colspan="2"><span class="label label-important">{%=locale.fileupload.error%}</span> {%=locale.fileupload.errors[file.error] || file.error%}</td>
+      <td>
+         <button class="btn btn-warning">
+            <i class="icon-ban-circle icon-white"></i> {%=locale.fileupload.cancel%}
+         </button>
+      </td>
+      {% } else { %}
+      <td class="preview">{% if (file.thumbnail_url) { %}<img src="{%=file.thumbnail_url%}">{% } %}</td>
+      <td class="name">{%=file.title%}</td>
+      <td class="size">{%=o.formatFileSize(file.size)%}</td>
+      <td colspan="2"></td>
+      <td>
+         <button class="btn btn-danger" file_id="{%=file.id%}" title="{%=file.title%}"{% if (file.tmp) { %} tmp_file="true"{% } %}>
+            <i class="icon-trash icon-white"></i> {%=locale.fileupload.delete%}
+         </button>
+      </td>
+      {% } %}
+   </tr>
+   {% } %}
+   </script>
+   {% endcomment %}
+
+   <!-- The jQuery UI widget factory, can be omitted if jQuery UI is already included -->
+   <script src="{{ebuio_baseUrl}}media/js/fileupload/vendor/jquery.ui.widget.js"></script>
+   <!-- The Templates plugin is included to render the upload/download listings -->
+   <script src="{{ebuio_baseUrl}}media/js/fileupload/tmpl.min.js"></script>
+   <!-- The Load Image plugin is included for the preview images and image resizing functionality -->
+   <script src="{{ebuio_baseUrl}}media/js/fileupload/load-image.js"></script>
+   <!-- The Canvas to Blob plugin is included for image resizing functionality -->
+   <script src="{{ebuio_baseUrl}}media/js/fileupload/canvas-to-blob.js"></script>
+   <!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
+   <script src="{{ebuio_baseUrl}}media/js/fileupload/jquery.iframe-transport.js"></script>
+   <!-- The basic File Upload plugin -->
+   <script src="{{ebuio_baseUrl}}media/js/fileupload/jquery.fileupload.js"></script>
+   <!-- The File Upload file processing plugin -->
+   <script src="{{ebuio_baseUrl}}media/js/fileupload/jquery.fileupload-fp.js"></script>
+   <!-- The File Upload user interface plugin -->
+   <script src="{{ebuio_baseUrl}}media/js/fileupload/jquery.fileupload-ui.js"></script>
+   <!-- Translations for messages -->
+   <script src="{{ebuio_baseUrl}}media/js/fileupload/locale.js"></script>
+   {# FIXME End of fileupload/scripts.html #}
 
    <script type="text/javascript">
    /*<!-- Post data with AJAX -->*/
@@ -84,7 +181,7 @@
       );
       return false;
    });
-   /*<!-- Enable/disable submit button during upload -->*/
+   /*<!-- Toggle submit button during upload -->*/
    $('#fileupload')
       .bind('fileuploadstart', function (e, data) {
          $('#add_media_submit').attr('disabled', true);
@@ -129,7 +226,4 @@
    });
    </script>
 
-
-   
 {% endblock %}
-

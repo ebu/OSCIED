@@ -1,0 +1,43 @@
+{% if not value %}
+
+   <p>There is currently no profile available.</p>
+
+{% else %}
+
+<table class="table table-bordered table-condensed table-striped">
+   <thead>
+      <tr>
+         <th>Title</th>
+         <th>Description</th>
+         <th>Encoder</th>
+         <th>Encoder string</th>
+         <th></th>
+      </tr>
+   </thead>
+   <tbody>
+      {% for profile in value %}
+      <tr>
+         <td>{{profile.title|default:""}}</td>
+         <td>{{profile.description|default:""}}</td>
+         <td>{{profile.encoder_name|default:""}}</td>
+         <td>{{profile.encoder_string|default:""}}</td>
+         <td>
+            <a class="delete" title="{{profile.title}}" href="{# FIXME <?= site_url('profile/delete/'.$profile->_id) ?> #}"><button class="btn btn-mini btn-danger">Delete</button></a>
+         </td>
+      </tr>
+      {% endfor %}
+   </tbody>
+</table>
+
+{% endif %}
+
+<script type="text/javascript">
+$(document).ready(function() {
+   setTimeout(
+      function() {
+         loadProfiles();
+      },
+      {# FIXME <?= $this->config->item('profiles_refresh') * 1000 ?> #}
+   );
+});
+</script>
