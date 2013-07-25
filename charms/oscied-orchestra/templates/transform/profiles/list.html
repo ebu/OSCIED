@@ -17,10 +17,10 @@
    <tbody>
       {% for profile in profiles %}
       <tr>
-         <td>{{profile.title|default:""}}</td>
-         <td>{{profile.description|default:""}}</td>
-         <td>{{profile.encoder_name|default:""}}</td>
-         <td>{{profile.encoder_string|default:""}}</td>
+         <td>{{profile.title}}</td>
+         <td>{{profile.description}}</td>
+         <td>{{profile.encoder_name}}</td>
+         <td>{{profile.encoder_string}}</td>
          <td>
             <a class="delete" title="{{profile.title}}" href="{{ebuio_baseUrl}}transform/profiles/delete/{{profile.id}}">
                <button class="btn btn-mini btn-danger">Delete</button>
