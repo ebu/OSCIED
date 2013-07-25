@@ -49,7 +49,7 @@ class OrchestraHooks(CharmHooks_Storage):
 
     @property
     def api_url(self):
-        return 'http://%s:5000' % self.private_address
+        return 'http://%s:5000/action' % self.private_address
 
     @property
     def mongo_admin_connection(self):
