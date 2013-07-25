@@ -3,81 +3,78 @@
 {% block title %}OSCIED :: Transformation profiles{% endblock %}
 
 {% block content %}
-   <h2 class="page-header">Available transform profiles</h2>
 
-   <div id="profiles"></div>
+<h2 class="page-header">Available transform profiles</h2>
 
-   <script type="text/javascript">
+<div id="profiles"></div>
 
-   function loadProfiles() {
-      $.get(
-         '{{ebuio_baseUrl}}transform/profiles/list',
-         function (data) { $('#profiles').html(data); }
-      );
+<script type="text/javascript">
+function loadProfiles() {
+   $.get('{{ebuio_baseUrl}}transform/profiles/list', function(data) { $('#profiles').html(data); });
+}
+
+loadProfiles();
+
+/*<!-- Set the action for file deletion -->*/
+$('body').on('click', '.delete', function() {
+   if (confirm('Do you really want to delete the profile "' + $(this).attr('title') + '"?')) {
+      $.get($(this).attr('href'), function(data) { window.location = data.redirect; }, 'json');
    }
+   return false;
+});
+</script>
 
-   loadProfiles();
+<h3>Add a transform profile</h3>
 
-   /*<!-- Set the action for file deletion -->*/
-   $('body').on('click', '.delete', function () {
-      if (confirm('Do you really want to delete the profile "' + $(this).attr('title') + '"?')) {
-         $.get($(this).attr('href'), function (data) { window.location = data.redirect; }, 'json');
-      }
-      return false;
-   });
-   </script>
+<div id="add_profile_errors" class="alert alert-error hidden"></div>
 
-   <h3>Add a transform profile</h3>
+<form name="form_add_profile" action="{{ebuio_baseUrl}}transform/profiles/add" method="post" accept-charset="utf-8" id="form_add_profile" enctype="multipart/form-data">
+   {% csrf_token %}
+   <table class="table table-bordered table-condensed">
+      <thead>
+         <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Encoder name</th>
+            <th>Encoder string</th>
+         </tr>
+      </thead>
+      <tbody>
+         <tr>
+            <td><input type="text" name="title" value="" class="title input-medium" /></td>
+            <td><input type="text" name="description" value="" class="description input-medium" /></td>
+            <td><select name="encoder_name">
+               {% for encoder in encoders %}
+               <option value="{{encoder}}">{{encoder}}</option>
+               {% endfor %}
+            </td>
+            <td><input type="text" name="encoder_string" value="" class="encoder_string input-large" /></td>
+         </tr>
+      </tbody>
+   </table>
+   <input type="submit" name="submit" value="Add profile" id="add_profile_submit" class="btn btn-primary" />
+</form>
 
-   <div id="add_profile_errors" class="alert alert-error hidden"></div>
-
-   <form name="form_add_profile" action="{{ebuio_baseUrl}}transform/profiles/add" method="post" accept-charset="utf-8" id="form_add_profile" enctype="multipart/form-data">
-      {% csrf_token %}
-      <table class="table table-bordered table-condensed">
-         <thead>
-            <tr>
-               <th>Title</th>
-               <th>Description</th>
-               <th>Encoder name</th>
-               <th>Encoder string</th>
-            </tr>
-         </thead>
-         <tbody>
-            <tr>
-               <td><input type="text" name="title" value="" class="title input-medium"  /></td>
-               <td><input type="text" name="description" value="" class="description input-medium"  /></td>
-               <td><select name="encoder_name">
-                  {% for encoder in encoders %}
-                  <option value="{{encoder}}">{{encoder}}</option>
-                  {% endfor %}
-               </td>
-               <td><input type="text" name="encoder_string" value="" class="encoder_string input-large"  /></td>
-            </tr>
-         </tbody>
-      </table>
-      <input type="submit" name="submit" value="Add profile" id="add_profile_submit" class="btn btn-primary" /></form>
-   </form>
-
-   <script type="text/javascript">
-   /*<!-- Post data with AJAX -->*/
-   $('#add_profile_submit').click(function() {
-      $.post(
-         "<?= site_url('profile/add_profile') ?>",
-        $('#form_add_profile').serialize(),
-         function(data) {
-            if (data.errors) {
-               $('#add_profile_errors').empty();
-               $('#add_profile_errors').removeClass('hidden');
-               $('#add_profile_errors').append(data.errors);
-            }
-            else {
-               window.location = data.redirect;
-            }
-         },
-         'json'
-      );
-      return false;
-   });
-   </script>
+<script type="text/javascript">
+/*<!-- Post data with AJAX -->*/
+$('#add_profile_submit').click(function() {
+   $.post(
+      "<?= site_url('profile/add_profile') ?>",
+     $('#form_add_profile').serialize(),
+      function(data) {
+         if (data.errors) {
+            $('#add_profile_errors').empty();
+            $('#add_profile_errors').removeClass('hidden');
+            $('#add_profile_errors').append(data.errors);
+         }
+         else {
+            window.location = data.redirect;
+         }
+      },
+      'json'
+   );
+   return false;
+});
+</script>
 
 {% endblock %}

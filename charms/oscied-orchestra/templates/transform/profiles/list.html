@@ -1,6 +1,6 @@
 {% if not profiles %}
 
-   <p>There is currently no profile available.</p>
+<p>There is currently no profile available.</p>
 
 {% else %}
 
@@ -22,7 +22,9 @@
          <td>{{profile.encoder_name|default:""}}</td>
          <td>{{profile.encoder_string|default:""}}</td>
          <td>
-            <a class="delete" title="{{profile.title}}" href="{{ebuio_baseUrl}}transform/profiles/delete/{{profile.id}}"><button class="btn btn-mini btn-danger">Delete</button></a>
+            <a class="delete" title="{{profile.title}}" href="{{ebuio_baseUrl}}transform/profiles/delete/{{profile.id}}">
+               <button class="btn btn-mini btn-danger">Delete</button>
+            </a>
          </td>
       </tr>
       {% endfor %}
@@ -32,12 +34,5 @@
 {% endif %}
 
 <script type="text/javascript">
-$(document).ready(function() {
-   setTimeout(
-      function() {
-         loadProfiles();
-      },
-      {# FIXME <?= $this->config->item('profiles_refresh') * 1000 ?> #}
-   );
-});
+$(document).ready(function() { setTimeout(function() { loadProfiles(); }, {{refresh_rate}} * 1000); });
 </script>
