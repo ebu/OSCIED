@@ -34,7 +34,8 @@ from pyutils.pyutils import json2object, object2json, valid_uuid
 
 class PublishTask(object):
 
-    def __init__(self, _id, user_id, media_id, publish_uri, statistic={}, revoked=False):
+    def __init__(self, _id, user_id, media_id, publish_uri, statistic={}, revoked=False,
+                 status='UNKNOWN'):
         if not _id:
             _id = str(uuid.uuid4())
         self._id = _id
@@ -43,6 +44,7 @@ class PublishTask(object):
         self.publish_uri = publish_uri
         self.statistic = statistic
         self.revoked = revoked
+        self.status = status
 
 
     def is_valid(self, raise_exception):
@@ -63,6 +65,7 @@ class PublishTask(object):
         # FIXME check publish_uri
         # FIXME check statistic
         # FIXME check revoked
+        # FIXME check status
         return True
 
     def add_statistic(self, key, value, overwrite):
@@ -75,13 +78,16 @@ class PublishTask(object):
     def append_async_result(self):
         async_result = AsyncResult(self._id)
         if async_result:
-            self.status = async_result.status
             try:
-                self.statistic.update(async_result.result)
-            except:
-                self.statistic['error'] = str(async_result.result)
+                self.status = async_result.status
+                try:
+                    self.statistic.update(async_result.result)
+                except:
+                    self.statistic['error'] = str(async_result.result)
+            except NotImplementedError:
+                self.status = 'UNKNOWN'
         else:
-            self.status = 'UNDEF'
+            self.status = 'UNKNOWN'
 
     def load_fields(self, user, media):
         self.user = user
