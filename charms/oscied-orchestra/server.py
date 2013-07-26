@@ -162,8 +162,13 @@ class ActionView(View):
         if not check_ip(request):
             return
 
+        from werkzeug.exceptions import HTTPException
+
         # Call the action
-        result = self.action(request, *args, **kwargs)
+        try:
+            result = self.action(request, *args, **kwargs)
+        except HTTPException as e:
+            return jsonify({'ebuio_abort': e.description})
 
         # Is it a redirect ?
         if result.__class__ == PlugItRedirect:
