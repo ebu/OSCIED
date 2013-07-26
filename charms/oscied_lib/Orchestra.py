@@ -207,6 +207,7 @@ class Orchestra(object):
 
     def save_transform_profile(self, profile):
         profile.is_valid(True)
+        # FIXME exact matching !
         if self.get_transform_profile(
                 {'title': profile.title, '_id': {'$ne': profile._id}}, {'_id': 1}):
             raise ValueError('Duplicate transformation profile title %s.' % profile.title)
