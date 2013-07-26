@@ -4,6 +4,8 @@
 
 {% block content %}
 
+<div id="ptitMessage"></div>
+
 <h2 class="page-header">Available transform profiles</h2>
 
 <div id="profiles"></div>
@@ -18,7 +20,7 @@ loadProfiles();
 /*<!-- Set the action for file deletion -->*/
 $('body').on('click', '.delete', function() {
    if (confirm('Do you really want to delete the profile "' + $(this).attr('title') + '"?')) {
-      $.get($(this).attr('href'), function(data) { window.location = data.redirect; }, 'json');
+      $.get($(this).attr('href'), function(data) { loadProfiles(); $('#ptitMessage').html(data.msg); }, 'json');
    }
    return false;
 });
@@ -59,7 +61,7 @@ $('body').on('click', '.delete', function() {
 /*<!-- Post data with AJAX -->*/
 $('#add_profile_submit').click(function() {
    $.post(
-      "<?= site_url('profile/add_profile') ?>",
+      $('#form_add_profile').attr('action'),
      $('#form_add_profile').serialize(),
       function(data) {
          if (data.errors) {
@@ -68,7 +70,12 @@ $('#add_profile_submit').click(function() {
             $('#add_profile_errors').append(data.errors);
          }
          else {
-            window.location = data.redirect;
+            if (data.profile) {
+               loadProfiles();
+               $('#ptitMessage').html("Profile '" + data.profile[0].title + "' was created succesfully.");
+            } else {
+               alert(data.ebuio_abort);
+            }
          }
       },
       'json'
