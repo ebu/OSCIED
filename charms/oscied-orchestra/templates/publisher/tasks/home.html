@@ -1,0 +1,88 @@
+{% extends "plugIt/base.html" %}
+
+{% block title %}OSCIED :: Publication tasks{% endblock %}
+
+{% block content %}
+
+<div id="ptitMessage"></div>
+
+<h2 class="page-header">Publication tasks</h2>
+
+<div id="tasks"></div>
+
+<script type="text/javascript">
+
+function loadTasks() {
+   $.get('{{ebuio_baseUrl}}publisher/tasks/list', function(data) { $('#tasks').html(data); });
+}
+
+loadTasks();
+
+/*<!-- Set the action for file deletion -->*/
+$('body').on('click', '.revoke', function() {
+   if (confirm('Do you really want to revoke the task "' + $(this).attr('title') + '"?')) {
+      $.get($(this).attr('href'), function(data) { window.location = data.redirect; }, 'json' );
+   }
+   return false;
+});
+</script>
+
+<h3>Launch a publication task</h3>
+
+<div id="launch_task_errors" class="alert alert-error hidden"></div>
+
+<form name="form_launch_task" action="{{ebuio_baseUrl}}publisher/tasks/launch" method="post" accept-charset="utf-8" id="form_launch_task" enctype="multipart/form-data">
+   {% csrf_token %}
+   <table class="table table-bordered table-condensed">
+      <thead>
+         <tr>
+            <th>Media</th>
+            <th>Queue</th>
+         </tr>
+      </thead>
+      <tbody>
+         <tr>
+            <td><select name="media_id">
+               {% for media in medias %}
+               <option value="{{media.id}}">{{media.metadata.title}} - {{media.filename}}</option>
+               {% endfor %}
+            </td>
+            <td><select name="queue">
+               {% for queue in queues %}
+               <option value="{{queue}}">{{queue}}</option>
+               {% endfor %}
+            </td>
+         </tr>
+      </tbody>
+   </table>
+   <input type="submit" name="submit" value="Launch task" id="launch_task_submit" class="btn btn-primary" />
+</form>
+
+<script type="text/javascript">
+/*<!-- Post data with AJAX -->*/
+$('#launch_task_submit').click(function() {
+   $.post(
+      $('#form_launch_task').attr('action'),
+      $('#form_launch_task').serialize(),
+      function(data) {
+         if (data.errors) {
+            $('#launch_task_errors').empty();
+            $('#launch_task_errors').removeClass('hidden');
+            $('#launch_task_errors').append(data.errors);
+         }
+         else {
+            if (data.task_id) {
+               loadTasks();
+               $('#ptitMessage').html("Publication task '" + data.profile[0].title + "' was launched successfully.");
+            } else {
+               alert(data.ebuio_abort);
+            }
+         }
+      },
+      'json'
+   );
+   return false;
+});
+</script>
+
+{% endblock %}
