@@ -89,16 +89,17 @@ def requires_auth(request, **kwargs):
 
         Removed description from branch called issue75_ebuio.
     """
-    if request.args.get('ebuio_u_username'):
-        logging.info('User is %s' % request.args['ebuio_u_username'])
-        user = orchestra.get_user(specs={'mail': request.args['ebuio_u_email']})
+    args = request.form if request.form.get('ebuio_u_username') else request.args
+    if args.get('ebuio_u_username'):
+        logging.info('User is %s' % args['ebuio_u_username'])
+        user = orchestra.get_user(specs={'mail': args['ebuio_u_email']})
         if user is None:
             user = User(None,
-                        first_name=request.args.get('ebuio_u_first_name') or 'First name',
-                        last_name=request.args.get('ebuio_u_last_name') or 'Last name',
-                        mail=request.args['ebuio_u_email'],
+                        first_name=args.get('ebuio_u_first_name') or 'First name',
+                        last_name=args.get('ebuio_u_last_name') or 'Last name',
+                        mail=args['ebuio_u_email'],
                         secret=str(uuid.uuid4()),
-                        admin_platform=request.args.get('ebuio_u_ebuio_admin') == 'True')
+                        admin_platform=args.get('ebuio_u_ebuio_admin') == 'True')
             logging.info('Create new EBU-io user %s' % user.name)
             if not user.is_valid(False):
                 msg = 'Missing on or more informations about EBU-io user.'
@@ -720,6 +721,8 @@ def api_transform_task_post(request):
     try:
         auth_user = requires_auth(request=request, allow_any=True)
         data = get_request_json(request)
+        if data['title']:  # Handle title-only metadata
+            data['metadata'] = {'title': data['title']}
         task_id = orchestra.launch_transform_task(
             auth_user._id, data['media_in_id'], data['profile_id'], data['filename'],
             data['metadata'], data['queue'], '/transform/callback')
@@ -1106,3 +1109,15 @@ def view_transform_tasks_list(request):
     """
     tasks = response2dict(api_transform_task_get(request), remove_underscore=True)
     return {'tasks': tasks, 'refresh_rate': 5}
+
+
+@action(route="/transform/tasks/launch", methods=['POST'])
+@only_logged_user()
+@json_only()
+@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+def view_transform_tasks_launch(request):
+    u"""
+    Launch a transformation task.
+    """
+    task_id = response2dict(api_transform_task_post(request), remove_underscore=True)
+    return {'task_id': task_id}
