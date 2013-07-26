@@ -59,6 +59,10 @@ class TransformProfile(object):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : _id is not a valid uuid string')
             return False
+        if not self.title or not self.title.strip():
+            if raise_exception:
+                raise TypeError(self.__class__.__name__ + ' : title is required')
+            return False
         if not self.encoder_name in ENCODERS_NAMES:
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : encoder_name is not a valid encoder')
