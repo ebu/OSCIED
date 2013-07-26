@@ -41,8 +41,6 @@ app = Flask(__name__, static_folder='media')
 
 def check_ip(request):
 
-    return True
-
     def addressInNetwork(ip, net):
         "Is an address in a network"
         #http://stackoverflow.com/questions/819355/how-can-i-check-if-an-ip-is-in-a-network-in-python
