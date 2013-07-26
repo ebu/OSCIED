@@ -37,7 +37,7 @@
             <span class="label {% if status == 'PENDING' or status == 'RETRY' %}label-warning{% elif status == 'PROGRESS' %}label-info{% elif status == 'SUCCESS'%}label-success{% elif status == 'FAILURE' %}label-important{% elif status == 'REVOKED' or status != 'UNKOWN' %}label-inverse{% endif %}" title="{{task.statistic.error_details}}">{{status}}</span>
          </td>
          <td>
-            {% if ebuio_u.username == task.user.username %}
+            {% if ebuio_u.email == task.user.mail %}
             {% if status != 'SUCCESS' and status != 'FAILURE' and status != 'REVOKED' %}
             <a class="revoke" title="{{task.id}}" href="{{ebuio_baseUrl}}transform/tasks/revoke/{{task.id}}">
                <button class="btn btn-mini btn-danger">Revoke</button>
