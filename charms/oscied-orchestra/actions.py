@@ -116,8 +116,11 @@ def requires_auth(request, **kwargs):
 def response2dict(response, remove_underscore):
     value = []
     if response['status'] == 200:
-        for thing in response['value']:
-            value.append(object2dict(thing, remove_underscore))
+        try:
+            for thing in response['value']:
+                value.append(object2dict(thing, remove_underscore))
+        except TypeError:
+            value.append(object2dict(response['value'], remove_underscore))
     return value
 
 
@@ -1055,6 +1058,31 @@ def view_transform_profiles_list(request):
     """
     profiles = response2dict(api_transform_profile_get(request), remove_underscore=True)
     return {'profiles': profiles, 'refresh_rate': 5}
+
+
+@action(route="/transform/profiles/add", methods=['POST'])
+@only_logged_user()
+@json_only()
+@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+def view_transform_profiles_add(request):
+    u"""
+    Add a transformation profile.
+    """
+    profile = response2dict(api_transform_profile_post(request), remove_underscore=True)
+    print profile
+    return {'profile': profile}
+
+
+@action(route="/transform/profiles/delete/<id>", methods=['GET'])
+@only_logged_user()
+@json_only()
+@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+def view_transform_profiles_delete(request, id):
+    u"""
+    Delete a transformation profile.
+    """
+    msg = response2dict(api_transform_profile_id_delete(request, id), remove_underscore=True)
+    return {'msg': msg}
 
 
 @action(route="/transform/tasks", template="transform/tasks/home.html", methods=['GET'])
