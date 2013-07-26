@@ -13,7 +13,7 @@ from oscied_lib.pyutils.flaski import json_response
 
 # Global parameters
 DEBUG = True
-MOCK = True
+MOCK = False
 
 # PlugIt Parameters
 
