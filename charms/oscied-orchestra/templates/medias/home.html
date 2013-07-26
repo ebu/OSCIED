@@ -73,11 +73,9 @@ $('body').on('click', '.delete', function() {
    <input type="submit" name="submit" value="Add media" id="add_media_submit" class="btn btn-primary" />
 </form>
 
-{% comment %}
-FIXME this view should sit into fileupload/scripts.html
+{% verbatim %}
 <!-- The template to display files available for upload -->
 <script id="template-upload" type="text/x-tmpl">
-{# FIXME this make django crazy, the solution is : https://github.com/sigurdga/django-jquery-file-upload
 {% for (var i=0, files=o.files, l=files.length, file=files[0]; i< l; file=files[++i]) { %}
 <tr class="template-upload fade">
    <td class="preview"><span class="fade"></span></td>
@@ -105,7 +103,6 @@ FIXME this view should sit into fileupload/scripts.html
    {% } %}</td>
 </tr>
 {% } %}
-#}
 </script>
 
 <!-- The template to display files uploaded -->
@@ -136,7 +133,7 @@ FIXME this view should sit into fileupload/scripts.html
 </tr>
 {% } %}
 </script>
-{% endcomment %}
+{% endverbatim %}
 
 <!-- The jQuery UI widget factory, can be omitted if jQuery UI is already included -->
 <script src="{{ebuio_baseUrl}}media/js/fileupload/vendor/jquery.ui.widget.js"></script>
