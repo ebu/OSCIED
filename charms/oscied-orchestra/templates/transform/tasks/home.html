@@ -4,6 +4,8 @@
 
 {% block content %}
 
+<div id="ptitMessage"></div>
+
 <h2 class="page-header">Transform tasks</h2>
 
 <div id="tasks"></div>
@@ -70,7 +72,7 @@ $('body').on('click', '.revoke', function() {
 /*<!-- Post data with AJAX -->*/
 $('#launch_task_submit').click(function() {
    $.post(
-      "<?= site_url('transform/launch_transform') ?>",
+      $('#form_launch_task').attr('action'),
       $('#form_launch_task').serialize(),
       function(data) {
          if (data.errors) {
@@ -79,7 +81,12 @@ $('#launch_task_submit').click(function() {
             $('#launch_task_errors').append(data.errors);
          }
          else {
-            window.location = data.redirect;
+            if (data.task_id) {
+               loadTasks();
+               $('#ptitMessage').html("Transformation task '" + data.profile[0].title + "' was launched successfully.");
+            } else {
+               alert(data.ebuio_abort);
+            }
          }
       },
       'json'

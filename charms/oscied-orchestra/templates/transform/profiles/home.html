@@ -62,7 +62,7 @@ $('body').on('click', '.delete', function() {
 $('#add_profile_submit').click(function() {
    $.post(
       $('#form_add_profile').attr('action'),
-     $('#form_add_profile').serialize(),
+      $('#form_add_profile').serialize(),
       function(data) {
          if (data.errors) {
             $('#add_profile_errors').empty();
@@ -72,7 +72,7 @@ $('#add_profile_submit').click(function() {
          else {
             if (data.profile) {
                loadProfiles();
-               $('#ptitMessage').html("Profile '" + data.profile[0].title + "' was created succesfully.");
+               $('#ptitMessage').html("Profile '" + data.profile[0].title + "' was created successfully.");
             } else {
                alert(data.ebuio_abort);
             }
