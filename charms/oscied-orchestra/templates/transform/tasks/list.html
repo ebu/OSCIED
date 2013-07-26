@@ -23,7 +23,7 @@
       {% with status=task.status|default:'UNKNOWN'|upper %}
       <tr>
          <td>{{task.media_in.filename}}<br/>{{task.media_out.filename}}</td>
-         <td>{{task.profile.title}}<br/>{{task.user.name}}</td>
+         <td>{{task.profile.title}}<br/>{{task.user.first_name}} {{task.user.last_name}}</td>
          <td>{{task.statistic.add_date}}<br/>{{task.statistic.start_date}}</td>
          <td>{{task.statistic.hostname}}</td>
          <td>{{task.statistic.elapsed_time|time:"H:i:s"}}<br/>{{task.statistic.eta_time|time:"H:i:s"}}</td>
