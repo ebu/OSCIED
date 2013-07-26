@@ -1069,7 +1069,6 @@ def view_transform_profiles_add(request):
     Add a transformation profile.
     """
     profile = response2dict(api_transform_profile_post(request), remove_underscore=True)
-    print profile
     return {'profile': profile}
 
 
@@ -1106,5 +1105,4 @@ def view_transform_tasks_list(request):
     Show the transformation tasks list page.
     """
     tasks = response2dict(api_transform_task_get(request), remove_underscore=True)
-    print(tasks)
     return {'tasks': tasks, 'refresh_rate': 5}
