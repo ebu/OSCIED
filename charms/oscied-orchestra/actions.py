@@ -1121,3 +1121,38 @@ def view_transform_tasks_launch(request):
     """
     task_id = response2dict(api_transform_task_post(request), remove_underscore=True)
     return {'task_id': task_id}
+
+
+@action(route="/publisher/tasks", template="publisher/tasks/home.html", methods=['GET'])
+@only_logged_user()
+@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+def view_publisher_tasks(request):
+    u"""
+    Show the publication tasks home page.
+    """
+    medias = response2dict(api_media_head(request), remove_underscore=True)
+    queues = response2dict(api_publish_queue(request), remove_underscore=True)
+    return {'medias': medias, 'queues': queues}
+
+
+@action(route="/publisher/tasks/list", template="publisher/tasks/list.html", methods=['GET'])
+@only_logged_user()
+@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+def view_publisher_tasks_list(request):
+    u"""
+    Show the publication tasks list page.
+    """
+    tasks = response2dict(api_publish_task_get(request), remove_underscore=True)
+    return {'tasks': tasks, 'refresh_rate': 5}
+
+
+@action(route="/publisher/tasks/launch", methods=['POST'])
+@only_logged_user()
+@json_only()
+@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+def view_publisher_tasks_launch(request):
+    u"""
+    Launch a publication task.
+    """
+    task_id = response2dict(api_publish_task_post(request), remove_underscore=True)
+    return {'task_id': task_id}
