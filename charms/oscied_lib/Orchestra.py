@@ -362,10 +362,7 @@ class Orchestra(object):
                              self.get_media({'_id': task.media_out_id}),
                              self.get_transform_profile({'_id': task.profile_id}))
         if append_result:
-            if self.is_mock:
-                pass  # FIXME TODO
-            else:
-                task.append_async_result()
+            task.append_async_result()
         return task
 
     def revoke_transform_task(self, task, terminate=False, remove=False, delete_media=False):
@@ -402,10 +399,7 @@ class Orchestra(object):
                                  self.get_media({'_id': task.media_out_id}),
                                  self.get_transform_profile({'_id': task.profile_id}))
             if append_result:
-                if self.is_mock:
-                    pass  # FIXME TODO
-                else:
-                    task.append_async_result()
+                task.append_async_result()
             tasks.append(task)
         return tasks
         # FIXME this is celery's way to do that:
@@ -450,7 +444,7 @@ class Orchestra(object):
             result_id = result.id
         if not result_id:
             raise ValueError('Unable to transmit task to workers of queue %s.' % queue)
-        logging.info('New publication task %s launched.' % result.id)
+        logging.info('New publication task %s launched.' % result_id)
         task = PublishTask(result_id, user._id, media._id, None)
         task.add_statistic('add_date', datetime_now(), True)
         self._db.publish_tasks.save(task.__dict__)
@@ -465,10 +459,7 @@ class Orchestra(object):
             task.load_fields(self.get_user({'_id': task.user_id}, {'secret': 0}),
                              self.get_media({'_id': task.media_id}))
         if append_result:
-            if self.is_mock:
-                pass  # FIXME TODO
-            else:
-                task.append_async_result()
+            task.append_async_result()
         return task
 
     def update_publish_task(self, task):
@@ -504,10 +495,7 @@ class Orchestra(object):
                 task.load_fields(self.get_user({'_id': task.user_id}, {'secret': 0}),
                                  self.get_media({'_id': task.media_id}))
             if append_result:
-                if self.is_mock:
-                    pass  # FIXME TODO
-                else:
-                    task.append_async_result()
+                task.append_async_result()
             tasks.append(task)
         return tasks
         # FIXME this is celery's way to do that:
