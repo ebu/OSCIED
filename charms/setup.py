@@ -40,21 +40,16 @@ setup(name='oscied-lib',
       url='https://github.com/ebu/OSCIED',
       license='GNU GPLv3',  # FIXME update license
       install_requires=[
-            'argparse',     # pyutils dependency, FIXME check if required + version
             'configobj',    # FIXME version
             'celery',       # FIXME version
-            'flask',        # pyutils dependency, FIXME check if required + version
-            'hashlib',      # pyutils dependency, FIXME check if required + version
-            'ipaddr',       # pyutils dependency, FIXME check if required + version
-            'ming',         # pyutils dependency, FIXME check if required + version
-            'mock',         # pyutils dependency, FIXME check if required + version
-            'mongoengine',  # FIXME check if required + version
+            'flask',        # FIXME version
             'mongomock',    # FIXME version
             'passlib',      # FIXME version
-            'pyaml',        # pyutils dependency, FIXME check if required + version
-            'pymongo',      # FIXME check if required + version
-            'requests',     # FIXME check if required + version
-            'six'],         # pyutils dependency, FIXME check if required + version
+            'pyaml',        # FIXME version
+            'pymongo',      # FIXME version
+            #'pyutils',     # installed by setup.sh
+            'requests',     # FIXME version
+            'six'],         # FIXME version
       #dependency_links=['https://github.com/davidfischer-ch/pyutils/tarball/master#egg=pyutils-2.0.1-beta'],
       setup_requires=['coverage', 'mock', 'nose'],
       tests_require=['coverage', 'mock', 'nose'],
