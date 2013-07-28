@@ -31,8 +31,8 @@ from CharmHooks_Storage import CharmHooks_Storage
 from CharmHooks_Subordinate import CharmHooks_Subordinate
 from CharmHooks_Website import CharmHooks_Website
 from PublisherConfig import PublisherConfig
-from pyutils.filesystem import first_that_exist
-from pyutils.pyutils import screen_launch, screen_list, screen_kill
+from pyutils.py_filesystem import first_that_exist
+from pyutils.py_subprocess import screen_launch, screen_list, screen_kill
 
 
 class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Website):

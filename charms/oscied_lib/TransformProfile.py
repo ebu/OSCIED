@@ -26,7 +26,8 @@
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
 import uuid
-from pyutils.pyutils import json2object, object2json, valid_uuid
+from pyutils.py_serialization import json2object, object2json
+from pyutils.py_validation import valid_uuid
 
 ENCODERS_NAMES = ('copy', 'ffmpeg', 'dashcast')
 

@@ -30,8 +30,8 @@ from configobj import ConfigObj
 from CharmHooks import DEFAULT_OS_ENV
 from CharmHooks_Storage import CharmHooks_Storage
 from OrchestraConfig import OrchestraConfig
-from pyutils.filesystem import first_that_exist, try_makedirs
-from pyutils.pyutils import rsync, screen_launch, screen_list, screen_kill
+from pyutils.py_filesystem import first_that_exist, try_makedirs
+from pyutils.py_subprocess import rsync, screen_launch, screen_list, screen_kill
 
 
 class OrchestraHooks(CharmHooks_Storage):

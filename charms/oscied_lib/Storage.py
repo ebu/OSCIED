@@ -26,8 +26,8 @@
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
 import os, shutil, time
-from pyutils.ffmpeg import get_media_duration
-from pyutils.filesystem import get_size, try_makedirs
+from pyutils.py_ffmpeg import get_media_duration
+from pyutils.py_filesystem import get_size, try_makedirs
 
 
 class Storage(object):
@@ -61,7 +61,7 @@ class Storage(object):
                     raise ValueError('Unable to detect size of media %s.' % media_dst_path)
                 duration = get_media_duration(media_dst_path)
                 if duration is None:
-                    raise ValueError('Unable to detect duration of media %s.' % media_dst_path)                        
+                    raise ValueError('Unable to detect duration of media %s.' % media_dst_path)
                 return (size, duration)
             else:
                 raise NotImplementedError('FIXME Add of external URI not implemented.')

@@ -32,8 +32,8 @@ from CharmHooks_Storage import CharmHooks_Storage
 from CharmHooks_Website import CharmHooks_Website
 from CharmConfig_Storage import MEDIAS_PATH, UPLOADS_PATH
 from WebuiConfig import WebuiConfig
-from pyutils.filesystem import chown, first_that_exist, try_makedirs, try_symlink
-from pyutils.pyutils import rsync
+from pyutils.py_filesystem import chown, first_that_exist, try_makedirs, try_symlink
+from pyutils.py_subprocess import rsync
 
 
 class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):

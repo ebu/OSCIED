@@ -26,7 +26,7 @@
 # Retrieved from https://github.com/EBU-TI/OSCIED
 
 import logging
-from pyutils.pyutils import PickleableObject
+from pyutils.py_serialization import PickleableObject
 
 
 class CharmConfig(PickleableObject):

@@ -5,7 +5,7 @@
 #              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARIE
 #
 #  Authors   : David Fischer
-#  Contact   : david.fischer.ch@gmail.com / david.fischer@hesge.ch
+#  Contact   : david.fischer.ch@gmail.com
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
 #  Copyright : 2012-2013 OSCIED Team. All rights reserved.
 #**************************************************************************************************#
@@ -23,19 +23,39 @@
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
 #
-# Retrieved from https://github.com/EBU-TI/OSCIED
+# Retrieved from https://github.com/ebu/OSCIED
 
 from setuptools import setup
 
+# FIXME 2to3 + classifiers ?
+kwargs = {}
+
 setup(name='oscied-lib',
-      version='1.0',
+      version='2.13.12',
+      packages=['oscied_lib'],
+      description='Library of EBU/UER OSCIED Project',
+      long_description=open('../README.rst').read(),
       author='David Fischer',
       author_email='david.fischer.ch@gmail.com',
-      install_requires=['argparse', 'configobj', 'celery', 'flask', 'hashlib', 'ipaddr', 'mock',
-                        'mongoengine', 'mongomock', 'passlib', 'pymongo', 'requests', 'six'],
-      dependency_links=['https://github.com/davidfischer-ch/pyutils/tarball/master#egg=pyutils-1.0'],
-      tests_require=['mock', 'nose'],
-      license='GPLv3',
-      url='https://github.com/EBU-TI/OSCIED',
-      packages=['oscied_lib'],
-      test_suite="tests")
+      url='https://github.com/ebu/OSCIED',
+      license='GNU GPLv3',  # FIXME update license
+      install_requires=[
+            'argparse',     # pyutils dependency, FIXME check if required + version
+            'configobj',    # FIXME version
+            'celery',       # FIXME version
+            'flask',        # pyutils dependency, FIXME check if required + version
+            'hashlib',      # pyutils dependency, FIXME check if required + version
+            'ipaddr',       # pyutils dependency, FIXME check if required + version
+            'ming',         # pyutils dependency, FIXME check if required + version
+            'mock',         # pyutils dependency, FIXME check if required + version
+            'mongoengine',  # FIXME check if required + version
+            'mongomock',    # FIXME version
+            'passlib',      # FIXME version
+            'pyaml',        # pyutils dependency, FIXME check if required + version
+            'pymongo',      # FIXME check if required + version
+            'requests',     # FIXME check if required + version
+            'six'],         # pyutils dependency, FIXME check if required + version
+      #dependency_links=['https://github.com/davidfischer-ch/pyutils/tarball/master#egg=pyutils-2.0.1-beta'],
+      setup_requires=['coverage', 'mock', 'nose'],
+      tests_require=['coverage', 'mock', 'nose'],
+      test_suite='nose.main', **kwargs)

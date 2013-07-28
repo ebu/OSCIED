@@ -30,8 +30,8 @@ from CharmHooks import DEFAULT_OS_ENV
 from CharmHooks_Storage import CharmHooks_Storage
 from CharmHooks_Subordinate import CharmHooks_Subordinate
 from TransformConfig import TransformConfig
-from pyutils.filesystem import first_that_exist
-from pyutils.pyutils import screen_launch, screen_list, screen_kill
+from pyutils.py_filesystem import first_that_exist
+from pyutils.py_subprocess import screen_launch, screen_list, screen_kill
 
 
 class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):

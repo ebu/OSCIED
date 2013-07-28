@@ -29,8 +29,8 @@
 
 import os, subprocess, sys, yaml
 from six import string_types
-import pyutils.juju as juju
-from pyutils.pyutils import cmd
+import pyutils.py_juju as juju
+from pyutils.py_subprocess import cmd
 
 try:
     import charmhelpers

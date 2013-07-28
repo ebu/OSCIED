@@ -28,7 +28,7 @@
 import glob, re, shutil
 from CharmHooks import CharmHooks, DEFAULT_OS_ENV
 from StorageConfig import StorageConfig
-from pyutils.filesystem import first_that_exist
+from pyutils.py_filesystem import first_that_exist
 
 
 class StorageHooks(CharmHooks):

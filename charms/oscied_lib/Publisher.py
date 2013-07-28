@@ -32,8 +32,8 @@ from Callback import Callback
 from Media import Media
 from PublisherConfig import PublisherConfig
 from User import User
-from pyutils.filesystem import recursive_copy
-from pyutils.pyutils import object2json
+from pyutils.py_filesystem import recursive_copy
+from pyutils.py_serialization import object2json
 
 
 @task(name='Publisher.publish_task')

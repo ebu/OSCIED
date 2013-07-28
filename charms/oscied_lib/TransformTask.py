@@ -30,7 +30,8 @@ from celery.result import AsyncResult
 from Media import MEDIA_TEST
 from TransformProfile import TRANSFORM_PROFILE_TEST
 from User import USER_TEST
-from pyutils.pyutils import json2object, object2json, valid_uuid
+from pyutils.py_serialization import json2object, object2json
+from pyutils.py_validation import valid_uuid
 
 
 class TransformTask(object):

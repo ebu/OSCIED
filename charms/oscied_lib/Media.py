@@ -27,7 +27,8 @@
 
 import os, uuid
 from OrchestraConfig import ORCHESTRA_CONFIG_TEST
-from pyutils.pyutils import json2object, object2json, valid_filename, valid_uuid
+from pyutils.py_serialization import json2object, object2json
+from pyutils.py_validation import valid_filename, valid_uuid
 
 
 class Media(object):

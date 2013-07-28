@@ -28,7 +28,8 @@
 import uuid
 from passlib.hash import pbkdf2_sha512
 from passlib.utils import consteq
-from pyutils.pyutils import json2object, valid_email, valid_secret, valid_uuid
+from pyutils.py_serialization import json2object
+from pyutils.py_validation import valid_email, valid_secret, valid_uuid
 
 
 class User(object):
@@ -124,7 +125,7 @@ class User(object):
 
         **Example usage**:
 
-        >>> from Utilities import object2json
+        >>> from pyutils.py_serialization import object2json
         >>> user = User.load(object2json(USER_TEST, False))
         >>> assert(user.__dict__ == USER_TEST.__dict__)
         >>> assert(user.is_valid(False))
