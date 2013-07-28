@@ -5,7 +5,7 @@
 #              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : PUBLISHER
 #
 #  Authors   : David Fischer
-#  Contact   : david.fischer.ch@gmail.com / david.fischer@hesge.ch
+#  Contact   : david.fischer.ch@gmail.com
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
 #  Copyright : 2012-2013 OSCIED Team. All rights reserved.
 #**************************************************************************************************#
@@ -23,7 +23,7 @@
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
 #
-# Retrieved from https://github.com/EBU-TI/OSCIED
+# Retrieved from https://github.com/ebu/OSCIED
 
 import os
 from celery import current_task
@@ -32,8 +32,8 @@ from Callback import Callback
 from Media import Media
 from PublisherConfig import PublisherConfig
 from User import User
-from pyutils.filesystem import recursive_copy
-from pyutils.pyutils import object2json
+from pyutils.py_filesystem import recursive_copy
+from pyutils.py_serialization import object2json
 
 
 @task(name='Publisher.publish_task')

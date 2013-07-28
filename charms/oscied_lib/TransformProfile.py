@@ -5,7 +5,7 @@
 #              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARY
 #
 #  Authors   : David Fischer
-#  Contact   : david.fischer.ch@gmail.com / david.fischer@hesge.ch
+#  Contact   : david.fischer.ch@gmail.com
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
 #  Copyright : 2012-2013 OSCIED Team. All rights reserved.
 #**************************************************************************************************#
@@ -23,10 +23,11 @@
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
 #
-# Retrieved from https://github.com/EBU-TI/OSCIED
+# Retrieved from https://github.com/ebu/OSCIED
 
 import uuid
-from pyutils.pyutils import json2object, object2json, valid_uuid
+from pyutils.py_serialization import json2object, object2json
+from pyutils.py_validation import valid_uuid
 
 ENCODERS_NAMES = ('copy', 'ffmpeg', 'dashcast')
 
@@ -58,6 +59,10 @@ class TransformProfile(object):
         if not valid_uuid(self._id, none_allowed=False):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : _id is not a valid uuid string')
+            return False
+        if not self.title or not self.title.strip():
+            if raise_exception:
+                raise TypeError(self.__class__.__name__ + ' : title is required')
             return False
         if not self.encoder_name in ENCODERS_NAMES:
             if raise_exception:

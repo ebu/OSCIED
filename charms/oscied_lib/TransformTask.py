@@ -5,7 +5,7 @@
 #              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARY
 #
 #  Authors   : David Fischer
-#  Contact   : david.fischer.ch@gmail.com / david.fischer@hesge.ch
+#  Contact   : david.fischer.ch@gmail.com
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
 #  Copyright : 2012-2013 OSCIED Team. All rights reserved.
 #**************************************************************************************************#
@@ -23,20 +23,21 @@
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
 #
-# Retrieved from https://github.com/EBU-TI/OSCIED
+# Retrieved from https://github.com/ebu/OSCIED
 
 import uuid
 from celery.result import AsyncResult
 from Media import MEDIA_TEST
 from TransformProfile import TRANSFORM_PROFILE_TEST
 from User import USER_TEST
-from pyutils.pyutils import json2object, object2json, valid_uuid
+from pyutils.py_serialization import json2object, object2json
+from pyutils.py_validation import valid_uuid
 
 
 class TransformTask(object):
 
     def __init__(self, _id, user_id, media_in_id, media_out_id, profile_id, statistic={},
-                 revoked=False, send_email=False):
+                 revoked=False, send_email=False, status='UNKNOWN'):
         if not _id:
             _id = str(uuid.uuid4())
         self._id = _id
@@ -47,6 +48,7 @@ class TransformTask(object):
         self.statistic = statistic
         self.revoked = revoked
         self.send_email = send_email
+        self.status = status
 
     def is_valid(self, raise_exception):
         if not valid_uuid(self._id, none_allowed=False):
@@ -75,6 +77,8 @@ class TransformTask(object):
         # FIXME check profile if loaded
         # FIXME check statistic
         # FIXME check revoked
+        # FIXME check send_email
+        # FIXME check status
         return True
 
     def add_statistic(self, key, value, overwrite):
@@ -87,13 +91,16 @@ class TransformTask(object):
     def append_async_result(self):
         async_result = AsyncResult(self._id)
         if async_result:
-            self.status = async_result.status
             try:
-                self.statistic.update(async_result.result)
-            except:
-                self.statistic['error'] = str(async_result.result)
+                self.status = async_result.status
+                try:
+                    self.statistic.update(async_result.result)
+                except:
+                    self.statistic['error'] = str(async_result.result)
+            except NotImplementedError:
+                self.status = 'UNKNOWN'
         else:
-            self.status = 'UNDEF'
+            self.status = 'UNKNOWN'
 
     def load_fields(self, user, media_in, media_out, profile):
         self.user = user

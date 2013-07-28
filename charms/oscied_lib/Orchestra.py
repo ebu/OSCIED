@@ -5,7 +5,7 @@
 #              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARY
 #
 #  Authors   : David Fischer
-#  Contact   : david.fischer.ch@gmail.com / david.fischer@hesge.ch
+#  Contact   : david.fischer.ch@gmail.com
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
 #  Copyright : 2012-2013 OSCIED Team. All rights reserved.
 #**************************************************************************************************#
@@ -23,9 +23,9 @@
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
 #
-# Retrieved from https://github.com/EBU-TI/OSCIED
+# Retrieved from https://github.com/ebu/OSCIED
 
-import logging, mongomock, os, smtplib, pymongo
+import logging, mongomock, os, pymongo, smptlib, uuid
 from celery import states
 #from celery import current_app
 #from celery.task.control import inspect
@@ -42,8 +42,11 @@ from Storage import Storage
 from TransformProfile import TransformProfile, ENCODERS_NAMES
 from TransformTask import TransformTask
 from User import User
-import pyutils.juju as juju
-from pyutils.pyutils import object2json, datetime_now, UUID_ZERO, unicode_csv_reader, valid_uuid
+import pyutils.py_juju as juju
+from pyutils.pyutils import UUID_ZERO, unicode_csv_reader
+from pyutils.py_datetime import datetime_now
+from pyutils.py_serialization import object2json
+from pyutils.py_validation import valid_uuid
 
 
 class Orchestra(object):
@@ -109,7 +112,7 @@ class Orchestra(object):
     def save_user(self, user, hash_secret):
         user.is_valid(True)
         if self.get_user({'mail': user.mail, '_id': {'$ne': user._id}}, {'_id': 1}):
-            raise ValueError('The email address ' + user.mail + ' is already used by another user.')
+            raise ValueError('The email address %s is already used by another user.' % user.mail)
         if hash_secret:
             user.hash_secret()
         self._db.users.save(user.__dict__)
@@ -147,7 +150,7 @@ class Orchestra(object):
     def save_media(self, media):
         media.is_valid(True)
         if self.get_media({'uri': media.uri, '_id': {'$ne': media._id}}, {'_id': 1}):
-            raise ValueError('The media uri ' + media.uri + ' is already used by another media.')
+            raise ValueError('The media uri %s is already used by another media.' % media.uri)
         if not media.get_metadata('title'):
             raise ValueError('Title key is required in media metadata.')
         if media.status not in ('DELETED'):
@@ -180,12 +183,12 @@ class Orchestra(object):
         media.is_valid(True)
         task = self.get_transform_task({'media_in_id': media._id}, append_result=True)
         if task and (task.status in states.UNREADY_STATES or task.status == 'PROGRESS'):
-            raise ValueError('Cannot delete the media, it is actually in use by transform ' +
-                             'task with id ' + task._id + ' and status ' + task.status + '.')
+            raise ValueError('Cannot delete the media, it is actually in use by transformation task'
+                             ' with id %s and status %s.' % (task._id, task.status))
         task = self.get_publish_task({'media_id': media._id}, append_result=True)
         if task and (task.status in states.UNREADY_STATES or task.status == 'PROGRESS'):
-            raise ValueError('Cannot delete the media, it is actually in use by publish ' +
-                             'task with id ' + task._id + ' and status ' + task.status + '.')
+            raise ValueError('Cannot delete the media, it is actually in use by publication task'
+                             ' with id %s and status %s.' % (task._id, task.status))
         media.status = 'DELETED'
         self.save_media(media)
         #self._db.medias.remove({'_id': media._id})
@@ -231,9 +234,10 @@ class Orchestra(object):
 
     def save_transform_profile(self, profile):
         profile.is_valid(True)
+        # FIXME exact matching !
         if self.get_transform_profile(
                 {'title': profile.title, '_id': {'$ne': profile._id}}, {'_id': 1}):
-            raise ValueError('Duplicate transform profile title ' + profile.title + '.')
+            raise ValueError('Duplicate transformation profile title %s.' % profile.title)
         self._db.transform_profiles.save(profile.__dict__)
 
     def get_transform_profile(self, specs, fields=None):
@@ -265,7 +269,7 @@ class Orchestra(object):
         config = juju.load_unit_config(self.config.transform_config)
         config['rabbit_queues'] = 'transform_%s' % environment
         if not same_environment:
-            raise NotImplementedError('Unable to launch transform units into non-default '
+            raise NotImplementedError('Unable to launch transformation units into non-default '
                                       'environment %s (default is %s).' % (environment, default))
             config['mongo_connection'] = self.config.mongo_nodes_connection
             config['rabbit_connection'] = self.config.rabbit_connection
@@ -342,34 +346,37 @@ class Orchestra(object):
                               send_email, queue, callback_url):
         user = self.get_user({'_id': user_id}, {'secret': 0})
         if not user:
-            raise IndexError('No user with id ' + user_id + '.')
+            raise IndexError('No user with id %s.' % user_id)
         media_in = self.get_media({'_id': media_in_id})
         if not media_in:  # FIXME maybe a media access control here
-            raise IndexError('No media with id ' + media_in_id + '.')
+            raise IndexError('No media with id %s.' % media_in_id)
         profile = self.get_transform_profile({'_id': profile_id})
         if not profile:  # FIXME maybe a profile access control here
-            raise IndexError('No profile with id ' + profile_id + '.')
+            raise IndexError('No transformation profile with id %s.' % profile_id)
         if not queue in self.config.transform_queues:
-            raise IndexError('No transform queue with name ' + queue + '.')
+            raise IndexError('No transformation queue with name %s.' % queue)
         media_out = Media(None, user_id, media_in_id, None, None, filename, metadata, 'PENDING')
         media_out.uri = self.config.storage_medias_uri(media_out)
         TransformTask.validate_task(media_in, profile, media_out)
         self.save_media(media_out)  # Save pending output media
         # FIXME create a one-time password to avoid fixed secret authentication ...
         callback = Callback(self.config.api_url + callback_url, 'node', self.config.nodes_secret)
-        result = Transform.transform_task.apply_async(
-            args=(object2json(user,      False), object2json(media_in, False),
-                  object2json(media_out, False), object2json(profile,  False),
-                  object2json(callback,  False)),
-            queue=queue)
-        if not result.id:
-            raise ValueError('Unable to transmit task to workers of queue ' + queue + '.')
-        logging.info('New transform task ' + result.id + ' launched.')
-        task = TransformTask(result.id, user._id, media_in._id, media_out._id, profile._id,
-                             send_email=send_email)
+        if self.is_mock:
+            result_id = str(uuid.uuid4())
+        else:
+            result = Transform.transform_task.apply_async(
+                args=(object2json(user,      False), object2json(media_in, False),
+                      object2json(media_out, False), object2json(profile,  False),
+                      object2json(callback,  False)),
+                queue=queue)
+            result_id = result.id
+        if not result_id:
+            raise ValueError('Unable to transmit task to workers of queue %s.' % queue)
+        logging.info('New transformation task %s launched.' % result_id)
+        task = TransformTask(result_id, user._id, media_in._id, media_out._id, profile._id)
         task.add_statistic('add_date', datetime_now(), True)
         self._db.transform_tasks.save(task.__dict__)
-        return result.id
+        return result_id
 
     def get_transform_task(self, specs, fields=None, load_fields=False, append_result=True):
         entity = self._db.transform_tasks.find_one(specs, fields)
@@ -387,19 +394,22 @@ class Orchestra(object):
 
     def revoke_transform_task(self, task, terminate=False, remove=False, delete_media=False):
         """ This do not delete tasks from tasks database (if remove=False) but set revoked attribute
-        in tasks database and broadcast revoke request to transform units with Celery. If the task
-        is actually running it will be cancelled if terminated = True. The output media will be
-        deleted if corresponding argument, delete_media = True. """
+        in tasks database and broadcast revoke request to transformation units with Celery.
+        If the task is actually running it will be cancelled if terminated = True. The output media
+        will be deleted if corresponding argument, delete_media = True. """
         # FIXME verify that no pending tasks needs the media that will be created by the task !
         if valid_uuid(task, none_allowed=False):
             task = self.get_transform_task({'_id': task})
         task.is_valid(True)
         if task.revoked:
-            raise ValueError('Transform task ' + task._id + ' is already revoked !')
+            raise ValueError('Transformation task %s is already revoked !' % task._id)
         if task.status in states.READY_STATES:
-            raise ValueError('Cannot revoke a transform task with status ' + task.status + '.')
+            raise ValueError('Cannot revoke a transformation task with status %s.' % task.status)
         task.revoked = True
-        revoke(task._id, terminate=terminate)
+        if self.is_mock:
+            pass  # FIXME TODO
+        else:
+            revoke(task._id, terminate=terminate)
         self._db.transform_tasks.save(task.__dict__)
         if delete_media and valid_uuid(task.media_out_id, none_allowed=False):
             self.delete_media(task.media_out_id)
@@ -436,32 +446,36 @@ class Orchestra(object):
     def launch_publish_task(self, user_id, media_id, send_email, queue, callback_url):
         user = self.get_user({'_id': user_id}, {'secret': 0})
         if not user:
-            raise IndexError('No user with id ' + user_id + '.')
+            raise IndexError('No user with id %s.' % user_id)
         media = self.get_media({'_id': media_id})
         if not media:  # FIXME maybe a media access control here
-            raise IndexError('No media with id ' + media_id + '.')
+            raise IndexError('No media with id %s.' % media_id)
         if not queue in self.config.publisher_queues:
-            raise IndexError('No publisher queue with name ' + queue + '.')
+            raise IndexError('No publication queue with name %s.' % queue)
         if not media.status in ('READY',):
-            raise NotImplementedError('Cannot launch the task, input media status is ' +
-                                      media.status + '.')
+            raise NotImplementedError('Cannot launch the task, input media status is %s.' %
+                                      media.status)
         other = self.get_publish_task({'media_id': media._id})
         if other and other.status not in states.READY_STATES and not other.revoked:
             raise NotImplementedError('Cannot launch the task, input media will be published by '
-                                      + 'another task with id ' + other._id + '.')
+                                      'another task with id %s.' % other._id)
         # FIXME create a one-time password to avoid fixed secret authentication ...
         callback = Callback(self.config.api_url + callback_url, 'node', self.config.nodes_secret)
-        result = Publisher.publish_task.apply_async(
-            args=(object2json(user, False), object2json(media, False),
-                  object2json(callback, False)),
-            queue=queue)
-        if not result.id:
-            raise ValueError('Unable to transmit task to workers of queue ' + queue + '.')
-        logging.info('New publish task ' + result.id + ' launched.')
-        task = PublishTask(result.id, user._id, media._id, None, send_email=send_email)
+        if self.is_mock:
+            result_id = str(uuid.uuid4())
+        else:
+            result = Publisher.publish_task.apply_async(
+                args=(object2json(user, False), object2json(media, False),
+                      object2json(callback, False)),
+                queue=queue)
+            result_id = result.id
+        if not result_id:
+            raise ValueError('Unable to transmit task to workers of queue %s.' % queue)
+        logging.info('New publication task %s launched.' % result_id)
+        task = PublishTask(result_id, user._id, media._id, None)
         task.add_statistic('add_date', datetime_now(), True)
         self._db.publish_tasks.save(task.__dict__)
-        return result.id
+        return result_id
 
     def get_publish_task(self, specs, fields=None, load_fields=False, append_result=True):
         entity = self._db.publish_tasks.find_one(specs, fields)
@@ -480,7 +494,7 @@ class Orchestra(object):
 
     def revoke_publish_task(self, task, terminate=False, remove=False):
         """ This do not delete tasks from tasks database (if remove=False) but set revoked attribute
-        in tasks database and broadcast revoke request to publisher units with celery. If the task
+        in tasks database and broadcast revoke request to publication units with celery. If the task
         is actually running it will be cancelled if terminated = True. The output media will be
         deleted
         """
@@ -488,11 +502,14 @@ class Orchestra(object):
             task = self.get_publish_task({'_id': task})
         task.is_valid(True)
         if task.revoked:
-            raise ValueError('Publish task ' + task._id + ' is already revoked !')
+            raise ValueError('Publication task %s is already revoked !' % task._id)
         if task.status in states.READY_STATES:
-            raise ValueError('Cannot revoke a publish task with status ' + task.status + '.')
+            raise ValueError('Cannot revoke a publication task with status %s.' % task.status)
         task.revoked = True
-        revoke(task._id, terminate=terminate)
+        if self.is_mock:
+            pass  # FIXME TODO
+        else:
+            revoke(task._id, terminate=terminate)
         self._db.publish_tasks.save(task.__dict__)
         if remove:
             self._db.publish_tasks.remove({'_id': task._id})
@@ -522,19 +539,19 @@ class Orchestra(object):
     def transform_callback(self, task_id, status):
         task = self.get_transform_task({'_id': task_id})
         if not task:
-            raise IndexError('No transform task with id ' + task_id + '.')
+            raise IndexError('No transformation task with id %s.' % task_id)
         user = self.get_user({'_id': task.user_id}, {'mail': 1})
         if not user:
-            raise IndexError('Unable to find user with id ' + task.user_id + '.')
+            raise IndexError('Unable to find user with id %s.' % task.user_id)
         media_in = self.get_media({'_id': task.media_in_id})
         if not media_in:
-            raise IndexError('Unable to find input media with id ' + task.media_in_id + '.')
+            raise IndexError('Unable to find input media with id %s.' % task.media_in_id)
         media_out = self.get_media({'_id': task.media_out_id})
         if not media_out:
-            raise IndexError('Unable to find output media with id ' + task.media_out_id + '.')
+            raise IndexError('Unable to find output media with id %s.' % task.media_out_id)
         profile = self.get_media({'_id': task.profile_id})
         if not profile:
-            raise IndexError('Unable to find profile with id ' + task.profile_id + '.')
+            raise IndexError('Unable to find profile with id %s.' % task.profile_id)
         task.load_fields(user, media_in, media_out, profile)
         if status == 'SUCCESS':
             media_out.status = 'READY'
@@ -558,13 +575,13 @@ class Orchestra(object):
     def publish_callback(self, task_id, publish_uri, status):
         task = self.get_publish_task({'_id': task_id})
         if not task:
-            raise IndexError('No publish task with id ' + task_id + '.')
+            raise IndexError('No publish task with id %s.' % task_id)
         user = self.get_user({'_id': task.user_id}, {'mail': 1})
         if not user:
-            raise IndexError('Unable to find user with id ' + task.user_id + '.')
+            raise IndexError('Unable to find user with id %s.' % task.user_id)
         media = self.get_media({'_id': task.media_id})
         if not media:
-            raise IndexError('Unable to find media with id ' + task.media_id + '.')
+            raise IndexError('Unable to find media with id %s.' % task.media_id)
         task.load_fields(user, media)
         if status == 'SUCCESS':
             media.status = 'PUBLISHED'
@@ -601,15 +618,31 @@ def get_test_orchestra(api_init_csv_directory):
     users = orchestra.get_users()
     i, reader = 0, unicode_csv_reader(os.path.join(api_init_csv_directory, 'medias.csv'))
     for uri, filename, title in reader:
-        media = Media(None, users[i]._id, None, uri, None, filename, {'title': title}, 'PENDING')
+        media = Media(None, users[i]._id, None, uri, None, filename, {'title': title}, 'READY')
         print('Adding media %s' % media.metadata['title'])
         orchestra.save_media(media)
         i = (i + 1) % len(users)
     reader = unicode_csv_reader(os.path.join(api_init_csv_directory, 'tprofiles.csv'))
     for title, description, encoder_name, encoder_string in reader:
         profile = TransformProfile(None, title, description, encoder_name, encoder_string)
-        print('Adding transform profile %s' % profile.title)
+        print('Adding transformation profile %s' % profile.title)
         orchestra.save_transform_profile(profile)
+    reader = unicode_csv_reader(os.path.join(api_init_csv_directory, 'ttasks.csv'))
+    for user_email, in_filename, profile_title, out_filename, out_title, queue in reader:
+        user = orchestra.get_user({'mail': user_email})
+        if not user:
+            raise IndexError('No user with e-mail address %s.' % user_email)
+        media_in = orchestra.get_media({'filename': in_filename})
+        if not media_in:
+            raise IndexError('No media with filename %s.' % in_filename)
+        profile = orchestra.get_transform_profile({'title': profile_title})
+        if not profile:
+            raise IndexError('No transformation profile with title %s.' % profile_title)
+        print('Launching transformation task %s with profile %s' %
+              (media_in.metadata['title'], profile.title))
+        metadata = {'title': out_title}
+        orchestra.launch_transform_task(user._id, media_in._id, profile._id, out_filename, metadata,
+                                        queue, '/transform/callback')
     return orchestra
 
 
@@ -619,4 +652,5 @@ if __name__ == '__main__':
     orchestra = get_test_orchestra('../../config/api')
     print('They are %s registered users.' % len(orchestra.get_users()))
     print('They are %s available medias.' % len(orchestra.get_medias()))
-    print('They are %s available transform profiles.' % len(orchestra.get_transform_profiles()))
+    print('They are %s available transformation profiles.' % len(orchestra.get_transform_profiles()))
+    print('They are %s launched transformation tasks.' % len(orchestra.get_transform_tasks()))

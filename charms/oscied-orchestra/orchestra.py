@@ -5,7 +5,7 @@
 #              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : ORCHESTRA
 #
 #  Authors   : David Fischer
-#  Contact   : david.fischer.ch@gmail.com / david.fischer@hesge.ch
+#  Contact   : david.fischer.ch@gmail.com
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
 #  Copyright : 2012-2013 OSCIED Team. All rights reserved.
 #**************************************************************************************************#
@@ -23,7 +23,7 @@
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
 #
-# Retrieved from https://github.com/EBU-TI/OSCIED
+# Retrieved from https://github.com/ebu/OSCIED
 
 # FIXME mongo concurrency : http://emptysquare.net/blog/requests-in-python-and-mongodb/
 
@@ -32,12 +32,14 @@ import sys
 from bson.objectid import ObjectId
 from flask import Flask, abort, request, Response
 from werkzeug.exceptions import HTTPException
+from pyutils.py_logging import setup_logging
+from pyutils.py_serialization import object2json
+from pyutils.py_validation import valid_uuid
 from oscied_lib.Media import Media
 from oscied_lib.Orchestra import Orchestra
 from oscied_lib.OrchestraConfig import OrchestraConfig
 from oscied_lib.TransformProfile import TransformProfile
 from oscied_lib.User import User
-from oscied_lib.pyutils.pyutils import object2json, valid_uuid, setup_logging
 
 
 # Global variables ---------------------------------------------------------------------------------

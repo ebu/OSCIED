@@ -5,7 +5,7 @@
 #              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARY
 #
 #  Authors   : David Fischer
-#  Contact   : david.fischer.ch@gmail.com / david.fischer@hesge.ch
+#  Contact   : david.fischer.ch@gmail.com
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
 #  Copyright : 2012-2013 OSCIED Team. All rights reserved.
 #**************************************************************************************************#
@@ -23,11 +23,11 @@
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
 #
-# Retrieved from https://github.com/EBU-TI/OSCIED
+# Retrieved from https://github.com/ebu/OSCIED
 
 import os, shutil, time
-from pyutils.ffmpeg import get_media_duration
-from pyutils.filesystem import get_size, try_makedirs
+from pyutils.py_ffmpeg import get_media_duration
+from pyutils.py_filesystem import get_size, try_makedirs
 
 
 class Storage(object):
@@ -61,7 +61,7 @@ class Storage(object):
                     raise ValueError('Unable to detect size of media %s.' % media_dst_path)
                 duration = get_media_duration(media_dst_path)
                 if duration is None:
-                    raise ValueError('Unable to detect duration of media %s.' % media_dst_path)                        
+                    raise ValueError('Unable to detect duration of media %s.' % media_dst_path)
                 return (size, duration)
             else:
                 raise NotImplementedError('FIXME Add of external URI not implemented.')

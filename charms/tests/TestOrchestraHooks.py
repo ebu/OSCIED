@@ -5,7 +5,7 @@
 #     OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : TESTS OF COMMON LIBRARY
 #
 #  Authors   : David Fischer
-#  Contact   : david.fischer.ch@gmail.com / david.fischer@hesge.ch
+#  Contact   : david.fischer.ch@gmail.com
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
 #  Copyright : 2012-2013 OSCIED Team. All rights reserved.
 #**************************************************************************************************#
@@ -23,7 +23,7 @@
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
 #
-# Retrieved from https://github.com/EBU-TI/OSCIED
+# Retrieved from https://github.com/ebu/OSCIED
 
 import os, sys
 from os.path import abspath, dirname, join
@@ -42,7 +42,7 @@ from oscied_lib.OrchestraHooks import OrchestraHooks
 CONFIG = {
     'verbose': True, 'root_secret': 'toto', 'nodes_secret': 'abcd',
     'repositories_user': 'oscied', 'repositories_pass': '',
-    'charms_repository': 'https://github.com/EBU-TI/OSCIED/charms',
+    'charms_repository': 'https://github.com/ebu/OSCIED/charms',
     'mongo_admin_password': 'Mongo_admin_1234', 'mongo_nodes_password': 'Mongo_user_1234',
     'rabbit_password': 'Alice_in_wonderland', 'storage_address': '', 'storage_nat_address': '',
     'storage_fstype': '', 'storage_mountpoint': '', 'storage_options': ''
