@@ -21,7 +21,7 @@ options:
     description: OSCIED charms repositories client password.
   oscied_repository:
     type: string
-    default: "https://github.com/EBU-TI/OSCIED/charms"
+    default: "https://github.com/ebu/OSCIED/charms"
     description: OSCIED charms will be checked out locally under ~/charms/(release).
   mongo_admin_password:
     type: string

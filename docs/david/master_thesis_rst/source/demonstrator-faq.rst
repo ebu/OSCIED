@@ -18,7 +18,7 @@ So, to get a development copy of the project, you only need to open a terminal a
 
     >>> ~$ cd
     >>> ~$ sudo apt-get install git
-    >>> ~$ git clone https://github.com/EBU-TI/OSCIED
+    >>> ~$ git clone https://github.com/ebu/OSCIED
 
 Then, I invite you to open a terminal and run the nice old-fashioned project's main menu and select **install**:
 

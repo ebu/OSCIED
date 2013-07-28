@@ -4,7 +4,7 @@ oscied-orchestra:
   nodes_secret: "bdZccPuG9fibjwCS"
   repositories_user: "oscied"
   repositories_pass: "41nVGq07GmSgK9Ud"
-  oscied_repository: "https://github.com/EBU-TI/OSCIED/charms"
+  oscied_repository: "https://github.com/ebu/OSCIED/charms"
   mongo_admin_password: "Iz85QVjdCJugEosz"
   mongo_nodes_password: "M2qlif8rdtKtBYil"
   rabbit_password: "OZy23iO0D4UpYS2k"
