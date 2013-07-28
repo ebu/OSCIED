@@ -116,10 +116,10 @@ class Media(object):
         return media
 
 MEDIA_TEST = Media(None, str(uuid.uuid4()), str(uuid.uuid4()), None, None, 'tabby.mpg',
-                   {'title': "Tabby's adventures §1", 'description': 'My cat drinking water'},
+                   {'title': u"Tabby's adventures §1", 'description': u'My cat drinking water'},
                    'PENDING')
 MEDIA_TEST.uri = ORCHESTRA_CONFIG_TEST.storage_medias_uri(MEDIA_TEST)
-MEDIA_TEST.add_metadata('title', 'not authorized overwrite', False)
+MEDIA_TEST.add_metadata('title', u'not authorized overwrite', False)
 MEDIA_TEST.add_metadata('size', 4096, True)
 
 # Main ---------------------------------------------------------------------------------------------

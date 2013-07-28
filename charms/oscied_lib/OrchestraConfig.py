@@ -40,7 +40,8 @@ class OrchestraConfig(CharmConfig_Storage):
                  juju_template_file='environments.yaml', charms_config='config.yaml',
                  charms_release='raring', charms_repository='charms',
                  email_server='', email_tls=False, email_username='', email_password='',
-                 email_address='', **kwargs):
+                 email_address='', email_ttask_template='templates/ttask_mail.template',
+                 email_ptask_template='templates/ptask_mail.template', **kwargs):
         super(OrchestraConfig, self).__init__(**kwargs)
         self.api_url = api_url
         self.root_secret = root_secret
@@ -63,6 +64,8 @@ class OrchestraConfig(CharmConfig_Storage):
         self.email_address = email_address
         self.email_username = email_username
         self.email_password = email_password
+        self.email_ttask_template = email_ttask_template
+        self.email_ptask_template = email_ptask_template
 
     @property
     def transform_queues(self):
