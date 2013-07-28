@@ -40,7 +40,7 @@ from Storage import Storage
 from TransformProfile import TransformProfile, ENCODERS_NAMES
 from TransformTask import TransformTask
 from User import User
-import pyutils.juju as juju
+import pyutils.py_juju as juju
 from pyutils.pyutils import UUID_ZERO, unicode_csv_reader
 from pyutils.py_datetime import datetime_now
 from pyutils.py_serialization import object2json
