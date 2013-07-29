@@ -33,7 +33,7 @@ from oscied_lib.TransformProfile import TransformProfile
 from oscied_lib.User import User
 from oscied_lib.pyutils.flaski import check_id, get_request_json, map_exceptions
 from oscied_lib.pyutils.pyutils import object2json, setup_logging
-from utils import action, json_only, only_logged_user, user_info
+from utils import action, json_only, only_logged_user, user_info, PlugItSendFile
 from server import ok_200
 
 # Global variables ---------------------------------------------------------------------------------
@@ -1039,6 +1039,21 @@ def view_medias_list(request):
     """
     medias = response2dict(api_media_get(request), remove_underscore=True)
     return {'medias': medias, 'refresh_rate': 5}
+
+
+
+@action(route="/medias/force_download/<id>",methods=['GET'])
+@only_logged_user()
+@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+def get_medias(request, id):
+    u"""
+    Download a media
+    """
+    medias = api_media_id_get(request, id)
+    uri = medias['value'].api_uri
+    filename = medias['value'].filename
+
+    return PlugItSendFile(uri, None, as_attachment=True, attachment_filename=filename)
 
 
 @action(route="/transform/profiles", template="transform/profiles/home.html", methods=['GET'])

@@ -148,6 +148,10 @@ class Orchestra(object):
         if load_fields:
             media.load_fields(self.get_user({'_id': media.user_id}, {'secret': 0}),
                               self.get_media({'_id': media.parent_id}))
+
+        # Add read path to the file
+        media.api_uri = self.config.storage_medias_path(media, generate=False)
+
         return media
 
     def delete_media(self, media):
