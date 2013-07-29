@@ -28,7 +28,7 @@
 import os, sys
 from os.path import abspath, dirname, join
 sys.path.append(abspath(dirname(dirname(__file__))))
-sys.path.append(abspath(join(dirname(dirname(__file__)), 'pyutils')))
+sys.path.append(abspath(join(dirname(dirname(__file__)), u'pyutils')))
 
 from celery.task.control import inspect
 import lib.Transform
@@ -47,32 +47,32 @@ from lib.User import USER_TEST
 #    for i in results:
 #        print i
 
-raise ValueError('FIXME issue #6')
+raise ValueError(u'FIXME issue #6')
 
-if __name__ == '__main__':
+if __name__ == u'__main__':
     user = USER_TEST
     media_in = MEDIA_TEST
     media_out = MEDIA_TEST
     profile = TRANSFORM_PROFILE_TEST
-    print 'Launch the transformation task'
+    print(u'Launch the transformation task')
     result = lib.Transform.transform_task.apply_async(
         args=(user.json(), media_in.json(), media_out.json(), profile.json(),),
-        queue='transform_private')
-    print result.state
-    print result
+        queue=u'transform_private')
+    print(result.state)
+    print(result)
     i = inspect()
     dump = i.active()
-    print dump
+    print(dump)
     if dump:
         for worker, tasks in dump.iteritems():
-            print worker
+            print(worker)
             for task in tasks:
-                if task['name'] == 'Transform.transform_task':
+                if task[u'name'] == u'Transform.transform_task':
                     for key, value in task.iteritems():
-                        print 'key ' + key + ' = ' + str(value)
+                        print(u'key {0} = {1}'.format(key, value))
                     #print 'THE Task ' + str(task)
                     #print 'Arguments ' + str(task['args'])
-                    print 'salut'
+                    print(u'salut')
 
     sys.exit(0)
 #    make_pi_tasks()

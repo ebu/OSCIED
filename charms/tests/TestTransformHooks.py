@@ -28,7 +28,7 @@
 import os, sys
 from os.path import abspath, dirname, join
 sys.path.append(abspath(dirname(dirname(__file__))))
-sys.path.append(abspath(join(dirname(dirname(__file__)), 'pyutils')))
+sys.path.append(abspath(join(dirname(dirname(__file__)), u'pyutils')))
 
 from copy import copy
 from nose.tools import assert_equal
@@ -37,9 +37,10 @@ from oscied_lib.TransformConfig import TransformConfig
 from oscied_lib.TransformHooks import TransformHooks
 
 CONFIG_DEFAULT = {
-    'verbose': False, 'concurrency': 1, 'rabbit_queues': 'transform_private',
-    'mongo_connection': '', 'rabbit_connection': '', 'api_nat_socket': '', 'storage_address': '',
-    'storage_nat_address': '', 'storage_fstype': '', 'storage_mountpoint': '', 'storage_options': ''
+    u'verbose': False, u'concurrency': 1, u'rabbit_queues': u'transform_private',
+    u'mongo_connection': u'', u'rabbit_connection': u'', u'api_nat_socket': u'',
+    u'storage_address': u'', u'storage_nat_address': u'', u'storage_fstype': u'',
+    u'storage_mountpoint': u'', u'storage_options': u''
 }
 
 CONFIG_TRANSFORM = {
@@ -51,24 +52,24 @@ CONFIG_TRANSFORM = {
 }
 
 OS_ENV = copy(DEFAULT_OS_ENV)
-OS_ENV['JUJU_UNIT_NAME'] = 'oscied-transform/0'
+OS_ENV[u'JUJU_UNIT_NAME'] = u'oscied-transform/0'
 RETURNS = []
 
 
 class TestTransformHooks(object):
 
     def create_hooks(self, default_config):
-        TransformConfig().write('test.pkl')
-        hooks = TransformHooks(None, default_config, 'test.pkl', OS_ENV)
+        TransformConfig().write(u'test.pkl')
+        hooks = TransformHooks(None, default_config, u'test.pkl', OS_ENV)
         hooks.local_config.storage_mount_sleep_delay = 0.01
-        hooks.local_config.hosts_file = 'hosts'  # Avoid writing to system hosts file !
-        hooks.local_config.celery_config_file = 'celeryconfig.py'
+        hooks.local_config.hosts_file = u'hosts'  # Avoid writing to system hosts file !
+        hooks.local_config.celery_config_file = u'celeryconfig.py'
         hooks.local_config.celery_template_file = os.path.join(
-            '../oscied-transform', hooks.local_config.celery_template_file)
+            u'../oscied-transform', hooks.local_config.celery_template_file)
         return hooks
 
     def tearDown(self):
-        for f in ('celeryconfig.py', 'hosts', 'test.pkl'):
+        for f in (u'celeryconfig.py', u'hosts', u'test.pkl'):
             try:
                 os.remove(f)
             except:
@@ -77,31 +78,31 @@ class TestTransformHooks(object):
     def test_subordinate_register_default(self):
         self.hooks = self.create_hooks(CONFIG_DEFAULT)
         self.hooks.subordinate_register(
-            mongo='mongodb://tabby:miaow@home.ch:27017/mydb',
-            rabbit='the_rabbit_connection')
-        assert_equal(self.hooks.local_config.api_nat_socket, '')
+            mongo=u'mongodb://tabby:miaow@home.ch:27017/mydb',
+            rabbit=u'the_rabbit_connection')
+        assert_equal(self.hooks.local_config.api_nat_socket, u'')
         celeryconfig = {}
         execfile(self.hooks.local_config.celery_config_file, celeryconfig)
-        assert_equal(celeryconfig['BROKER_URL'], 'the_rabbit_connection')
-        assert_equal(celeryconfig['CELERY_MONGODB_BACKEND_SETTINGS'], {
-            'host': 'home.ch', 'port': '27017', 'user': 'tabby', 'password': 'miaow',
-            'database': 'mydb', 'taskmeta_collection': 'taskmeta'})
-        assert_equal(celeryconfig['CELERYD_CONCURRENCY'], self.hooks.config.concurrency)
+        assert_equal(celeryconfig[u'BROKER_URL'], u'the_rabbit_connection')
+        assert_equal(celeryconfig[u'CELERY_MONGODB_BACKEND_SETTINGS'], {
+            u'host': u'home.ch', u'port': u'27017', u'user': u'tabby', u'password': u'miaow',
+            u'database': u'mydb', u'taskmeta_collection': u'taskmeta'})
+        assert_equal(celeryconfig[u'CELERYD_CONCURRENCY'], self.hooks.config.concurrency)
 
     def test_subordinate_register_transform(self):
         self.hooks = self.create_hooks(CONFIG_TRANSFORM)
         self.hooks.local_config.celery_template_file = os.path.join(
-            '../oscied-transform', self.hooks.local_config.celery_template_file)
-        self.hooks.subordinate_register(mongo='fail', rabbit='fail')
-        assert_equal(self.hooks.local_config.api_nat_socket, CONFIG_TRANSFORM['api_nat_socket'])
+            u'../oscied-transform', self.hooks.local_config.celery_template_file)
+        self.hooks.subordinate_register(mongo=u'fail', rabbit=u'fail')
+        assert_equal(self.hooks.local_config.api_nat_socket, CONFIG_TRANSFORM[u'api_nat_socket'])
         celeryconfig = {}
         execfile(self.hooks.local_config.celery_config_file, celeryconfig)
-        assert_equal(celeryconfig['BROKER_URL'], CONFIG_TRANSFORM['rabbit_connection'])
-        assert_equal(celeryconfig['CELERY_MONGODB_BACKEND_SETTINGS'], {
-            'host': 'home.ch', 'port': '27017', 'user': 'tabby', 'password': 'miaow',
-            'database': 'mydb', 'taskmeta_collection': 'taskmeta'})
-        assert_equal(celeryconfig['CELERYD_CONCURRENCY'], CONFIG_TRANSFORM['concurrency'])
+        assert_equal(celeryconfig[u'BROKER_URL'], CONFIG_TRANSFORM[u'rabbit_connection'])
+        assert_equal(celeryconfig[u'CELERY_MONGODB_BACKEND_SETTINGS'], {
+            u'host': u'home.ch', u'port': u'27017', u'user': u'tabby', u'password': u'miaow',
+            u'database': u'mydb', u'taskmeta_collection': u'taskmeta'})
+        assert_equal(celeryconfig[u'CELERYD_CONCURRENCY'], CONFIG_TRANSFORM[u'concurrency'])
 
-if __name__ == '__main__':
+if __name__ == u'__main__':
     import nose
     nose.runmodule(argv=[__file__], exit=False)

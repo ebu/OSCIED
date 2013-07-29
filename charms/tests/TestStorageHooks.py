@@ -28,53 +28,52 @@
 import os, sys
 from os.path import abspath, dirname, join
 sys.path.append(abspath(dirname(dirname(__file__))))
-sys.path.append(abspath(join(dirname(dirname(__file__)), 'pyutils')))
+sys.path.append(abspath(join(dirname(dirname(__file__)), u'pyutils')))
 
 from copy import copy
 from mock import call
 from nose.tools import assert_equal, raises
-from pyutils.pyutils import mock_cmd
+from pyutils.py_mock import mock_cmd
 from oscied_lib.CharmHooks import DEFAULT_OS_ENV
 from oscied_lib.StorageConfig import StorageConfig
 from oscied_lib.StorageHooks import StorageHooks
 
-CONFIG = {'verbose': False, 'replica_count': 1, 'allowed_ips': '*'}
-OS_ENV = copy(DEFAULT_OS_ENV)
-OS_ENV['JUJU_UNIT_NAME'] = 'oscied-storage/14'
-RETURNS = []
+CONFIG = {u'verbose': False, u'replica_count': 1, u'allowed_ips': u'*'}
+OS_ENV, RETURNS = copy(DEFAULT_OS_ENV), []
+OS_ENV[u'JUJU_UNIT_NAME'] = u'oscied-storage/14'
 
 
 class TestStorageHooks(object):
     #return {'stdout': INFOS_STDOUT, 'stderr': None, 'returncode': 0}
 
     def setUp(self):
-        StorageConfig().write('test.pkl')
-        self.hooks = StorageHooks(None, CONFIG, 'test.pkl', OS_ENV)
+        StorageConfig().write(u'test.pkl')
+        self.hooks = StorageHooks(None, CONFIG, u'test.pkl', OS_ENV)
 
     def tearDown(self):
-        os.remove('test.pkl')
+        os.remove(u'test.pkl')
 
     def test_volume_set_allowed_ips_ok(self):
-        self.hooks.config.allowed_ips = '192.168.1.*,10.10.*'
-        self.hooks.local_config.allowed_ips = ['129.194.185.47']
+        self.hooks.config.allowed_ips = u'192.168.1.*,10.10.*'
+        self.hooks.local_config.allowed_ips = [u'129.194.185.47']
         self.hooks.volume_do = mock_cmd(
-            '\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started'
+            u'\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started'
             '\nNumber of Bricks: 1\nTransport-type: tcp\nBricks:'
             '\nBrick1: ip-10-36-122-169.ec2.internal:/exp14\n'
             'Options Reconfigured:\nauth.allow: 10.10.*,129.194.185.47,192.168.1.*\n')
         self.hooks.volume_set_allowed_ips()
         assert_equal(self.hooks.volume_do.call_args_list, [
-            call('set', fail=False, volume='medias_volume_14',
-                 options='auth.allow "10.10.*,129.194.185.47,192.168.1.*"'),
-            call('info', fail=False, volume='medias_volume_14'),
-            call('info', fail=False, volume='medias_volume_14')])
+            call(u'set', fail=False, volume=u'medias_volume_14',
+                 options=u'auth.allow "10.10.*,129.194.185.47,192.168.1.*"'),
+            call(u'info', fail=False, volume=u'medias_volume_14'),
+            call(u'info', fail=False, volume=u'medias_volume_14')])
 
     @raises(ValueError)
     def test_volume_set_allowed_ips_raise(self):
-        self.hooks.config.allowed_ips = '192.168.1.*,10.10.*'
-        self.hooks.local_config.allowed_ips = ['129.194.185.47']
+        self.hooks.config.allowed_ips = u'192.168.1.*,10.10.*'
+        self.hooks.local_config.allowed_ips = [u'129.194.185.47']
         self.hooks.volume_do = mock_cmd(
-            '\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started'
+            u'\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started'
             '\nNumber of Bricks: 1\nTransport-type: tcp\nBricks:'
             '\nBrick1: ip-10-36-122-169.ec2.internal:/exp14\n'
             'Options Reconfigured:\nauth.allow: 192.168.1.*\n')
@@ -82,16 +81,16 @@ class TestStorageHooks(object):
 
     def test_volume_infos(self):
         self.hooks.volume_do = mock_cmd(
-            '\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started'
+            u'\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started'
             '\nNumber of Bricks: 1\nTransport-type: tcp\nBricks:'
             '\nBrick1: ip-10-36-122-169.ec2.internal:/exp14\n'
             'Options Reconfigured:\nauth.allow: 192.168.0.104\n')
         infos = self.hooks.volume_infos()
         assert_equal(infos, {
-            'name': 'medias_volume_14', 'type': 'Distribute', 'status': 'Started',
-            'transport': 'tcp', 'bricks': ['ip-10-36-122-169.ec2.internal:/exp14'],
-            'auth_allow': '192.168.0.104'})
-        self.hooks.volume_do.assert_called_with('info', volume=None, fail=False)
+            u'name': u'medias_volume_14', u'type': u'Distribute', u'status': u'Started',
+            u'transport': u'tcp', u'bricks': [u'ip-10-36-122-169.ec2.internal:/exp14'],
+            u'auth_allow': u'192.168.0.104'})
+        self.hooks.volume_do.assert_called_with(u'info', volume=None, fail=False)
 
     # def test_install_replica_1_with_client(self):
     #     self.hooks.local_config.allowed_ips = ''
@@ -142,6 +141,6 @@ class TestStorageHooks(object):
     #     self.hooks.trigger(hook_name='peer_relation_joined')
     #     self.hooks.trigger(hook_name='peer_relation_changed')
 
-if __name__ == '__main__':
+if __name__ == u'__main__':
     import nose
     nose.runmodule(argv=[__file__], exit=False)
