@@ -97,7 +97,7 @@ class Orchestra(object):
         entity = self._db.users.find_one(specs, fields)
         if not entity:
             return None
-        user = User.load(object2json(entity, False))
+        user = User.from_json(object2json(entity, False))
         return user if secret is None or user.verify_secret(secret) else None
 
     def delete_user(self, user):
@@ -106,7 +106,7 @@ class Orchestra(object):
         # if not entity:
         #     raise IndexError('No user with id ' + id + '.')
         # self._db.users.remove({'_id': entity._id})
-        # return User.load(object2json(entity, False))
+        # return User.from_json(object2json(entity, False))
         if valid_uuid(user, none_allowed=False):
             user = self.get_user({'_id': user}, {'secret': 0})
         user.is_valid(True)
@@ -115,7 +115,7 @@ class Orchestra(object):
     def get_users(self, specs=None, fields=None):
         users = []
         for entity in list(self._db.users.find(specs, fields)):
-            users.append(User.load(object2json(entity, False)))
+            users.append(User.from_json(object2json(entity, False)))
         return users
 
     def get_users_count(self, specs=None):
@@ -147,7 +147,7 @@ class Orchestra(object):
         entity = self._db.medias.find_one(specs, fields)
         if not entity:
             return None
-        media = Media.load(object2json(entity, False))
+        media = Media.from_json(object2json(entity, False))
         if load_fields:
             media.load_fields(self.get_user({'_id': media.user_id}, {'secret': 0}),
                               self.get_media({'_id': media.parent_id}))
@@ -173,7 +173,7 @@ class Orchestra(object):
     def get_medias(self, specs=None, fields=None, load_fields=False):
         medias = []
         for entity in list(self._db.medias.find(specs, fields)):
-            media = Media.load(object2json(entity, False))
+            media = Media.from_json(object2json(entity, False))
             if load_fields:
                 media.load_fields(self.get_user({'_id': media.user_id}, {'secret': 0}),
                                   self.get_media({'_id': media.parent_id}))
@@ -220,7 +220,7 @@ class Orchestra(object):
         entity = self._db.transform_profiles.find_one(specs, fields)
         if not entity:
             return None
-        return TransformProfile.load(object2json(entity, False))
+        return TransformProfile.from_json(object2json(entity, False))
 
     def delete_transform_profile(self, profile):
         if valid_uuid(profile, none_allowed=False):
@@ -231,7 +231,7 @@ class Orchestra(object):
     def get_transform_profiles(self, specs=None, fields=None):
         profiles = []
         for entity in list(self._db.transform_profiles.find(specs, fields)):
-            profiles.append(TransformProfile.load(object2json(entity, False)))
+            profiles.append(TransformProfile.from_json(object2json(entity, False)))
         return profiles
 
     def get_transform_profiles_count(self, specs=None):
@@ -358,7 +358,7 @@ class Orchestra(object):
         entity = self._db.transform_tasks.find_one(specs, fields)
         if not entity:
             return None
-        task = TransformTask.load(object2json(entity, False))
+        task = TransformTask.from_json(object2json(entity, False))
         if load_fields:
             task.load_fields(self.get_user({'_id': task.user_id}, {'secret': 0}),
                              self.get_media({'_id': task.media_in_id}),
@@ -395,7 +395,7 @@ class Orchestra(object):
     def get_transform_tasks(self, specs=None, fields=None, load_fields=False, append_result=True):
         tasks = []
         for entity in list(self._db.transform_tasks.find(specs, fields)):
-            task = TransformTask.load(object2json(entity, False))
+            task = TransformTask.from_json(object2json(entity, False))
             if load_fields:
                 task.load_fields(self.get_user({'_id': task.user_id}, {'secret': 0}),
                                  self.get_media({'_id': task.media_in_id}),
@@ -457,7 +457,7 @@ class Orchestra(object):
         entity = self._db.publish_tasks.find_one(specs, fields)
         if not entity:
             return None
-        task = PublishTask.load(object2json(entity, False))
+        task = PublishTask.from_json(object2json(entity, False))
         if load_fields:
             task.load_fields(self.get_user({'_id': task.user_id}, {'secret': 0}),
                              self.get_media({'_id': task.media_id}))
@@ -493,7 +493,7 @@ class Orchestra(object):
     def get_publish_tasks(self, specs=None, fields=None, load_fields=False, append_result=True):
         tasks = []
         for entity in list(self._db.publish_tasks.find(specs, fields)):
-            task = PublishTask.load(object2json(entity, False))
+            task = PublishTask.from_json(object2json(entity, False))
             if load_fields:
                 task.load_fields(self.get_user({'_id': task.user_id}, {'secret': 0}),
                                  self.get_media({'_id': task.media_id}))

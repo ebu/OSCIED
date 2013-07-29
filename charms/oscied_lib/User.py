@@ -25,50 +25,42 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import uuid
 from passlib.hash import pbkdf2_sha512
 from passlib.utils import consteq
-from pyutils.py_serialization import json2object
+from OsciedDBModel import OsciedDBModel
 from pyutils.py_validation import valid_email, valid_secret, valid_uuid
 
 
-class User(object):
+class User(OsciedDBModel):
 
-    def __init__(self, _id, first_name, last_name, mail, secret, admin_platform=False):
-        if not _id:
-            _id = str(uuid.uuid4())
-        self._id = _id
+    def __init__(self, _id=None, first_name=None, last_name=None, mail=None, secret=None,
+                 admin_platform=False):
+        super(User, self).__init__(_id)
         self.first_name = first_name
         self.last_name = last_name
         self.mail = mail
         self.secret = secret
-        self.admin_platform = True if str(admin_platform).lower() == 'true' else False
+        self.admin_platform = True if str(admin_platform).lower() == u'true' else False
 
     @property
     def name(self):
         if self.first_name and self.last_name:
-            return self.first_name + ' ' + self.last_name
-        return 'anonymous'
+            return u'{0} {1}'.format(self.first_name, self.last_name)
+        return u'anonymous'
 
     @property
     def is_secret_hashed(self):
-        return self.secret is not None and self.secret.startswith('$pbkdf2-sha512$')
+        return self.secret is not None and self.secret.startswith(u'$pbkdf2-sha512$')
 
     # FIXME test other fields
     def is_valid(self, raise_exception):
         if not valid_uuid(self._id, none_allowed=False):
-            if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : _id is not a valid uuid string')
-            return False
+            self._E(raise_exception, u'_id is not a valid uuid string')
         if not valid_email(self.mail):
-            if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : mail is not a valid email address')
-            return False
+            self._E(raise_exception, u'mail is not a valid email address')
         if not self.is_secret_hashed and not valid_secret(self.secret, True):
-            if raise_exception:
-                raise TypeError(self.__class__.__name__ +
-                    ' : secret is not safe (8+ characters, upper/lower + numbers eg. StrongP6s)')
-            return False
+            self._E(raise_exception, u'secret is not safe (8+ characters, upper/lower + numbers eg.'
+                    ' StrongP6s)')
         return True
 
     def hash_secret(self, rounds=12000, salt=None, salt_size=16):
@@ -77,8 +69,8 @@ class User(object):
 
         **Example usage**:
 
-        >>> from copy import copy
-        >>> user = copy(USER_TEST)
+        >>> import copy
+        >>> user = copy.copy(USER_TEST)
         >>> user.is_secret_hashed
         False
         >>> len(user.secret)
@@ -102,44 +94,20 @@ class User(object):
 
         **Example usage**:
 
-        >>> from copy import copy
-        >>> user = copy(USER_TEST)
-        >>> user.verify_secret('bad_secret')
+        >>> import copy
+        >>> user = copy.copy(USER_TEST)
+        >>> user.verify_secret(u'bad_secret')
         False
-        >>> user.verify_secret('Secr4taB')
+        >>> user.verify_secret(u'Secr4taB')
         True
         >>> user.hash_secret()
-        >>> user.verify_secret('bad_secret')
+        >>> user.verify_secret(u'bad_secret')
         False
-        >>> user.verify_secret('Secr4taB')
+        >>> user.verify_secret(u'Secr4taB')
         True
         """
         if self.is_secret_hashed:
             return pbkdf2_sha512.verify(secret, self.secret)
         return consteq(secret, self.secret)
 
-    @staticmethod
-    def load(json):
-        u"""
-        Returns a new user with attributes loaded from a source JSON string.
-
-        **Example usage**:
-
-        >>> from pyutils.py_serialization import object2json
-        >>> user = User.load(object2json(USER_TEST, False))
-        >>> assert(user.__dict__ == USER_TEST.__dict__)
-        >>> assert(user.is_valid(False))
-        """
-        user = User(None, None, None, None, None)
-        json2object(json, user)
-        return user
-
-USER_TEST = User(None, 'David', 'Fischer', 'david.fischer.ch@gmail.com', 'Secr4taB', True)
-
-# Main ---------------------------------------------------------------------------------------------
-
-if __name__ == '__main__':
-    print('Testing User with doctest')
-    import doctest
-    assert(doctest.testmod(verbose=False))
-    print('OK')
+USER_TEST = User(None, u'David', u'Fischer', u'david.fischer.ch@gmail.com', u'Secr4taB', True)

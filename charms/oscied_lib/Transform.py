@@ -84,11 +84,11 @@ def transform_task(user_json, media_in_json, media_out_json, profile_json, callb
         print object2json(config, True)
 
         # Load and check task parameters
-        user = User.load(user_json)
-        media_in = Media.load(media_in_json)
-        media_out = Media.load(media_out_json)
-        profile = TransformProfile.load(profile_json)
-        callback = Callback.load(callback_json)
+        user = User.from_json(user_json)
+        media_in = Media.from_json(media_in_json)
+        media_out = Media.from_json(media_out_json)
+        profile = TransformProfile.from_json(profile_json)
+        callback = Callback.from_json(callback_json)
         user.is_valid(True)
         media_in.is_valid(True)
         media_out.is_valid(True)

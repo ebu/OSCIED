@@ -27,24 +27,23 @@
 
 import os, uuid
 from OrchestraConfig import ORCHESTRA_CONFIG_TEST
-from pyutils.py_serialization import json2object, object2json
+from OsciedDBModel import OsciedDBModel
 from pyutils.py_validation import valid_filename, valid_uuid
 
 
-class Media(object):
+class Media(OsciedDBModel):
 
-    STATUS = ('PENDING', 'READY', 'PUBLISHED', 'DELETED')
+    STATUS = (u'PENDING', u'READY', u'PUBLISHED', u'DELETED')
 
-    def __init__(self, _id, user_id, parent_id, uri, public_uris, filename, metadata, status):
-        if not _id:
-            _id = str(uuid.uuid4())
-        self._id = _id
+    def __init__(self, _id=None, user_id=None, parent_id=None, uri=None, public_uris=None,
+                 filename=None, metadata={}, status=u'PENDING'):
+        super(Media, self).__init__(_id)
         self.user_id = user_id
         self.parent_id = parent_id
         self.uri = uri
         self.public_uris = public_uris
         try:
-            self.filename = str(filename).replace(' ', '_')
+            self.filename = unicode(filename).replace(u' ', u'_')
         except:
             self.filename = None
         self.metadata = metadata
@@ -60,37 +59,27 @@ class Media(object):
         >>> import copy
         >>> media = copy.copy(MEDIA_TEST)
         >>> assert(not media.is_dash)
-        >>> media.filename = 'test.mpd'
+        >>> media.filename = u'test.mpd'
         >>> assert(media.is_dash)
         """
-        return os.path.splitext(self.filename)[1].lower() == '.mpd'
+        return os.path.splitext(self.filename)[1].lower() == u'.mpd'
 
     def is_valid(self, raise_exception):
         if not valid_uuid(self._id, none_allowed=False):
-            if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : _id is not a valid uuid string')
-            return False
-        if hasattr(self, 'user_id') and not valid_uuid(self.user_id, none_allowed=False):
-            if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : user_id is not a valid uuid string')
-            return False
+            self._E(raise_exception, u'_id is not a valid uuid string')
+        if hasattr(self, u'user_id') and not valid_uuid(self.user_id, none_allowed=False):
+            self._E(raise_exception, u'user_id is not a valid uuid string')
         # FIXME check use if loaded
-        if hasattr(self, 'parent_id') and not valid_uuid(self.parent_id, none_allowed=True):
-            if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : parent_id is not a valid uuid string')
-            return False
+        if hasattr(self, u'parent_id') and not valid_uuid(self.parent_id, none_allowed=True):
+            self._E(raise_exception, u'parent_id is not a valid uuid string')
         # FIXME check parent if loaded
         # FIXME check uri
         # FIXME check public_uris
         if not valid_filename(self.filename):
-            if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : filename is not a valid file-name')
-            return False
+            self._E(raise_exception, u'filename is not a valid file-name')
         # FIXME check metadata
         if not self.status in Media.STATUS:
-            if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : status is not a valid status string')
-            return False
+            self._E(raise_exception, u'status is not in {0}'.format(self.__class__.STATUS))
         return True
 
     def add_metadata(self, key, value, overwrite):
@@ -106,29 +95,12 @@ class Media(object):
     def load_fields(self, user, parent):
         self.user = user
         self.parent = parent
-        delattr(self, 'user_id')
-        delattr(self, 'parent_id')
+        delattr(self, u'user_id')
+        delattr(self, u'parent_id')
 
-    @staticmethod
-    def load(json):
-        media = Media(None, None, None, None, None, None, None, None)
-        json2object(json, media)
-        return media
-
-MEDIA_TEST = Media(None, str(uuid.uuid4()), str(uuid.uuid4()), None, None, 'tabby.mpg',
-                   {'title': "Tabby's adventures §1", 'description': 'My cat drinking water'},
-                   'PENDING')
+MEDIA_TEST = Media(None, unicode(uuid.uuid4()), unicode(uuid.uuid4()), None, None, u'tabby.mpg',
+                   {u'title': u"Tabby's adventures §1", u'description': u'My cat drinking water'},
+                   u'PENDING')
 MEDIA_TEST.uri = ORCHESTRA_CONFIG_TEST.storage_medias_uri(MEDIA_TEST)
-MEDIA_TEST.add_metadata('title', 'not authorized overwrite', False)
-MEDIA_TEST.add_metadata('size', 4096, True)
-
-# Main ---------------------------------------------------------------------------------------------
-
-if __name__ == '__main__':
-    print object2json(MEDIA_TEST, True)
-    MEDIA_TEST.is_valid(True)
-    print str(Media.load(object2json(MEDIA_TEST, False)))
-    print('Testing Media with doctest')
-    import doctest
-    assert(doctest.testmod(verbose=False))
-    print('OK')
+MEDIA_TEST.add_metadata(u'title', u'not authorized overwrite', False)
+MEDIA_TEST.add_metadata(u'size', 4096, True)

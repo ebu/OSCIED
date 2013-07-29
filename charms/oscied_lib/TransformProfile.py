@@ -25,19 +25,17 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import uuid
-from pyutils.py_serialization import json2object, object2json
+from OsciedDBModel import OsciedDBModel
 from pyutils.py_validation import valid_uuid
 
-ENCODERS_NAMES = ('copy', 'ffmpeg', 'dashcast')
+ENCODERS_NAMES = (u'copy', u'ffmpeg', u'dashcast')
 
 
-class TransformProfile(object):
+class TransformProfile(OsciedDBModel):
 
-    def __init__(self, _id, title, description, encoder_name, encoder_string):
-        if not _id:
-            _id = str(uuid.uuid4())
-        self._id = _id
+    def __init__(self, _id=None, title=None, description=None, encoder_name=None,
+                 encoder_string=None):
+        super(TransformProfile, self).__init__(_id)
         self.title = title
         self.description = description
         self.encoder_name = encoder_name
@@ -49,43 +47,20 @@ class TransformProfile(object):
         >>> import copy
         >>> profile = copy.copy(TRANSFORM_PROFILE_TEST)
         >>> assert(not profile.is_dash)
-        >>> profile.encoder_name = 'dashcast'
+        >>> profile.encoder_name = u'dashcast'
         >>> assert(profile.is_dash)
         """
-        return self.encoder_name in ('dashcast')
+        return self.encoder_name in (u'dashcast',)
 
     # FIXME test other fields
     def is_valid(self, raise_exception):
         if not valid_uuid(self._id, none_allowed=False):
-            if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : _id is not a valid uuid string')
-            return False
+            self._E(raise_exception, u'_id is not a valid uuid string')
         if not self.title or not self.title.strip():
-            if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : title is required')
-            return False
+            self._E(raise_exception, u'title is required')
         if not self.encoder_name in ENCODERS_NAMES:
-            if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : encoder_name is not a valid encoder')
-            return False
+            self._E(raise_exception, u'encoder_name is not a valid encoder')
         return True
 
-    @staticmethod
-    def load(json):
-        profile = TransformProfile(None, None, None, None, None)
-        json2object(json, profile)
-        return profile
-
-TRANSFORM_PROFILE_TEST = TransformProfile(None, 'HD 1080p', 'MP4 H.264 1080p, audio copy', 'ffmpeg',
-                                          '-c:a copy ...')
-
-# Main ---------------------------------------------------------------------------------------------
-
-if __name__ == '__main__':
-    print object2json(TRANSFORM_PROFILE_TEST, True)
-    TRANSFORM_PROFILE_TEST.is_valid(True)
-    print str(TransformProfile.load(object2json(TRANSFORM_PROFILE_TEST, False)))
-    print('Testing TransformProfile with doctest')
-    import doctest
-    assert(doctest.testmod(verbose=False))
-    print('OK')
+TRANSFORM_PROFILE_TEST = TransformProfile(None, u'HD 1080p', u'MP4 H.264 1080p, audio copy',
+                                          u'ffmpeg', u'-c:a copy ...')

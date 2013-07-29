@@ -74,9 +74,9 @@ def publish_task(user_json, media_json, callback_json):
         print object2json(config, True)
 
         # Load and check task parameters
-        user = User.load(user_json)
-        media = Media.load(media_json)
-        callback = Callback.load(callback_json)
+        user = User.from_json(user_json)
+        media = Media.from_json(media_json)
+        callback = Callback.from_json(callback_json)
         user.is_valid(True)
         media.is_valid(True)
         callback.is_valid(True)
