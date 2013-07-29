@@ -1,0 +1,15 @@
+{% extends "plugIt/base.html" %}
+
+{% block title %}Upload media{% endblock %}
+
+{% block content %}
+
+    {% if success %}
+        Media uploaded !
+    {% else %}
+        {{ ebuio_abort }}
+    {% endif %}
+
+    <a href="{{ebuio_baseUrl}}medias">Back to medias</a>
+    
+{% endblock %}

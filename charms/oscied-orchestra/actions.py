@@ -1056,6 +1056,40 @@ def get_medias(request, id):
     return PlugItSendFile(uri, None, as_attachment=True, attachment_filename=filename)
 
 
+@action(route="/upload_files/upload_video", methods=['POST'], template='medias/uploaded_done.html')
+@only_logged_user()
+@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+def upload_media(request):
+    """Upload a media """
+
+    try:
+        auth_user = requires_auth(request=request, allow_any=True)
+       metadata = {'title': request.form.get('title', '')}
+        filename = request.form.get('filename')
+
+        # Temp file
+        import string
+        import random
+        import time
+
+        random_temp_name = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(42)) + str(time.time())  # Probably random enought
+
+        tmp_file = orchestra.config.storage_medias_path() + '/'  + random_temp_name
+        tmp_uri = orchestra.config.storage_medias_uri() + '/' + random_temp_name
+
+        file = request.files['file']
+        file.save(tmp_file)
+
+       from werkzeug import secure_filename
+        filename = secure_filename(file.filename)
+     
+        media = Media(None, auth_user._id, None, tmp_uri, None, filename, metadata, 'READY')
+        orchestra.save_media(media)
+       
+        return {'success': True}
+    except Exception as e:
+        map_exceptions(e)
+
 @action(route="/transform/profiles", template="transform/profiles/home.html", methods=['GET'])
 @only_logged_user()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
