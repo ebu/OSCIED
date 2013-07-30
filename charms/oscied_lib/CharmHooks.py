@@ -249,7 +249,7 @@ class CharmHooks(object):
         ``local_config``.
         """
         if hasattr(self, u'local_config'):
-            self.info(u'Save (updated) local configuration {0}'.format(self.local_config))
+            self.debug(u'Save (updated) local configuration {0}'.format(self.local_config))
             self.local_config.write()
 
     def load_metadata(self, metadata):
