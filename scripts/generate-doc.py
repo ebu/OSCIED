@@ -24,9 +24,8 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import print_function
-
 import glob, re, shutil, os
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from os.path import basename, dirname, join, splitext
 from common import (
     REPORT_TOOLS_PLANTUML_BINARY, DAVID_REPORT_PATH, DAVID_REPORT_BUILD_PATH,
@@ -34,81 +33,83 @@ from common import (
     DAVID_REPORT_COMMON_FILE, DAVID_REPORT_REFERENCES_FILE, DAVID_REPORT_LINKS_FILE,
     WIKI_BUILD_PATH, WIKI_SOURCE_PATH, xprint
 )
-from pyutils.filesystem import try_makedirs, try_remove
-from pyutils.pyutils import cmd
+from pyutils.py_filesystem import try_makedirs, try_remove
+from pyutils.py_subprocess import cmd
+from pyutils.py_unicode import configure_unicode
 
-if __name__ == '__main__':
-    from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-    HELP_HTML = 'Build HTML from source reStructuredText files'
-    HELP_PDF = 'Build PDF from source reStructuredText files'
-    HELP_WIKI = 'Build Wiki from source reStructuredText files'
+if __name__ == u'__main__':
+    configure_unicode()
+
+    HELP_HTML = u'Build HTML from source reStructuredText files'
+    HELP_PDF = u'Build PDF from source reStructuredText files'
+    HELP_WIKI = u'Build Wiki from source reStructuredText files'
 
     parser = ArgumentParser(
         formatter_class=ArgumentDefaultsHelpFormatter,
-        epilog='''Generate OSCIED project documentation from source reStructuredText files.''')
-    parser.add_argument('--html', help=HELP_HTML, action='store_true')
-    parser.add_argument('--pdf', help=HELP_PDF, action='store_true')
-    parser.add_argument('--wiki', help=HELP_WIKI, action='store_true')
+        epilog=u'''Generate OSCIED project documentation from source reStructuredText files.''')
+    parser.add_argument(u'--html', help=HELP_HTML, action=u'store_true')
+    parser.add_argument(u'--pdf',  help=HELP_PDF,  action=u'store_true')
+    parser.add_argument(u'--wiki', help=HELP_WIKI, action=u'store_true')
     args = parser.parse_args()
 
     if not args.html and not args.pdf and not args.wiki:
         parser.print_help()
-        print('')
-        xprint('At least one target must be enabled')
+        print(u'')
+        xprint(u'At least one target must be enabled')
 
-    revision = cmd("git log --pretty=format:'%H' -n 1", fail=False)['stdout']
+    revision = cmd(u"git log --pretty=format:'%H' -n 1", fail=False)['stdout']
     if not revision:
-        xprint('Unable to detect local copy revision number !')
+        xprint(u'Unable to detect local copy revision number !')
 
-    print('Generate images from textual UMLs')
-    if cmd(['java', '-jar', REPORT_TOOLS_PLANTUML_BINARY, DAVID_REPORT_UML_PATH,
-            '-failonerror'], fail=False)['returncode'] != 0:
-        xprint('Unable to generate images from UML diagrams')
+    print(u'Generate images from textual UMLs')
+    if cmd([u'java', u'-jar', REPORT_TOOLS_PLANTUML_BINARY, DAVID_REPORT_UML_PATH,
+            u'-failonerror'], fail=False)[u'returncode'] != 0:
+        xprint(u'Unable to generate images from UML diagrams')
 
     print('Append hooks UMLs images together')
     os.chdir(DAVID_REPORT_UML_PATH)
-    for name in ('orchestra', 'webui', 'storage', 'transform', 'publisher'):
-        a = 'activity-%s-install.png' % name
-        b = 'activity-%s-config-changed.png' % name
-        c = 'activity-%s-start.png' % name
-        d = 'activity-%s-stop.png' % name
-        e = 'activity-%s-hooks.png' % name
-        if cmd(['convert', a, b, c, d, '+append', e], fail=False)['returncode'] != 0:
-            if cmd(['convert', a, c, d, '+append', e], fail=False)['returncode'] != 0:
-                xprint("Unable to append %s's hooks UMLs images" % name)
+    for name in (u'orchestra', u'webui', u'storage', u'transform', u'publisher'):
+        a = u'activity-{0}-install.png'.format(name)
+        b = u'activity-{0}-config-changed.png'.format(name)
+        c = u'activity-{0}-start.png'.format(name)
+        d = u'activity-{0}-stop.png'.format(name)
+        e = u'activity-{0}-hooks.png'.format(name)
+        if cmd([u'convert', a, b, c, d, 'u+append', e], fail=False)[u'returncode'] != 0:
+            if cmd([u'convert', a, c, d, u'+append', e], fail=False)[u'returncode'] != 0:
+                xprint(u"Unable to append {0}'s hooks UMLs images".format(name))
         (try_remove(f) for f in (a, b, c, d))
 
-    print('Generate reStructuredText from templates')
-    for template_filename in glob.glob(join(DAVID_REPORT_SOURCE_PATH, '*.rst.template')):
+    print(u'Generate reStructuredText from templates')
+    for template_filename in glob.glob(join(DAVID_REPORT_SOURCE_PATH, u'*.rst.template')):
         rst_filename = join(dirname(template_filename), splitext(template_filename)[0])
         with open(template_filename) as template_file:
-            data = template_file.read().replace('SVN_REVISION', revision)
-            with open(rst_filename, 'w') as rst_file:
+            data = template_file.read().replace(u'SVN_REVISION', revision)
+            with open(rst_filename, u'w', u'utf-8') as rst_file:
                 rst_file.write(data)
 
-    print('Generate links into common file')
-    common_data = references_data = ''
+    print(u'Generate links into common file')
+    common_data = references_data = u''
     with open(DAVID_REPORT_LINKS_FILE) as links_file:
-        for columns in [line.split(';') for line in links_file.readlines()]:
+        for columns in [line.split(u';') for line in links_file.readlines()]:
             if len(columns) == 1:
                 references_data += columns[0]
             else:
                 name, replace, url = columns
                 if replace:
-                    common_data += '.. |%s| replace:: %s\n' % (name, replace)
-                if url != '\n':
-                    common_data += '.. _%s: %s' % (name, url)
-                    common_data += '.. |%s_link| replace:: [%s] %s' % (name, name, url)
-                    references_data += '* |%s_link|\n' % name
-    with open(DAVID_REPORT_COMMON_FILE, 'w') as common_file:
+                    common_data += u'.. |{0}| replace:: {1}\n'.format(name, replace)
+                if url != u'\n':
+                    common_data += u'.. _{0}: {1}'.replace(name, url)
+                    common_data += u'.. |{0}_link| replace:: [{1}] {2}'.replace(name, name, url)
+                    references_data += '* |{0}_link|\n'.replace(name)
+    with open(DAVID_REPORT_COMMON_FILE, u'w', u'utf-8') as common_file:
         common_file.write(common_data)
-    with open(DAVID_REPORT_REFERENCES_FILE, 'w') as references_file:
+    with open(DAVID_REPORT_REFERENCES_FILE, u'w', u'utf-8') as references_file:
         references_file.write(references_data)
 
-    print('Append header files into common file')
-    for header_filename in glob.glob(join(DAVID_REPORT_SOURCE_PATH, '*.rst.header')):
+    print(u'Append header files into common file')
+    for header_filename in glob.glob(join(DAVID_REPORT_SOURCE_PATH, u'*.rst.header')):
         rst_filename = join(dirname(header_filename), splitext(header_filename)[0])
-        with open(rst_filename, 'rw+') as rst_file:
+        with open(rst_filename, u'rw+', u'utf-8') as rst_file:
             data = rst_file.read()
             with open(header_filename) as header_file:
                 rst_file.seek(0)
@@ -121,21 +122,21 @@ if __name__ == '__main__':
 
     if args.html:
         print(HELP_HTML)
-        result = cmd('make html', fail=False)
-        with open('build_html.log', 'w') as log_file:
-            log_file.write('Output:\n%s\nError:\n%s' % (result['stdout'], result['stderr']))
-        if result['returncode'] != 0:
-            xprint('Unable to generate HTML version of the report, see build_html.log')
+        result = cmd(u'make html', fail=False)
+        with open(u'build_html.log', u'w', u'utf-8') as log_file:
+            log_file.write(u'Output:\n{0}\nError:\n{1}'.format(result[u'stdout'], result[u'stderr']))
+        if result[u'returncode'] != 0:
+            xprint(u'Unable to generate HTML version of the report, see build_html.log')
 
     if args.pdf:
         print(HELP_PDF)
-        result = cmd('make latexpdf', fail=False)
-        with open('build_pdf.log', 'w') as log_file:
-            log_file.write('Output:\n%s\nError:\n%s' % (result['stdout'], result['stderr']))
+        result = cmd(u'make latexpdf', fail=False)
+        with open(u'build_pdf.log', u'w') as log_file:
+            log_file.write(u'Output:\n{0}\nError:\n{1}'.format(result['stdout'], result['stderr']))
         if result['returncode'] != 0:
-            xprint('Unable to generate PDF version of the report, see build_pdf.log')
-        print('Move PDF into releases directory')
-        for pdf_filename in glob.glob(join(DAVID_REPORT_BUILD_PATH, '*.pdf')):
+            xprint(u'Unable to generate PDF version of the report, see build_pdf.log')
+        print(u'Move PDF into releases directory')
+        for pdf_filename in glob.glob(join(DAVID_REPORT_BUILD_PATH, u'*.pdf')):
             os.move(pdf_filename, DAVID_REPORT_RELEASE_PATH)
 
     #pecho 'Compress report'
@@ -148,25 +149,25 @@ if __name__ == '__main__':
         file_regex = re.compile(r':file:`([^`]*)`')
         include_regex = re.compile(r'(?P<space>\s*)\.\. literalinclude::\s+(?P<link>\S+)\s*')
         option_regex = re.compile(r'(?P<space>\s*):(?P<name>\S+):\s+(?P<value>\S+)\s*')
-        c_data = ''.join(filter(lambda l: ':orphan:' not in l, open(DAVID_REPORT_COMMON_FILE)))
-        for rst_src_filename in glob.glob(join(WIKI_SOURCE_PATH, '*.rst')):
+        c_data = u''.join(filter(lambda l: u':orphan:' not in l, open(DAVID_REPORT_COMMON_FILE)))
+        for rst_src_filename in glob.glob(join(WIKI_SOURCE_PATH, u'*.rst')):
             rst_dst_filename = join(WIKI_BUILD_PATH, basename(rst_src_filename))
             with open(rst_src_filename) as rst_src_file:
-                data = '%s\n%s' % (c_data, rst_src_file.read())
+                data = u'{0}\n{1}'.format(c_data, rst_src_file.read())
                 # Replace :file: directives by ``
                 data = file_regex.sub(r'``\1``', data, re.MULTILINE)
                 # Replace literalinclude directives by code-block
-                include = {'space': None, 'link': None}
+                include = {u'space': None, u'link': None}
                 options = {}
                 for line in data.split('\n'):
                     match = include_regex.match(line)
                     if match:
                         include = match.groupdict()
-                    elif include['link']:
+                    elif include[u'link']:
                         match = option_regex.match(line)
                         if match:
                             option = match.groupdict()
-                            options[option['name']] = option['value']
+                            options[option[u'name']] = option[u'value']
                         else:
                             pass  # FIXME TODO
                             # # Here all lines of literalinclude are scanned
@@ -174,11 +175,11 @@ if __name__ == '__main__':
                             #     data = f.read()
                             #     # TODO -> write to dest
                             # include['link'] = None
-                with open(rst_dst_filename, 'w') as rst_dst_file:
+                with open(rst_dst_filename, u'w', u'utf-8') as rst_dst_file:
                     rst_dst_file.write(data)
 
-    print('Remove intermediate files')
-    for png_filename in glob.glob(join(DAVID_REPORT_UML_PATH, '*.png')):
+    print(u'Remove intermediate files')
+    for png_filename in glob.glob(join(DAVID_REPORT_UML_PATH, u'*.png')):
         os.remove(png_filename)
-    for template_filename in glob.glob(join(DAVID_REPORT_SOURCE_PATH, '*.rst.template')):
+    for template_filename in glob.glob(join(DAVID_REPORT_SOURCE_PATH, u'*.rst.template')):
         os.remove(join(dirname(template_filename), splitext(template_filename)[0]))

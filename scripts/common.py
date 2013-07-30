@@ -34,69 +34,69 @@ from os.path import dirname, join
 # FIXME Current implementation of orchestra doesn't accept external IP you must execute juju-menu.sh
 # -> config to update storage's related constants automatically
 
-STORAGE_PRIVATE_IP = ''
-STORAGE_MOUNTPOINT = ''
-STORAGE_BRICK = ''
-RELEASE = 'raring'      # Update this according to your needs
-NETWORK_IFACE = 'eth0'  # Update this according to your needs
+STORAGE_PRIVATE_IP = u''
+STORAGE_MOUNTPOINT = u''
+STORAGE_BRICK = u''
+RELEASE = u'raring'      # Update this according to your needs
+NETWORK_IFACE = u'eth0'  # Update this according to your needs
 
 SCRIPTS_PATH = os.getcwd()
 BASE_PATH = dirname(SCRIPTS_PATH)
-CHARMS_PATH = join(BASE_PATH, 'charms')
-CHARMS_DEPLOY_PATH = join(CHARMS_PATH, 'deploy', RELEASE)
-CONFIG_PATH = join(BASE_PATH, 'config')
-DOCS_PATH = join(BASE_PATH, 'docs')
-MEDIAS_PATH = join(BASE_PATH, 'medias')
-TOOLS_PATH = join(BASE_PATH, 'tools')
-REFERENCES_PATH = join(DOCS_PATH, 'references')
+CHARMS_PATH = join(BASE_PATH, u'charms')
+CHARMS_DEPLOY_PATH = join(CHARMS_PATH, u'deploy', RELEASE)
+CONFIG_PATH = join(BASE_PATH, u'config')
+DOCS_PATH = join(BASE_PATH, u'docs')
+MEDIAS_PATH = join(BASE_PATH, u'medias')
+TOOLS_PATH = join(BASE_PATH, u'tools')
+REFERENCES_PATH = join(DOCS_PATH, u'references')
 
 # Reports related configuration (e.g. listing of components)
-REPORT_TOOLS_PLANTUML_BINARY = join(TOOLS_PATH, 'plantuml.jar')
-DAVID_REPORT_RELEASE_PATH = join(DOCS_PATH, 'david', 'master_thesis')
-DAVID_REPORT_PATH = join(DOCS_PATH, 'david', 'master_thesis_rst')
-DAVID_REPORT_BUILD_PATH = join(DAVID_REPORT_PATH, 'build')
-DAVID_REPORT_SOURCE_PATH = join(DAVID_REPORT_PATH, 'source')
-DAVID_REPORT_UML_PATH = join(DAVID_REPORT_PATH, 'uml')
-DAVID_REPORT_COMMON_FILE = join(DAVID_REPORT_SOURCE_PATH, 'common.rst')
-DAVID_REPORT_LINKS_FILE = join(DAVID_REPORT_SOURCE_PATH, 'common.rst.links')
-DAVID_REPORT_REFERENCES_FILE = join(DAVID_REPORT_SOURCE_PATH, 'appendices-references.rst')
+REPORT_TOOLS_PLANTUML_BINARY = join(TOOLS_PATH, u'plantuml.jar')
+DAVID_REPORT_RELEASE_PATH = join(DOCS_PATH, u'david', u'master_thesis')
+DAVID_REPORT_PATH = join(DOCS_PATH, u'david', u'master_thesis_rst')
+DAVID_REPORT_BUILD_PATH = join(DAVID_REPORT_PATH, u'build')
+DAVID_REPORT_SOURCE_PATH = join(DAVID_REPORT_PATH, u'source')
+DAVID_REPORT_UML_PATH = join(DAVID_REPORT_PATH, u'uml')
+DAVID_REPORT_COMMON_FILE = join(DAVID_REPORT_SOURCE_PATH, u'common.rst')
+DAVID_REPORT_LINKS_FILE = join(DAVID_REPORT_SOURCE_PATH, u'common.rst.links')
+DAVID_REPORT_REFERENCES_FILE = join(DAVID_REPORT_SOURCE_PATH, u'appendices-references.rst')
 
-WIKI_BUILD_PATH = join(DOCS_PATH, 'wiki', 'build')
-WIKI_SOURCE_PATH = join(DOCS_PATH, 'wiki', 'source')
+WIKI_BUILD_PATH = join(DOCS_PATH, u'wiki', u'build')
+WIKI_SOURCE_PATH = join(DOCS_PATH, u'wiki', u'source')
 
 # # Generated configuration
-CONFIG_GEN_PATH = join(CONFIG_PATH, 'generated')
-CONFIG_GEN_AUTHS_FILE = join(CONFIG_GEN_PATH, 'auths.list')
-CONFIG_GEN_IDS_FILE = join(CONFIG_GEN_PATH, 'ids.list')
-CONFIG_GEN_JSON_FILE = join(CONFIG_GEN_PATH, 'json.list')
-CONFIG_GEN_UNITS_FILE = join(CONFIG_GEN_PATH, 'units.list')
-CONFIG_GEN_CONFIG_FILE = join(CONFIG_GEN_PATH, 'config.yaml')
+CONFIG_GEN_PATH = join(CONFIG_PATH, u'generated')
+CONFIG_GEN_AUTHS_FILE = join(CONFIG_GEN_PATH, u'auths.list')
+CONFIG_GEN_IDS_FILE = join(CONFIG_GEN_PATH, u'ids.list')
+CONFIG_GEN_JSON_FILE = join(CONFIG_GEN_PATH, u'json.list')
+CONFIG_GEN_UNITS_FILE = join(CONFIG_GEN_PATH, u'units.list')
+CONFIG_GEN_CONFIG_FILE = join(CONFIG_GEN_PATH, u'config.yaml')
 
 # # Orchestra related configuration (e.g. initial setup)
-CONFIG_API_PATH = join(CONFIG_PATH, 'api')
-CONFIG_API_USERS_FILE = join(CONFIG_API_PATH, 'users.csv')
-CONFIG_API_MEDIAS_FILE = join(CONFIG_API_PATH, 'medias.csv')
-CONFIG_API_TPROFILES_FILE = join(CONFIG_API_PATH, 'tprofiles.csv')
+CONFIG_API_PATH = join(CONFIG_PATH, u'api')
+CONFIG_API_USERS_FILE = join(CONFIG_API_PATH, u'users.csv')
+CONFIG_API_MEDIAS_FILE = join(CONFIG_API_PATH, u'medias.csv')
+CONFIG_API_TPROFILES_FILE = join(CONFIG_API_PATH, u'tprofiles.csv')
 
 # # JuJu related configuration (e.g. environments)
-CONFIG_JUJU_PATH = join(CONFIG_PATH, 'juju')
-CONFIG_JUJU_ID_RSA = join(CONFIG_JUJU_PATH, 'id_rsa')
-CONFIG_JUJU_ID_RSA_PUB = join(CONFIG_JUJU_PATH, 'id_rsa.pub')
-CONFIG_JUJU_ENVS_FILE = join(CONFIG_JUJU_PATH, 'environments.yaml')
-CONFIG_JUJU_FILES_PATH = join(CONFIG_PATH, 'juju_files')
-CONFIG_JUJU_TEMPL_FILE = join(CONFIG_JUJU_FILES_PATH, 'environments.yaml.template')
+CONFIG_JUJU_PATH = join(CONFIG_PATH, u'juju')
+CONFIG_JUJU_ID_RSA = join(CONFIG_JUJU_PATH, u'id_rsa')
+CONFIG_JUJU_ID_RSA_PUB = join(CONFIG_JUJU_PATH, u'id_rsa.pub')
+CONFIG_JUJU_ENVS_FILE = join(CONFIG_JUJU_PATH, u'environments.yaml')
+CONFIG_JUJU_FILES_PATH = join(CONFIG_PATH, u'juju_files')
+CONFIG_JUJU_TEMPL_FILE = join(CONFIG_JUJU_FILES_PATH, u'environments.yaml.template')
 
-CONFIG_SCENARIOS_PATH = join(CONFIG_PATH, 'scenarios')
+CONFIG_SCENARIOS_PATH = join(CONFIG_PATH, u'scenarios')
 
-HOME = os.environ['HOME']
-ID_RSA = join(HOME, '.ssh', 'id_rsa')
-JUJU_PATH = join(HOME, '.juju')
-JUJU_STORAGE_PATH = join(JUJU_PATH, 'storage/')
-JUJU_ENVS_FILE = join(JUJU_PATH, 'environments.yaml')
+HOME = os.environ[u'HOME']
+ID_RSA = join(HOME, u'.ssh', u'id_rsa')
+JUJU_PATH = join(HOME, u'.juju')
+JUJU_STORAGE_PATH = join(JUJU_PATH, u'storage/')
+JUJU_ENVS_FILE = join(JUJU_PATH, u'environments.yaml')
 
-BAD_AUTH = 'charlie@hacker.com:challenge_accepted'
+BAD_AUTH = u'charlie@hacker.com:challenge_accepted'
 
 
 def xprint(message):
-    print('[ERROR] %s' % message, file=sys.stderr)
+    print(u'[ERROR] {0}'.format(message), file=sys.stderr)
     sys.exit(1)
