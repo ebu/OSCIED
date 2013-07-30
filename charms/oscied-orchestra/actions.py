@@ -1041,7 +1041,6 @@ def view_medias_list(request):
     return {'medias': medias, 'refresh_rate': 5}
 
 
-
 @action(route="/medias/force_download/<id>",methods=['GET'])
 @only_logged_user()
 @user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
@@ -1052,9 +1051,8 @@ def get_medias(request, id):
     medias = api_media_id_get(request, id)
     uri = medias['value'].api_uri
     filename = medias['value'].filename
-
+    
     return PlugItSendFile(uri, None, as_attachment=True, attachment_filename=filename)
-
 
 @action(route="/upload_files/upload_video", methods=['POST'], template='medias/uploaded_done.html')
 @only_logged_user()
@@ -1064,7 +1062,7 @@ def upload_media(request):
 
     try:
         auth_user = requires_auth(request=request, allow_any=True)
-       metadata = {'title': request.form.get('title', '')}
+        metadata = {'title': request.form.get('title', '')}
         filename = request.form.get('filename')
 
         # Temp file
@@ -1074,13 +1072,13 @@ def upload_media(request):
 
         random_temp_name = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(42)) + str(time.time())  # Probably random enought
 
-        tmp_file = orchestra.config.storage_medias_path() + '/'  + random_temp_name
+        tmp_file = orchestra.config.storage_medias_path() + '/' + random_temp_name
         tmp_uri = orchestra.config.storage_medias_uri() + '/' + random_temp_name
 
         file = request.files['file']
         file.save(tmp_file)
 
-       from werkzeug import secure_filename
+        from werkzeug import secure_filename
         filename = secure_filename(file.filename)
      
         media = Media(None, auth_user._id, None, tmp_uri, None, filename, metadata, 'READY')
@@ -1205,3 +1203,8 @@ def view_publisher_tasks_launch(request):
     """
     task_id = response2dict(api_publish_task_post(request), remove_underscore=True)
     return {'task_id': task_id}
+
+@action(route="/menuBar", template="menuBar.html")
+def menu_bar(request):
+    """Dummy action to load the menubar"""
+    return {}

@@ -1,8 +1,11 @@
 {% extends "plugIt/base.html" %}
+{% plugitInclude "menuBar" %}
 
 {% block title %}OSCIED :: Publication tasks{% endblock %}
 
 {% block content %}
+
+{% load plugit_tags %}
 
 <div id="ptitMessage"></div>
 

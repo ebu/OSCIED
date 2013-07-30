@@ -1,8 +1,11 @@
 {% extends "plugIt/base.html" %}
+{% load plugit_tags %}
 
 {% block title %}Upload media{% endblock %}
 
 {% block content %}
+
+    {% plugitInclude "menuBar" %}
 
     {% if success %}
         Media uploaded !

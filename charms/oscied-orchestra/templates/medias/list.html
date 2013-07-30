@@ -32,12 +32,12 @@
          <td>{{media.metadata.size|filesizeformat}}</td>
          <td>{{media.metadata.duration}}</td>
          <td>{{media.metadata.add_date}}</td>
-         <td>{{media.metadata.user.first_name}} {{media.metadata.user_last_name}}</td>
+         <td>{{media.metadata.user.name}}</td>
          <td>
             <span class="label {% if status == 'PENDING' %}label-warning{% elif status == 'READY' %}label-success{% elif status != 'UNKNOWN' %}label-inverse{% endif %}">{{status}}</span>
          </td>
          <td>
-            {% if ebuio_u.email == media.user.mail %}
+            {% if ebuio_u.username == media.user.username %}
             {% if status == 'READY' or status == 'PUBLISHED' %}
             <a class="delete" title="{{media.metadata.title}}" href="{{ebuio_baseUrl}}medias/delete/{{media.id}}">
                <button class="btn btn-mini btn-danger">Delete</button>
