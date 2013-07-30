@@ -1,24 +1,23 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-#**************************************************************************************************#
-#     OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : TESTS OF COMMON LIBRARY
+#**********************************************************************************************************************#
+#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARY
 #
 #  Authors   : David Fischer
 #  Contact   : david.fischer.ch@gmail.com
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
 #  Copyright : 2012-2013 OSCIED Team. All rights reserved.
-#**************************************************************************************************#
+#**********************************************************************************************************************#
 #
 # This file is part of EBU/UER OSCIED Project.
 #
-# This project is free software: you can redistribute it and/or modify it under the terms of the
-# GNU General Public License as published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
+# This project is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+# License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+# version.
 #
-# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
-# even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the GNU General Public License for more details.
+# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
@@ -40,13 +39,11 @@ from oscied_lib.OrchestraConfig import OrchestraConfig
 from oscied_lib.OrchestraHooks import OrchestraHooks
 
 CONFIG = {
-    u'verbose': True, u'root_secret': u'toto', u'nodes_secret': u'abcd',
-    u'repositories_user': u'oscied', u'repositories_pass': u'',
-    u'charms_repository': u'https://github.com/ebu/OSCIED/charms',
+    u'verbose': True, u'root_secret': u'toto', u'nodes_secret': u'abcd', u'repositories_user': u'oscied',
+    u'repositories_pass': u'', u'charms_repository': u'https://github.com/ebu/OSCIED/charms',
     u'mongo_admin_password': u'Mongo_admin_1234', u'mongo_nodes_password': u'Mongo_user_1234',
-    u'rabbit_password': u'Alice_in_wonderland', u'storage_address': u'',
-    u'storage_nat_address': u'', u'storage_fstype': u'', 'storage_mountpoint': u'',
-    u'storage_options': u''
+    u'rabbit_password': u'Alice_in_wonderland', u'storage_address': u'', u'storage_nat_address': u'',
+    u'storage_fstype': u'', 'storage_mountpoint': u'', u'storage_options': u''
 }
 
 OS_ENV, RETURNS = copy(DEFAULT_OS_ENV), []
@@ -101,6 +98,6 @@ class TestOrchestraHooks(object):
             call(u'rabbitmqctl add_vhost celery',                     fail=False),
             call(u'rabbitmqctl set_permissions -p celery nodes ".*" ".*" ".*"', fail=False)])
 
-if __name__ == '__main__':
+if __name__ == u'__main__':
     import nose
     nose.runmodule(argv=[__file__], exit=False)

@@ -1,24 +1,23 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-#**************************************************************************************************#
+#**********************************************************************************************************************#
 #              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARY
 #
 #  Authors   : David Fischer
 #  Contact   : david.fischer.ch@gmail.com
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
 #  Copyright : 2012-2013 OSCIED Team. All rights reserved.
-#**************************************************************************************************#
+#**********************************************************************************************************************#
 #
 # This file is part of EBU/UER OSCIED Project.
 #
-# This project is free software: you can redistribute it and/or modify it under the terms of the
-# GNU General Public License as published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
+# This project is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+# License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+# version.
 #
-# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
-# even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the GNU General Public License for more details.
+# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
@@ -63,7 +62,6 @@ class Callback(JsoneableObject):
     def post(self, data_json):
 #       return requests.post(self.url, data_json, auth=(self.username, self.password))
         headers = {u'Content-type': u'application/json', u'Accept': u'text/plain'}
-        return requests.post(self.url, headers=headers, data=data_json,
-                             auth=(self.username, self.password))
+        return requests.post(self.url, headers=headers, data=data_json, auth=(self.username, self.password))
 
 CALLBACK_TEST = Callback(u'http://127.0.0.1:5000/media', u'toto', u'1234')

@@ -1,24 +1,23 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-#**************************************************************************************************#
-#     OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : TESTS OF COMMON LIBRARY
+#**********************************************************************************************************************#
+#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARY
 #
 #  Authors   : David Fischer
 #  Contact   : david.fischer.ch@gmail.com
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
 #  Copyright : 2012-2013 OSCIED Team. All rights reserved.
-#**************************************************************************************************#
+#**********************************************************************************************************************#
 #
 # This file is part of EBU/UER OSCIED Project.
 #
-# This project is free software: you can redistribute it and/or modify it under the terms of the
-# GNU General Public License as published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
+# This project is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+# License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+# version.
 #
-# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
-# even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the GNU General Public License for more details.
+# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
@@ -42,8 +41,8 @@ from oscied_lib.TransformConfig import TransformConfig
 from oscied_lib.CharmHooks_Storage import CharmHooks_Storage
 
 CONFIG_DEFAULT = {
-    u'storage_address': u'', u'storage_nat_address': u'', u'storage_fstype': u'',
-    u'storage_mountpoint': u'', u'storage_options': u'', u'storage_path': u'test_path'
+    u'storage_address': u'', u'storage_nat_address': u'', u'storage_fstype': u'', u'storage_mountpoint': u'',
+    u'storage_options': u'', u'storage_path': u'test_path'
 }
 
 CONFIG_STORAGE = {
@@ -52,9 +51,8 @@ CONFIG_STORAGE = {
 }
 
 CONFIG_STORAGE_NAT = {
-    u'storage_address': u'home.ch', u'storage_nat_address': u'proxy.ch',
-    u'storage_fstype': u'glusterfs', u'storage_mountpoint': u'medias_volume_0',
-    u'storage_options': u''
+    u'storage_address': u'home.ch', u'storage_nat_address': u'proxy.ch', u'storage_fstype': u'glusterfs',
+    u'storage_mountpoint': u'medias_volume_0', u'storage_options': u''
 }
 
 
@@ -90,8 +88,7 @@ class TestCharmHooks_Storage(object):
         self.hooks.cmd = mock_cmd()
         self.hooks.storage_remount()
         assert_equal(self.hooks.cmd.call_args_list, [])
-        assert_equal(system_hosts,
-            open(self.hooks.local_config.hosts_file, u'r', u'utf-8').readlines())
+        assert_equal(system_hosts, open(self.hooks.local_config.hosts_file, u'r', u'utf-8').readlines())
 
     def test_storage_remount_storage_config_nat_hosts_updated(self):
         self.hooks, system_hosts = self.create_hooks(CharmHooks_Storage_tmp, CONFIG_STORAGE_NAT)
@@ -100,10 +97,8 @@ class TestCharmHooks_Storage(object):
         self.hooks.storage_remount()
         assert_equal(self.hooks.cmd.call_args_list,
             [call([u'mount', u'-t', u'glusterfs', u'proxy.ch:/medias_volume_0', u'/mnt/storage'])])
-        assert(u'proxy.ch home.ch' in
-            open(self.hooks.local_config.hosts_file, u'r', u'utf-8').readlines()[-1])
-        assert_equal(system_hosts,
-            open(self.hooks.local_config.hosts_file, u'r', u'utf-8').readlines()[:-1])
+        assert(u'proxy.ch home.ch' in open(self.hooks.local_config.hosts_file, u'r', u'utf-8').readlines()[-1])
+        assert_equal(system_hosts, open(self.hooks.local_config.hosts_file, u'r', u'utf-8').readlines()[:-1])
 
     def test_storage_remount_storage_config(self):
         self.hooks, system_hosts = self.create_hooks(CharmHooks_Storage_tmp, CONFIG_STORAGE)
@@ -112,8 +107,7 @@ class TestCharmHooks_Storage(object):
         self.hooks.storage_remount()
         assert_equal(self.hooks.cmd.call_args_list,
             [call([u'mount', u'-t', u'glusterfs', u'home.ch:/medias_volume_0', u'/mnt/storage'])])
-        assert_equal(system_hosts,
-            open(self.hooks.local_config.hosts_file, u'r', u'utf-8').readlines())
+        assert_equal(system_hosts, open(self.hooks.local_config.hosts_file, u'r', u'utf-8').readlines())
 
     def test_storage_remount_storage_config_do_not_re_re_mount(self):
         self.hooks, system_hosts = self.create_hooks(CharmHooks_Storage_tmp, CONFIG_STORAGE)
@@ -125,8 +119,7 @@ class TestCharmHooks_Storage(object):
         self.hooks.storage_remount()
         assert_equal(self.hooks.cmd.call_args_list,
             [call([u'mount', u'-t', u'glusterfs', u'home.ch:/medias_volume_0', u'/mnt/storage'])])
-        assert_equal(system_hosts,
-            open(self.hooks.local_config.hosts_file, u'r', u'utf-8').readlines())
+        assert_equal(system_hosts, open(self.hooks.local_config.hosts_file, u'r', u'utf-8').readlines())
 
     def test_storage_remount_do_not_re_re_mount(self):
         self.hooks, system_hosts = self.create_hooks(CharmHooks_Storage_tmp, CONFIG_DEFAULT)
@@ -138,9 +131,8 @@ class TestCharmHooks_Storage(object):
         self.hooks.storage_remount(address=u'home.ch', fstype=u'glusterfs', mountpoint=u'my_vol_0')
         assert_equal(self.hooks.cmd.call_args_list,
             [call([u'mount', u'-t', u'glusterfs', u'home.ch:/my_vol_0', u'/mnt/storage'])])
-        assert_equal(system_hosts,
-            open(self.hooks.local_config.hosts_file, u'r', u'utf-8').readlines())
+        assert_equal(system_hosts, open(self.hooks.local_config.hosts_file, u'r', u'utf-8').readlines())
 
-if __name__ == '__main__':
+if __name__ == u'__main__':
     import nose
     nose.runmodule(argv=[__file__], exit=False)

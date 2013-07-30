@@ -1,24 +1,23 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-#**************************************************************************************************#
-#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARIE
+#**********************************************************************************************************************#
+#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARY
 #
 #  Authors   : David Fischer
 #  Contact   : david.fischer.ch@gmail.com
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
 #  Copyright : 2012-2013 OSCIED Team. All rights reserved.
-#**************************************************************************************************#
+#**********************************************************************************************************************#
 #
 # This file is part of EBU/UER OSCIED Project.
 #
-# This project is free software: you can redistribute it and/or modify it under the terms of the
-# GNU General Public License as published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
+# This project is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+# License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+# version.
 #
-# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
-# even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the GNU General Public License for more details.
+# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
@@ -33,8 +32,7 @@ from pyutils.py_validation import valid_email, valid_secret, valid_uuid
 
 class User(OsciedDBModel):
 
-    def __init__(self, _id=None, first_name=None, last_name=None, mail=None, secret=None,
-                 admin_platform=False):
+    def __init__(self, _id=None, first_name=None, last_name=None, mail=None, secret=None, admin_platform=False):
         super(User, self).__init__(_id)
         self.first_name = first_name
         self.last_name = last_name
@@ -59,8 +57,7 @@ class User(OsciedDBModel):
         if not valid_email(self.mail):
             self._E(raise_exception, u'mail is not a valid email address')
         if not self.is_secret_hashed and not valid_secret(self.secret, True):
-            self._E(raise_exception, u'secret is not safe (8+ characters, upper/lower + numbers eg.'
-                    ' StrongP6s)')
+            self._E(raise_exception, u'secret is not safe (8+ characters, upper/lower + numbers eg. StrongP6s)')
         return True
 
     def hash_secret(self, rounds=12000, salt=None, salt_size=16):

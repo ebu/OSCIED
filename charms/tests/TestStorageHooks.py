@@ -1,24 +1,23 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-#**************************************************************************************************#
-#     OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : TESTS OF COMMON LIBRARY
+#**********************************************************************************************************************#
+#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARY
 #
 #  Authors   : David Fischer
 #  Contact   : david.fischer.ch@gmail.com
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
 #  Copyright : 2012-2013 OSCIED Team. All rights reserved.
-#**************************************************************************************************#
+#**********************************************************************************************************************#
 #
 # This file is part of EBU/UER OSCIED Project.
 #
-# This project is free software: you can redistribute it and/or modify it under the terms of the
-# GNU General Public License as published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
+# This project is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+# License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+# version.
 #
-# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
-# even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the GNU General Public License for more details.
+# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
@@ -57,9 +56,8 @@ class TestStorageHooks(object):
         self.hooks.config.allowed_ips = u'192.168.1.*,10.10.*'
         self.hooks.local_config.allowed_ips = [u'129.194.185.47']
         self.hooks.volume_do = mock_cmd(
-            u'\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started'
-            '\nNumber of Bricks: 1\nTransport-type: tcp\nBricks:'
-            '\nBrick1: ip-10-36-122-169.ec2.internal:/exp14\n'
+            u'\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started\nNumber of Bricks: 1\n'
+            'Transport-type: tcp\nBricks:\nBrick1: ip-10-36-122-169.ec2.internal:/exp14\n'
             'Options Reconfigured:\nauth.allow: 10.10.*,129.194.185.47,192.168.1.*\n')
         self.hooks.volume_set_allowed_ips()
         assert_equal(self.hooks.volume_do.call_args_list, [
@@ -73,23 +71,20 @@ class TestStorageHooks(object):
         self.hooks.config.allowed_ips = u'192.168.1.*,10.10.*'
         self.hooks.local_config.allowed_ips = [u'129.194.185.47']
         self.hooks.volume_do = mock_cmd(
-            u'\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started'
-            '\nNumber of Bricks: 1\nTransport-type: tcp\nBricks:'
-            '\nBrick1: ip-10-36-122-169.ec2.internal:/exp14\n'
+            u'\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started\nNumber of Bricks: 1\n'
+            'Transport-type: tcp\nBricks:\nBrick1: ip-10-36-122-169.ec2.internal:/exp14\n'
             'Options Reconfigured:\nauth.allow: 192.168.1.*\n')
         self.hooks.volume_set_allowed_ips()
 
     def test_volume_infos(self):
         self.hooks.volume_do = mock_cmd(
-            u'\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started'
-            '\nNumber of Bricks: 1\nTransport-type: tcp\nBricks:'
-            '\nBrick1: ip-10-36-122-169.ec2.internal:/exp14\n'
+            u'\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started\nNumber of Bricks: 1\n'
+            'Transport-type: tcp\nBricks:\nBrick1: ip-10-36-122-169.ec2.internal:/exp14\n'
             'Options Reconfigured:\nauth.allow: 192.168.0.104\n')
         infos = self.hooks.volume_infos()
         assert_equal(infos, {
-            u'name': u'medias_volume_14', u'type': u'Distribute', u'status': u'Started',
-            u'transport': u'tcp', u'bricks': [u'ip-10-36-122-169.ec2.internal:/exp14'],
-            u'auth_allow': u'192.168.0.104'})
+            u'name': u'medias_volume_14', u'type': u'Distribute', u'status': u'Started', u'transport': u'tcp',
+            u'bricks': [u'ip-10-36-122-169.ec2.internal:/exp14'], u'auth_allow': u'192.168.0.104'})
         self.hooks.volume_do.assert_called_with(u'info', volume=None, fail=False)
 
     # def test_install_replica_1_with_client(self):

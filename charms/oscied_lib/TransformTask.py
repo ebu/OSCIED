@@ -1,24 +1,23 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-#**************************************************************************************************#
+#**********************************************************************************************************************#
 #              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARY
 #
 #  Authors   : David Fischer
 #  Contact   : david.fischer.ch@gmail.com
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
 #  Copyright : 2012-2013 OSCIED Team. All rights reserved.
-#**************************************************************************************************#
+#**********************************************************************************************************************#
 #
 # This file is part of EBU/UER OSCIED Project.
 #
-# This project is free software: you can redistribute it and/or modify it under the terms of the
-# GNU General Public License as published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
+# This project is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+# License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+# version.
 #
-# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
-# even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the GNU General Public License for more details.
+# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
@@ -35,8 +34,8 @@ from pyutils.py_validation import valid_uuid
 
 class TransformTask(OsciedDBModel):
 
-    def __init__(self, _id=None, user_id=None, media_in_id=None, media_out_id=None, profile_id=None,
-                 statistic={}, revoked=False, status=u'UNKNOWN'):
+    def __init__(self, _id=None, user_id=None, media_in_id=None, media_out_id=None, profile_id=None, statistic={},
+                 revoked=False, status=u'UNKNOWN'):
         super(TransformTask, self).__init__(_id)
         self.user_id = user_id
         self.media_in_id = media_in_id
@@ -100,17 +99,15 @@ class TransformTask(OsciedDBModel):
     @staticmethod
     def validate_task(media_in, profile, media_out):
         if not media_in.status in (u'READY', u'PUBLISHED'):
-            raise NotImplementedError(u'Cannot launch the task, input media status is {0}.'.format(
-                                      media_in.status))
+            raise NotImplementedError(u'Cannot launch the task, input media status is {0}.'.format(media_in.status))
         if media_in.is_dash and profile.encoder_name != u'copy':
             raise NotImplementedError(u'Cannot launch the task, input media is MPEG-DASH content '
                                       'and encoder is not copy.')
         if profile.is_dash and not media_out.is_dash:
-            raise ValueError(u'Cannot launch the task, output media is not a MPD but task is based '
-                             'on a MPEG-DASH encoder called {0}.'.format(profile.encoder_name))
+            raise ValueError(u'Cannot launch the task, output media is not a MPD but task is based on a MPEG-DASH '
+                             'encoder called {0}.'.format(profile.encoder_name))
         if not profile.is_dash and media_out.is_dash:
-            raise ValueError(u'Cannot launch the task, output media is a MPD but task is not based '
-                             'on a MPEG-DASH encoder called {0}.'.format(profile.encoder_name))
+            raise ValueError(u'Cannot launch the task, output media is a MPD but task is not based on a MPEG-DASH '
+                             'encoder called {0}.'.format(profile.encoder_name))
 
-TRANSFORM_JOB_TEST = TransformTask(None, USER_TEST._id, MEDIA_TEST._id, MEDIA_TEST._id,
-                                   TRANSFORM_PROFILE_TEST._id)
+TRANSFORM_JOB_TEST = TransformTask(None, USER_TEST._id, MEDIA_TEST._id, MEDIA_TEST._id, TRANSFORM_PROFILE_TEST._id)

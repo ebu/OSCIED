@@ -1,24 +1,23 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-#**************************************************************************************************#
-#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : TRANSFORM
+#**********************************************************************************************************************#
+#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARY
 #
 #  Authors   : David Fischer
 #  Contact   : david.fischer.ch@gmail.com
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
 #  Copyright : 2012-2013 OSCIED Team. All rights reserved.
-#**************************************************************************************************#
+#**********************************************************************************************************************#
 #
 # This file is part of EBU/UER OSCIED Project.
 #
-# This project is free software: you can redistribute it and/or modify it under the terms of the
-# GNU General Public License as published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
+# This project is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+# License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+# version.
 #
-# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
-# even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the GNU General Public License for more details.
+# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
@@ -49,38 +48,37 @@ FFMPEG_REGEX = re.compile(
     r'time=\s*(?P<time>\S+)\s+bitrate=\s*(?P<bitrate>\S+)')
 
 
-@task(name='Transform.transform_task')
+@task(name=u'Transform.transform_task')
 def transform_task(user_json, media_in_json, media_out_json, profile_json, callback_json):
 
     def copy_callback(start_date, elapsed_time, eta_time, src_size, dst_size, ratio):
-        transform_task.update_state(state='PROGRESS', meta={
-            'hostname': request.hostname, 'start_date': start_date, 'elapsed_time': elapsed_time,
-            'eta_time': eta_time, 'media_in_size': src_size, 'media_out_size': dst_size,
-            'percent': int(100 * ratio)})
+        transform_task.update_state(state=u'PROGRESS', meta={
+            u'hostname': request.hostname, 'start_date': start_date, u'elapsed_time': elapsed_time,
+            u'eta_time': eta_time, u'media_in_size': src_size, u'media_out_size': dst_size,
+            u'percent': int(100 * ratio)})
 
     def transform_callback(status):
-        data_json = object2json({'task_id': request.id, 'status': status}, False)
+        data_json = object2json({u'task_id': request.id, u'status': status}, False)
         if callback is None:
-            print('%s [ERROR] Unable to callback orchestrator: %s' % (request.id, data_json))
+            print(u'{0} [ERROR] Unable to callback orchestrator: {1}'.format(request.id, data_json))
         else:
             r = callback.post(data_json)
-            print('%s Code %s %s : %s' % (request.id, r.status_code, r.reason, r._content))
+            print(u'{0} Code {1} {2} : {3}'.format(request.id, r.status_code, r.reason, r._content))
 
-    # ----------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------
 
     RATIO_DELTA = 0.01  # Update status if at least 1% of progress
     TIME_DELTA = 1      # Update status if at least 1 second(s) elapsed
 
     try:
         # Avoid 'referenced before assignment'
-        callback, encoder_out = None, ''
-        request = current_task.request
+        callback, encoder_out, request = None, u'', current_task.request
 
         # Let's the task begin !
-        print('%s Transform task started' % request.id)
+        print(u'{0} Transform task started'.format(request.id))
 
         # Read current configuration to translate files uri to local paths
-        config = TransformConfig.read('local_config.pkl')
+        config = TransformConfig.read(u'local_config.pkl')
         print object2json(config, True)
 
         # Load and check task parameters
@@ -102,12 +100,10 @@ def transform_task(user_json, media_in_json, media_out_json, profile_json, callb
         # Verify that media file can be accessed and create output path
         media_in_path = config.storage_medias_path(media_in, generate=False)
         if not media_in_path:
-            raise NotImplementedError('Input media will not be readed from shared storage : %s' %
-                                      media_in.uri)
+            raise NotImplementedError(u'Input media will not be readed from shared storage : {0}'.format(media_in.uri))
         media_out_path = config.storage_medias_path(media_out, generate=True)
         if not media_out_path:
-            raise NotImplementedError('Output media will not be written to shared storage : %s' %
-                                      media_out.uri)
+            raise NotImplementedError(u'Output media will not be written to shared storage : {0}'.format(media_out.uri))
         media_in_root = os.path.dirname(media_in_path)
         media_out_root = os.path.dirname(media_out_path)
         try_makedirs(media_out_root)
@@ -115,18 +111,17 @@ def transform_task(user_json, media_in_json, media_out_json, profile_json, callb
         # Get input media duration and frames to be able to estimate ETA
         media_in_duration = get_media_duration(media_in_path)
 
-        # NOT A REAL TRANSFORM : FILE COPY ---------------------------------------------------------
-        if profile.encoder_name == 'copy':
-            infos = recursive_copy(
-                media_in_root, media_out_root, copy_callback, RATIO_DELTA, TIME_DELTA)
+        # NOT A REAL TRANSFORM : FILE COPY -----------------------------------------------------------------------------
+        if profile.encoder_name == u'copy':
+            infos = recursive_copy(media_in_root, media_out_root, copy_callback, RATIO_DELTA, TIME_DELTA)
             media_out_tmp = media_in_path.replace(media_in_root, media_out_root)
             os.rename(media_out_tmp, media_out_path)
-            start_date = infos['start_date']
-            elapsed_time = infos['elapsed_time']
-            media_in_size = infos['src_size']
+            start_date = infos[u'start_date']
+            elapsed_time = infos[u'elapsed_time']
+            media_in_size = infos[u'src_size']
 
-        # A REAL TRANSFORM : TRANSCODE WITH FFMPEG -------------------------------------------------
-        elif profile.encoder_name == 'ffmpeg':
+        # A REAL TRANSFORM : TRANSCODE WITH FFMPEG ---------------------------------------------------------------------
+        elif profile.encoder_name == u'ffmpeg':
 
             start_date, start_time = datetime_now(), time.time()
             prev_ratio = prev_time = 0
@@ -135,8 +130,7 @@ def transform_task(user_json, media_in_json, media_out_json, profile_json, callb
             media_in_size = get_size(media_in_root)
 
             # Create FFmpeg subprocess
-            cmd = 'ffmpeg -y -i "%s" %s "%s"' % (
-                media_in_path, profile.encoder_string, media_out_path)
+            cmd = u'ffmpeg -y -i "{0}" {1} "{2}"'.format(media_in_path, profile.encoder_string, media_out_path)
             print(cmd)
             ffmpeg = Popen(shlex.split(cmd), stderr=PIPE, close_fds=True)
             make_async(ffmpeg.stderr)
@@ -149,7 +143,7 @@ def transform_task(user_json, media_in_json, media_out_json, profile_json, callb
                 match = FFMPEG_REGEX.match(chunk)
                 if match:
                     stats = match.groupdict()
-                    media_out_duration = stats['time']
+                    media_out_duration = stats[u'time']
                     try:
                         ratio = duration2secs(media_out_duration) / duration2secs(media_in_duration)
                         ratio = 0.0 if ratio < 0.0 else 1.0 if ratio > 1.0 else ratio
@@ -161,35 +155,35 @@ def transform_task(user_json, media_in_json, media_out_json, profile_json, callb
                         prev_ratio, prev_time = ratio, elapsed_time
                         eta_time = int(elapsed_time * (1.0 - ratio) / ratio) if ratio > 0 else 0
                         transform_task.update_state(
-                            state='PROGRESS',
-                            meta={'hostname': request.hostname,
-                                  'start_date': start_date,
-                                  'elapsed_time': elapsed_time,
-                                  'eta_time': eta_time,
-                                  'media_in_size': media_in_size,
-                                  'media_in_duration': media_in_duration,
-                                  'media_out_size': get_size(media_out_root),
-                                  'media_out_duration': media_out_duration,
-                                  'percent': int(100 * ratio),
-                                  'encoding_frame': stats['frame'],
-                                  'encoding_fps': stats['fps'],
-                                  'encoding_bitrate': stats['bitrate'],
-                                  'encoding_quality': stats['q']})
+                            state=u'PROGRESS',
+                            meta={u'hostname': request.hostname,
+                                  u'start_date': start_date,
+                                  u'elapsed_time': elapsed_time,
+                                  u'eta_time': eta_time,
+                                  u'media_in_size': media_in_size,
+                                  u'media_in_duration': media_in_duration,
+                                  u'media_out_size': get_size(media_out_root),
+                                  u'media_out_duration': media_out_duration,
+                                  u'percent': int(100 * ratio),
+                                  u'encoding_frame': stats[u'frame'],
+                                  u'encoding_fps': stats[u'fps'],
+                                  u'encoding_bitrate': stats[u'bitrate'],
+                                  u'encoding_quality': stats[u'q']})
                 returncode = ffmpeg.poll()
                 if returncode is not None:
                     break
 
             # FFmpeg output sanity check
             if returncode != 0:
-                raise OSError('FFmpeg return code is %s, encoding probably failed.' % returncode)
+                raise OSError(u'FFmpeg return code is {0}, encoding probably failed.'.format(returncode))
 
             # Output media file sanity check
 #            media_out_duration = get_media_duration(media_out_path)
 #            if duration2secs(media_out_duration) / duration2secs(media_in_duration) > 1.5 or < 0.8:
 #                salut
 
-        # A REAL TRANSFORM : TRANSCODE WITH DASHCAST -----------------------------------------------
-        elif profile.encoder_name == 'dashcast':
+        # A REAL TRANSFORM : TRANSCODE WITH DASHCAST -------------------------------------------------------------------
+        elif profile.encoder_name == u'dashcast':
 
             start_date, start_time = datetime_now(), time.time()
             prev_ratio = prev_time = 0
@@ -197,13 +191,12 @@ def transform_task(user_json, media_in_json, media_out_json, profile_json, callb
             # Get input media size and frames to be able to estimate ETA
             media_in_size = get_size(media_in_root)
             try:
-                media_in_frames = \
-                    int(get_media_tracks(media_in_path)['video']['0:0']['estimated_frames'])
+                media_in_frames = int(get_media_tracks(media_in_path)[u'video'][u'0:0'][u'estimated_frames'])
             except:
                 media_in_frames = None
 
             # Create DashCast subprocess
-            cmd = 'DashCast -av "%s" %s -out "%s" -mpd "%s"' % (
+            cmd = u'DashCast -av "{0}" {1} -out "{2}" -mpd "{3}"'.format(
                 media_in_path, profile.encoder_string, media_out_root, media_out.filename)
             print(cmd)
             dashcast = Popen(shlex.split(cmd), stdout=PIPE, stderr=PIPE, close_fds=True)
@@ -216,7 +209,7 @@ def transform_task(user_json, media_in_json, media_out_json, profile_json, callb
                 match = DASHCAST_REGEX.match(read_async(dashcast.stdout))
                 if match:
                     stats = match.groupdict()
-                    media_out_frames = int(stats['frame'])
+                    media_out_frames = int(stats[u'frame'])
                     try:
                         ratio = float(media_out_frames) / media_in_frames
                         ratio = 0.0 if ratio < 0.0 else 1.0 if ratio > 1.0 else ratio
@@ -228,16 +221,16 @@ def transform_task(user_json, media_in_json, media_out_json, profile_json, callb
                         prev_ratio, prev_time = ratio, elapsed_time
                         eta_time = int(elapsed_time * (1.0 - ratio) / ratio) if ratio > 0 else 0
                         transform_task.update_state(
-                            state='PROGRESS',
-                            meta={'hostname': request.hostname,
-                                  'start_date': start_date,
-                                  'elapsed_time': elapsed_time,
-                                  'eta_time': eta_time,
-                                  'media_in_size': media_in_size,
-                                  'media_in_duration': media_in_duration,
-                                  'media_out_size': get_size(media_out_root),
-                                  'percent': int(100 * ratio),
-                                  'encoding_frame': media_out_frames})
+                            state=u'PROGRESS',
+                            meta={u'hostname': request.hostname,
+                                  u'start_date': start_date,
+                                  u'elapsed_time': elapsed_time,
+                                  u'eta_time': eta_time,
+                                  u'media_in_size': media_in_size,
+                                  u'media_in_duration': media_in_duration,
+                                  u'media_out_size': get_size(media_out_root),
+                                  u'percent': int(100 * ratio),
+                                  u'encoding_frame': media_out_frames})
                 returncode = dashcast.poll()
                 if returncode is not None:
                     encoder_out = read_async(dashcast.stderr)
@@ -245,24 +238,23 @@ def transform_task(user_json, media_in_json, media_out_json, profile_json, callb
 
             # DashCast output sanity check
             if not os.path.exists(media_out_path):
-                raise OSError('Output media not found, DashCast encoding probably failed.')
+                raise OSError(u'Output media not found, DashCast encoding probably failed.')
             if returncode != 0:
-                raise OSError('DashCast return code is %s, encoding probably failed.' % returncode)
+                raise OSError(u'DashCast return code is {0}, encoding probably failed.'.format(returncode))
             # FIXME check duration too !
 
-        # Here all seem okay -----------------------------------------------------------------------
+        # Here all seem okay -------------------------------------------------------------------------------------------
         media_out_size = get_size(media_out_root)
         media_out_duration = get_media_duration(media_out_path)
-        print('%s Transform task successful, output media %s' % (request.id, media_out.filename))
-        transform_callback('SUCCESS')
-        return {'hostname': request.hostname, 'start_date': start_date,
-                'elapsed_time': elapsed_time, 'eta_time': 0, 'media_in_size': media_in_size,
-                'media_in_duration': media_in_duration, 'media_out_size': media_out_size,
-                'media_out_duration': media_out_duration, 'percent': 100}
+        print(u'{0} Transform task successful, output media {1}'.format(request.id, media_out.filename))
+        transform_callback(u'SUCCESS')
+        return {u'hostname': request.hostname, u'start_date': start_date, u'elapsed_time': elapsed_time,
+                u'eta_time': 0, u'media_in_size': media_in_size, u'media_in_duration': media_in_duration,
+                u'media_out_size': media_out_size, u'media_out_duration': media_out_duration, u'percent': 100}
 
     except Exception as error:
 
         # Here something went wrong
-        print('%s Transform task failed ' % request.id)
-        transform_callback('ERROR\n%s\n\nOUTPUT\n%s' % (str(error), encoder_out))
+        print(u'{0} Transform task failed '.format(request.id))
+        transform_callback(u'ERROR\n{0}\n\nOUTPUT\n{1}'.format(unicode(error), encoder_out))
         raise
