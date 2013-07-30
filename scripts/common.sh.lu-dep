@@ -1,23 +1,22 @@
 #!/usr/bin/env bash
 
-#**************************************************************************************************#
+#**********************************************************************************************************************#
 #              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : SCRIPTS
 #
 #  Authors   : David Fischer
 #  Contact   : david.fischer.ch@gmail.com
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
 #  Copyright : 2012-2013 OSCIED Team. All rights reserved.
-#**************************************************************************************************#
+#**********************************************************************************************************************#
 #
 # This file is part of EBU/UER OSCIED Project.
 #
-# This project is free software: you can redistribute it and/or modify it under the terms of the
-# GNU General Public License as published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
+# This project is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+# License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+# version.
 #
-# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
-# even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the GNU General Public License for more details.
+# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
@@ -29,7 +28,7 @@ set -o nounset # will exit if an unitialized variable is used
 # Prevent importing N times the following (like C++ .h : #ifndef ... #endif)
 if ! osciedCommonImported 2>/dev/null; then
 
-# Constants ========================================================================================
+# Constants ============================================================================================================
 
 # FIXME Current implementation of orchestra doesn't accept external IP you must execute juju-menu.sh
 # -> config to update storage's related constants automatically
@@ -91,9 +90,9 @@ JUJU_ENVS_FILE="$JUJU_PATH/environments.yaml"
 
 BAD_AUTH='charlie@hacker.com:challenge_accepted'
 
-# Utilities ========================================================================================
+# Utilities ============================================================================================================
 
-# Parse config.json of a actually running charm instance ! -----------------------------------------
+# Parse config.json of a actually running charm instance ! -------------------------------------------------------------
 
 get_unit_config()
 {
@@ -109,7 +108,7 @@ get_unit_config()
   REPLY=$(expr match "$val" ".*'$option' p[0-9]* [^']*'\([^']*\)' p[0-9]*.*")
 }
 
-# Parse orchestra.yaml configuration file to get options value -------------------------------------
+# Parse orchestra.yaml configuration file to get options value ---------------------------------------------------------
 
 get_root_secret()
 {
@@ -135,7 +134,7 @@ get_node_secret()
   REPLY="$node"
 }
 
-# Parse charm's units URLs listing file to get specific URLs ---------------------------------------
+# Parse charm's units URLs listing file to get specific URLs -----------------------------------------------------------
 
 get_units_dialog_listing()
 {
@@ -210,7 +209,7 @@ storage_upload_media()
   REPLY="$REPLY/$(basename $1)"
 }
 
-# Wrapper to juju ----------------------------------------------------------------------------------
+# Wrapper to juju ------------------------------------------------------------------------------------------------------
 
 juju_unit_add()
 {
@@ -231,7 +230,7 @@ juju_unit_remove()
   fi
 }
 
-# Save and get configuration from corresponding generated files ------------------------------------
+# Save and get configuration from corresponding generated files --------------------------------------------------------
 
 save_auth()
 {
@@ -272,7 +271,7 @@ get_json()
   [ ! "$REPLY" ] && xecho "Unable to detect $1 json"
 }
 
-# Generate valid json strings of Orchestra API's objects -------------------------------------------
+# Generate valid json strings of Orchestra API's objects ---------------------------------------------------------------
 
 json_user()
 {
@@ -328,7 +327,7 @@ json_ptask()
   JSON="{\"media_id\":\"$1\",\"send_email\":\"$2\",\"queue\":\"$3\",\"priority\":\"$4\"}"
 }
 
-# Used to call / test Orchestra REST API -----------------------------------------------------------
+# Used to call / test Orchestra REST API -------------------------------------------------------------------------------
 
 test_api()
 {

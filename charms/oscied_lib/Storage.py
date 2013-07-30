@@ -1,24 +1,23 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-#**************************************************************************************************#
+#**********************************************************************************************************************#
 #              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARY
 #
 #  Authors   : David Fischer
 #  Contact   : david.fischer.ch@gmail.com
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
 #  Copyright : 2012-2013 OSCIED Team. All rights reserved.
-#**************************************************************************************************#
+#**********************************************************************************************************************#
 #
 # This file is part of EBU/UER OSCIED Project.
 #
-# This project is free software: you can redistribute it and/or modify it under the terms of the
-# GNU General Public License as published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
+# This project is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+# License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+# version.
 #
-# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
-# even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the GNU General Public License for more details.
+# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
@@ -26,6 +25,7 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 import os, shutil, time
+from kitchen.text.converters import to_bytes
 from pyutils.py_ffmpeg import get_media_duration
 from pyutils.py_filesystem import get_size, try_makedirs
 
@@ -34,7 +34,7 @@ class Storage(object):
 
     @staticmethod
     def add_media(config, media):
-        if not media.status in ('PENDING',):
+        if not media.status in (u'PENDING',):
             media_src_path = config.storage_medias_path(media, generate=False)
             if media_src_path:
                 media_dst_path = config.storage_medias_path(media, generate=True)
@@ -53,18 +53,18 @@ class Storage(object):
                             the_error = error
                             time.sleep(1)
                     if the_error:
-                        raise IndexError('An error occured : %s (%s -> %s).' %
-                                         (the_error, media_src_path, media_dst_path))
+                        raise IndexError(to_bytes(u'An error occured : {0} ({1} -> {2}).'.format(
+                                         the_error, media_src_path, media_dst_path)))
                 try:
                     size = get_size(os.path.dirname(media_dst_path))
                 except OSError:
-                    raise ValueError('Unable to detect size of media %s.' % media_dst_path)
+                    raise ValueError(to_bytes(u'Unable to detect size of media {0}.'.format(media_dst_path)))
                 duration = get_media_duration(media_dst_path)
                 if duration is None:
-                    raise ValueError('Unable to detect duration of media %s.' % media_dst_path)
+                    raise ValueError(to_bytes(u'Unable to detect duration of media {0}.'.format(media_dst_path)))
                 return (size, duration)
             else:
-                raise NotImplementedError('FIXME Add of external URI not implemented.')
+                raise NotImplementedError(to_bytes(u'FIXME Add of external URI not implemented.'))
         return (0, None)
 
     @staticmethod
@@ -73,4 +73,4 @@ class Storage(object):
         if media_path:
             shutil.rmtree(os.path.dirname(media_path), ignore_errors=True)
         else:
-            raise NotImplementedError('FIXME Delete of external uri not implemented.')
+            raise NotImplementedError(to_bytes(u'FIXME Delete of external uri not implemented.'))

@@ -1,24 +1,23 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-#**************************************************************************************************#
-#     OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : TESTS OF COMMON LIBRARY
+#**********************************************************************************************************************#
+#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARY
 #
 #  Authors   : David Fischer
 #  Contact   : david.fischer.ch@gmail.com
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
 #  Copyright : 2012-2013 OSCIED Team. All rights reserved.
-#**************************************************************************************************#
+#**********************************************************************************************************************#
 #
 # This file is part of EBU/UER OSCIED Project.
 #
-# This project is free software: you can redistribute it and/or modify it under the terms of the
-# GNU General Public License as published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
+# This project is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+# License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+# version.
 #
-# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
-# even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the GNU General Public License for more details.
+# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
@@ -28,7 +27,7 @@
 import os, sys
 from os.path import abspath, dirname, join
 sys.path.append(abspath(dirname(dirname(__file__))))
-sys.path.append(abspath(join(dirname(dirname(__file__)), 'pyutils')))
+sys.path.append(abspath(join(dirname(dirname(__file__)), u'pyutils')))
 
 from celery.task.control import inspect
 import lib.Transform
@@ -47,32 +46,32 @@ from lib.User import USER_TEST
 #    for i in results:
 #        print i
 
-raise ValueError('FIXME issue #6')
+raise ValueError(u'FIXME issue #6')
 
-if __name__ == '__main__':
+if __name__ == u'__main__':
     user = USER_TEST
     media_in = MEDIA_TEST
     media_out = MEDIA_TEST
     profile = TRANSFORM_PROFILE_TEST
-    print 'Launch the transformation task'
+    print(u'Launch the transformation task')
     result = lib.Transform.transform_task.apply_async(
         args=(user.json(), media_in.json(), media_out.json(), profile.json(),),
-        queue='transform_private')
-    print result.state
-    print result
+        queue=u'transform_private')
+    print(result.state)
+    print(result)
     i = inspect()
     dump = i.active()
-    print dump
+    print(dump)
     if dump:
         for worker, tasks in dump.iteritems():
-            print worker
+            print(worker)
             for task in tasks:
-                if task['name'] == 'Transform.transform_task':
+                if task[u'name'] == u'Transform.transform_task':
                     for key, value in task.iteritems():
-                        print 'key ' + key + ' = ' + str(value)
+                        print(u'key {0} = {1}'.format(key, value))
                     #print 'THE Task ' + str(task)
                     #print 'Arguments ' + str(task['args'])
-                    print 'salut'
+                    print(u'salut')
 
     sys.exit(0)
 #    make_pi_tasks()

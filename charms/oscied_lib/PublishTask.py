@@ -1,45 +1,41 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-#**************************************************************************************************#
+#**********************************************************************************************************************#
 #              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARY
 #
 #  Authors   : David Fischer
 #  Contact   : david.fischer.ch@gmail.com
 #  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
 #  Copyright : 2012-2013 OSCIED Team. All rights reserved.
-#**************************************************************************************************#
+#**********************************************************************************************************************#
 #
 # This file is part of EBU/UER OSCIED Project.
 #
-# This project is free software: you can redistribute it and/or modify it under the terms of the
-# GNU General Public License as published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
+# This project is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+# License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later
+# version.
 #
-# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
-# even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the GNU General Public License for more details.
+# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+# warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License along with this project.
 # If not, see <http://www.gnu.org/licenses/>
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import uuid
 from celery.result import AsyncResult
 from Media import MEDIA_TEST
+from OsciedDBModel import OsciedDBModel
 from User import USER_TEST
-from pyutils.py_serialization import json2object, object2json
 from pyutils.py_validation import valid_uuid
 
 
-class PublishTask(object):
+class PublishTask(OsciedDBModel):
 
-    def __init__(self, _id, user_id, media_id, publish_uri, statistic={}, revoked=False,
-                 send_email=False, status='UNKNOWN'):
-        if not _id:
-            _id = str(uuid.uuid4())
-        self._id = _id
+    def __init__(self, _id=None, user_id=None, media_id=None, publish_uri=None, statistic={}, revoked=False,
+                 send_email=False, status=u'UNKNOWN'):
+        super(PublishTask, self).__init__(_id)
         self.user_id = user_id
         self.media_id = media_id
         self.publish_uri = publish_uri
@@ -48,21 +44,14 @@ class PublishTask(object):
         self.send_email = send_email
         self.status = status
 
-
     def is_valid(self, raise_exception):
         if not valid_uuid(self._id, none_allowed=False):
-            if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : _id is not a valid uuid string')
-            return False
-        if hasattr(self, 'user_id') and not valid_uuid(self.user_id, none_allowed=False):
-            if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : user_id is not a valid uuid string')
-            return False
+            self._E(raise_exception, u'_id is not a valid uuid string')
+        if hasattr(self, u'user_id') and not valid_uuid(self.user_id, none_allowed=False):
+            self._E(raise_exception, u'user_id is not a valid uuid string')
         # FIXME check user if loaded
-        if hasattr(self, 'media_id') and not valid_uuid(self.media_id, none_allowed=False):
-            if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : media_id is not a valid uuid string')
-            return False
+        if hasattr(self, u'media_id') and not valid_uuid(self.media_id, none_allowed=False):
+            self._E(raise_exception, u'media_id is not a valid uuid string')
         # FIXME check media if loaded
         # FIXME check publish_uri
         # FIXME check statistic
@@ -86,29 +75,16 @@ class PublishTask(object):
                 try:
                     self.statistic.update(async_result.result)
                 except:
-                    self.statistic['error'] = str(async_result.result)
+                    self.statistic[u'error'] = unicode(async_result.result)
             except NotImplementedError:
-                self.status = 'UNKNOWN'
+                self.status = u'UNKNOWN'
         else:
-            self.status = 'UNKNOWN'
+            self.status = u'UNKNOWN'
 
     def load_fields(self, user, media):
         self.user = user
         self.media = media
-        delattr(self, 'user_id')
-        delattr(self, 'media_id')
+        delattr(self, u'user_id')
+        delattr(self, u'media_id')
 
-    @staticmethod
-    def load(json):
-        task = PublishTask(None, None, None, None, None)
-        json2object(json, task)
-        return task
-
-PUBLISH_JOB_TEST = PublishTask(None, USER_TEST._id, MEDIA_TEST._id, 'http://amazon.com/salut.mpg')
-
-# Main ---------------------------------------------------------------------------------------------
-
-if __name__ == '__main__':
-    print object2json(PUBLISH_JOB_TEST, True)
-    PUBLISH_JOB_TEST.is_valid(True)
-    print str(PublishTask.load(object2json(PUBLISH_JOB_TEST, False)))
+PUBLISH_JOB_TEST = PublishTask(None, USER_TEST._id, MEDIA_TEST._id, u'http://amazon.com/salut.mpg')

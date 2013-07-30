@@ -24,29 +24,20 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from CharmConfig_Storage import CharmConfig_Storage
+import uuid
+from kitchen.text.converters import to_bytes
+from pyutils.py_serialization import JsoneableObject
 
 
-class TransformConfig(CharmConfig_Storage):
+class OsciedDBModel(JsoneableObject):
 
-    def __init__(self, api_nat_socket=u'', celery_config_file=u'celeryconfig.py',
-                 celery_template_file=u'templates/celeryconfig.py.template', **kwargs):
-        super(TransformConfig, self).__init__(**kwargs)
-        self.api_nat_socket = api_nat_socket
-        self.celery_config_file = celery_config_file
-        self.celery_template_file = celery_template_file
+    def __init__(self, _id=None):
+        if not _id:
+            _id = unicode(uuid.uuid4())
+        self._id = _id
 
-TRANSFORM_CONFIG_TEST = TransformConfig(api_nat_socket=u'129.194.185.47:5000', storage_address=u'10.1.1.2',
-                                        storage_fstype=u'glusterfs', storage_mountpoint=u'medias_volume')
-
-# Main -----------------------------------------------------------------------------------------------------------------
-
-if __name__ == u'__main__':
-    from pyutils.py_unicode import configure_unicode
-    configure_unicode()
-    print(u'Test TransformConfig with doctest')
-    import doctest
-    assert(doctest.testmod(verbose=False))
-    print(u'OK')
-    print(u'Write default transform configuration')
-    TransformConfig().write(u'../oscied-transform/local_config.pkl')
+    def _E(self, raise_exception, message):
+        if raise_exception:
+            raise TypeError(to_bytes(u'{0} : {1}'.format(self.__class__.__name__, message)))
+        return False
+    # FIXME add load_fields(self, **kwargs):
