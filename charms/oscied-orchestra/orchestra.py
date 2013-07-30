@@ -30,6 +30,7 @@ import logging
 import sys
 from bson.objectid import ObjectId
 from flask import Flask, abort, request, Response
+from kitchen.text.converters import to_bytes
 from werkzeug.exceptions import HTTPException
 from pyutils.py_logging import setup_logging
 from pyutils.py_serialization import object2json
@@ -41,27 +42,25 @@ from oscied_lib.TransformProfile import TransformProfile
 from oscied_lib.User import User
 
 
-# Global variables ---------------------------------------------------------------------------------
+# Global variables -----------------------------------------------------------------------------------------------------
 
 app = Flask(__name__)
 
 
-# --------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 # http://publish.luisrei.com/articles/flaskrest.html
 
-def requires_auth(request, allow_root=False, allow_node=False, allow_any=False, role=None, id=None,
-                  mail=None):
+def requires_auth(request, allow_root=False, allow_node=False, allow_any=False, role=None, id=None, mail=None):
     """
-    This method implements Orchestra's RESTful API authentication logic. Here is ensured that an
-    access to a method of the API is filtered based on rules (this method's parameters).
-    HTTP user agent must authenticate through HTTP basic access authentication. The username must
-    be user's email address and password must be user's secret. This not apply for system-users like
-    root or node as they do not have any e-mail address.
+    This method implements Orchestra's RESTful API authentication logic. Here is ensured that an access to a method of
+    the API is filtered based on rules (this method's parameters). HTTP user agent must authenticate through HTTP basic
+    access authentication. The username must be user's email address and password must be user's secret. This not apply
+    for system-users like root or node as they do not have any e-mail address.
 
     .. warning::
 
-        Username and password are passed as plaintext, SSL/TLS is one of the way to improve security
-        although this was not tested during my thesis.
+        Username and password are passed as plaintext, SSL/TLS is one of the way to improve security although this was
+        not tested during my thesis.
 
     This method will abort request with HTTP 401 error if HTTP user agent doesn't authenticate.
 
@@ -78,56 +77,56 @@ def requires_auth(request, allow_root=False, allow_node=False, allow_any=False, 
     Example::
 
         # Allow any authenticated user
-        @app.route('/my/example/route', methods=['GET'])
+        @app.route(u'/my/example/route', methods=[u'GET'])
         def api_my_example_route():
-            if request.method == 'GET':
+            if request.method == u'GET':
                 auth_user = requires_auth(request=request, allow_any=True)
                 ...
-                return ok_200('my return value', True)
+                return ok_200(u'my return value', True)
 
         # Allow root system-user or any user with admin attribute set
-        @app.route('/my/restricted/route', methods=['GET'])
+        @app.route(u'/my/restricted/route', methods=[u'GET'])
         def api_my_restricted_route():
-            if request.method == 'GET':
+            if request.method == u'GET':
                 auth_user = requires_auth(request=request, allow_root=True, allow_role='admin')
                 ...
-                return ok_200('my return value', True)
+                return ok_200(u'my return value', True)
     """
     auth = request.authorization
     if not auth or auth.username is None or auth.password is None:
-        abort(401, 'Authenticate.')  # Testing for None is maybe too much ... Security is like that
+        abort(401, u'Authenticate.')  # Testing for None is maybe too much ... Security is like that
     username = auth.username
     password = auth.password
-    root = (username == 'root' and password == orchestra.config.root_secret)
-    node = (username == 'node' and password == orchestra.config.nodes_secret)
+    root = (username == u'root' and password == orchestra.config.root_secret)
+    node = (username == u'node' and password == orchestra.config.nodes_secret)
     user = None
     if not root and not node:
-        user = orchestra.get_user({'mail': username}, secret=password)
+        user = orchestra.get_user({u'mail': username}, secret=password)
         username = user.name if user else None
     if not root and not user and not node:
-        abort(401, 'Authentication Failed.')
+        abort(401, u'Authentication Failed.')
     if root and allow_root:
-        logging.info('Allowed authenticated root')
+        logging.info(u'Allowed authenticated root')
         return orchestra.root_user
     if node and allow_node:
-        logging.info('Allowed authenticated worker/node')
+        logging.info(u'Allowed authenticated worker/node')
         return orchestra.nodes_user
     if user and allow_any:
-        logging.info('Allowed authenticated user ' + user.name)
+        logging.info(u'Allowed authenticated user {0}'.format(user.name))
         return user
     if role and hasattr(user, role) and getattr(user, role):
-        logging.info('Allowed authenticated user ' + user.name + ' with role ' + role)
+        logging.info(u'Allowed authenticated user {0} with role {1}'.format(user.name, role))
         return user
     if id and user._id == id:
-        logging.info('Allowed authenticated user ' + user.name + ' with id ' + id)
+        logging.info(u'Allowed authenticated user {0} with id {1}'.format(user.name, id))
         return user
     if mail and user.mail == mail:
-        logging.info('Allowed authenticated user ' + user.name + ' with mail ' + mail)
+        logging.info(u'Allowed authenticated user {0} with mail {1}'.format(user.name, mail))
         return user
     abort(403, username)
 
 
-# Utilities ----------------------------------------------------------------------------------------
+# Utilities ------------------------------------------------------------------------------------------------------------
 
 
 def check_id(id):
@@ -135,81 +134,81 @@ def check_id(id):
         return id
     elif valid_uuid(id, objectid_allowed=True, none_allowed=False):
         return ObjectId(id)
-    raise ValueError('Wrong id format %s' % id)
+    raise ValueError(to_bytes(u'Wrong id format {0}'.format(id)))
 
 
 def get_request_json(request, required_keys=[]):
     try:
         data = request.json
     except:
-        raise ValueError('Requires valid JSON content-type.')
+        raise ValueError(to_bytes(u'Requires valid JSON content-type.'))
     for key in required_keys:
         if not key in data:
-            raise ValueError('Missing key "%s" from JSON content.' % key)
+            raise ValueError(to_bytes(u'Missing key "{0}" from JSON content.'.format(key)))
     if not data:
-        raise ValueError('Requires JSON content-type.')
+        raise ValueError(to_bytes(u'Requires JSON content-type.'))
     return data
 
 
 @app.errorhandler(400)
 def error_400(value=None):
-    response = Response(response=object2json({'status': 400, 'value': value}, False),
-                        status=400, mimetype="application/json")
+    response = Response(response=object2json({u'status': 400, u'value': value}, False), status=400,
+                        mimetype=u'application/json')
     response.status_code = 400
     return response
 
 
 @app.errorhandler(401)
 def error_401(value=None):
-    response = Response(response=object2json({'status': 401, 'value': value}, False),
-                        status=401, mimetype="application/json")
+    response = Response(response=object2json({u'status': 401, u'value': value}, False), status=401,
+                        mimetype=u'application/json')
     response.status_code = 401
     return response
 
 
 @app.errorhandler(403)
 def error_403(value=None):
-    response = Response(response=object2json({'status': 403, 'value': value}, False),
-                        status=403, mimetype="application/json")
+    response = Response(response=object2json({u'status': 403, u'value': value}, False), status=403,
+                        mimetype=u'application/json')
     response.status_code = 403
     return response
 
 
 @app.errorhandler(404)
 def error_404(value=None):
-    response = Response(response=object2json({'status': 404, 'value': value}, False),
-                        status=404, mimetype="application/json")
+    response = Response(response=object2json({u'status': 404, u'value': value}, False), status=404,
+                        mimetype=u'application/json')
     response.status_code = 404
     return response
 
 
 @app.errorhandler(415)
 def error_415(value=None):
-    response = Response(response=object2json({'status': 415, 'value': value}, False),
-                        status=415, mimetype="application/json")
+    response = Response(response=object2json({u'status': 415, u'value': value}, False), status=415,
+                        mimetype=u'application/json')
     response.status_code = 415
     return response
 
 
 @app.errorhandler(500)
 def error_500(value=None):
-    response = Response(response=object2json({'status': 500, 'value': value}, False),
-                        status=500, mimetype="application/json")
+    response = Response(response=object2json({u'status': 500, u'value': value}, False), status=500,
+                        mimetype=u'application/json')
     response.status_code = 500
     return response
 
 
 @app.errorhandler(501)
 def error_501(value=None):
-    response = Response(response=object2json({'status': 501, 'value': value}, False),
-                        status=501, mimetype="application/json")
+    response = Response(response=object2json({u'status': 501, u'value': value}, False), status=501,
+                        mimetype=u'application/json')
     response.status_code = 501
     return response
 
 
 def ok_200(value, include_properties):
-    response = Response(response=object2json({'status': 200, 'value': value}, include_properties),
-                        status=200, mimetype="application/json")
+    response = Response(response=object2json({u'status': 200, u'value': value}, include_properties), status=200,
+                        mimetype=u'application/json')
     response.status_code = 200
     return response
 
@@ -218,22 +217,22 @@ def map_exceptions(e):
     if isinstance(e, HTTPException):
         raise
     if isinstance(e, TypeError):
-        abort(400, str(e))
+        abort(400, unicode(e))
     elif isinstance(e, KeyError):
-        abort(400, 'Key %s not found.' % e)
+        abort(400, u'Key {0} not found.'.format(e))
     elif isinstance(e, IndexError):
-        abort(404, str(e))
+        abort(404, unicode(e))
     elif isinstance(e, ValueError):
-        abort(415, str(e))
+        abort(415, unicode(e))
     elif isinstance(e, NotImplementedError):
-        abort(501, str(e))
-    abort(500, '%s %s %s' % (e.__class__.__name__, repr(e), str(e)))
+        abort(501, unicode(e))
+    abort(500, '{0} {1} {2}'.format(e.__class__.__name__, repr(e), unicode(e)))
 
 
-# Index --------------------------------------------------------------------------------------------
+# Index ----------------------------------------------------------------------------------------------------------------
 
-@app.route('/', methods=['GET'])
-@app.route('/index', methods=['GET'])
+@app.route(u'/', methods=[u'GET'])
+@app.route(u'/index', methods=[u'GET'])
 def api_root():
     """
     Return an about string.
@@ -265,14 +264,14 @@ def api_root():
     :statuscode 200: OK
     """
     try:
-        return orchestra.about
+        return ok_200(orchestra.about, False)
     except Exception as e:
         map_exceptions(e)
 
 
-# System management --------------------------------------------------------------------------------
+# System management ----------------------------------------------------------------------------------------------------
 
-@app.route('/flush', methods=['POST'])
+@app.route(u'/flush', methods=[u'POST'])
 def api_flush():
     """
     Flush Orchestrator's database.
@@ -306,14 +305,14 @@ def api_flush():
     try:
         requires_auth(request=request, allow_root=True)
         orchestra.flush_db()
-        return ok_200('Orchestra database flushed !', False)
+        return ok_200(u'Orchestra database flushed !', False)
     except Exception as e:
         map_exceptions(e)
 
 
-# Users management ---------------------------------------------------------------------------------
+# Users management -----------------------------------------------------------------------------------------------------
 
-@app.route('/user/login', methods=['GET'])
+@app.route(u'/user/login', methods=[u'GET'])
 def api_user_login():
     """
     Return authenticated user serialized to JSON if authentication passed (without ``secret`` field).
@@ -361,13 +360,13 @@ def api_user_login():
     """
     try:
         auth_user = requires_auth(request=request, allow_any=True)
-        delattr(auth_user, 'secret')  # do not send back user's secret
+        delattr(auth_user, u'secret')  # do not send back user's secret
         return ok_200(auth_user, True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/user/count', methods=['GET'])
+@app.route(u'/user/count', methods=[u'GET'])
 def api_user_count():
     """
     Return users count.
@@ -403,7 +402,7 @@ def api_user_count():
         map_exceptions(e)
 
 
-@app.route('/user', methods=['GET'])
+@app.route(u'/user', methods=[u'GET'])
 def api_user_get():
     """
     Return an array containing the users serialized to JSON (without ``secret`` fields).
@@ -436,13 +435,13 @@ def api_user_get():
     :statuscode 403: Authentication Failed.
     """
     try:
-        requires_auth(request=request, allow_root=True, role='admin_platform')
-        return ok_200(orchestra.get_users(specs=None, fields={'secret': 0}), True)
+        requires_auth(request=request, allow_root=True, role=u'admin_platform')
+        return ok_200(orchestra.get_users(specs=None, fields={u'secret': 0}), True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/user', methods=['POST'])
+@app.route(u'/user', methods=[u'POST'])
 def api_user_post():
     """
     Add an user.
@@ -500,18 +499,18 @@ def api_user_post():
     :statuscode 415: Requires (valid) json content-type.
     """
     try:
-        requires_auth(request=request, allow_root=True, role='admin_platform')
+        requires_auth(request=request, allow_root=True, role=u'admin_platform')
         data = get_request_json(request)
-        user = User(None, data['first_name'], data['last_name'], data['mail'], data['secret'],
-                    data['admin_platform'])
+        user = User(None, data[u'first_name'], data[u'last_name'], data[u'mail'], data[u'secret'],
+                    data[u'admin_platform'])
         orchestra.save_user(user, hash_secret=True)
-        delattr(user, 'secret')  # do not send back user's secret
+        delattr(user, u'secret')  # do not send back user's secret
         return ok_200(user, True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/user/id/<id>', methods=['GET'])
+@app.route(u'/user/id/<id>', methods=[u'GET'])
 def api_user_id_get(id):
     """
     Return an user serialized to JSON (without ``secret`` field).
@@ -556,15 +555,15 @@ def api_user_id_get(id):
     try:
         check_id(id)
         requires_auth(request=request, allow_root=True, allow_any=True)
-        user = orchestra.get_user(specs={'_id': id}, fields={'secret': 0})
+        user = orchestra.get_user(specs={u'_id': id}, fields={u'secret': 0})
         if not user:
-            raise IndexError('No user with id %s.' % id)
+            raise IndexError(to_bytes(u'No user with id {0}.'.format(id)))
         return ok_200(user, True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/user/id/<id>', methods=['PATCH', 'PUT'])
+@app.route(u'/user/id/<id>', methods=[u'PATCH', u'PUT'])
 def api_user_id_patch(id):
     """
     Update an user.
@@ -620,29 +619,29 @@ def api_user_id_patch(id):
     """
     try:
         check_id(id)
-        auth_user = requires_auth(request=request, allow_root=True, role='admin_platform', id=id)
-        user = orchestra.get_user(specs={'_id': id})
+        auth_user = requires_auth(request=request, allow_root=True, role=u'admin_platform', id=id)
+        user = orchestra.get_user(specs={u'_id': id})
         data = get_request_json(request)
         if not user:
-            raise IndexError('No user with id %s.' % id)
+            raise IndexError(to_bytes(u'No user with id {0}.'.format(id)))
         old_name = user.name
-        if 'first_name' in data:
-            user.first_name = data['first_name']
-        if 'last_name' in data:
-            user.last_name = data['last_name']
-        if 'mail' in data:
-            user.mail = data['mail']
-        if 'secret' in data:
-            user.secret = data['secret']
-        if auth_user.admin_platform and 'admin_platform' in data:
-            user.admin_platform = data['admin_platform']
+        if u'first_name' in data:
+            user.first_name = data[u'first_name']
+        if u'last_name' in data:
+            user.last_name = data[u'last_name']
+        if u'mail' in data:
+            user.mail = data[u'mail']
+        if u'secret' in data:
+            user.secret = data[u'secret']
+        if auth_user.admin_platform and u'admin_platform' in data:
+            user.admin_platform = data[u'admin_platform']
         orchestra.save_user(user, hash_secret=True)
-        return ok_200('The user "%s" has been updated.' % old_name, False)
+        return ok_200(u'The user "{0}" has been updated.'.format(old_name), False)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/user/id/<id>', methods=['DELETE'])
+@app.route(u'/user/id/<id>', methods=[u'DELETE'])
 def api_user_id_delete(id):
     """
     Delete an user.
@@ -679,19 +678,19 @@ def api_user_id_delete(id):
     """
     try:
         check_id(id)
-        requires_auth(request=request, allow_root=True, role='admin_platform', id=id)
-        user = orchestra.get_user(specs={'_id': id})
+        requires_auth(request=request, allow_root=True, role=u'admin_platform', id=id)
+        user = orchestra.get_user(specs={u'_id': id})
         if not user:
-            raise IndexError('No user with id %s.' % id)
+            raise IndexError(to_bytes(u'No user with id {0}.'.format(id)))
         orchestra.delete_user(user)
-        return ok_200('The user "%s" has been deleted.' % user.name, False)
+        return ok_200(u'The user "{0}" has been deleted.'.format(user.name), False)
     except Exception as e:
         map_exceptions(e)
 
 
-# Medias management --------------------------------------------------------------------------------
+# Medias management ----------------------------------------------------------------------------------------------------
 
-@app.route('/media/count', methods=['GET'])
+@app.route(u'/media/count', methods=[u'GET'])
 def api_media_count():
     """
     Return medias count.
@@ -727,7 +726,7 @@ def api_media_count():
         map_exceptions(e)
 
 
-@app.route('/media/HEAD', methods=['GET'])
+@app.route(u'/media/HEAD', methods=[u'GET'])
 def api_media_head():
     """
     Return an array containing the medias serialized to JSON.
@@ -766,7 +765,7 @@ def api_media_head():
         map_exceptions(e)
 
 
-@app.route('/media', methods=['GET'])
+@app.route(u'/media', methods=[u'GET'])
 def api_media_get():
     """
     Return an array containing the medias serialized to JSON.
@@ -808,7 +807,7 @@ def api_media_get():
         map_exceptions(e)
 
 
-@app.route('/media', methods=['POST'])
+@app.route(u'/media', methods=[u'POST'])
 def api_media_post():
     """
     Add a media.
@@ -895,8 +894,7 @@ def api_media_post():
     try:
         auth_user = requires_auth(request=request, allow_any=True)
         data = get_request_json(request)
-        media = Media(None, auth_user._id, None, data['uri'], None, data['filename'],
-                      data['metadata'], 'READY')
+        media = Media(None, auth_user._id, None, data[u'uri'], None, data[u'filename'], data[u'metadata'], u'READY')
         orchestra.save_media(media)
         return ok_200(media, True)
     except Exception as e:
@@ -904,7 +902,7 @@ def api_media_post():
 
 
 # FIXME why HEAD verb doesn't work (curl: (18) transfer closed with 263 bytes remaining to read) ?
-@app.route('/media/id/<id>/HEAD', methods=['GET'])
+@app.route(u'/media/id/<id>/HEAD', methods=[u'GET'])
 def api_media_id_head(id):
     """
     Return a media serialized to JSON.
@@ -957,15 +955,15 @@ def api_media_id_head(id):
     try:
         check_id(id)
         requires_auth(request=request, allow_any=True)
-        media = orchestra.get_media(specs={'_id': id})
+        media = orchestra.get_media(specs={u'_id': id})
         if not media:
-            raise IndexError('No media with id %s.' % id)
+            raise IndexError(to_bytes(u'No media with id {0}.'.format(id)))
         return ok_200(media, True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/media/id/<id>', methods=['GET'])
+@app.route(u'/media/id/<id>', methods=[u'GET'])
 def api_media_id_get(id):
     """
     Return a media serialized to JSON.
@@ -1031,13 +1029,13 @@ def api_media_id_get(id):
         requires_auth(request=request, allow_any=True)
         media = orchestra.get_media(specs={'_id': id}, load_fields=True)
         if not media:
-            raise IndexError('No media with id %s.' % id)
+            raise IndexError(to_bytes(u'No media with id {0}.'.format(id)))
         return ok_200(media, True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/media/id/<id>', methods=['PATCH', 'PUT'])
+@app.route(u'/media/id/<id>', methods=[u'PATCH', u'PUT'])
 def api_media_id_patch(id):
     """
     Update a media (only metadata field can be updated).
@@ -1083,21 +1081,21 @@ def api_media_id_patch(id):
     try:
         check_id(id)
         auth_user = requires_auth(request=request, allow_any=True)
-        media = orchestra.get_media(specs={'_id': id})
+        media = orchestra.get_media(specs={u'_id': id})
         data = get_request_json(request)
         if not media:
-            raise IndexError('No media with id %s.' % id)
+            raise IndexError(to_bytes(u'No media with id {0}.'.format(id)))
         if auth_user._id != media.user_id:
-            abort(403, 'You are not allowed to modify media with id %s.' % id)
-        if 'metadata' in data:
-            media.metadata = data['metadata']
+            abort(403, u'You are not allowed to modify media with id {0}.'.format(id))
+        if u'metadata' in data:
+            media.metadata = data[u'metadata']
         orchestra.save_media(media)
-        return ok_200('The media "%s" has been updated.' % media.filename, False)
+        return ok_200(u'The media "{0}" has been updated.'.format(media.filename), False)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/media/id/<id>', methods=['DELETE'])
+@app.route(u'/media/id/<id>', methods=[u'DELETE'])
 def api_media_id_delete(id):
     """
     Delete a media.
@@ -1141,20 +1139,20 @@ def api_media_id_delete(id):
     try:
         check_id(id)
         auth_user = requires_auth(request=request, allow_any=True)
-        media = orchestra.get_media(specs={'_id': id})
+        media = orchestra.get_media(specs={u'_id': id})
         if not media:
-            raise IndexError('No media with id %s.' % id)
+            raise IndexError(to_bytes(u'No media with id {0}.'.format(id)))
         if auth_user._id != media.user_id:
-            abort(403, 'You are not allowed to delete media with id %s.' % id)
+            abort(403, u'You are not allowed to delete media with id {0}.'.format(id))
         orchestra.delete_media(media)
-        return ok_200('The media "%s" has been deleted.' % media.metadata['title'], False)
+        return ok_200(u'The media "{0}" has been deleted.'.format(media.metadata[u'title']), False)
     except Exception as e:
         map_exceptions(e)
 
 
-# Environments management --------------------------------------------------------------------------
+# Environments management ----------------------------------------------------------------------------------------------
 
-@app.route('/environment/count', methods=['GET'])
+@app.route(u'/environment/count', methods=[u'GET'])
 def api_environment_count():
     """
     Return environments count.
@@ -1170,7 +1168,7 @@ def api_environment_count():
         map_exceptions(e)
 
 
-@app.route('/environment', methods=['GET'])
+@app.route(u'/environment', methods=[u'GET'])
 def api_environment_get():
     """
     Return an array containing the environments serialized to JSON.
@@ -1182,12 +1180,12 @@ def api_environment_get():
     try:
         requires_auth(request=request, allow_root=True, allow_any=True)
         (environments, default) = orchestra.get_environments()
-        return ok_200({'environments': environments, 'default': default}, False)
+        return ok_200({u'environments': environments, u'default': default}, False)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/environment', methods=['POST'])
+@app.route(u'/environment', methods=[u'POST'])
 def api_environment_post():
     """
     Add a new environment.
@@ -1197,15 +1195,15 @@ def api_environment_post():
     .. warning:: TODO
     """
     try:
-        requires_auth(request=request, allow_root=True, role='admin_platform')
+        requires_auth(request=request, allow_root=True, role=u'admin_platform')
         data = get_request_json(request)
-        return ok_200(orchestra.add_environment(data['name'], data['type'], data['region'],
-                      data['access_key'], data['secret_key'], data['control_bucket']), False)
+        return ok_200(orchestra.add_environment(data[u'name'], data[u'type'], data[u'region'], data[u'access_key'],
+                      data[u'secret_key'], data[u'control_bucket']), False)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/environment/name/<name>', methods=['DELETE'])
+@app.route(u'/environment/name/<name>', methods=[u'DELETE'])
 def api_environment_name_delete(name):
     """
     Remove an environment (destroy services and unregister it).
@@ -1215,15 +1213,15 @@ def api_environment_name_delete(name):
     .. warning:: TODO
     """
     try:
-        requires_auth(request=request, allow_root=True, role='admin_platform')
+        requires_auth(request=request, allow_root=True, role=u'admin_platform')
         return ok_200(orchestra.delete_environment(name, remove=True), False)
     except Exception as e:
         map_exceptions(e)
 
 
-# Transform profiles management --------------------------------------------------------------------
+# Transform profiles management ----------------------------------------------------------------------------------------
 
-@app.route('/transform/profile/encoder', methods=['GET'])
+@app.route(u'/transform/profile/encoder', methods=[u'GET'])
 def api_transform_profile_encoder():
     """
     Return an array containing the names of the transform profile encoders.
@@ -1262,7 +1260,7 @@ def api_transform_profile_encoder():
         map_exceptions(e)
 
 
-@app.route('/transform/profile/count', methods=['GET'])
+@app.route(u'/transform/profile/count', methods=[u'GET'])
 def api_transform_profile_count():
     """
     Return profiles count.
@@ -1298,7 +1296,7 @@ def api_transform_profile_count():
         map_exceptions(e)
 
 
-@app.route('/transform/profile', methods=['GET'])
+@app.route(u'/transform/profile', methods=[u'GET'])
 def api_transform_profile_get():
     """
     Return an array containing the transform profiles serialized to JSON.
@@ -1336,7 +1334,7 @@ def api_transform_profile_get():
         map_exceptions(e)
 
 
-@app.route('/transform/profile', methods=['POST'])
+@app.route(u'/transform/profile', methods=[u'POST'])
 def api_transform_profile_post():
     """
     Add a transform profile.
@@ -1398,15 +1396,15 @@ def api_transform_profile_post():
     try:
         requires_auth(request=request, allow_any=True)
         data = get_request_json(request)
-        profile = TransformProfile(None, data['title'], data['description'], data['encoder_name'],
-                                   data['encoder_string'])
+        profile = TransformProfile(None, data[u'title'], data[u'description'], data[u'encoder_name'],
+                                   data[u'encoder_string'])
         orchestra.save_transform_profile(profile)
         return ok_200(profile, True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/transform/profile/id/<id>', methods=['GET'])
+@app.route(u'/transform/profile/id/<id>', methods=[u'GET'])
 def api_transform_profile_id_get(id):
     """
     Return a transform profile serialized to JSON.
@@ -1450,15 +1448,15 @@ def api_transform_profile_id_get(id):
     try:
         check_id(id)
         requires_auth(request=request, allow_any=True)
-        profile = orchestra.get_transform_profile(specs={'_id': id})
+        profile = orchestra.get_transform_profile(specs={u'_id': id})
         if not profile:
-            raise IndexError('No transform profile with id %s.' % id)
+            raise IndexError(to_bytes(u'No transform profile with id {0}.'.format(id)))
         return ok_200(profile, True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/transform/profile/id/<id>', methods=['DELETE'])
+@app.route(u'/transform/profile/id/<id>', methods=[u'DELETE'])
 def api_transform_profile_id_delete(id):
     """
     Delete a transform profile.
@@ -1496,18 +1494,18 @@ def api_transform_profile_id_delete(id):
     try:
         check_id(id)
         requires_auth(request=request, allow_any=True)
-        profile = orchestra.get_transform_profile(specs={'_id': id})
+        profile = orchestra.get_transform_profile(specs={u'_id': id})
         if not profile:
-            raise IndexError('No transform profile with id %s.' % id)
+            raise IndexError(to_bytes(u'No transform profile with id {0}.'.format(id)))
         orchestra.delete_transform_profile(profile)
-        return ok_200('The transform profile "%s" has been deleted.' % profile.title, False)
+        return ok_200(u'The transform profile "{0}" has been deleted.'.format(profile.title), False)
     except Exception as e:
         map_exceptions(e)
 
 
-# Transformation units management (encoders) -------------------------------------------------------
+# Transformation units management (encoders) ---------------------------------------------------------------------------
 
-@app.route('/transform/unit/environment/<environment>/count', methods=['GET'])
+@app.route(u'/transform/unit/environment/<environment>/count', methods=[u'GET'])
 def api_transform_unit_count(environment):
     """
     Return transform units count of environment ``environment``.
@@ -1523,7 +1521,7 @@ def api_transform_unit_count(environment):
         map_exceptions(e)
 
 
-@app.route('/transform/unit/environment/<environment>', methods=['GET'])
+@app.route(u'/transform/unit/environment/<environment>', methods=[u'GET'])
 def api_transform_unit_get(environment):
     """
     Return an array containing the transform units of environment ``environment`` serialized to
@@ -1540,7 +1538,7 @@ def api_transform_unit_get(environment):
         map_exceptions(e)
 
 
-@app.route('/transform/unit/environment/<environment>', methods=['POST'])
+@app.route(u'/transform/unit/environment/<environment>', methods=[u'POST'])
 def api_transform_unit_post(environment):
     """
     Deploy some new transform units into environment ``environment``.
@@ -1550,16 +1548,16 @@ def api_transform_unit_post(environment):
     .. warning:: TODO
     """
     try:
-        requires_auth(request=request, allow_root=True, role='admin_platform')
+        requires_auth(request=request, allow_root=True, role=u'admin_platform')
         data = get_request_json(request)
-        orchestra.add_or_deploy_transform_units(environment, int(data['num_units']))
-        return ok_200('Deployed %s transform units into environment "%s"' %
-                      (data['num_units'], environment), False)
+        orchestra.add_or_deploy_transform_units(environment, int(data[u'num_units']))
+        return ok_200(u'Deployed {0} transform units into environment "{1}"'.format(data[u'num_units'], environment),
+                      False)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/transform/unit/environment/<environment>', methods=['DELETE'])
+@app.route(u'/transform/unit/environment/<environment>', methods=[u'DELETE'])
 def api_transform_unit_delete(environment):
     """
     Remove some transform units from environment ``environment``.
@@ -1569,16 +1567,16 @@ def api_transform_unit_delete(environment):
     .. warning:: TODO
     """
     try:
-        requires_auth(request=request, allow_root=True, role='admin_platform')
+        requires_auth(request=request, allow_root=True, role=u'admin_platform')
         data = get_request_json(request)
-        numbers = orchestra.remove_transform_units(environment, int(data['num_units']), True)
-        return ok_200('Removed %s (expected %s) transform units with number(s) %s from environment '
-                      '"%s"' % (len(numbers), data['num_units'], numbers, environment), False)
+        numbers = orchestra.remove_transform_units(environment, int(data[u'num_units']), True)
+        return ok_200(u'Removed {0} (requested {1}) transform units with number(s) {2} from environment "{3}"'.format(
+                      len(numbers), data[u'num_units'], numbers, environment), False)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/transform/unit/environment/<environment>/number/<number>', methods=['GET'])
+@app.route(u'/transform/unit/environment/<environment>/number/<number>', methods=[u'GET'])
 def api_transform_unit_number_get(environment, number):
     """
     Return a transform unit serialized to JSON.
@@ -1591,14 +1589,13 @@ def api_transform_unit_number_get(environment, number):
         requires_auth(request=request, allow_root=True, allow_any=True)
         unit = orchestra.get_transform_unit(environment, number)
         if not unit:
-            raise IndexError('Transform unit %s not found in environment %s.' %
-                             (number, environment))
+            raise IndexError(to_bytes(u'Transform unit {0} not found in environment {1}.'.format(number, environment)))
         return ok_200(unit, True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/transform/unit/environment/<environment>/number/<number>', methods=['DELETE'])
+@app.route(u'/transform/unit/environment/<environment>/number/<number>', methods=[u'DELETE'])
 def api_transform_unit_number_delete(environment, number):
     """
     Remove transform unit number ``number`` from environment ``environment``.
@@ -1608,17 +1605,16 @@ def api_transform_unit_number_delete(environment, number):
     .. warning:: TODO
     """
     try:
-        requires_auth(request=request, allow_root=True, role='admin_platform')
+        requires_auth(request=request, allow_root=True, role=u'admin_platform')
         orchestra.remove_transform_unit(environment, number, True)
-        return ok_200('The transform unit %s has been removed of environment %s.' %
-                      (number, environment), False)
+        return ok_200(u'The transform unit {0} has been removed of environment {1}.'.format(number, environment), False)
     except Exception as e:
         map_exceptions(e)
 
 
-# Transformation tasks (encoding) ------------------------------------------------------------------
+# Transformation tasks (encoding) --------------------------------------------------------------------------------------
 
-@app.route('/transform/queue', methods=['GET'])
+@app.route(u'/transform/queue', methods=[u'GET'])
 def api_transform_queue():
     """
     Return an array containing the transform queues serialized to JSON.
@@ -1657,7 +1653,7 @@ def api_transform_queue():
         map_exceptions(e)
 
 
-@app.route('/transform/task/count', methods=['GET'])
+@app.route(u'/transform/task/count', methods=[u'GET'])
 def api_transform_task_count():
     """
     Return transform tasks count.
@@ -1693,7 +1689,7 @@ def api_transform_task_count():
         map_exceptions(e)
 
 
-@app.route('/transform/task/HEAD', methods=['GET'])
+@app.route(u'/transform/task/HEAD', methods=[u'GET'])
 def api_transform_task_head():
     """
     Return an array containing the transform tasks serialized as JSON.
@@ -1734,7 +1730,7 @@ def api_transform_task_head():
         map_exceptions(e)
 
 
-@app.route('/transform/task', methods=['GET'])
+@app.route(u'/transform/task', methods=[u'GET'])
 def api_transform_task_get():
     """
     Return an array containing the transform tasks serialized to JSON.
@@ -1778,7 +1774,7 @@ def api_transform_task_get():
         map_exceptions(e)
 
 
-@app.route('/transform/task', methods=['POST'])
+@app.route(u'/transform/task', methods=[u'POST'])
 def api_transform_task_post():
     """
     Launch a transform task.
@@ -1848,15 +1844,15 @@ def api_transform_task_post():
         auth_user = requires_auth(request=request, allow_any=True)
         data = get_request_json(request)
         task_id = orchestra.launch_transform_task(
-            auth_user._id, data['media_in_id'], data['profile_id'], data['filename'],
-            data['metadata'], data['queue'], '/transform/callback')
+            auth_user._id, data[u'media_in_id'], data[u'profile_id'], data[u'filename'], data[u'metadata'],
+            data[u'queue'], u'/transform/callback')
         return ok_200(task_id, True)
     except Exception as e:
         map_exceptions(e)
 
 
 # FIXME why HEAD verb doesn't work (curl: (18) transfer closed with 263 bytes remaining to read) ?
-@app.route('/transform/task/id/<id>/HEAD', methods=['GET'])
+@app.route(u'/transform/task/id/<id>/HEAD', methods=[u'GET'])
 def api_transform_task_id_head(id):
     """
     Return a transform task serialized to JSON.
@@ -1915,15 +1911,15 @@ def api_transform_task_id_head(id):
     try:
         check_id(id)
         requires_auth(request=request, allow_any=True)
-        task = orchestra.get_transform_task(specs={'_id': id})
+        task = orchestra.get_transform_task(specs={u'_id': id})
         if not task:
-            raise IndexError('No transform task with id %s.' % id)
+            raise IndexError(to_bytes(u'No transform task with id {0}.'.format(id)))
         return ok_200(task, True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/transform/task/id/<id>', methods=['GET'])
+@app.route(u'/transform/task/id/<id>', methods=[u'GET'])
 def api_transform_task_id_get(id):
     """
     Return a transform task serialized to JSON.
@@ -2032,15 +2028,15 @@ def api_transform_task_id_get(id):
     try:
         check_id(id)
         requires_auth(request=request, allow_any=True)
-        task = orchestra.get_transform_task(specs={'_id': id}, load_fields=True)
+        task = orchestra.get_transform_task(specs={u'_id': id}, load_fields=True)
         if not task:
-            raise IndexError('No transform task with id %s.' % id)
+            raise IndexError(to_bytes(u'No transform task with id {0}.'.format(id)))
         return ok_200(task, True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/transform/task/id/<id>', methods=['DELETE'])
+@app.route(u'/transform/task/id/<id>', methods=[u'DELETE'])
 def api_transform_task_id_delete(id):
     """
     Revoke a transform task.
@@ -2088,23 +2084,23 @@ def api_transform_task_id_delete(id):
     try:
         check_id(id)
         auth_user = requires_auth(request=request, allow_any=True)
-        task = orchestra.get_transform_task(specs={'_id': id})
+        task = orchestra.get_transform_task(specs={u'_id': id})
         if not task:
-            raise IndexError('No transform task with id %s.' % id)
+            raise IndexError(to_bytes(u'No transform task with id {0}.'.format(id)))
         if auth_user._id != task.user_id:
-            abort(403, 'You are not allowed to revoke transform task with id %s.' % id)
+            abort(403, u'You are not allowed to revoke transform task with id {0}.'.format(id))
         orchestra.revoke_transform_task(task=task, terminate=True, remove=False, delete_media=True)
-        return ok_200('The transform task "%s" has been revoked. Corresponding output media will be'
-                      ' deleted.' % task._id, False)
+        return ok_200(u'The transform task "{0}" has been revoked. Corresponding output media will be deleted.'.format(
+                      task._id), False)
     except Exception as e:
         map_exceptions(e)
 
 
-# Publishing tasks ---------------------------------------------------------------------------------
+# Publishing tasks -----------------------------------------------------------------------------------------------------
 
-@app.route('/publish/queue', methods=['GET'])
-@app.route('/publisher/queue', methods=['GET'])
-@app.route('/unpublish/queue', methods=['GET'])
+@app.route(u'/publish/queue', methods=[u'GET'])
+@app.route(u'/publisher/queue', methods=[u'GET'])
+@app.route(u'/unpublish/queue', methods=[u'GET'])
 def api_publish_queue():
     """
     Return an array containing the publish queues.
@@ -2143,7 +2139,7 @@ def api_publish_queue():
         map_exceptions(e)
 
 
-@app.route('/publish/task/count', methods=['GET'])
+@app.route(u'/publish/task/count', methods=[u'GET'])
 def api_publish_task_count():
     """
     Return publish tasks count.
@@ -2179,7 +2175,7 @@ def api_publish_task_count():
         map_exceptions(e)
 
 
-@app.route('/publish/task/HEAD', methods=['GET'])
+@app.route(u'/publish/task/HEAD', methods=[u'GET'])
 def api_publish_task_head():
     """
     Return an array containing the publish tasks serialized as JSON.
@@ -2220,7 +2216,7 @@ def api_publish_task_head():
         map_exceptions(e)
 
 
-@app.route('/publish/task', methods=['GET'])
+@app.route(u'/publish/task', methods=[u'GET'])
 def api_publish_task_get():
     """
     Return an array containing the publish tasks serialized to JSON.
@@ -2264,7 +2260,7 @@ def api_publish_task_get():
         map_exceptions(e)
 
 
-@app.route('/publish/task', methods=['POST'])
+@app.route(u'/publish/task', methods=[u'POST'])
 def api_publish_task_post():
     """
     Launch a publish task.
@@ -2330,15 +2326,14 @@ def api_publish_task_post():
     try:
         auth_user = requires_auth(request=request, allow_any=True)
         data = get_request_json(request)
-        task_id = orchestra.launch_publish_task(auth_user._id, data['media_id'], data['queue'],
-                                                '/publish/callback')
+        task_id = orchestra.launch_publish_task(auth_user._id, data[u'media_id'], data[u'queue'], u'/publish/callback')
         return ok_200(task_id, True)
     except Exception as e:
         map_exceptions(e)
 
 
 # FIXME why HEAD verb doesn't work (curl: (18) transfer closed with 263 bytes remaining to read) ?
-@app.route('/publish/task/id/<id>/HEAD', methods=['GET'])
+@app.route(u'/publish/task/id/<id>/HEAD', methods=[u'GET'])
 def api_publish_task_id_head(id):
     """
     Return a publish task serialized to JSON.
@@ -2396,15 +2391,15 @@ def api_publish_task_id_head(id):
     try:
         check_id(id)
         requires_auth(request=request, allow_any=True)
-        task = orchestra.get_publish_task(specs={'_id': id})
+        task = orchestra.get_publish_task(specs={u'_id': id})
         if not task:
-            raise IndexError('No publish task with id %s.' % id)
+            raise IndexError(to_bytes(u'No publish task with id {0}.'.format(id)))
         return ok_200(task, True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/publish/task/id/<id>', methods=['GET'])
+@app.route(u'/publish/task/id/<id>', methods=[u'GET'])
 def api_publish_task_id_get(id):
     """
     Return a publish task serialized to JSON.
@@ -2482,15 +2477,15 @@ def api_publish_task_id_get(id):
     try:
         check_id(id)
         requires_auth(request=request, allow_any=True)
-        task = orchestra.get_publish_task(specs={'_id': id}, load_fields=True)
+        task = orchestra.get_publish_task(specs={u'_id': id}, load_fields=True)
         if not task:
-            raise IndexError('No publish task with id %s.' % id)
+            raise IndexError(to_bytes(u'No publish task with id {0}.'.format(id)))
         return ok_200(task, True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/publish/task/id/<id>', methods=['DELETE'])
+@app.route(u'/publish/task/id/<id>', methods=[u'DELETE'])
 def api_publish_task_id_delete(id):
     """
     Revoke a publish task.
@@ -2535,23 +2530,23 @@ def api_publish_task_id_delete(id):
     try:
         check_id(id)
         auth_user = requires_auth(request=request, allow_any=True)
-        task = orchestra.get_publish_task(specs={'_id': id})
+        task = orchestra.get_publish_task(specs={u'_id': id})
         if not task:
-            raise IndexError('No publish task with id %s.' % id)
+            raise IndexError(to_bytes(u'No publish task with id {0}.'.format(id)))
         if auth_user._id != task.user_id:
-            abort(403, 'You are not allowed to revoke publish task with id %s.' % id)
+            abort(403, u'You are not allowed to revoke publish task with id {0}.'.format(id))
         orchestra.revoke_publish_task(task=task, terminate=True, remove=False)
-        logging.info('here will be launched an unpublish task')
+        logging.info(u'here will be launched an unpublish task')
         #orchestra.launch_unpublish_task(auth_user._id, task, '/unpublish/callback')
-        return ok_200('The publish task "%s" has been revoked. Corresponding media will be '
-                      'unpublished from here.' % task._id, False)
+        return ok_200(u'The publish task "{0}" has been revoked. Corresponding media will be unpublished from here.'
+                      .format(task._id), False)
     except Exception as e:
         map_exceptions(e)
 
 
-# Workers (nodes) hooks ----------------------------------------------------------------------------
+# Workers (nodes) hooks ------------------------------------------------------------------------------------------------
 
-@app.route('/transform/callback', methods=['POST'])
+@app.route(u'/transform/callback', methods=[u'POST'])
 def api_transform_task_hook():
     """
     This method is called by transform workers when they finish their work.
@@ -2600,15 +2595,15 @@ def api_transform_task_hook():
     try:
         requires_auth(request=request, allow_node=True)
         data = get_request_json(request)
-        task_id, status = data['task_id'], data['status']
-        logging.debug('task ' + task_id + ', status ' + status)
+        task_id, status = data[u'task_id'], data[u'status']
+        logging.debug(u'task {0}, status {1}'.format (task_id, status))
         orchestra.transform_callback(task_id, status)
-        return ok_200('Your work is much appreciated, thanks !', False)
+        return ok_200(u'Your work is much appreciated, thanks !', False)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route('/publish/callback', methods=['POST'])
+@app.route(u'/publish/callback', methods=[u'POST'])
 def api_publish_task_hook():
     """
     This method is called by publisher workers when they finish their work.
@@ -2659,16 +2654,16 @@ def api_publish_task_hook():
     try:
         requires_auth(request=request, allow_node=True)
         data = get_request_json(request)
-        task_id = data['task_id']
-        publish_uri = data['publish_uri'] if 'publish_uri' in data else None
-        status = data['status']
-        logging.debug('task ' + task_id + ', publish_uri ' + publish_uri + ', status ' + status)
+        task_id = data[u'task_id']
+        publish_uri = data[u'publish_uri'] if u'publish_uri' in data else None
+        status = data[u'status']
+        logging.debug(u'task {0}, publish_uri {1}, status {2}'.format(task_id, publish_uri, status))
         orchestra.publish_callback(task_id, publish_uri, status)
-        return ok_200('Your work is much appreciated, thanks !', False)
+        return ok_200(u'Your work is much appreciated, thanks !', False)
     except Exception as e:
         map_exceptions(e)
 
-# @app.route('/unpublish/callback', methods=['POST'])
+# @app.route(u'/unpublish/callback', methods=[u'POST'])
 # def api_unpublish_task_hook_0():
 
 #     # This method will be ALWAYS called by publisher workers when they finish their work.
@@ -2692,33 +2687,36 @@ def api_publish_task_hook():
 #             abort(404, str(error))
 #         return ok_200('Your work is much appreciated, thanks !', False)
 
-# Main ---------------------------------------------------------------------------------------------
+# Main -----------------------------------------------------------------------------------------------------------------
 
-if __name__ == '__main__':
+if __name__ == u'__main__':
+
+    from pyutils.py_unicode import configure_unicode
+    configure_unicode()
 
     try:
-        config = OrchestraConfig.read('local_config.pkl')
-        setup_logging(filename='orchestra.log', console=True, level=config.log_level)
-        logging.info('OSCIED Orchestra by David Fischer 2013')
-        logging.info('Configuration : ' + str(object2json(config, True)))
+        config = OrchestraConfig.read(u'local_config.pkl')
+        setup_logging(filename=u'orchestra.log', console=True, level=config.log_level)
+        logging.info(u'OSCIED Orchestra by David Fischer 2013')
+        logging.info(u'Configuration : {0}'.format(unicode(object2json(config, True))))
 
         if not config.storage_uri():
-            logging.warning('Shared storage is not set in configuration ... exiting')
+            logging.warning(u'Shared storage is not set in configuration ... exiting')
             sys.exit(0)
 
         if not config.mongo_admin_connection:
-            logging.warning('MongoDB is not set in configuration ... mocking')
+            logging.warning(u'MongoDB is not set in configuration ... mocking')
 
         if not config.rabbit_connection:
-            logging.warning('RabbitMQ is not set in configuration ... exiting')
+            logging.warning(u'RabbitMQ is not set in configuration ... exiting')
             sys.exit(0)
 
         orchestra = Orchestra(config)
-        logging.info('Start REST API')
+        logging.info(u'Start REST API')
         #app.config['PROPAGATE_EXCEPTIONS'] = True
-        app.run(host='0.0.0.0', debug=orchestra.config.verbose)
+        app.run(host=u'0.0.0.0', debug=orchestra.config.verbose)
 
     except Exception as error:
-        logging.exception(str(error))
-        logging.exception('Orchestra ... exiting')
+        logging.exception(unicode(error))
+        logging.exception(u'Orchestra ... exiting')
         sys.exit(1)
