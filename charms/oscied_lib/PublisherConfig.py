@@ -55,6 +55,8 @@ PUBLISHER_CONFIG_TEST = PublisherConfig(api_nat_socket=u'129.194.185.47:5000', s
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
+    from pyutils.py_unicode import configure_unicode
+    configure_unicode()
     print(u'Test PublisherConfig with doctest')
     import doctest
     assert(doctest.testmod(verbose=False))

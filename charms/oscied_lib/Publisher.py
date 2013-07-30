@@ -27,6 +27,7 @@
 import os
 from celery import current_task
 from celery.decorators import task
+from kitchen.text.converters import to_bytes
 from Callback import Callback
 from Media import Media
 from PublisherConfig import PublisherConfig
@@ -86,7 +87,7 @@ def publish_task(user_json, media_json, callback_json):
         # Verify that media file can be accessed
         media_path = config.storage_medias_path(media, generate=False)
         if not media_path:
-            raise NotImplementedError(u'Media will not be readed from shared storage : {0}'.format(media.uri))
+            raise NotImplementedError(to_bytes(u'Media will not be readed from shared storage : {0}'.format(media.uri)))
         publish_path, publish_uri = config.publish_point(media)
         media_root, publish_root = os.path.dirname(media_path), os.path.dirname(publish_path)
 
@@ -103,5 +104,5 @@ def publish_task(user_json, media_json, callback_json):
 
         # Here something went wrong
         print(u'{0} Publish task failed'.format(request.id))
-        publish_callback(str(error), None)
+        publish_callback(unicode(error), None)
         raise

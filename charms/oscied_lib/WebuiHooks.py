@@ -26,6 +26,7 @@
 
 import os, shutil, socket, string
 from codecs import open
+from kitchen.text.converters import to_bytes
 from random import choice
 from CharmHooks import DEFAULT_OS_ENV
 from CharmHooks_Storage import CharmHooks_Storage
@@ -70,7 +71,7 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
 
     def api_hook_bypass(self):
         if self.api_config_is_enabled:
-            raise RuntimeError(u'Orchestrator is set in config, api relation is disabled')
+            raise RuntimeError(to_bytes(u'Orchestrator is set in config, api relation is disabled'))
 
     def api_register(self, api_url=None):
         if self.api_config_is_enabled:
@@ -194,6 +195,8 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
+    from pyutils.py_unicode import configure_unicode
+    configure_unicode()
     WebuiHooks(first_that_exist(u'metadata.yaml',    u'../oscied-webui/metadata.yaml'),
                first_that_exist(u'config.yaml',      u'../oscied-webui/config.yaml'),
                first_that_exist(u'local_config.pkl', u'../oscied-webui/local_config.pkl'),

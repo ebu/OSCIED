@@ -26,6 +26,7 @@
 
 import os, re, shutil, time
 from codecs import open
+from kitchen.text.converters import to_bytes
 from configobj import ConfigObj
 from CharmHooks import DEFAULT_OS_ENV
 from CharmHooks_Storage import CharmHooks_Storage
@@ -85,7 +86,7 @@ class OrchestraHooks(CharmHooks_Storage):
         users, vhosts = self.rabbit_users, self.rabbit_vhosts
         self.debug(u'RabbitMQ users: {0} vhosts: {1}'.format(users, vhosts))
         if u'guest' in users or u'nodes' not in users or u'/' in vhosts or u'celery' not in vhosts:
-            raise RuntimeError(u'Unable to configure RabbitMQ')
+            raise RuntimeError(to_bytes(u'Unable to configure RabbitMQ'))
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -194,7 +195,7 @@ class OrchestraHooks(CharmHooks_Storage):
             time.sleep(10)
             #if screen_list('Orchestra', log=self.debug) == [] or
             if self.cmd(u'curl -s http://127.0.0.1:5000', fail=False)[u'returncode'] != 0:
-                raise RuntimeError(u'Orchestra is not ready')
+                raise RuntimeError(to_bytes(u'Orchestra is not ready'))
             else:
                 self.remark(u'Orchestra successfully started')
 
@@ -244,6 +245,8 @@ class OrchestraHooks(CharmHooks_Storage):
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
+    from pyutils.py_unicode import configure_unicode
+    configure_unicode()
     OrchestraHooks(first_that_exist(u'metadata.yaml',    u'../oscied-orchestra/metadata.yaml'),
                    first_that_exist(u'config.yaml',      u'../oscied-orchestra/config.yaml'),
                    first_that_exist(u'local_config.pkl', u'../oscied-orchestra/local_config.pkl'),

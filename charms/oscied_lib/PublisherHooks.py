@@ -26,6 +26,7 @@
 
 import os, multiprocessing, setuptools.archive_util, shutil, time
 from codecs import open
+from kitchen.text.converters import to_bytes
 from CharmHooks import DEFAULT_OS_ENV
 from CharmHooks_Storage import CharmHooks_Storage
 from CharmHooks_Subordinate import CharmHooks_Subordinate
@@ -110,7 +111,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
                 screen_launch(u'Publisher', [u'celeryd', u'--config', u'celeryconfig', u'-Q', self.rabbit_queues])
             time.sleep(5)
             if screen_list(u'Publisher', log=self.debug) == []:
-                raise RuntimeError(u'Publisher is not ready')
+                raise RuntimeError(to_bytes(u'Publisher is not ready'))
             else:
                 self.remark(u'Publisher successfully started')
 
@@ -121,6 +122,8 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
+    from pyutils.py_unicode import configure_unicode
+    configure_unicode()
     PublisherHooks(first_that_exist(u'metadata.yaml',    u'../oscied-publisher/metadata.yaml'),
                    first_that_exist(u'config.yaml',      u'../oscied-publisher/config.yaml'),
                    first_that_exist(u'local_config.pkl', u'../oscied-publisher/local_config.pkl'),

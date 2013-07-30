@@ -43,5 +43,7 @@ STORAGE_CONFIG_TEST = StorageConfig(u'*', False)
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
+    from pyutils.py_unicode import configure_unicode
+    configure_unicode()
     print(u'Write default storage configuration')
     StorageConfig().write(u'../oscied-storage/local_config.pkl')

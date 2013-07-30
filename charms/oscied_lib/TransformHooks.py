@@ -25,6 +25,7 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 import os, multiprocessing, setuptools.archive_util, shutil, time
+from kitchen.text.converters import to_bytes
 from CharmHooks import DEFAULT_OS_ENV
 from CharmHooks_Storage import CharmHooks_Storage
 from CharmHooks_Subordinate import CharmHooks_Subordinate
@@ -91,7 +92,7 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
                 screen_launch(u'Transform', [u'celeryd', u'--config', u'celeryconfig', u'-Q', self.rabbit_queues])
             time.sleep(5)
             if screen_list(u'Transform', log=self.debug) == []:
-                raise RuntimeError(u'Transform is not ready')
+                raise RuntimeError(to_bytes(u'Transform is not ready'))
             else:
                 self.remark(u'Transform successfully started')
 
@@ -101,6 +102,8 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
+    from pyutils.py_unicode import configure_unicode
+    configure_unicode()
     TransformHooks(first_that_exist(u'metadata.yaml',    u'../oscied-transform/metadata.yaml'),
                    first_that_exist(u'config.yaml',      u'../oscied-transform/config.yaml'),
                    first_that_exist(u'local_config.pkl', u'../oscied-transform/local_config.pkl'),

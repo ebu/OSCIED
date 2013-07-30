@@ -25,6 +25,7 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 import os, shutil, time
+from kitchen.text.converters import to_bytes
 from pyutils.py_ffmpeg import get_media_duration
 from pyutils.py_filesystem import get_size, try_makedirs
 
@@ -52,18 +53,18 @@ class Storage(object):
                             the_error = error
                             time.sleep(1)
                     if the_error:
-                        raise IndexError(u'An error occured : {0} ({1} -> {2}).'.format(
-                                         the_error, media_src_path, media_dst_path))
+                        raise IndexError(to_bytes(u'An error occured : {0} ({1} -> {2}).'.format(
+                                         the_error, media_src_path, media_dst_path)))
                 try:
                     size = get_size(os.path.dirname(media_dst_path))
                 except OSError:
-                    raise ValueError(u'Unable to detect size of media {0}.'.format(media_dst_path))
+                    raise ValueError(to_bytes(u'Unable to detect size of media {0}.'.format(media_dst_path)))
                 duration = get_media_duration(media_dst_path)
                 if duration is None:
-                    raise ValueError(u'Unable to detect duration of media {0}.'.format(media_dst_path))
+                    raise ValueError(to_bytes(u'Unable to detect duration of media {0}.'.format(media_dst_path)))
                 return (size, duration)
             else:
-                raise NotImplementedError(u'FIXME Add of external URI not implemented.')
+                raise NotImplementedError(to_bytes(u'FIXME Add of external URI not implemented.'))
         return (0, None)
 
     @staticmethod
@@ -72,4 +73,4 @@ class Storage(object):
         if media_path:
             shutil.rmtree(os.path.dirname(media_path), ignore_errors=True)
         else:
-            raise NotImplementedError(u'FIXME Delete of external uri not implemented.')
+            raise NotImplementedError(to_bytes(u'FIXME Delete of external uri not implemented.'))

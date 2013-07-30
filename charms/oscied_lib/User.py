@@ -38,7 +38,7 @@ class User(OsciedDBModel):
         self.last_name = last_name
         self.mail = mail
         self.secret = secret
-        self.admin_platform = True if str(admin_platform).lower() == u'true' else False
+        self.admin_platform = True if unicode(admin_platform).lower() == u'true' else False
 
     @property
     def name(self):

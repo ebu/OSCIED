@@ -25,6 +25,7 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 from celery.result import AsyncResult
+from kitchen.text.converters import to_bytes
 from Media import MEDIA_TEST
 from OsciedDBModel import OsciedDBModel
 from TransformProfile import TRANSFORM_PROFILE_TEST
@@ -99,15 +100,16 @@ class TransformTask(OsciedDBModel):
     @staticmethod
     def validate_task(media_in, profile, media_out):
         if not media_in.status in (u'READY', u'PUBLISHED'):
-            raise NotImplementedError(u'Cannot launch the task, input media status is {0}.'.format(media_in.status))
+            raise NotImplementedError(to_bytes(u'Cannot launch the task, input media status is {0}.'.format(
+                                      media_in.status)))
         if media_in.is_dash and profile.encoder_name != u'copy':
-            raise NotImplementedError(u'Cannot launch the task, input media is MPEG-DASH content '
-                                      'and encoder is not copy.')
+            raise NotImplementedError(to_bytes(u'Cannot launch the task, input media is MPEG-DASH content and encoder '
+                                      'is not copy.'))
         if profile.is_dash and not media_out.is_dash:
-            raise ValueError(u'Cannot launch the task, output media is not a MPD but task is based on a MPEG-DASH '
-                             'encoder called {0}.'.format(profile.encoder_name))
+            raise ValueError(to_bytes(u'Cannot launch the task, output media is not a MPD but task is based on a '
+                             'MPEG-DASH encoder called {0}.'.format(profile.encoder_name)))
         if not profile.is_dash and media_out.is_dash:
-            raise ValueError(u'Cannot launch the task, output media is a MPD but task is not based on a MPEG-DASH '
-                             'encoder called {0}.'.format(profile.encoder_name))
+            raise ValueError(to_bytes(u'Cannot launch the task, output media is a MPD but task is not based on a '
+                             'MPEG-DASH encoder called {0}.'.format(profile.encoder_name)))
 
 TRANSFORM_JOB_TEST = TransformTask(None, USER_TEST._id, MEDIA_TEST._id, MEDIA_TEST._id, TRANSFORM_PROFILE_TEST._id)

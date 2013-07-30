@@ -25,6 +25,7 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 import uuid
+from kitchen.text.converters import to_bytes
 from pyutils.py_serialization import JsoneableObject
 
 
@@ -32,11 +33,11 @@ class OsciedDBModel(JsoneableObject):
 
     def __init__(self, _id=None):
         if not _id:
-            _id = str(uuid.uuid4())
+            _id = unicode(uuid.uuid4())
         self._id = _id
 
     def _E(self, raise_exception, message):
         if raise_exception:
-            raise TypeError(u'{0} : {1}'.format(self.__class__.__name__, message))
+            raise TypeError(to_bytes(u'{0} : {1}'.format(self.__class__.__name__, message)))
         return False
     # FIXME add load_fields(self, **kwargs):

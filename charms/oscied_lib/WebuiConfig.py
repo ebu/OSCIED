@@ -60,6 +60,8 @@ WEBUI_CONFIG_TEST = WebuiConfig(api_url=u'10.10.4.3:5000', storage_address=u'10.
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
+    from pyutils.py_unicode import configure_unicode
+    configure_unicode()
     print('Test WebuiConfig with doctest')
     import doctest
     assert(doctest.testmod(verbose=False))

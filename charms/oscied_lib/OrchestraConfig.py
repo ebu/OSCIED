@@ -88,6 +88,8 @@ ORCHESTRA_CONFIG_TEST = OrchestraConfig(
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
+    from pyutils.py_unicode import configure_unicode
+    configure_unicode()
     print(u'Test OrchestraConfig with doctest')
     import doctest
     assert(doctest.testmod(verbose=False))

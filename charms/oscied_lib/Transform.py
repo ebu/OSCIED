@@ -27,6 +27,7 @@
 import os, re, select, shlex, time
 from celery import current_task
 from celery.decorators import task
+from kitchen.text.converters import to_bytes
 from subprocess import Popen, PIPE
 from Callback import Callback
 from Media import Media
@@ -100,10 +101,12 @@ def transform_task(user_json, media_in_json, media_out_json, profile_json, callb
         # Verify that media file can be accessed and create output path
         media_in_path = config.storage_medias_path(media_in, generate=False)
         if not media_in_path:
-            raise NotImplementedError(u'Input media will not be readed from shared storage : {0}'.format(media_in.uri))
+            raise NotImplementedError(to_bytes(u'Input media will not be readed from shared storage : {0}'.format(
+                                      media_in.uri)))
         media_out_path = config.storage_medias_path(media_out, generate=True)
         if not media_out_path:
-            raise NotImplementedError(u'Output media will not be written to shared storage : {0}'.format(media_out.uri))
+            raise NotImplementedError(to_bytes(u'Output media will not be written to shared storage : {0}'.format(
+                                      media_out.uri)))
         media_in_root = os.path.dirname(media_in_path)
         media_out_root = os.path.dirname(media_out_path)
         try_makedirs(media_out_root)
@@ -175,7 +178,7 @@ def transform_task(user_json, media_in_json, media_out_json, profile_json, callb
 
             # FFmpeg output sanity check
             if returncode != 0:
-                raise OSError(u'FFmpeg return code is {0}, encoding probably failed.'.format(returncode))
+                raise OSError(to_bytes(u'FFmpeg return code is {0}, encoding probably failed.'.format(returncode)))
 
             # Output media file sanity check
 #            media_out_duration = get_media_duration(media_out_path)
@@ -238,9 +241,9 @@ def transform_task(user_json, media_in_json, media_out_json, profile_json, callb
 
             # DashCast output sanity check
             if not os.path.exists(media_out_path):
-                raise OSError(u'Output media not found, DashCast encoding probably failed.')
+                raise OSError(to_bytes(u'Output media not found, DashCast encoding probably failed.'))
             if returncode != 0:
-                raise OSError(u'DashCast return code is {0}, encoding probably failed.'.format(returncode))
+                raise OSError(to_bytes(u'DashCast return code is {0}, encoding probably failed.'.format(returncode)))
             # FIXME check duration too !
 
         # Here all seem okay -------------------------------------------------------------------------------------------

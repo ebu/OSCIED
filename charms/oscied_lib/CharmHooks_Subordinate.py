@@ -25,6 +25,7 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 import pymongo.uri_parser, shutil
+from kitchen.text.converters import to_bytes
 from CharmHooks import CharmHooks
 
 
@@ -70,7 +71,7 @@ class CharmHooks_Subordinate(CharmHooks):
             assert(infos[u'host'] and infos[u'port'] and infos[u'username'] and infos[u'password'] and
                    infos[u'database'])
         except:
-            raise ValueError(u'Unable to parse MongoDB connection {0}'.format(mongo))
+            raise ValueError(to_bytes(u'Unable to parse MongoDB connection {0}'.format(mongo)))
         self.template2config(self.local_config.celery_template_file, self.local_config.celery_config_file, infos)
         self.remark(u'Orchestrator successfully registered')
 
@@ -81,7 +82,7 @@ class CharmHooks_Subordinate(CharmHooks):
 
     def subordinate_hook_bypass(self):
         if self.subordinate_config_is_enabled:
-            raise RuntimeError(u'Orchestrator is set in config, subordinate relation is disabled')
+            raise RuntimeError(to_bytes(u'Orchestrator is set in config, subordinate relation is disabled'))
 
     # ------------------------------------------------------------------------------------------------------------------
 

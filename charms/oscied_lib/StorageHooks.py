@@ -25,6 +25,7 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 import glob, re, shutil
+from kitchen.text.converters import to_bytes
 from CharmHooks import CharmHooks, DEFAULT_OS_ENV
 from StorageConfig import StorageConfig
 from pyutils.py_filesystem import first_that_exist
@@ -103,7 +104,7 @@ class StorageHooks(CharmHooks):
         self.volume_do(u'set', volume=volume, options=u'auth.allow "{0}"'.format(ips), fail=False)
         auth_allow = self.volume_infos(volume=volume)[u'auth_allow']
         if auth_allow != ips:
-            raise ValueError(u'Volume {0} auth.allow={1} (expected {2})'.format(volume, ips, auth_allow))
+            raise ValueError(to_bytes(u'Volume {0} auth.allow={1} (expected {2})'.format(volume, ips, auth_allow)))
         self.info(self.volume_infos(volume=volume))
 
     def volume_infos(self, volume=None):
@@ -235,6 +236,8 @@ class StorageHooks(CharmHooks):
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
+    from pyutils.py_unicode import configure_unicode
+    configure_unicode()
     StorageHooks(first_that_exist(u'metadata.yaml',    u'../oscied-storage/metadata.yaml'),
                  first_that_exist(u'config.yaml',      u'../oscied-storage/config.yaml'),
                  first_that_exist(u'local_config.pkl', u'../oscied-storage/local_config.pkl'),

@@ -28,6 +28,7 @@
 
 import os, subprocess, sys, yaml
 from codecs import open
+from kitchen.text.converters import to_bytes
 from six import string_types
 import pyutils.py_juju as juju
 from pyutils.py_subprocess import cmd
@@ -169,28 +170,28 @@ class CharmHooks(object):
     def unit_get(self, attribute):
         if self.juju_ok:
             return charmhelpers.unit_get(attribute)
-        raise NotImplementedError(u'FIXME unit_get not yet implemented')
+        raise NotImplementedError(to_bytes(u'FIXME unit_get not yet implemented'))
 
     def relation_get(self, attribute=None, unit=None, rid=None):
         if self.juju_ok:
             return charmhelpers.relation_get(attribute, unit, rid)
-        raise NotImplementedError(u'FIXME relation_get not yet implemented')
+        raise NotImplementedError(to_bytes(u'FIXME relation_get not yet implemented'))
 
     def relation_ids(self, relation_name):
         if self.juju_ok:
             return [int(id) for id in charmhelpers.relation_ids(relation_name)]
-        raise NotImplementedError(u'FIXME relation_ids not yet implemented')
+        raise NotImplementedError(to_bytes(u'FIXME relation_ids not yet implemented'))
 
     def relation_list(self, rid=None):
         if self.juju_ok:
             return charmhelpers.relation_list(rid)
-        raise NotImplementedError(u'FIXME relation_list not yet implemented')
+        raise NotImplementedError(to_bytes(u'FIXME relation_list not yet implemented'))
 
     def relation_set(self, **kwargs):
         if self.juju_ok:
             charmhelpers.relation_set(**kwargs)
         else:
-            raise NotImplementedError(u'FIXME relation_set not yet implemented')
+            raise NotImplementedError(to_bytes(u'FIXME relation_set not yet implemented'))
 
     # Convenience methods for logging ----------------------------------------------------------------------------------
 
@@ -308,7 +309,7 @@ class CharmHooks(object):
         """
         if hook_name is None:
             if len(sys.argv) != 2:
-                raise ValueError(u'Usage {0} hook_name (e.g. config-changed)'.format(sys.argv[0]))
+                raise ValueError(to_bytes(u'Usage {0} hook_name (e.g. config-changed)'.format(sys.argv[0])))
             hook_name = sys.argv[1]
 
         if self.juju_ok:

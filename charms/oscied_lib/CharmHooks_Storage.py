@@ -26,6 +26,7 @@
 
 import os, time
 from codecs import open
+from kitchen.text.converters import to_bytes
 from CharmHooks import CharmHooks
 from pyutils.py_filesystem import try_makedirs
 
@@ -99,7 +100,7 @@ class CharmHooks_Storage(CharmHooks):
                 self.local_config.storage_options = options
                 self.remark(u'Shared storage successfully registered')
             else:
-                raise IOError(u'Unable to mount shared storage')
+                raise IOError(to_bytes(u'Unable to mount shared storage'))
 
     def storage_unregister(self):
         self.info(u'Unregister shared storage')
@@ -116,7 +117,7 @@ class CharmHooks_Storage(CharmHooks):
 
     def storage_hook_bypass(self):
         if self.storage_config_is_enabled:
-            raise RuntimeError(u'Shared storage is set in config, storage relation is disabled')
+            raise RuntimeError(to_bytes(u'Shared storage is set in config, storage relation is disabled'))
 
     # ------------------------------------------------------------------------------------------------------------------
 
