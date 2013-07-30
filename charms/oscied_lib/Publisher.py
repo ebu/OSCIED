@@ -34,7 +34,9 @@ from PublisherConfig import PublisherConfig
 from User import User
 from pyutils.py_filesystem import recursive_copy
 from pyutils.py_serialization import object2json
+from pyutils.py_unicode import configure_unicode
 
+configure_unicode()
 
 @task(name=u'Publisher.publish_task')
 def publish_task(user_json, media_json, callback_json):

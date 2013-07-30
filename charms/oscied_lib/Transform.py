@@ -39,6 +39,9 @@ from pyutils.py_ffmpeg import get_media_duration, get_media_tracks
 from pyutils.py_filesystem import get_size, recursive_copy, try_makedirs
 from pyutils.py_serialization import object2json
 from pyutils.py_subprocess import make_async, read_async
+from pyutils.py_unicode import configure_unicode
+
+configure_unicode()
 
 # Read video frame 4903
 DASHCAST_REGEX = re.compile(r'Read video frame (?P<frame>\d+)')
