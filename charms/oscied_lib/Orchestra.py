@@ -42,7 +42,7 @@ from TransformTask import TransformTask
 from User import User
 import pyutils.juju as juju
 from pyutils.pyutils import object2json, datetime_now, UUID_ZERO, unicode_csv_reader, valid_uuid
-
+from plugit_api import PlugItAPI
 
 class Orchestra(object):
 
@@ -58,6 +58,10 @@ class Orchestra(object):
                               self.config.root_secret, True)
         self.nodes_user = User(UUID_ZERO, 'nodes', 'oscied', 'nodes@oscied.org',
                                self.config.nodes_secret, False)
+        if hasattr(self.config, 'plugit_api_url'):
+            self.plugitapi = PlugItAPI(self.config.plugit_api_url)
+        else:
+            self.plugitapi = None
 
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Properties >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -341,8 +345,10 @@ class Orchestra(object):
         if self.is_mock:
             result_id = str(uuid.uuid4())
         else:
-            # TODO: Build user based on API, but i need config for this
-            user = {'mail': 'false@user.com', '_id': user_id}
+            if self.plugitapi:
+                user = self.plugitapi.get_user(user_id)
+            else:
+                user = {'mail': 'false@user.com', '_id': user_id}
             result = Transform.transform_task.apply_async(
                 args=(object2json(user,      False), object2json(media_in, False),
                       object2json(media_out, False), object2json(profile,  False),
@@ -443,8 +449,10 @@ class Orchestra(object):
         if self.is_mock:
             result_id = str(uuid.uuid4())
         else:
-            # TODO: Build user based on API, but i need config for this
-            user = {'mail': 'false@user.com', '_id': user_id}
+            if self.plugitapi:
+                user = self.plugitapi.get_user(user_id)
+            else:
+                user = {'mail': 'false@user.com', '_id': user_id}
 
             result = Publisher.publish_task.apply_async(
                 args=(object2json(user, False), object2json(media, False),

@@ -24,7 +24,7 @@ loadTasks();
 /*<!-- Set the action for file deletion -->*/
 $('body').on('click', '.revoke', function() {
    if (confirm('Do you really want to revoke the task "' + $(this).attr('title') + '"?')) {
-      $.get($(this).attr('href'), function(data) { window.location = data.redirect; }, 'json' );
+      $.get($(this).attr('href'), function(data) {  }, 'json' );
    }
    return false;
 });
@@ -85,8 +85,7 @@ $('#launch_task_submit').click(function() {
          }
          else {
             if (data.task_id) {
-               loadTasks();
-               $('#ptitMessage').html("Transformation task '" + data.profile[0].title + "' was launched successfully.");
+               $('#ptitMessage').html("Transformation task was launched successfully.");
             } else {
                alert(data.ebuio_abort);
             }
