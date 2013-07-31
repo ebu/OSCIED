@@ -48,8 +48,20 @@ class OrchestraHooks(CharmHooks_Storage):
     # ----------------------------------------------------------------------------------------------
 
     @property
+    def api_standalone(self):
+        return self.config.plugit_api_url is None or not self.config.plugit_api_url.strip()
+
+    @property
+    def api_filename(self):
+        return 'orchestra.py' if self.api_standalone else 'server.py'
+
+    @property
     def api_url(self):
-        return 'http://%s:5000/action' % self.private_address
+        return 'http://{0}:5000{1}'.format(self.private_address, '' if self.api_standalone else '/action')
+
+    @property
+    def api_local_url(self):
+        return 'http://127.0.0.1:5000{0}'.format('' if self.api_standalone else '/action')
 
     @property
     def mongo_admin_connection(self):
@@ -165,6 +177,7 @@ class OrchestraHooks(CharmHooks_Storage):
         }
         self.template2config(self.local_config.celery_template_file,
                              self.local_config.celery_config_file, infos)
+        self.local_config.plugit_api_url = self.plugit_api_url
         self.remark('Orchestrator successfully configured')
         self.storage_remount()
 
@@ -195,10 +208,11 @@ class OrchestraHooks(CharmHooks_Storage):
             # FIXME this is not a good idea, but I have some trouble with precise release
             self.configure_rabbitmq()  # (see ticket #205 of my private TRAC ticket system)
             if screen_list('Orchestra', log=self.debug) == []:
-                screen_launch('Orchestra', ['python', 'server.py'])
+                self.info('Start in {0} mode'.format('standalone' if self.api_standalone else 'PlugIt'))
+                screen_launch('Orchestra', ['python', self.api_filename])
             time.sleep(10)
             #if screen_list('Orchestra', log=self.debug) == [] or
-            if self.cmd('curl -s http://127.0.0.1:5000', fail=False)['returncode'] != 0:
+            if self.cmd('curl -s {0}'.format(self.api_local_url), fail=False)['returncode'] != 0:
                 raise RuntimeError('Orchestra is not ready')
             else:
                 self.remark('Orchestra successfully started')
