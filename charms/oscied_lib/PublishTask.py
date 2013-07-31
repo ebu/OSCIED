@@ -52,10 +52,10 @@ class PublishTask(object):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : _id is not a valid uuid string')
             return False
-        if hasattr(self, 'user_id') and not valid_uuid(self.user_id, none_allowed=False):
-            if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : user_id is not a valid uuid string')
-            return False
+        #if hasattr(self, 'user_id') and not valid_uuid(self.user_id, none_allowed=False):
+        #    if raise_exception:
+        #        raise TypeError(self.__class__.__name__ + ' : user_id is not a valid uuid string')
+        #    return False
         # FIXME check user if loaded
         if hasattr(self, 'media_id') and not valid_uuid(self.media_id, none_allowed=False):
             if raise_exception:
@@ -92,7 +92,7 @@ class PublishTask(object):
     def load_fields(self, user, media):
         self.user = user
         self.media = media
-        delattr(self, 'user_id')
+        #delattr(self, 'user_id')
         delattr(self, 'media_id')
 
     @staticmethod

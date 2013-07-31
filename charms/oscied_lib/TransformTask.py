@@ -53,10 +53,10 @@ class TransformTask(object):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : _id is not a valid uuid string')
             return False
-        if hasattr(self, 'user_id') and not valid_uuid(self.user_id, none_allowed=False):
-            if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : user_id is not a valid uuid string')
-            return False
+        #if hasattr(self, 'user_id') and not valid_uuid(self.user_id, none_allowed=False):
+        #    if raise_exception:
+        #        raise TypeError(self.__class__.__name__ + ' : user_id is not a valid uuid string')
+        #    return False
         # FIXME check user if loaded
         if hasattr(self, 'media_in_id') and not valid_uuid(self.media_in_id, none_allowed=False):
             if raise_exception:
@@ -104,7 +104,7 @@ class TransformTask(object):
         self.media_in = media_in
         self.media_out = media_out
         self.profile = profile
-        delattr(self, 'user_id')
+        #delattr(self, 'user_id')
         delattr(self, 'media_in_id')
         delattr(self, 'media_out_id')
         delattr(self, 'profile_id')

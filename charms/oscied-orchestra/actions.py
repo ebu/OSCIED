@@ -81,38 +81,6 @@ def main(flask_app, mock):
 # --------------------------------------------------------------------------------------------------
 # http://publish.luisrei.com/articles/flaskrest.html
 
-def requires_auth(request, **kwargs):
-    u"""
-    Bypass user authentication and get informations from PlugIt Client running on EBU-io website.
-
-    .. warning::
-
-        Removed description from branch called issue75_ebuio.
-    """
-    args = request.form if request.form.get('ebuio_u_username') else request.args
-    if args.get('ebuio_u_username'):
-        logging.info('User is %s' % args['ebuio_u_username'])
-        user = orchestra.get_user(specs={'mail': args['ebuio_u_email']})
-        if user is None:
-            user = User(None,
-                        first_name=args.get('ebuio_u_first_name') or 'First name',
-                        last_name=args.get('ebuio_u_last_name') or 'Last name',
-                        mail=args['ebuio_u_email'],
-                        secret=str(uuid.uuid4()),
-                        admin_platform=args.get('ebuio_u_ebuio_admin') == 'True')
-            logging.info('Create new EBU-io user %s' % user.name)
-            if not user.is_valid(False):
-                msg = 'Missing on or more informations about EBU-io user.'
-                logging.exception(msg)
-                raise ValueError(msg)
-            # Ensure that user's informations are available in our database
-            orchestra.save_user(user, hash_secret=True)
-        else:
-            logging.info('Use existing EBU-io user %s' % user.name)
-        return user
-    # This is probably a worker node (transform of publisher) that want to trigger a callback
-    return None
-
 
 def response2dict(response, remove_underscore):
     value = []
@@ -176,13 +144,12 @@ def api_root(request):
 
 @action('/flush', methods=['POST'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_flush(request):
     """
     Flush Orchestrator's database. This method is useful for testing / development purposes.
     """
     try:
-        requires_auth(request=request, allow_root=True)
+        
         orchestra.flush_db()
         return ok_200('Orchestra database flushed !', False)
     except Exception as e:
@@ -193,13 +160,12 @@ def api_flush(request):
 
 @action('/media/count', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_media_count(request):
     """
     Return medias count.
     """
     try:
-        requires_auth(request=request, allow_any=True)
+        
         return ok_200(orchestra.get_medias_count(), False)
     except Exception as e:
         map_exceptions(e)
@@ -207,13 +173,12 @@ def api_media_count(request):
 
 @action('/media/HEAD', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_media_head(request):
     """
     Return an array containing the medias serialized to JSON.
     """
     try:
-        requires_auth(request=request, allow_any=True)
+        
         return ok_200(orchestra.get_medias(), True)
     except Exception as e:
         map_exceptions(e)
@@ -221,7 +186,6 @@ def api_media_head(request):
 
 @action('/media', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_media_get(request):
     """
     Return an array containing the medias serialized to JSON.
@@ -230,7 +194,7 @@ def api_media_get(request):
     For example ``user_id`` is replaced by ``user``'s data.
     """
     try:
-        requires_auth(request=request, allow_any=True)
+        
         return ok_200(orchestra.get_medias(load_fields=False), True)  # FIXME enable load_fields
     except Exception as e:
         map_exceptions(e)
@@ -238,7 +202,7 @@ def api_media_get(request):
 
 @action('/media', methods=['POST'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+@user_info(props=['pk'])
 def api_media_post(request):
     """
     Add a media.
@@ -261,9 +225,9 @@ def api_media_post(request):
         Registration of external media (aka. http://) will be an interesting improvement.
     """
     try:
-        auth_user = requires_auth(request=request, allow_any=True)
+        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk') 
         data = get_request_json(request)
-        media = Media(None, auth_user._id, None, data['uri'], None, data['filename'],
+        media = Media(None, auth_user, None, data['uri'], None, data['filename'],
                       data['metadata'], 'READY')
         orchestra.save_media(media)
         return ok_200(media, True)
@@ -274,14 +238,13 @@ def api_media_post(request):
 # FIXME why HEAD verb doesn't work (curl: (18) transfer closed with 263 bytes remaining to read) ?
 @action('/media/id/<id>/HEAD', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_media_id_head(request, id):
     """
     Return a media serialized to JSON.
     """
     try:
         check_id(id)
-        requires_auth(request=request, allow_any=True)
+        
         media = orchestra.get_media(specs={'_id': id})
         if not media:
             raise IndexError('No media with id %s.' % id)
@@ -292,7 +255,6 @@ def api_media_id_head(request, id):
 
 @action('/media/id/<id>', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_media_id_get(request, id):
     """
     Return a media serialized to JSON.
@@ -302,7 +264,7 @@ def api_media_id_get(request, id):
     """
     try:
         check_id(id)
-        requires_auth(request=request, allow_any=True)
+        
         media = orchestra.get_media(specs={'_id': id}, load_fields=True)
         if not media:
             raise IndexError('No media with id %s.' % id)
@@ -313,19 +275,19 @@ def api_media_id_get(request, id):
 
 @action('/media/id/<id>', methods=['PATCH', 'PUT'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+@user_info(props=['pk'])
 def api_media_id_patch(request, id):
     """
     Update a media (only metadata field can be updated).
     """
     try:
         check_id(id)
-        auth_user = requires_auth(request=request, allow_any=True)
+        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk') 
         media = orchestra.get_media(specs={'_id': id})
         data = get_request_json(request)
         if not media:
             raise IndexError('No media with id %s.' % id)
-        if auth_user._id != media.user_id:
+        if auth_user != media.user_id:
             abort(403, 'You are not allowed to modify media with id %s.' % id)
         if 'metadata' in data:
             media.metadata = data['metadata']
@@ -337,7 +299,7 @@ def api_media_id_patch(request, id):
 
 @action('/media/id/<id>', methods=['DELETE'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+@user_info(props=['pk'])
 def api_media_id_delete(request, id):
     """
     Delete a media.
@@ -346,11 +308,11 @@ def api_media_id_delete(request, id):
     """
     try:
         check_id(id)
-        auth_user = requires_auth(request=request, allow_any=True)
+        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk') 
         media = orchestra.get_media(specs={'_id': id})
         if not media:
             raise IndexError('No media with id %s.' % id)
-        if auth_user._id != media.user_id:
+        if auth_user != media.user_id:
             abort(403, 'You are not allowed to delete media with id %s.' % id)
         orchestra.delete_media(media)
         return ok_200('The media "%s" has been deleted.' % media.metadata['title'], False)
@@ -362,7 +324,6 @@ def api_media_id_delete(request, id):
 
 @action('/environment/count', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_environment_count(request):
     """
     Return environments count.
@@ -370,7 +331,7 @@ def api_environment_count(request):
     **Example request**:
     """
     try:
-        requires_auth(request=request, allow_root=True, allow_any=True)
+        
         return ok_200(orchestra.get_environments_count(), False)
     except Exception as e:
         map_exceptions(e)
@@ -378,7 +339,6 @@ def api_environment_count(request):
 
 @action('/environment', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_environment_get(request):
     """
     Return an array containing the environments serialized to JSON.
@@ -386,7 +346,7 @@ def api_environment_get(request):
     **Example request**:
     """
     try:
-        requires_auth(request=request, allow_root=True, allow_any=True)
+        
         (environments, default) = orchestra.get_environments()
         return ok_200({'environments': environments, 'default': default}, False)
     except Exception as e:
@@ -395,7 +355,6 @@ def api_environment_get(request):
 
 @action('/environment', methods=['POST'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_environment_post(request):
     """
     Add a new environment.
@@ -403,7 +362,7 @@ def api_environment_post(request):
     **Example request**:
     """
     try:
-        requires_auth(request=request, allow_root=True, role='admin_platform')
+        
         data = get_request_json(request)
         return ok_200(orchestra.add_environment(data['name'], data['type'], data['region'],
                       data['access_key'], data['secret_key'], data['control_bucket']), False)
@@ -413,7 +372,6 @@ def api_environment_post(request):
 
 @action('/environment/name/<name>', methods=['DELETE'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_environment_name_delete(request, name):
     """
     Remove an environment (destroy services and unregister it).
@@ -421,7 +379,7 @@ def api_environment_name_delete(request, name):
     **Example request**:
     """
     try:
-        requires_auth(request=request, allow_root=True, role='admin_platform')
+        
         return ok_200(orchestra.delete_environment(name, remove=True), False)
     except Exception as e:
         map_exceptions(e)
@@ -431,13 +389,12 @@ def api_environment_name_delete(request, name):
 
 @action('/transform/profile/encoder', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_profile_encoder(request):
     """
     Return an array containing the names of the transform profile encoders.
     """
     try:
-        requires_auth(request=request, allow_any=True)
+        
         return ok_200(orchestra.get_transform_profile_encoders(), True)
     except Exception as e:
         map_exceptions(e)
@@ -445,13 +402,12 @@ def api_transform_profile_encoder(request):
 
 @action('/transform/profile/count', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_profile_count(request):
     """
     Return profiles count.
     """
     try:
-        requires_auth(request=request, allow_any=True)
+        
         return ok_200(orchestra.get_transform_profiles_count(), False)
     except Exception as e:
         map_exceptions(e)
@@ -459,13 +415,12 @@ def api_transform_profile_count(request):
 
 @action('/transform/profile', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_profile_get(request):
     """
     Return an array containing the transform profiles serialized to JSON.
     """
     try:
-        requires_auth(request=request, allow_any=True)
+        
         return ok_200(orchestra.get_transform_profiles(), True)
     except Exception as e:
         map_exceptions(e)
@@ -473,7 +428,6 @@ def api_transform_profile_get(request):
 
 @action('/transform/profile', methods=['POST'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_profile_post(request):
     """
     Add a transform profile.
@@ -485,7 +439,7 @@ def api_transform_profile_post(request):
     * **dashcast** to transcode a media to MPEG-DASH with DashCast ;
     """
     try:
-        requires_auth(request=request, allow_any=True)
+        
         data = get_request_json(request)
         profile = TransformProfile(None, data['title'], data['description'], data['encoder_name'],
                                    data['encoder_string'])
@@ -497,14 +451,13 @@ def api_transform_profile_post(request):
 
 @action('/transform/profile/id/<id>', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_profile_id_get(request, id):
     """
     Return a transform profile serialized to JSON.
     """
     try:
         check_id(id)
-        requires_auth(request=request, allow_any=True)
+        
         profile = orchestra.get_transform_profile(specs={'_id': id})
         if not profile:
             raise IndexError('No transform profile with id %s.' % id)
@@ -515,14 +468,13 @@ def api_transform_profile_id_get(request, id):
 
 @action('/transform/profile/id/<id>', methods=['DELETE'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_profile_id_delete(request, id):
     """
     Delete a transform profile.
     """
     try:
         check_id(id)
-        requires_auth(request=request, allow_any=True)
+        
         profile = orchestra.get_transform_profile(specs={'_id': id})
         if not profile:
             raise IndexError('No transform profile with id %s.' % id)
@@ -536,13 +488,12 @@ def api_transform_profile_id_delete(request, id):
 
 @action('/transform/unit/environment/<environment>/count', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_unit_count(request, environment):
     """
     Return transform units count of environment ``environment``.
     """
     try:
-        requires_auth(request=request, allow_root=True, allow_any=True)
+        
         return ok_200(orchestra.get_transform_units_count(environment), False)
     except Exception as e:
         map_exceptions(e)
@@ -550,14 +501,13 @@ def api_transform_unit_count(request, environment):
 
 @action('/transform/unit/environment/<environment>', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_unit_get(request, environment):
     """
     Return an array containing the transform units of environment ``environment`` serialized to
     JSON.
     """
     try:
-        requires_auth(request=request, allow_root=True, allow_any=True)
+        
         return ok_200(orchestra.get_transform_units(environment), False)
     except Exception as e:
         map_exceptions(e)
@@ -565,13 +515,12 @@ def api_transform_unit_get(request, environment):
 
 @action('/transform/unit/environment/<environment>', methods=['POST'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_unit_post(request, environment):
     """
     Deploy some new transform units into environment ``environment``.
     """
     try:
-        requires_auth(request=request, allow_root=True, role='admin_platform')
+        
         data = get_request_json(request)
         orchestra.add_or_deploy_transform_units(environment, int(data['num_units']))
         return ok_200('Deployed %s transform units into environment "%s"' %
@@ -582,13 +531,12 @@ def api_transform_unit_post(request, environment):
 
 @action('/transform/unit/environment/<environment>', methods=['DELETE'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_unit_delete(request, environment):
     """
     Remove some transform units from environment ``environment``.
     """
     try:
-        requires_auth(request=request, allow_root=True, role='admin_platform')
+        
         data = get_request_json(request)
         numbers = orchestra.remove_transform_units(environment, int(data['num_units']), True)
         return ok_200('Removed %s (expected %s) transform units with number(s) %s from environment '
@@ -599,13 +547,12 @@ def api_transform_unit_delete(request, environment):
 
 @action('/transform/unit/environment/<environment>/number/<number>', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_unit_number_get(request, environment, number):
     """
     Return a transform unit serialized to JSON.
     """
     try:
-        requires_auth(request=request, allow_root=True, allow_any=True)
+        
         unit = orchestra.get_transform_unit(environment, number)
         if not unit:
             raise IndexError('Transform unit %s not found in environment %s.' %
@@ -617,13 +564,12 @@ def api_transform_unit_number_get(request, environment, number):
 
 @action('/transform/unit/environment/<environment>/number/<number>', methods=['DELETE'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_unit_number_delete(request, environment, number):
     """
     Remove transform unit number ``number`` from environment ``environment``.
     """
     try:
-        requires_auth(request=request, allow_root=True, role='admin_platform')
+        
         orchestra.remove_transform_unit(environment, number, True)
         return ok_200('The transform unit %s has been removed of environment %s.' %
                       (number, environment), False)
@@ -635,13 +581,12 @@ def api_transform_unit_number_delete(request, environment, number):
 
 @action('/transform/queue', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_queue(request):
     """
     Return an array containing the transform queues serialized to JSON.
     """
     try:
-        requires_auth(request=request, allow_any=True)
+        
         return ok_200(orchestra.get_transform_queues(), True)
     except Exception as e:
         map_exceptions(e)
@@ -649,13 +594,12 @@ def api_transform_queue(request):
 
 @action('/transform/task/count', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_task_count(request):
     """
     Return transform tasks count.
     """
     try:
-        requires_auth(request=request, allow_any=True)
+        
         return ok_200(orchestra.get_transform_tasks_count(), False)
     except Exception as e:
         map_exceptions(e)
@@ -663,7 +607,6 @@ def api_transform_task_count(request):
 
 @action('/transform/task/HEAD', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_task_head(request):
     """
     Return an array containing the transform tasks serialized as JSON.
@@ -671,7 +614,7 @@ def api_transform_task_head(request):
     The transform tasks attributes are appended with the Celery's ``async result`` of the tasks.
     """
     try:
-        requires_auth(request=request, allow_any=True)
+        
         return ok_200(orchestra.get_transform_tasks(), True)
     except Exception as e:
         map_exceptions(e)
@@ -679,7 +622,6 @@ def api_transform_task_head(request):
 
 @action('/transform/task', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_task_get(request):
     """
     Return an array containing the transform tasks serialized to JSON.
@@ -690,7 +632,7 @@ def api_transform_task_get(request):
     For example ``user_id`` is replaced by ``user``'s data.
     """
     try:
-        requires_auth(request=request, allow_any=True)
+        
         return ok_200(orchestra.get_transform_tasks(load_fields=True), True)
     except Exception as e:
         map_exceptions(e)
@@ -698,7 +640,7 @@ def api_transform_task_get(request):
 
 @action('/transform/task', methods=['POST'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+@user_info(props=['pk'])
 def api_transform_task_post(request):
     """
     Launch a transform task.
@@ -719,12 +661,12 @@ def api_transform_task_post(request):
         * Handle the registration of tasks related to PENDING medias ;
     """
     try:
-        auth_user = requires_auth(request=request, allow_any=True)
+        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk') 
         data = get_request_json(request)
         if data['title']:  # Handle title-only metadata
             data['metadata'] = {'title': data['title']}
         task_id = orchestra.launch_transform_task(
-            auth_user._id, data['media_in_id'], data['profile_id'], data['filename'],
+            auth_user, data['media_in_id'], data['profile_id'], data['filename'],
             data['metadata'], data['queue'], '/transform/callback')
         return ok_200(task_id, True)
     except Exception as e:
@@ -734,7 +676,6 @@ def api_transform_task_post(request):
 # FIXME why HEAD verb doesn't work (curl: (18) transfer closed with 263 bytes remaining to read) ?
 @action('/transform/task/id/<id>/HEAD', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_task_id_head(request, id):
     """
     Return a transform task serialized to JSON.
@@ -743,7 +684,7 @@ def api_transform_task_id_head(request, id):
     """
     try:
         check_id(id)
-        requires_auth(request=request, allow_any=True)
+        
         task = orchestra.get_transform_task(specs={'_id': id})
         if not task:
             raise IndexError('No transform task with id %s.' % id)
@@ -754,7 +695,6 @@ def api_transform_task_id_head(request, id):
 
 @action('/transform/task/id/<id>', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_transform_task_id_get(request, id):
     """
     Return a transform task serialized to JSON.
@@ -766,7 +706,7 @@ def api_transform_task_id_get(request, id):
     """
     try:
         check_id(id)
-        requires_auth(request=request, allow_any=True)
+        
         task = orchestra.get_transform_task(specs={'_id': id}, load_fields=True)
         if not task:
             raise IndexError('No transform task with id %s.' % id)
@@ -777,7 +717,7 @@ def api_transform_task_id_get(request, id):
 
 @action('/transform/task/id/<id>', methods=['DELETE'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+@user_info(props=['pk'])
 def api_transform_task_id_delete(request, id):
     """
     Revoke a transform task.
@@ -788,11 +728,11 @@ def api_transform_task_id_delete(request, id):
     """
     try:
         check_id(id)
-        auth_user = requires_auth(request=request, allow_any=True)
+        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk') 
         task = orchestra.get_transform_task(specs={'_id': id})
         if not task:
             raise IndexError('No transform task with id %s.' % id)
-        if auth_user._id != task.user_id:
+        if auth_user != task.user_id:
             abort(403, 'You are not allowed to revoke transform task with id %s.' % id)
         orchestra.revoke_transform_task(task=task, terminate=True, remove=False, delete_media=True)
         return ok_200('The transform task "%s" has been revoked. Corresponding output media will be'
@@ -807,13 +747,12 @@ def api_transform_task_id_delete(request, id):
 @action('/publisher/queue', methods=['GET'])
 @action('/unpublish/queue', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_publish_queue(request):
     """
     Return an array containing the publish queues.
     """
     try:
-        requires_auth(request=request, allow_any=True)
+        
         return ok_200(orchestra.get_publisher_queues(), True)
     except Exception as e:
         map_exceptions(e)
@@ -821,13 +760,12 @@ def api_publish_queue(request):
 
 @action('/publish/task/count', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_publish_task_count(request):
     """
     Return publish tasks count.
     """
     try:
-        requires_auth(request=request, allow_any=True)
+        
         return ok_200(orchestra.get_publish_tasks_count(), False)
     except Exception as e:
         map_exceptions(e)
@@ -835,7 +773,6 @@ def api_publish_task_count(request):
 
 @action('/publish/task/HEAD', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_publish_task_head(request):
     """
     Return an array containing the publish tasks serialized as JSON.
@@ -843,7 +780,7 @@ def api_publish_task_head(request):
     The publish tasks attributes are appended with the Celery's ``async result`` of the tasks.
     """
     try:
-        requires_auth(request=request, allow_any=True)
+        
         return ok_200(orchestra.get_publish_tasks(), True)
     except Exception as e:
         map_exceptions(e)
@@ -851,7 +788,6 @@ def api_publish_task_head(request):
 
 @action('/publish/task', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_publish_task_get(request):
     """
     Return an array containing the publish tasks serialized to JSON.
@@ -862,7 +798,7 @@ def api_publish_task_get(request):
     For example ``user_id`` is replaced by ``user``'s data.
     """
     try:
-        requires_auth(request=request, allow_any=True)
+        
         return ok_200(orchestra.get_publish_tasks(load_fields=True), True)
     except Exception as e:
         map_exceptions(e)
@@ -870,7 +806,7 @@ def api_publish_task_get(request):
 
 @action('/publish/task', methods=['POST'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+@user_info(props=['pk'])
 def api_publish_task_post(request):
     """
     Launch a publish task.
@@ -890,9 +826,9 @@ def api_publish_task_post(request):
         * Permit to unpublish a media vbia a unpublish (broadcast) message
     """
     try:
-        auth_user = requires_auth(request=request, allow_any=True)
+        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk') 
         data = get_request_json(request)
-        task_id = orchestra.launch_publish_task(auth_user._id, data['media_id'], data['queue'],
+        task_id = orchestra.launch_publish_task(auth_user, data['media_id'], data['queue'],
                                                 '/publish/callback')
         return ok_200(task_id, True)
     except Exception as e:
@@ -902,7 +838,6 @@ def api_publish_task_post(request):
 # FIXME why HEAD verb doesn't work (curl: (18) transfer closed with 263 bytes remaining to read) ?
 @action('/publish/task/id/<id>/HEAD', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_publish_task_id_head(request, id):
     """
     Return a publish task serialized to JSON.
@@ -911,7 +846,7 @@ def api_publish_task_id_head(request, id):
     """
     try:
         check_id(id)
-        requires_auth(request=request, allow_any=True)
+        
         task = orchestra.get_publish_task(specs={'_id': id})
         if not task:
             raise IndexError('No publish task with id %s.' % id)
@@ -922,7 +857,6 @@ def api_publish_task_id_head(request, id):
 
 @action('/publish/task/id/<id>', methods=['GET'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def api_publish_task_id_get(request, id):
     """
     Return a publish task serialized to JSON.
@@ -934,7 +868,7 @@ def api_publish_task_id_get(request, id):
     """
     try:
         check_id(id)
-        requires_auth(request=request, allow_any=True)
+        
         task = orchestra.get_publish_task(specs={'_id': id}, load_fields=True)
         if not task:
             raise IndexError('No publish task with id %s.' % id)
@@ -945,7 +879,7 @@ def api_publish_task_id_get(request, id):
 
 @action('/publish/task/id/<id>', methods=['DELETE'])
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+@user_info(props=['pk'])
 def api_publish_task_id_delete(request, id):
     """
     Revoke a publish task.
@@ -956,15 +890,15 @@ def api_publish_task_id_delete(request, id):
     """
     try:
         check_id(id)
-        auth_user = requires_auth(request=request, allow_any=True)
+        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk') 
         task = orchestra.get_publish_task(specs={'_id': id})
         if not task:
             raise IndexError('No publish task with id %s.' % id)
-        if auth_user._id != task.user_id:
+        if auth_user != task.user_id:
             abort(403, 'You are not allowed to revoke publish task with id %s.' % id)
         orchestra.revoke_publish_task(task=task, terminate=True, remove=False)
         logging.info('here will be launched an unpublish task')
-        #orchestra.launch_unpublish_task(auth_user._id, task, '/unpublish/callback')
+        #orchestra.launch_unpublish_task(auth_user, task, '/unpublish/callback')
         return ok_200('The publish task "%s" has been revoked. Corresponding media will be '
                       'unpublished from here.' % task._id, False)
     except Exception as e:
@@ -985,7 +919,7 @@ def api_transform_task_hook(request):
     The media will be deleted if task failed (even the worker already take care of that).
     """
     try:
-        requires_auth(request=request, allow_node=True)
+        
         data = get_request_json(request)
         task_id, status = data['task_id'], data['status']
         logging.debug('task ' + task_id + ', status ' + status)
@@ -1006,7 +940,7 @@ def api_publish_task_hook(request):
     Else, the orchestrator will append ``error_details`` to ``statistic`` attribute of task.
     """
     try:
-        requires_auth(request=request, allow_node=True)
+        
         data = get_request_json(request)
         task_id = data['task_id']
         publish_uri = data['publish_uri'] if 'publish_uri' in data else None
@@ -1022,7 +956,6 @@ def api_publish_task_hook(request):
 
 @action(route="/medias", template="medias/home.html", methods=['GET'])
 @only_logged_user()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def view_medias(request):
     u"""
     Show the media assets home page.
@@ -1032,7 +965,6 @@ def view_medias(request):
 
 @action(route="/medias/list", template="medias/list.html", methods=['GET'])
 @only_logged_user()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def view_medias_list(request):
     u"""
     Show the media assets list page.
@@ -1043,7 +975,6 @@ def view_medias_list(request):
 
 @action(route="/medias/force_download/<id>",methods=['GET'])
 @only_logged_user()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def get_medias(request, id):
     u"""
     Download a media
@@ -1056,12 +987,12 @@ def get_medias(request, id):
 
 @action(route="/upload_files/upload_video", methods=['POST'], template='medias/uploaded_done.html')
 @only_logged_user()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+@user_info(props=['pk'])
 def upload_media(request):
     """Upload a media """
 
     try:
-        auth_user = requires_auth(request=request, allow_any=True)
+        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk') 
         metadata = {'title': request.form.get('title', '')}
         filename = request.form.get('filename')
 
@@ -1081,16 +1012,28 @@ def upload_media(request):
         from werkzeug import secure_filename
         filename = secure_filename(file.filename)
      
-        media = Media(None, auth_user._id, None, tmp_uri, None, filename, metadata, 'READY')
+        media = Media(None, auth_user, None, tmp_uri, None, filename, metadata, 'READY')
         orchestra.save_media(media)
        
         return {'success': True}
     except Exception as e:
         map_exceptions(e)
 
+
+@action(route="/medias/delete/<id>",methods=['GET'])
+@only_logged_user()
+@user_info(props=['pk'])
+@json_only()
+def get_medias(request, id):
+    u"""
+    Delete a media
+    """ 
+    result = response2dict(api_media_id_delete(request, id), remove_underscore=True)
+    return {'result': result}
+
+
 @action(route="/transform/profiles", template="transform/profiles/home.html", methods=['GET'])
 @only_logged_user()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def view_transform_profiles(request):
     u"""
     Show the transformation profiles home page.
@@ -1101,7 +1044,6 @@ def view_transform_profiles(request):
 
 @action(route="/transform/profiles/list", template="transform/profiles/list.html", methods=['GET'])
 @only_logged_user()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def view_transform_profiles_list(request):
     u"""
     Show the transformation profiles list page.
@@ -1113,7 +1055,7 @@ def view_transform_profiles_list(request):
 @action(route="/transform/profiles/add", methods=['POST'])
 @only_logged_user()
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+@user_info(props=['pk'])
 def view_transform_profiles_add(request):
     u"""
     Add a transformation profile.
@@ -1125,7 +1067,7 @@ def view_transform_profiles_add(request):
 @action(route="/transform/profiles/delete/<id>", methods=['GET'])
 @only_logged_user()
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+@user_info(props=['pk'])
 def view_transform_profiles_delete(request, id):
     u"""
     Delete a transformation profile.
@@ -1136,7 +1078,6 @@ def view_transform_profiles_delete(request, id):
 
 @action(route="/transform/tasks", template="transform/tasks/home.html", methods=['GET'])
 @only_logged_user()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def view_transform_tasks(request):
     u"""
     Show the transformation tasks home page.
@@ -1149,7 +1090,6 @@ def view_transform_tasks(request):
 
 @action(route="/transform/tasks/list", template="transform/tasks/list.html", methods=['GET'])
 @only_logged_user()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def view_transform_tasks_list(request):
     u"""
     Show the transformation tasks list page.
@@ -1161,7 +1101,7 @@ def view_transform_tasks_list(request):
 @action(route="/transform/tasks/launch", methods=['POST'])
 @only_logged_user()
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+@user_info(props=['pk'])
 def view_transform_tasks_launch(request):
     u"""
     Launch a transformation task.
@@ -1172,7 +1112,6 @@ def view_transform_tasks_launch(request):
 
 @action(route="/publisher/tasks", template="publisher/tasks/home.html", methods=['GET'])
 @only_logged_user()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def view_publisher_tasks(request):
     u"""
     Show the publication tasks home page.
@@ -1184,7 +1123,6 @@ def view_publisher_tasks(request):
 
 @action(route="/publisher/tasks/list", template="publisher/tasks/list.html", methods=['GET'])
 @only_logged_user()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
 def view_publisher_tasks_list(request):
     u"""
     Show the publication tasks list page.
@@ -1196,7 +1134,7 @@ def view_publisher_tasks_list(request):
 @action(route="/publisher/tasks/launch", methods=['POST'])
 @only_logged_user()
 @json_only()
-@user_info(props=['ebuio_admin', 'ebuio_member', 'first_name', 'last_name', 'username', 'email'])
+@user_info(props=['pk'])
 def view_publisher_tasks_launch(request):
     u"""
     Launch a publication task.

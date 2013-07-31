@@ -75,7 +75,6 @@ $('#launch_task_submit').click(function() {
          }
          else {
             if (data.task_id) {
-               loadTasks();
                $('#ptitMessage').html("Publication task '" + data.profile[0].title + "' was launched successfully.");
             } else {
                alert(data.ebuio_abort);

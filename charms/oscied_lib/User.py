@@ -55,10 +55,10 @@ class User(object):
 
     # FIXME test other fields
     def is_valid(self, raise_exception):
-        if not valid_uuid(self._id, none_allowed=False):
-            if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : _id is not a valid uuid string')
-            return False
+        #if not valid_uuid(self._id, none_allowed=False):
+        #    if raise_exception:
+        #        raise TypeError(self.__class__.__name__ + ' : _id is not a valid uuid string')
+        #    return False
         if not valid_email(self.mail):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : mail is not a valid email address')

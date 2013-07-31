@@ -69,10 +69,10 @@ class Media(object):
             if raise_exception:
                 raise TypeError(self.__class__.__name__ + ' : _id is not a valid uuid string')
             return False
-        if hasattr(self, 'user_id') and not valid_uuid(self.user_id, none_allowed=False):
-            if raise_exception:
-                raise TypeError(self.__class__.__name__ + ' : user_id is not a valid uuid string')
-            return False
+        #if hasattr(self, 'user_id') and not valid_uuid(self.user_id, none_allowed=False):
+        #    if raise_exception:
+        #        raise TypeError(self.__class__.__name__ + ' : user_id is not a valid uuid string')
+        #    return False
         # FIXME check use if loaded
         if hasattr(self, 'parent_id') and not valid_uuid(self.parent_id, none_allowed=True):
             if raise_exception:

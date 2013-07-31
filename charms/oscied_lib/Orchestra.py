@@ -120,6 +120,7 @@ class Orchestra(object):
 
     # ----------------------------------------------------------------------------------------------
 
+
     def save_media(self, media):
         media.is_valid(True)
         if self.get_media({'uri': media.uri, '_id': {'$ne': media._id}}, {'_id': 1}):
@@ -149,10 +150,10 @@ class Orchestra(object):
             media.load_fields(self.get_user({'_id': media.user_id}, {'secret': 0}),
                               self.get_media({'_id': media.parent_id}))
 
-        # Add read path to the file
-        media.api_uri = self.config.storage_medias_path(media, generate=False)
+	# Add read path to the file
+	media.api_uri = self.config.storage_medias_path(media, generate=False)
 
-        return media
+	return media
 
     def delete_media(self, media):
         if valid_uuid(media, none_allowed=False):
@@ -321,9 +322,9 @@ class Orchestra(object):
 
     def launch_transform_task(self, user_id, media_in_id, profile_id, filename, metadata, queue,
                               callback_url):
-        user = self.get_user({'_id': user_id}, {'secret': 0})
-        if not user:
-            raise IndexError('No user with id %s.' % user_id)
+        #user = self.get_user({'_id': user_id}, {'secret': 0})
+        #if not user:
+        #    raise IndexError('No user with id %s.' % user_id)
         media_in = self.get_media({'_id': media_in_id})
         if not media_in:  # FIXME maybe a media access control here
             raise IndexError('No media with id %s.' % media_in_id)
@@ -341,8 +342,10 @@ class Orchestra(object):
         if self.is_mock:
             result_id = str(uuid.uuid4())
         else:
+            # TODO: Build user based on API, but i need config for this
+            user = {'mail': 'false@user.com', '_id': user_id}
             result = Transform.transform_task.apply_async(
-                args=(object2json(user,      False), object2json(media_in, False),
+                args=(object2json(user, False), object2json(media_in, False),
                       object2json(media_out, False), object2json(profile,  False),
                       object2json(callback,  False)),
                 queue=queue)
@@ -350,7 +353,7 @@ class Orchestra(object):
         if not result_id:
             raise ValueError('Unable to transmit task to workers of queue %s.' % queue)
         logging.info('New transformation task %s launched.' % result_id)
-        task = TransformTask(result_id, user._id, media_in._id, media_out._id, profile._id)
+        task = TransformTask(result_id, user_id, media_in._id, media_out._id, profile._id)
         task.add_statistic('add_date', datetime_now(), True)
         self._db.transform_tasks.save(task.__dict__)
         return result_id
@@ -421,9 +424,9 @@ class Orchestra(object):
         return self.config.publisher_queues
 
     def launch_publish_task(self, user_id, media_id, queue, callback_url):
-        user = self.get_user({'_id': user_id}, {'secret': 0})
-        if not user:
-            raise IndexError('No user with id %s.' % user_id)
+        #user = self.get_user({'_id': user_id}, {'secret': 0})
+        #if not user:
+        #    raise IndexError('No user with id %s.' % user_id)
         media = self.get_media({'_id': media_id})
         if not media:  # FIXME maybe a media access control here
             raise IndexError('No media with id %s.' % media_id)
@@ -441,6 +444,9 @@ class Orchestra(object):
         if self.is_mock:
             result_id = str(uuid.uuid4())
         else:
+            # TODO: Build user based on API, but i need config for this
+            user = {'mail': 'false@user.com', '_id': user_id}
+
             result = Publisher.publish_task.apply_async(
                 args=(object2json(user, False), object2json(media, False),
                       object2json(callback, False)),
@@ -449,7 +455,7 @@ class Orchestra(object):
         if not result_id:
             raise ValueError('Unable to transmit task to workers of queue %s.' % queue)
         logging.info('New publication task %s launched.' % result_id)
-        task = PublishTask(result_id, user._id, media._id, None)
+        task = PublishTask(result_id, user_id, media._id, None)
         task.add_statistic('add_date', datetime_now(), True)
         self._db.publish_tasks.save(task.__dict__)
         return result_id

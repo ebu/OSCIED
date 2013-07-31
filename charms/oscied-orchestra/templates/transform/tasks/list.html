@@ -1,3 +1,5 @@
+{% load plugit_tags %}
+
 {% if not tasks %}
 
 <p>Be the first to transform a media !</p>
@@ -23,7 +25,10 @@
       {% with status=task.status|default:'UNKNOWN'|upper %}
       <tr>
          <td>{{task.media_in.filename}}<br/>{{task.media_out.filename}}</td>
-         <td>{{task.profile.title}}<br/>{{task.user.first_name}} {{task.user.last_name}}</td>
+         <td>
+            {{task.profile.title}}<br/>
+            {% plugitGetUser task.user_id as zeUser %}{{zeUser.username}}
+         </td>
          <td>{{task.statistic.add_date}}<br/>{{task.statistic.start_date}}</td>
          <td>{{task.statistic.hostname}}</td>
          <td>{{task.statistic.elapsed_time|time:"H:i:s"}}<br/>{{task.statistic.eta_time|time:"H:i:s"}}</td>
@@ -37,7 +42,7 @@
             <span class="label {% if status == 'PENDING' or status == 'RETRY' %}label-warning{% elif status == 'PROGRESS' %}label-info{% elif status == 'SUCCESS'%}label-success{% elif status == 'FAILURE' %}label-important{% elif status == 'REVOKED' or status != 'UNKOWN' %}label-inverse{% endif %}" title="{{task.statistic.error_details}}">{{status}}</span>
          </td>
          <td>
-            {% if ebuio_u.username == task.user.username %}
+            {% if ebuio_u.pk == media.user_id|add:"0" %}
             {% if status != 'SUCCESS' and status != 'FAILURE' and status != 'REVOKED' %}
             <a class="revoke" title="{{task.id}}" href="{{ebuio_baseUrl}}transform/tasks/revoke/{{task.id}}">
                <button class="btn btn-mini btn-danger">Revoke</button>
