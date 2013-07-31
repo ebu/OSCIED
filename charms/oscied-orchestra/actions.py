@@ -149,7 +149,7 @@ def api_flush(request):
     Flush Orchestrator's database. This method is useful for testing / development purposes.
     """
     try:
-        
+
         orchestra.flush_db()
         return ok_200('Orchestra database flushed !', False)
     except Exception as e:
@@ -165,7 +165,7 @@ def api_media_count(request):
     Return medias count.
     """
     try:
-        
+
         return ok_200(orchestra.get_medias_count(), False)
     except Exception as e:
         map_exceptions(e)
@@ -178,7 +178,7 @@ def api_media_head(request):
     Return an array containing the medias serialized to JSON.
     """
     try:
-        
+
         return ok_200(orchestra.get_medias(), True)
     except Exception as e:
         map_exceptions(e)
@@ -194,7 +194,7 @@ def api_media_get(request):
     For example ``user_id`` is replaced by ``user``'s data.
     """
     try:
-        
+
         return ok_200(orchestra.get_medias(load_fields=False), True)  # FIXME enable load_fields
     except Exception as e:
         map_exceptions(e)
@@ -225,7 +225,7 @@ def api_media_post(request):
         Registration of external media (aka. http://) will be an interesting improvement.
     """
     try:
-        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk') 
+        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk')
         data = get_request_json(request)
         media = Media(None, auth_user, None, data['uri'], None, data['filename'],
                       data['metadata'], 'READY')
@@ -244,7 +244,7 @@ def api_media_id_head(request, id):
     """
     try:
         check_id(id)
-        
+
         media = orchestra.get_media(specs={'_id': id})
         if not media:
             raise IndexError('No media with id %s.' % id)
@@ -264,7 +264,7 @@ def api_media_id_get(request, id):
     """
     try:
         check_id(id)
-        
+
         media = orchestra.get_media(specs={'_id': id}, load_fields=True)
         if not media:
             raise IndexError('No media with id %s.' % id)
@@ -282,7 +282,7 @@ def api_media_id_patch(request, id):
     """
     try:
         check_id(id)
-        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk') 
+        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk')
         media = orchestra.get_media(specs={'_id': id})
         data = get_request_json(request)
         if not media:
@@ -308,7 +308,7 @@ def api_media_id_delete(request, id):
     """
     try:
         check_id(id)
-        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk') 
+        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk')
         media = orchestra.get_media(specs={'_id': id})
         if not media:
             raise IndexError('No media with id %s.' % id)
@@ -331,7 +331,7 @@ def api_environment_count(request):
     **Example request**:
     """
     try:
-        
+
         return ok_200(orchestra.get_environments_count(), False)
     except Exception as e:
         map_exceptions(e)
@@ -346,7 +346,7 @@ def api_environment_get(request):
     **Example request**:
     """
     try:
-        
+
         (environments, default) = orchestra.get_environments()
         return ok_200({'environments': environments, 'default': default}, False)
     except Exception as e:
@@ -362,7 +362,7 @@ def api_environment_post(request):
     **Example request**:
     """
     try:
-        
+
         data = get_request_json(request)
         return ok_200(orchestra.add_environment(data['name'], data['type'], data['region'],
                       data['access_key'], data['secret_key'], data['control_bucket']), False)
@@ -379,7 +379,7 @@ def api_environment_name_delete(request, name):
     **Example request**:
     """
     try:
-        
+
         return ok_200(orchestra.delete_environment(name, remove=True), False)
     except Exception as e:
         map_exceptions(e)
@@ -394,7 +394,7 @@ def api_transform_profile_encoder(request):
     Return an array containing the names of the transform profile encoders.
     """
     try:
-        
+
         return ok_200(orchestra.get_transform_profile_encoders(), True)
     except Exception as e:
         map_exceptions(e)
@@ -407,7 +407,7 @@ def api_transform_profile_count(request):
     Return profiles count.
     """
     try:
-        
+
         return ok_200(orchestra.get_transform_profiles_count(), False)
     except Exception as e:
         map_exceptions(e)
@@ -420,7 +420,7 @@ def api_transform_profile_get(request):
     Return an array containing the transform profiles serialized to JSON.
     """
     try:
-        
+
         return ok_200(orchestra.get_transform_profiles(), True)
     except Exception as e:
         map_exceptions(e)
@@ -439,7 +439,7 @@ def api_transform_profile_post(request):
     * **dashcast** to transcode a media to MPEG-DASH with DashCast ;
     """
     try:
-        
+
         data = get_request_json(request)
         profile = TransformProfile(None, data['title'], data['description'], data['encoder_name'],
                                    data['encoder_string'])
@@ -457,7 +457,7 @@ def api_transform_profile_id_get(request, id):
     """
     try:
         check_id(id)
-        
+
         profile = orchestra.get_transform_profile(specs={'_id': id})
         if not profile:
             raise IndexError('No transform profile with id %s.' % id)
@@ -474,7 +474,7 @@ def api_transform_profile_id_delete(request, id):
     """
     try:
         check_id(id)
-        
+
         profile = orchestra.get_transform_profile(specs={'_id': id})
         if not profile:
             raise IndexError('No transform profile with id %s.' % id)
@@ -493,7 +493,7 @@ def api_transform_unit_count(request, environment):
     Return transform units count of environment ``environment``.
     """
     try:
-        
+
         return ok_200(orchestra.get_transform_units_count(environment), False)
     except Exception as e:
         map_exceptions(e)
@@ -507,7 +507,7 @@ def api_transform_unit_get(request, environment):
     JSON.
     """
     try:
-        
+
         return ok_200(orchestra.get_transform_units(environment), False)
     except Exception as e:
         map_exceptions(e)
@@ -520,7 +520,7 @@ def api_transform_unit_post(request, environment):
     Deploy some new transform units into environment ``environment``.
     """
     try:
-        
+
         data = get_request_json(request)
         orchestra.add_or_deploy_transform_units(environment, int(data['num_units']))
         return ok_200('Deployed %s transform units into environment "%s"' %
@@ -536,7 +536,7 @@ def api_transform_unit_delete(request, environment):
     Remove some transform units from environment ``environment``.
     """
     try:
-        
+
         data = get_request_json(request)
         numbers = orchestra.remove_transform_units(environment, int(data['num_units']), True)
         return ok_200('Removed %s (expected %s) transform units with number(s) %s from environment '
@@ -552,7 +552,7 @@ def api_transform_unit_number_get(request, environment, number):
     Return a transform unit serialized to JSON.
     """
     try:
-        
+
         unit = orchestra.get_transform_unit(environment, number)
         if not unit:
             raise IndexError('Transform unit %s not found in environment %s.' %
@@ -569,7 +569,7 @@ def api_transform_unit_number_delete(request, environment, number):
     Remove transform unit number ``number`` from environment ``environment``.
     """
     try:
-        
+
         orchestra.remove_transform_unit(environment, number, True)
         return ok_200('The transform unit %s has been removed of environment %s.' %
                       (number, environment), False)
@@ -586,7 +586,7 @@ def api_transform_queue(request):
     Return an array containing the transform queues serialized to JSON.
     """
     try:
-        
+
         return ok_200(orchestra.get_transform_queues(), True)
     except Exception as e:
         map_exceptions(e)
@@ -599,7 +599,7 @@ def api_transform_task_count(request):
     Return transform tasks count.
     """
     try:
-        
+
         return ok_200(orchestra.get_transform_tasks_count(), False)
     except Exception as e:
         map_exceptions(e)
@@ -614,7 +614,7 @@ def api_transform_task_head(request):
     The transform tasks attributes are appended with the Celery's ``async result`` of the tasks.
     """
     try:
-        
+
         return ok_200(orchestra.get_transform_tasks(), True)
     except Exception as e:
         map_exceptions(e)
@@ -632,7 +632,7 @@ def api_transform_task_get(request):
     For example ``user_id`` is replaced by ``user``'s data.
     """
     try:
-        
+
         return ok_200(orchestra.get_transform_tasks(load_fields=True), True)
     except Exception as e:
         map_exceptions(e)
@@ -661,13 +661,13 @@ def api_transform_task_post(request):
         * Handle the registration of tasks related to PENDING medias ;
     """
     try:
-        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk') 
+        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk')
         data = get_request_json(request)
         if data['title']:  # Handle title-only metadata
             data['metadata'] = {'title': data['title']}
         task_id = orchestra.launch_transform_task(
             auth_user, data['media_in_id'], data['profile_id'], data['filename'],
-            data['metadata'], data['queue'], '/transform/callback')
+            data['metadata'], data['queue'], '/action/transform/callback')
         return ok_200(task_id, True)
     except Exception as e:
         map_exceptions(e)
@@ -684,7 +684,7 @@ def api_transform_task_id_head(request, id):
     """
     try:
         check_id(id)
-        
+
         task = orchestra.get_transform_task(specs={'_id': id})
         if not task:
             raise IndexError('No transform task with id %s.' % id)
@@ -706,7 +706,7 @@ def api_transform_task_id_get(request, id):
     """
     try:
         check_id(id)
-        
+
         task = orchestra.get_transform_task(specs={'_id': id}, load_fields=True)
         if not task:
             raise IndexError('No transform task with id %s.' % id)
@@ -728,7 +728,7 @@ def api_transform_task_id_delete(request, id):
     """
     try:
         check_id(id)
-        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk') 
+        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk')
         task = orchestra.get_transform_task(specs={'_id': id})
         if not task:
             raise IndexError('No transform task with id %s.' % id)
@@ -752,7 +752,7 @@ def api_publish_queue(request):
     Return an array containing the publish queues.
     """
     try:
-        
+
         return ok_200(orchestra.get_publisher_queues(), True)
     except Exception as e:
         map_exceptions(e)
@@ -765,7 +765,7 @@ def api_publish_task_count(request):
     Return publish tasks count.
     """
     try:
-        
+
         return ok_200(orchestra.get_publish_tasks_count(), False)
     except Exception as e:
         map_exceptions(e)
@@ -780,7 +780,7 @@ def api_publish_task_head(request):
     The publish tasks attributes are appended with the Celery's ``async result`` of the tasks.
     """
     try:
-        
+
         return ok_200(orchestra.get_publish_tasks(), True)
     except Exception as e:
         map_exceptions(e)
@@ -798,7 +798,7 @@ def api_publish_task_get(request):
     For example ``user_id`` is replaced by ``user``'s data.
     """
     try:
-        
+
         return ok_200(orchestra.get_publish_tasks(load_fields=True), True)
     except Exception as e:
         map_exceptions(e)
@@ -826,10 +826,10 @@ def api_publish_task_post(request):
         * Permit to unpublish a media vbia a unpublish (broadcast) message
     """
     try:
-        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk') 
+        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk')
         data = get_request_json(request)
         task_id = orchestra.launch_publish_task(auth_user, data['media_id'], data['queue'],
-                                                '/publish/callback')
+                                                '/action/publish/callback')
         return ok_200(task_id, True)
     except Exception as e:
         map_exceptions(e)
@@ -846,7 +846,7 @@ def api_publish_task_id_head(request, id):
     """
     try:
         check_id(id)
-        
+
         task = orchestra.get_publish_task(specs={'_id': id})
         if not task:
             raise IndexError('No publish task with id %s.' % id)
@@ -868,7 +868,7 @@ def api_publish_task_id_get(request, id):
     """
     try:
         check_id(id)
-        
+
         task = orchestra.get_publish_task(specs={'_id': id}, load_fields=True)
         if not task:
             raise IndexError('No publish task with id %s.' % id)
@@ -890,7 +890,7 @@ def api_publish_task_id_delete(request, id):
     """
     try:
         check_id(id)
-        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk') 
+        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk')
         task = orchestra.get_publish_task(specs={'_id': id})
         if not task:
             raise IndexError('No publish task with id %s.' % id)
@@ -919,7 +919,7 @@ def api_transform_task_hook(request):
     The media will be deleted if task failed (even the worker already take care of that).
     """
     try:
-        
+
         data = get_request_json(request)
         task_id, status = data['task_id'], data['status']
         logging.debug('task ' + task_id + ', status ' + status)
@@ -940,7 +940,7 @@ def api_publish_task_hook(request):
     Else, the orchestrator will append ``error_details`` to ``statistic`` attribute of task.
     """
     try:
-        
+
         data = get_request_json(request)
         task_id = data['task_id']
         publish_uri = data['publish_uri'] if 'publish_uri' in data else None
@@ -982,7 +982,7 @@ def get_medias(request, id):
     medias = api_media_id_get(request, id)
     uri = medias['value'].api_uri
     filename = medias['value'].filename
-    
+
     return PlugItSendFile(uri, None, as_attachment=True, attachment_filename=filename)
 
 @action(route="/upload_files/upload_video", methods=['POST'], template='medias/uploaded_done.html')
@@ -992,7 +992,7 @@ def upload_media(request):
     """Upload a media """
 
     try:
-        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk') 
+        auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk')
         metadata = {'title': request.form.get('title', '')}
         filename = request.form.get('filename')
 
@@ -1011,10 +1011,10 @@ def upload_media(request):
 
         from werkzeug import secure_filename
         filename = secure_filename(file.filename)
-     
+
         media = Media(None, auth_user, None, tmp_uri, None, filename, metadata, 'READY')
         orchestra.save_media(media)
-       
+
         return {'success': True}
     except Exception as e:
         map_exceptions(e)
@@ -1027,7 +1027,7 @@ def upload_media(request):
 def delete_medias(request, id):
     u"""
     Delete a media
-    """ 
+    """
     result = response2dict(api_media_id_delete(request, id), remove_underscore=True)
     return {'result': result}
 
