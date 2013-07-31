@@ -27,7 +27,7 @@
          <td>{{task.media_in.filename}}<br/>{{task.media_out.filename}}</td>
          <td>
             {{task.profile.title}}<br/>
-            {% plugitGetUser task.user_id as zeUser %}{{zeUser.username}}
+            {% plugitGetUser task.user_id as auth_user %}{{auth_user.username}}
          </td>
          <td>{{task.statistic.add_date}}<br/>{{task.statistic.start_date}}</td>
          <td>{{task.statistic.hostname}}</td>
@@ -42,7 +42,7 @@
             <span class="label {% if status == 'PENDING' or status == 'RETRY' %}label-warning{% elif status == 'PROGRESS' %}label-info{% elif status == 'SUCCESS'%}label-success{% elif status == 'FAILURE' %}label-important{% elif status == 'REVOKED' or status != 'UNKOWN' %}label-inverse{% endif %}" title="{{task.statistic.error_details}}">{{status}}</span>
          </td>
          <td>
-            {% if ebuio_u.pk == media.user_id|add:"0" %}
+            {% if ebuio_u.id == media.user_id %}
             {% if status != 'SUCCESS' and status != 'FAILURE' and status != 'REVOKED' %}
             <a class="revoke" title="{{task.id}}" href="{{ebuio_baseUrl}}transform/tasks/revoke/{{task.id}}">
                <button class="btn btn-mini btn-danger">Revoke</button>

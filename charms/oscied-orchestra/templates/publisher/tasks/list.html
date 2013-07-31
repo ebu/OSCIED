@@ -27,7 +27,7 @@
          <td>{% if task.publish_uri %}<a href="{{task.publish_uri}}">{{task.media.filename}}</a>
             {% else %}{{task.media.filename}}{% endif %}
          </td>
-         <td>{% plugitGetUser task.user_id as zeUser %}{{zeUser.username}}</td>
+         <td>{% plugitGetUser task.user_id as auth_user %}{{auth_user.username}}</td>
          <td>{{task.statistic.add_date}}<br/>{{task.statistic.start_date}}</td>
          <td>{{task.statistic.hostname}}</td>
          <td>{{task.statistic.elapsed_time|time:"H:i:s"}}<br/>{{task.statistic.eta_time|time:"H:i:s"}}</td>
@@ -41,7 +41,7 @@
             <span class="label {% if status == 'PENDING' or status == 'RETRY' %}label-warning{% elif status == 'PROGRESS' %}label-info{% elif status == 'SUCCESS'%}label-success{% elif status == 'FAILURE' %}label-important{% elif status == 'REVOKED' or status != 'UNKOWN' %}label-inverse{% endif %}" title="{{task.statistic.error_details}}">{{status}}</span>
          </td>
          <td>
-            {% if ebuio_u.pk == task.user_id|add:"0" %}
+            {% if ebuio_u.id == task.user_id %}
             {% if status != 'SUCCESS' and status != 'FAILURE' and status != 'REVOKED' %}
             <a class="revoke" title="{{task.id}}" href="{{ebuio_baseUrl}}publisher/tasks/revoke/{{task.id}}">
                <button class="btn btn-mini btn-danger">Revoke</button>

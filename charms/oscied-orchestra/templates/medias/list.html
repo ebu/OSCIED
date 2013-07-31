@@ -34,12 +34,12 @@
          <td>{{media.metadata.size|filesizeformat}}</td>
          <td>{{media.metadata.duration}}</td>
          <td>{{media.metadata.add_date}}</td>
-         <td>{% plugitGetUser media.user_id as zeUser %}{{zeUser.username}}</td>
+         <td>{% plugitGetUser media.user_id as auth_user %}{{auth_user.username}}</td>
          <td>
             <span class="label {% if status == 'PENDING' %}label-warning{% elif status == 'READY' %}label-success{% elif status != 'UNKNOWN' %}label-inverse{% endif %}">{{status}}</span>
          </td>
          <td>
-            {% if ebuio_u.pk == media.user_id|add:"0" %}
+            {% if ebuio_u.id == media.user_id %}
             {% if status == 'READY' or status == 'PUBLISHED' %}
             <a class="delete" title="{{media.metadata.title}}" href="{{ebuio_baseUrl}}medias/delete/{{media.id}}">
                <button class="btn btn-mini btn-danger">Delete</button>
