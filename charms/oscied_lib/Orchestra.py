@@ -343,6 +343,7 @@ class Orchestra(object):
             result_id = str(uuid.uuid4())
         else:
             # TODO: Build user based on API, but i need config for this
+            raise NotImplementedError('self.config.plugit_api_url is what you need')
             user = {'mail': 'false@user.com', '_id': user_id}
             result = Transform.transform_task.apply_async(
                 args=(object2json(user, False), object2json(media_in, False),

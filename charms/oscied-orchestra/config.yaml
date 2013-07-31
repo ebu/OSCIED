@@ -55,3 +55,7 @@ options:
     type: string
     default: ""
     description: Shared storage options (e.g. for nfs - rw,sync,no_subtree_check)
+  plugit_api_url:
+    type: string
+    default: ""
+    description: The URL of your running EBU's PlugIt authentication API.  If set, the orchestrator will switch from standalone users management to EBU's PlugIt-based users management.
