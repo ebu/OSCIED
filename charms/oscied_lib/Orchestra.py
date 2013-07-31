@@ -120,7 +120,6 @@ class Orchestra(object):
 
     # ----------------------------------------------------------------------------------------------
 
-
     def save_media(self, media):
         media.is_valid(True)
         if self.get_media({'uri': media.uri, '_id': {'$ne': media._id}}, {'_id': 1}):
@@ -346,7 +345,7 @@ class Orchestra(object):
             raise NotImplementedError('self.config.plugit_api_url is what you need')
             user = {'mail': 'false@user.com', '_id': user_id}
             result = Transform.transform_task.apply_async(
-                args=(object2json(user, False), object2json(media_in, False),
+                args=(object2json(user,      False), object2json(media_in, False),
                       object2json(media_out, False), object2json(profile,  False),
                       object2json(callback,  False)),
                 queue=queue)

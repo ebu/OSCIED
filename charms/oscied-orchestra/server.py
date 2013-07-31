@@ -36,7 +36,7 @@ PI_API_VERSION = '1'
 PI_API_NAME = 'EBUio-PlugIt'
 
 
-app = Flask(__name__, static_folder='media')
+app = Flask(__name__, static_folder='media', static_url_path=PI_BASE_URL+'media')
 
 
 def check_ip(request):
@@ -46,11 +46,11 @@ def check_ip(request):
         #http://stackoverflow.com/questions/819355/how-can-i-check-if-an-ip-is-in-a-network-in-python
         import socket
         import struct
-        ipaddr = struct.unpack('L', socket.inet_aton(ip))[0]
+        ipaddr = struct.unpack('=L', socket.inet_aton(ip))[0]
         netaddr, bits = net.split('/')
         if int(bits) == 0:
             return True
-        netmask = struct.unpack('L', socket.inet_aton(netaddr))[0] & ((2L << int(bits)-1) - 1)
+        netmask = struct.unpack('=L', socket.inet_aton(netaddr))[0] & ((2L << int(bits)-1) - 1)
         return ipaddr & netmask == netmask
 
     for net in PI_ALLOWED_NETWORKS:

@@ -21,7 +21,7 @@ loadMedias();
 /*<!-- Set the action for file deletion -->*/
 $('body').on('click', '.delete', function() {
    if (confirm('Do you really want to delete the media "' + $(this).attr('title') + '"?')) {
-      $.get($(this).attr('href'), function(data) { window.location = data.redirect; }, 'json');
+      $.ajax($(this).attr('href'), {dataType: 'json', succes: function(data) { window.location = data.redirect; }, type: 'DELETE', headers: {'X-CSRFToken': '{{csrf_token}}'}});
    }
    return false;
 });

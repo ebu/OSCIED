@@ -1020,11 +1020,11 @@ def upload_media(request):
         map_exceptions(e)
 
 
-@action(route="/medias/delete/<id>",methods=['GET'])
+@action(route="/medias/delete/<id>",methods=['DELETE'])
 @only_logged_user()
 @user_info(props=['pk'])
 @json_only()
-def get_medias(request, id):
+def delete_medias(request, id):
     u"""
     Delete a media
     """ 
