@@ -2,6 +2,7 @@ oscied-publisher:
   verbose: "true"
   concurrency: 2
   rabbit_queues: "publisher_private"
+  mod_streaming: "false"
   max_upload_size: 4294967296
   max_execution_time: 180
   max_input_time: 600

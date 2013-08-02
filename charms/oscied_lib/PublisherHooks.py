@@ -69,16 +69,17 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         self.cmd(u'make install')
         os.chdir(u'..')
         shutil.rmtree(mod_streaming)
-        self.info(u'Register Apache H.264 streaming module')
-        mods = (u'LoadModule h264_streaming_module /usr/lib/apache2/modules/mod_h264_streaming.so',
-                u'AddHandler h264-streaming.extensions .mp4')
-        lines = filter(lambda l: l not in mods, open(self.local_config.apache_config_file, u'r', u'utf-8'))
-        lines += u'\n'.join(mods) + u'\n'
-        open(self.local_config.apache_config_file, u'w', u'utf-8').write(u''.join(lines))
         self.info(u'Expose Apache 2 service')
         self.open_port(80, u'TCP')
 
     def hook_config_changed(self):
+        self.info(u'{0} Apache H.264 streaming module'.format('Enable' if self.mod_streaming else 'Disable'))
+        mods = (u'LoadModule h264_streaming_module /usr/lib/apache2/modules/mod_h264_streaming.so',
+                u'AddHandler h264-streaming.extensions .mp4')
+        lines = filter(lambda l: l not in mods, open(self.local_config.apache_config_file, u'r', u'utf-8'))
+        if self.mod_streaming:
+            lines += u'\n'.join(mods) + u'\n'
+        open(self.local_config.apache_config_file, u'w', u'utf-8').write(u''.join(lines))
         self.storage_remount()
         self.subordinate_register()
 
