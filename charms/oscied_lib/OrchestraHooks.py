@@ -48,9 +48,8 @@ class OrchestraHooks(CharmHooks_Storage):
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    @property
-    def api_url(self):
-        return u'http://{0}:5000'.format(self.private_address)
+    def api_url(self, local=False):
+        return u'http://{0}:5000'.format('127.0.0.1' if local else self.private_address)
 
     @property
     def mongo_admin_connection(self):
@@ -149,7 +148,7 @@ class OrchestraHooks(CharmHooks_Storage):
 
         self.info(u'Configure Orchestra the Orchestrator')
         self.local_config.verbose = self.config.verbose
-        self.local_config.api_url = self.api_url
+        self.local_config.api_url = self.api_url(local=False)
         self.local_config.root_secret = self.config.root_secret
         self.local_config.mongo_admin_connection = self.mongo_admin_connection
         self.local_config.mongo_nodes_connection = self.mongo_nodes_connection
@@ -197,12 +196,12 @@ b
             self.configure_rabbitmq()  # (see ticket #205 of my private TRAC ticket system)
             if screen_list(u'Orchestra', log=self.debug) == []:
                 screen_launch(u'Orchestra', [u'python', u'orchestra.py'])
-            time.sleep(10)
-            #if screen_list('Orchestra', log=self.debug) == [] or
-            if self.cmd(u'curl -s http://127.0.0.1:5000', fail=False)[u'returncode'] != 0:
-                raise RuntimeError(to_bytes(u'Orchestra is not ready'))
-            else:
-                self.remark(u'Orchestra successfully started')
+            for start_delay in range(15):
+                time.sleep(1)
+                if self.cmd(u'curl -s {0}'.format(self.api_url(local=True)), fail=False)[u'returncode'] == 0:
+                    self.remark(u'Orchestra successfully started in {0} seconds'.format(start_delay))
+                    return
+            raise RuntimeError(to_bytes(u'Orchestra is not ready'))
 
     def hook_stop(self):
         screen_kill(u'Orchestra', log=self.debug)
@@ -210,7 +209,7 @@ b
         self.cmd(u'service mongodb stop',         fail=False)
 
     def hook_api_relation_joined(self):
-        self.relation_set(api_url=self.api_url)
+        self.relation_set(api_url=self.api_url(local=False))
 
     def hook_api_relation_changed(self):
         # Get configuration from the relation
