@@ -41,6 +41,8 @@ from server import ok_200
 #flask_app = None
 orchestra = None
 
+# FIXME
+global PI_BASE_URL
 
 # Main ---------------------------------------------------------------------------------------------
 
@@ -665,9 +667,11 @@ def api_transform_task_post(request):
         data = get_request_json(request)
         if data['title']:  # Handle title-only metadata
             data['metadata'] = {'title': data['title']}
+
+        global PI_BASE_URL
         task_id = orchestra.launch_transform_task(
             auth_user, data['media_in_id'], data['profile_id'], data['filename'],
-            data['metadata'], data['queue'], '/action/transform/callback')
+            data['metadata'], data['queue'], PI_BASE_URL + 'action/transform/callback')
         return ok_200(task_id, True)
     except Exception as e:
         map_exceptions(e)
@@ -828,8 +832,9 @@ def api_publish_task_post(request):
     try:
         auth_user = request.args.get('ebuio_u_pk') or request.form.get('ebuio_u_pk')
         data = get_request_json(request)
+        global PI_BASE_URL
         task_id = orchestra.launch_publish_task(auth_user, data['media_id'], data['queue'],
-                                                '/action/publish/callback')
+                                                PI_BASE_URL + 'action/publish/callback')
         return ok_200(task_id, True)
     except Exception as e:
         map_exceptions(e)
@@ -907,7 +912,7 @@ def api_publish_task_id_delete(request, id):
 
 # Workers (nodes) hooks ----------------------------------------------------------------------------
 
-@action('/transform/callback', methods=['POST'])
+@action(route='/transform/callback', methods=['POST'])
 @json_only()
 def api_transform_task_hook(request):
     """
