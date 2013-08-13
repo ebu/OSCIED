@@ -103,7 +103,7 @@ class CharmHooks(object):
             self.juju_ok = True
             self.juju_log = command(u'juju-log')
             self.load_config(charmhelpers.get_config())
-            self.env_uuid = os.environ[u'JUJU_ENV_UUID']
+            self.env_uuid = os.environ.get(u'JUJU_ENV_UUID')
             self.name = os.environ[u'JUJU_UNIT_NAME']
             self.private_address = charmhelpers.unit_get(u'private-address')
             self.public_address = charmhelpers.unit_get(u'public-address')
