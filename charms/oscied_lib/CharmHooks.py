@@ -37,7 +37,8 @@ try:
     import charmhelpers
 except ImportError:
     subprocess.check_call([u'apt-add-repository', u'-y', u'ppa:juju/pkgs'])
-    subprocess.check_call([u'apt-get', 'install', u'-y', u'python-charmhelpers'])
+    subprocess.check_call([u'apt-get', u'update'])
+    subprocess.check_call([u'apt-get', u'install', u'-y', u'python-charmhelpers'])
     import charmhelpers
 
 from shelltoolbox import command
