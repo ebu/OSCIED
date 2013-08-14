@@ -221,7 +221,7 @@ class StorageHooks(CharmHooks):
         port, bricks = 24010, [self.brick]
         for peer in self.relation_list():
             self.open_port(port, u'TCP')  # Open required
-            bricks.append(u'{0:/exp{1}'.format(self.relation_get(u'private-address', peer), self.id))
+            bricks.append(u'{0}:/exp{1}'.format(self.relation_get(u'private-address', peer), self.id))
             port += 1
 
         if self.is_leader:
