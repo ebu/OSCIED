@@ -131,15 +131,14 @@ deploy()
   pecho 'Initialize JuJu orchestrator configuration'
   if [ ! -f $HOME/.ssh/id_rsa ]; then ssh-keygen -t rsa; fi # FIXME better trick
   ssh-add # Fix ERROR SSH forwarding error: Agent admitted failure to sign using the key.
-  mkdir -p "$JUJU_STORAGE_PATH" 2>/dev/null
   if [ -f "$CONFIG_JUJU_ENVS_FILE" ]; then
     mecho "Using user defined environment : $CONFIG_JUJU_ENVS_FILE"
     cp "$CONFIG_JUJU_ENVS_FILE" "$JUJU_ENVS_FILE" || \
       xecho "Unable to copy juju's configuration file"
   else
     mecho 'Using default template to generate environment'
-    sed "s:RELEASE:$RELEASE:g;s:STORAGE_PATH:$JUJU_STORAGE_PATH:g" "$CONFIG_JUJU_TEMPL_FILE" > \
-      "$JUJU_ENVS_FILE" || xecho "Unable to generate juju's configuration file"
+    sed "s:RELEASE:$RELEASE:g" "$CONFIG_JUJU_TEMPL_FILE" > "$JUJU_ENVS_FILE" || \
+      xecho "Unable to generate juju's configuration file"
   fi
   $udo ufw disable # Fix master thesis ticket #80 - Juju stuck in pending when using LXC
 

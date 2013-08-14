@@ -85,7 +85,6 @@ CONFIG_SCENARIOS_PATH="$CONFIG_PATH/scenarios"
 ID_RSA="$HOME/.ssh/id_rsa"
 ID_RSA_PUB="$HOME/.ssh/id_rsa.pub"
 JUJU_PATH="$HOME/.juju"
-JUJU_STORAGE_PATH="$JUJU_PATH/storage/"
 JUJU_ENVS_FILE="$JUJU_PATH/environments.yaml"
 
 BAD_AUTH='charlie@hacker.com:challenge_accepted'

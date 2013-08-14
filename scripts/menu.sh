@@ -152,9 +152,9 @@ install()
   else bzr branch lp:juju 'juju-source'
   fi
 
-  addAptPpaRepo ppa:juju/pkgs juju || xecho 'Unable to add juju PPA repository'
-  eval $install --reinstall lxc apt-cacher-ng libzookeeper-java zookeeper juju juju-jitsu \
-    charm-tools || xecho 'Unable to install JuJu orchestrator'
+  addAptPpaRepo ppa:juju/stable juju || xecho 'Unable to add juju PPA repository'
+  eval $install --reinstall juju-core || xecho 'Unable to install JuJu orchestrator'
+  # juju juju-jitsu ? lxc apt-cacher-ng libzookeeper-java zookeeper charm-tools
 
   #cat \
   # /var/lib/apt/lists/ppa.launchpad.net_juju_pkgs_ubuntu_dists_quantal_main_binary-amd64_Packages \

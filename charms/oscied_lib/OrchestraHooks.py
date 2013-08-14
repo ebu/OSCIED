@@ -39,7 +39,7 @@ class OrchestraHooks(CharmHooks_Storage):
 
     PACKAGES = tuple(set(CharmHooks_Storage.PACKAGES +
                      (u'ffmpeg', u'ntp', u'x264', u'mongodb', u'rabbitmq-server')))
-    JUJU_PACKAGES = (u'juju', u'juju-jitsu')
+    JUJU_PACKAGES = (u'juju-core',)
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(OrchestraHooks, self).__init__(metadata, default_config, default_os_env)
@@ -93,7 +93,7 @@ class OrchestraHooks(CharmHooks_Storage):
         self.hook_uninstall()
         self.info(u'Upgrade system and install prerequisites')
         self.cmd(u'apt-add-repository -y ppa:jon-severinsson/ffmpeg')
-        self.cmd(u'apt-add-repository -y ppa:juju/pkgs')
+        self.cmd(u'apt-add-repository -y ppa:juju/stable')
         self.cmd(u'apt-get -y update', fail=False)
         self.cmd(u'apt-get -y upgrade')
         self.cmd(u'apt-get -y install {0}'.format(u' '.join(OrchestraHooks.PACKAGES)))

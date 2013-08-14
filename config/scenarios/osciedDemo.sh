@@ -54,20 +54,19 @@ osciedDemoScenario_maas()
   pecho 'Cleanup and bootstrap juju maas environment'
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
-    juju destroy-environment --environment 'maas'
-    juju bootstrap --environment 'maas'
+    juju destroy-environment -e 'maas'
+    juju bootstrap -e 'maas'
   fi
 
   pecho 'Deploy Orchestra (1 instance)'
   mecho "Using user define Orchestra configuration : $cfg_maas"
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
-    juju deploy --environment 'maas' --config "$cfg_maas" \
-      --repository=. local:$RELEASE/oscied-orchestra || xecho '1'
-    juju expose --environment 'maas' oscied-orchestra || xecho '2'
+    juju deploy -e 'maas' --config "$cfg_maas" --repository=. local:$RELEASE/oscied-orchestra || xecho '1'
+    juju expose -e 'maas' oscied-orchestra || xecho '2'
   fi
 
-  id1=$(juju status --environment 'maas' oscied-orchestra | grep 'machine:' | cut -d':' -f2)
+  id1=$(juju status -e 'maas' oscied-orchestra | grep 'machine:' | cut -d':' -f2)
   if ! validateNumber "$id1"; then
     xecho "Unable to detect id of machine that runs Orchestra"
   fi
@@ -76,21 +75,19 @@ osciedDemoScenario_maas()
   mecho "Using user define Web UI configuration : $cfg_maas"
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
-    jitsu deploy-to "$id1" --environment 'maas' --config "$cfg_maas" \
-      --repository=. local:$RELEASE/oscied-webui || xecho '1'
-    juju expose --environment 'maas' oscied-webui || xecho '2'
+    jitsu deploy-to "$id1" -e 'maas' --config "$cfg_maas" --repository=. local:$RELEASE/oscied-webui || xecho '1'
+    juju expose -e 'maas' oscied-webui || xecho '2'
   fi
 
   pecho 'Deploy Storage (1 instance)'
   mecho "Using user define Storage configuration : $cfg_maas"
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
-    juju deploy --environment 'maas' --config "$cfg_maas" \
-      --repository=. local:$RELEASE/oscied-storage || xecho '1'
-    juju expose --environment 'maas' oscied-storage || xecho '2'
+    juju deploy -e 'maas' --config "$cfg_maas" --repository=. local:$RELEASE/oscied-storage || xecho '1'
+    juju expose -e 'maas' oscied-storage || xecho '2'
   fi
 
-  id2=$(juju status --environment 'maas' oscied-storage | grep 'machine:' | cut -d':' -f2)
+  id2=$(juju status -e 'maas' oscied-storage | grep 'machine:' | cut -d':' -f2)
   if ! validateNumber "$id2"; then
     xecho "Unable to detect id of machine that runs Storage"
   fi
@@ -99,59 +96,57 @@ osciedDemoScenario_maas()
   mecho "Using user define Transform configuration : $cfg_maas"
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
-    jitsu deploy-to "$id2" --environment 'maas' --config "$cfg_maas" \
-      --repository=. local:$RELEASE/oscied-transform || xecho '1'
+    jitsu deploy-to "$id2" -e 'maas' --config "$cfg_maas" --repository=. local:$RELEASE/oscied-transform || xecho '1'
   fi
 
   pecho 'Deploy Publisher (1 instance)'
   mecho "Using user define Publisher configuration : $cfg_maas"
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
-    jitsu deploy-to "$id2" --environment 'maas' --config "$cfg_maas" \
-      --repository=. local:$RELEASE/oscied-publisher || xecho '1'
-    juju expose --environment 'maas' oscied-publisher || xecho '2'
+    jitsu deploy-to "$id2" -e 'maas' --config "$cfg_maas" --repository=. local:$RELEASE/oscied-publisher || xecho '1'
+    juju expose -e 'maas' oscied-publisher || xecho '2'
   fi
 
   pecho 'Add-relation Storage <-> Transform'
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
-    juju add-relation --environment 'maas' oscied-storage oscied-transform
+    juju add-relation -e 'maas' oscied-storage oscied-transform
   fi
 
   pecho 'Add-relation Storage <-> Publisher'
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
-    juju add-relation --environment 'maas' oscied-storage oscied-publisher
+    juju add-relation -e 'maas' oscied-storage oscied-publisher
   fi
 
   pecho 'Add-relation Storage <-> Orchestra'
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
-    juju add-relation --environment 'maas' oscied-storage oscied-orchestra
+    juju add-relation -e 'maas' oscied-storage oscied-orchestra
   fi
 
   pecho 'Add-relation Storage <-> Web UI'
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
-    juju add-relation --environment 'maas' oscied-storage oscied-webui
+    juju add-relation -e 'maas' oscied-storage oscied-webui
   fi
 
   pecho 'Add-relation Orchestra <-> Transform'
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
-    juju add-relation --environment 'maas' oscied-orchestra:transform oscied-transform:transform
+    juju add-relation -e 'maas' oscied-orchestra:transform oscied-transform:transform
   fi
 
   pecho 'Add-relation Orchestra <-> Publisher'
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
-    juju add-relation --environment 'maas' oscied-orchestra:publisher oscied-publisher:publisher
+    juju add-relation -e 'maas' oscied-orchestra:publisher oscied-publisher:publisher
   fi
 
   pecho 'Add-relation Orchestra <-> Web UI'
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
-    juju add-relation --environment 'maas' oscied-orchestra:api oscied-webui:api
+    juju add-relation -e 'maas' oscied-orchestra:api oscied-webui:api
   fi
 }
 
@@ -160,8 +155,8 @@ osciedDemoScenario_local()
   techo "2/3 Deploy services (LXC containers) into David's Workstation at hepia"
 
   pecho 'Cleanup and bootstrap juju local environment'
-  juju destroy-environment --environment 'local'
-  juju bootstrap --environment 'local'
+  juju destroy-environment -e 'local'
+  juju bootstrap -e 'local'
 
   mecho '[WARNING] Continue only when services deployed on the MaaS cluster are up and ready !'
   pause
@@ -184,14 +179,12 @@ osciedDemoScenario_local()
 
   pecho 'Deploy Transform (1 instance)'
   mecho "Using user define Transform configuration : $cfg_local"
-  juju deploy --environment 'local' --config "$cfg_local" \
-    --repository=charms/ local:$RELEASE/oscied-transform || xecho '1'
+  juju deploy -e 'local' --config "$cfg_local" --repository=charms/ local:$RELEASE/oscied-transform || xecho '1'
 
   pecho 'Deploy Publisher (1 instance)'
   mecho "Using user define Publisher configuration : $cfg_local"
-  juju deploy --environment 'local' --config "$cfg_local" \
-    --repository=charms/ local:$RELEASE/oscied-publisher || xecho '1'
-  juju expose --environment 'local' oscied-publisher || xecho '2'
+  juju deploy -e 'local' --config "$cfg_local" --repository=charms/ local:$RELEASE/oscied-publisher || xecho '1'
+  juju expose -e 'local' oscied-publisher || xecho '2'
 }
 
 osciedDemoScenario_amazon()
@@ -201,8 +194,8 @@ osciedDemoScenario_amazon()
   pecho 'Cleanup and bootstrap juju amazon environment'
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
-    juju destroy-environment --environment 'amazon'
-    juju bootstrap --environment 'amazon'
+    juju destroy-environment -e 'amazon'
+    juju bootstrap -e 'amazon'
   fi
 
   mecho '[WARNING] Continue only when services deployed on the MaaS cluster are up and ready !'
@@ -258,13 +251,13 @@ osciedDemoScenario_amazon()
   if [ $REPLY -eq $true ]; then
     pecho 'Deploy Transform (1 instance)'
     mecho "Using user define Transform configuration : $cfg_amazon"
-    juju deploy --environment 'amazon' --config "$cfg_amazon" \
-      --repository=charms/ local:$RELEASE/oscied-transform oscied-transform-demo || xecho '1'
+    juju deploy -e 'amazon' --config "$cfg_amazon" --repository=charms/ local:$RELEASE/oscied-transform \
+      oscied-transform-demo || xecho '1'
 
     pecho 'Deploy Publisher (1 instance)'
     mecho "Using user define Publisher configuration : $cfg_amazon"
-    juju deploy --environment 'amazon' --config "$cfg_amazon" \
-      --repository=charms/ local:$RELEASE/oscied-publisher oscied-publisher-demo || xecho '1'
-    juju expose --environment 'amazon' oscied-publisher-demo || xecho '2'
+    juju deploy -e 'amazon' --config "$cfg_amazon" --repository=charms/ local:$RELEASE/oscied-publisher \
+      oscied-publisher-demo || xecho '1'
+    juju expose -e 'amazon' oscied-publisher-demo || xecho '2'
   fi
 }

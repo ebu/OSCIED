@@ -1,23 +1,133 @@
-default: local
+## This is the Juju config file, which you can use to specify multiple environments in which to deploy.
+## By default Juju ships AWS (default), HP Cloud, OpenStack.
+## See https://juju.ubuntu.com/docs for more information
+
+## An environment configuration must always specify at least the following information:
+##
+## - name (to identify the environment)
+## - type (to specify the provider)
+## - admin-secret (an arbitrary "password" identifying an client with administrative-level access to system state)
+
+## Values in <brackets> below need to be filled in by the user.
+
+## The default environment is chosen when one is not specified using either:
+##   -e, --environment command line parameter
+##   JUJU_ENV environment variable
+## If both -e and JUJU_ENV are specified, the command line parameter has precedence.
+default: amazon
+
 environments:
-  amazon_example:
+  ## https://juju.ubuntu.com/get-started/amazon/
+  amazon:
     type: ec2
-    access-key: AKIAIADEYC6IBHCMCTZQ
-    secret-key: Vl5g/QLi********************************
-    control-bucket: juju-****************.s3-website-us-east-1.amazonaws.com
-    admin-secret: d29e6847c81a1e7441fa759134946594
+    admin-secret: 62c6fdb82b3348ba2849ed0c4172be1f
+    # globally unique S3 bucket name
+    control-bucket: juju-0c9f39498f4faabd64993d08362d8166
+    # override if your workstation is running a different series to which you are deploying
     default-series: RELEASE
-    juju-origin: ppa
-  maas_example:
+    # region defaults to us-east-1, override if required
+    # region: us-east-1
+    # Usually set via the env variable AWS_ACCESS_KEY_ID, but can be specified here
+    # access-key: <secret>
+    # Usually set via the env variable AWS_SECRET_ACCESS_KEY, but can be specified here
+    # secret-key: <secret>
+  
+  ## https://juju.ubuntu.com/get-started/openstack/
+  openstack:
+    type: openstack
+    # Specifies whether the use of a floating IP address is required to give the nodes
+    # a public IP address. Some installations assign public IP addresses by default without
+    # requiring a floating IP address.
+    # use-floating-ip: false
+    admin-secret: 49ca0cbcdcd79afd18744c02556efaca
+    # Globally unique swift bucket name
+    control-bucket: juju-4da7a78ae51805319f8eef4fc48c9c99
+    # Usually set via the env variable OS_AUTH_URL, but can be specified here
+    # auth-url: https://yourkeystoneurl:443/v2.0/
+    # override if your workstation is running a different series to which you are deploying
+    default-series: RELEASE
+    # The following are used for userpass authentication (the default)
+    auth-mode: userpass
+    # Usually set via the env variable OS_USERNAME, but can be specified here
+    # username: <your username>
+    # Usually set via the env variable OS_PASSWORD, but can be specified here
+    # password: <secret>
+    # Usually set via the env variable OS_TENANT_NAME, but can be specified here
+    # tenant-name: <your tenant name>
+    # Usually set via the env variable OS_REGION_NAME, but can be specified here
+    # region: <your region>
+  
+  ## https://juju.ubuntu.com/get-started/hp-cloud/
+  hpcloud:
+    type: openstack
+    # Specifies whether the use of a floating IP address is required to give the nodes
+    # a public IP address. Some installations assign public IP addresses by default without
+    # requiring a floating IP address.
+    use-floating-ip: false
+    admin-secret: 810e3fb4de3bf7a5c98512abac9d406f
+    # Globally unique swift bucket name
+    control-bucket: juju-9c573ec5d81cb2aa88e102e7f239f342
+    # Not required if env variable OS_AUTH_URL is set
+    auth-url: https://yourkeystoneurl:35357/v2.0/
+    # URL denoting a public container holding the juju tools.
+    public-bucket-url: https://region-a.geo-1.objects.hpcloudsvc.com/v1/60502529753910
+    # override if your workstation is running a different series to which you are deploying
+    default-series: RELEASE
+    # The following are used for userpass authentication (the default)
+    auth-mode: userpass
+    # Usually set via the env variable OS_USERNAME, but can be specified here
+    # username: <your username>
+    # Usually set via the env variable OS_PASSWORD, but can be specified here
+    # password: <secret>
+    # Usually set via the env variable OS_TENANT_NAME, but can be specified here
+    # tenant-name: <your tenant name>
+    # Usually set via the env variable OS_REGION_NAME, but can be specified here
+    # region: <your region>
+    # The following are used for keypair authentication
+    # auth-mode: keypair
+    # Usually set via the env variable AWS_ACCESS_KEY_ID, but can be specified here
+    # access-key: <secret>
+    # Usually set via the env variable AWS_SECRET_ACCESS_KEY, but can be specified here
+    # secret-key: <secret>
+  
+  maas:
     type: maas
-    maas-server: http://10.10.10.1:80/MAAS
-    maas-oauth: "2BAKqBZksMmpeWR3qt:VGDYJAuzYs8LLkcBse:9SreW2gyc5nvzXxPCaXc7mTR7wCdLUHp"
-    admin-secret: super-secret-made-up-admin-key-1234
+    # Change this to where your MAAS server lives.  It must specify the base path.
+    maas-server: 'http://192.168.1.1/MAAS/'
+    maas-oauth: '<add your OAuth credentials from MAAS here>'
+    admin-secret: 814347ddab05ab55e9f47c9a0b60346e
     default-series: RELEASE
+    authorized-keys-path: ~/.ssh/authorized_keys # or any file you want.
+    # Or:
+    # authorized-keys: ssh-rsa keymaterialhere
+  
+  ## https://juju.ubuntu.com/get-started/local/
   local:
     type: local
-    control-bucket: juju-a14dfaec23c4995999395c3830142d9a278
-    admin-secret: 6608267b8c90b2a2949997934167bbd6b44
-    data-dir: STORAGE_PATH
     default-series: RELEASE
-    juju-origin: ppa
+    admin-secret: d8dc10194082ff4074c4177812fff469
+    # Override the directory that is used for the storage files and database.
+    # The default location is $JUJU_HOME/<ENV>.
+    # $JUJU_HOME defaults to ~/.juju
+    # root-dir: ~/.juju/local
+    # Override the storage port if you have multiple local providers, or if the
+    # default port is used by another program.
+    # storage-port: 8040
+    # Override the shared storage port if you have multiple local providers, or if the
+    # default port is used by another program.
+    # shared-storage-port: 8041
+  
+  azure:
+    type: azure
+    # http://msdn.microsoft.com/en-us/library/windowsazure
+    # Windows Azure Management info.
+    management-subscription-id: 886413e1-3b8a-5382-9b90-0c9aee199e5d
+    management-certificate-path: /home/me/azure.pem
+    # Windows Azure Storage info.
+    storage-account-name: ghedlkjhw54e
+    storage-account-key: fdjh4sfkg
+    storage-container-name: sdg50984jmsdf
+    # Public Storage info (account name and container name) denoting a public
+    # container holding the juju tools.
+    # public-storage-account-name: public-storage-account
+    # public-storage-container-name: public-storage-container-name
