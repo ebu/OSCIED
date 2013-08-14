@@ -119,6 +119,10 @@ class OrchestraHooks(CharmHooks_Storage):
         self.open_port(5672,  u'TCP')  # RabbitMQ service
 
     def hook_config_changed(self):
+        self.info(u'Start MongoDB and RabbitMQ daemons')
+        self.cmd(u'service mongodb start',         fail=False)
+        self.cmd(u'service rabbitmq-server start', fail=False)
+
         self.info(u'Configure Secure Shell')
         rsync(self.local_config.ssh_template_path, self.local_config.ssh_config_path, recursive=True, log=self.debug)
 
