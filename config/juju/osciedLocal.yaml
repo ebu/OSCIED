@@ -1,5 +1,6 @@
 oscied-orchestra:
   verbose: "true"
+  cleanup: "true"
   root_secret: "5FrvHcm7oyF4WQFW"
   nodes_secret: "bdZccPuG9fibjwCS"
   repositories_user: "oscied"
@@ -15,6 +16,7 @@ oscied-orchestra:
   storage_options: ""
 oscied-publisher:
   verbose: "true"
+  cleanup: "true"
   concurrency: 2
   rabbit_queues: "publisher_private"
   mod_streaming: "false"
@@ -31,10 +33,12 @@ oscied-publisher:
   storage_options: ""
 oscied-storage:
   verbose: "true"
+  cleanup: "true"
   allowed_ips: "*"
   replica_count: 1
 oscied-transform:
   verbose: "true"
+  cleanup: "true"
   concurrency: 1
   rabbit_queues: "transform_private"
   mongo_connection: ""
@@ -47,6 +51,7 @@ oscied-transform:
   storage_options: ""
 oscied-webui:
   verbose: "false"
+  cleanup: "true"
   max_upload_size: 4294967296
   max_execution_time: 180
   max_input_time: 600

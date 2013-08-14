@@ -1,5 +1,6 @@
 oscied-publisher-demo:
   verbose: "true"
+  cleanup: "true"
   concurrency: 2
   rabbit_queues: "publisher_amazon"
   mod_streaming: "false"
@@ -16,6 +17,7 @@ oscied-publisher-demo:
   storage_options: ""
 oscied-transform-demo:
   verbose: "true"
+  cleanup: "true"
   concurrency: 1
   rabbit_queues: "transform_amazon"
   mongo_connection: "MONGO"

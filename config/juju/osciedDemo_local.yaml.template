@@ -1,5 +1,6 @@
 oscied-publisher:
   verbose: "true"
+  cleanup: "true"
   concurrency: 2
   rabbit_queues: "publisher_private"
   mod_streaming: "false"
@@ -16,6 +17,7 @@ oscied-publisher:
   storage_options: ""
 oscied-transform:
   verbose: "true"
+  cleanup: "true"
   concurrency: 1
   rabbit_queues: "transform_private"
   mongo_connection: "MONGO"

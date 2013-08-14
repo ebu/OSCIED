@@ -1,5 +1,6 @@
-orchestra:
+oscied-orchestra:
   verbose: "false"
+  cleanup: "false"
   root_secret: "t7LY8ZgQfv5Sb0Un"
   nodes_secret: "ilKkBr0xBC6gzumz"
   repositories_user: "oscied"
@@ -13,8 +14,9 @@ orchestra:
   storage_fstype: ""
   storage_mountpoint: ""
   storage_options: ""
-publisher1:
+oscied-publisher1:
   verbose: "false"
+  cleanup: "false"
   concurrency: 2
   rabbit_queues: "publisher_private"
   mod_streaming: "false"
@@ -29,8 +31,9 @@ publisher1:
   storage_fstype: ""
   storage_mountpoint: ""
   storage_options: ""
-publisher2:
+oscied-publisher2:
   verbose: "false"
+  cleanup: "false"
   concurrency: 2
   rabbit_queues: "publisher_private"
   mod_streaming: "false"
@@ -45,12 +48,14 @@ publisher2:
   storage_fstype: ""
   storage_mountpoint: ""
   storage_options: ""
-storage:
+oscied-storage:
   verbose: "false"
+  cleanup: "false"
   allowed_ips: "*"
   replica_count: 1
-transform1:
+oscied-transform1:
   verbose: "false"
+  cleanup: "false"
   concurrency: 6
   rabbit_queues: "transform_private"
   mongo_connection: ""
@@ -61,8 +66,9 @@ transform1:
   storage_fstype: ""
   storage_mountpoint: ""
   storage_options: ""
-transform2:
+oscied-transform2:
   verbose: "false"
+  cleanup: "false"
   concurrency: 6
   rabbit_queues: "transform_private"
   mongo_connection: ""
@@ -73,8 +79,9 @@ transform2:
   storage_fstype: ""
   storage_mountpoint: ""
   storage_options: ""
-webui:
+oscied-webui:
   verbose: "false"
+  cleanup: "false"
   max_upload_size: 4294967296
   max_execution_time: 180
   max_input_time: 600
