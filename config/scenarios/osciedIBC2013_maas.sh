@@ -62,7 +62,7 @@ osciedIBC2013Scenario_maas()
   mecho "Using user define Orchestra configuration : $cfg_maas"
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
-    jitsu deploy-to 0 -e 'maas' --config "$cfg_maas" --repository=. local:$RELEASE/oscied-orchestra || \
+    juju deploy --to 0 -e 'maas' --config "$cfg_maas" --repository=. local:$RELEASE/oscied-orchestra || \
       xecho '1'
     juju expose -e 'maas' oscied-orchestra || xecho '2'
   fi
@@ -73,7 +73,7 @@ osciedIBC2013Scenario_maas()
   mecho "Using user define Web UI configuration : $cfg_maas"
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
-    jitsu deploy-to 0 -e 'maas' --config "$cfg_maas" --repository=. local:$RELEASE/oscied-webui || xecho '1'
+    juju deploy --to 0 -e 'maas' --config "$cfg_maas" --repository=. local:$RELEASE/oscied-webui || xecho '1'
     juju expose -e 'maas' oscied-webui || xecho '2'
   fi
 
@@ -81,9 +81,9 @@ osciedIBC2013Scenario_maas()
   mecho "Using user define Transform configuration : $cfg_maas"
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
-    jitsu deploy-to 1 -e 'maas' --config "$cfg_maas" --repository=. \
+    juju deploy --to 1 -e 'maas' --config "$cfg_maas" --repository=. \
       local:$RELEASE/oscied-transform oscied-transform1 || xecho '1'
-    jitsu deploy-to 2 -e 'maas' --config "$cfg_maas" --repository=. local:$RELEASE/oscied-transform oscied-transform2 \
+    juju deploy --to 2 -e 'maas' --config "$cfg_maas" --repository=. local:$RELEASE/oscied-transform oscied-transform2 \
       || xecho '2'
   fi
 
@@ -93,9 +93,9 @@ osciedIBC2013Scenario_maas()
   mecho "Using user define Publisher configuration : $cfg_maas"
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
-    jitsu deploy-to 1 -e 'maas' --config "$cfg_maas" --repository=. local:$RELEASE/oscied-publisher oscied-publisher1 \
+    juju deploy --to 1 -e 'maas' --config "$cfg_maas" --repository=. local:$RELEASE/oscied-publisher oscied-publisher1 \
       || xecho '1'
-    jitsu deploy-to 2 -e 'maas' --config "$cfg_maas" --repository=. local:$RELEASE/oscied-publisher oscied-publisher2 \
+    juju deploy --to 2 -e 'maas' --config "$cfg_maas" --repository=. local:$RELEASE/oscied-publisher oscied-publisher2 \
       || xecho '2'
     juju expose -e 'maas' oscied-publisher1 || xecho '3'
     juju expose -e 'maas' oscied-publisher2 || xecho '4'
