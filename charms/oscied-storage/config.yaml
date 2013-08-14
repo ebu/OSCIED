@@ -1,10 +1,14 @@
 options:
   verbose:
     type: string
-    default: "false"
+    default: "true"
+    description: Toogle verbose logging.
+  cleanup:
+    type: string
+    default: "true"
     description: |
-        Set verbose logging.
-        Can be set to true or false.
+        Toggle uninstall step of prerequisities by install hook.
+        Disable this if you planned to merge services into same unit, see ticket #87.
   allowed_ips:
     type: string
     default: "*"

@@ -156,10 +156,11 @@ class StorageHooks(CharmHooks):
     def hook_uninstall(self):
         self.info(u'Uninstall prerequisites, remove files & bricks and load default configuration')
         self.hook_stop()
-        self.cmd(u'apt-get -y remove --purge glusterfs-server nfs-common')
-        self.cmd(u'apt-get -y autoremove')
-        shutil.rmtree(u'/etc/glusterd',  ignore_errors=True)
-        shutil.rmtree(u'/etc/glusterfs', ignore_errors=True)
+        if self.config.cleanup:
+            self.cmd(u'apt-get -y remove --purge glusterfs-server nfs-common')
+            self.cmd(u'apt-get -y autoremove')
+            shutil.rmtree(u'/etc/glusterd',  ignore_errors=True)
+            shutil.rmtree(u'/etc/glusterfs', ignore_errors=True)
         for brick in glob.glob(u'/exp*'):
             shutil.rmtree(brick, ignore_errors=True)
         self.local_config.reset()

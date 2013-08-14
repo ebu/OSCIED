@@ -170,11 +170,12 @@ class OrchestraHooks(CharmHooks_Storage):
         #self.cmd('juju destroy-environment')
         #self.cmd('... --purge apt-cacher-ng charm-tools juju libzookeeper-java lxc zookeeper')
         self.storage_unregister()
-        self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(OrchestraHooks.PACKAGES)))
-        self.cmd(u'apt-get -y autoremove')
-        #shutil.rmtree('$HOME/.juju $HOME/.ssh/id_rsa*
-        shutil.rmtree(u'/etc/rabbitmq/',     ignore_errors=True)
-        shutil.rmtree(u'/var/log/rabbitmq/', ignore_errors=True)
+        if self.config.cleanup:
+            self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(OrchestraHooks.PACKAGES)))
+            self.cmd(u'apt-get -y autoremove')
+            #shutil.rmtree('$HOME/.juju $HOME/.ssh/id_rsa*
+            shutil.rmtree(u'/etc/rabbitmq/',     ignore_errors=True)
+            shutil.rmtree(u'/var/log/rabbitmq/', ignore_errors=True)
         self.local_config.reset()
 
     def hook_start(self):

@@ -75,8 +75,9 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
         self.hook_stop()
         self.storage_unregister()
         self.subordinate_unregister()
-        self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(TransformHooks.PACKAGES)))
-        self.cmd(u'apt-get -y autoremove')
+        if self.config.cleanup:
+            self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(TransformHooks.PACKAGES)))
+            self.cmd(u'apt-get -y autoremove')
         self.local_config.reset()
 
     def hook_start(self):

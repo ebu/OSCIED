@@ -88,12 +88,13 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         self.hook_stop()
         self.storage_unregister()
         self.subordinate_unregister()
-        self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(PublisherHooks.PACKAGES)))
-        self.cmd(u'apt-get -y remove --purge apache2.2-common', fail=False)  # Fixes some problems
-        self.cmd(u'apt-get -y autoremove')
-        shutil.rmtree('/etc/apache2/',                ignore_errors=True)
+        if self.config.cleanup:
+            self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(PublisherHooks.PACKAGES)))
+            self.cmd(u'apt-get -y remove --purge apache2.2-common', fail=False)  # Fixes some problems
+            self.cmd(u'apt-get -y autoremove')
+            shutil.rmtree('/etc/apache2/',      ignore_errors=True)
+            shutil.rmtree(u'/var/log/apache2/', ignore_errors=True)
         shutil.rmtree(self.local_config.publish_path, ignore_errors=True)
-        shutil.rmtree(u'/var/log/apache2/',           ignore_errors=True)
         os.makedirs(self.local_config.publish_path)
         self.local_config.reset()
         self.local_config.update_publish_uri(self.public_address)
