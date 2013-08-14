@@ -9,10 +9,10 @@ oscied-orchestra:
   mongo_admin_password: "zuT4NaKJRllxkWTA"
   mongo_nodes_password: "p09BPRYTaqKswzjT"
   rabbit_password: "Pa0bQ2XFFftAoxlU"
-  storage_address: ""
+  storage_address: "192.168.0.9"
   storage_nat_address: ""
-  storage_fstype: ""
-  storage_mountpoint: ""
+  storage_fstype: "glusterfs"
+  storage_mountpoint: "medias_volume_0"
   storage_options: ""
 oscied-publisher1:
   verbose: "false"
@@ -23,8 +23,8 @@ oscied-publisher1:
   max_upload_size: 4294967296
   max_execution_time: 180
   max_input_time: 600
-  mongo_connection: ""
-  rabbit_connection: ""
+  mongo_connection: "mongodb://nodes:p09BPRYTaqKswzjT@192.168.0.5:27017/celery"
+  rabbit_connection: "amqp://nodes:Pa0bQ2XFFftAoxlU@192.168.0.5:5672/celery"
   api_nat_socket: ""
   storage_address: ""
   storage_nat_address: ""
@@ -40,8 +40,8 @@ oscied-publisher2:
   max_upload_size: 4294967296
   max_execution_time: 180
   max_input_time: 600
-  mongo_connection: ""
-  rabbit_connection: ""
+  mongo_connection: "mongodb://nodes:p09BPRYTaqKswzjT@192.168.0.5:27017/celery"
+  rabbit_connection: "amqp://nodes:Pa0bQ2XFFftAoxlU@192.168.0.5:5672/celery"
   api_nat_socket: ""
   storage_address: ""
   storage_nat_address: ""
@@ -58,8 +58,8 @@ oscied-transform1:
   cleanup: "false"
   concurrency: 6
   rabbit_queues: "transform_private"
-  mongo_connection: ""
-  rabbit_connection: ""
+  mongo_connection: "mongodb://nodes:p09BPRYTaqKswzjT@192.168.0.5:27017/celery"
+  rabbit_connection: "amqp://nodes:Pa0bQ2XFFftAoxlU@192.168.0.5:5672/celery"
   api_nat_socket: ""
   storage_address: ""
   storage_nat_address: ""
@@ -71,8 +71,8 @@ oscied-transform2:
   cleanup: "false"
   concurrency: 6
   rabbit_queues: "transform_private"
-  mongo_connection: ""
-  rabbit_connection: ""
+  mongo_connection: "mongodb://nodes:p09BPRYTaqKswzjT@192.168.0.5:27017/celery"
+  rabbit_connection: "amqp://nodes:Pa0bQ2XFFftAoxlU@192.168.0.5:5672/celery"
   api_nat_socket: ""
   storage_address: ""
   storage_nat_address: ""
@@ -88,8 +88,8 @@ oscied-webui:
   mysql_root_password: "DlO6FLn3kZsDikTD"
   mysql_user_password: "ZRpe5n9RTZd2F5oW"
   api_url: ""
-  storage_address: ""
+  storage_address: "192.168.0.9"
   storage_nat_address: ""
-  storage_fstype: ""
-  storage_mountpoint: ""
+  storage_fstype: "glusterfs"
+  storage_mountpoint: "medias_volume_0"
   storage_options: ""
