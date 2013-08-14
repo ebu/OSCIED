@@ -182,8 +182,6 @@ class StorageHooks(CharmHooks):
                 self.info(u'Add {0} to allowed clients IPs'.format(client_address))
                 self.local_config.allowed_ips.append(client_address)
                 self.hook_config_changed()
-        else:
-            self.relation_set(fstype=u'', mountpoint=u'', options=u'')
 
     def hook_storage_relation_departed(self):
         # Get configuration from the relation
