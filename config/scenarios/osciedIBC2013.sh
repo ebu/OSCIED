@@ -23,29 +23,36 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-osciedIBC2013_maasDescription='Launch IBC 2013 cluster setup (MaaS Cluster with 3 machines)'
-osciedIBC2013_maasScenario()
+osciedIBC2013Description='Launch IBC 2013 demo setup (MaaS Cluster with 3 machines // Amazon)'
+osciedIBC2013Scenario()
 {
   cd "$CHARMS_DEPLOY_PATH/.." || xecho "Unable to find path $CHARMS_DEPLOY_PATH/.."
+  cfg_amazon="$CONFIG_JUJU_PATH/osciedIBC2013_amazon.yaml"
   cfg_maas="$CONFIG_JUJU_PATH/osciedIBC2013_maas.yaml"
 
-  cp -f "$cfg_maas" "$CONFIG_GEN_CONFIG_FILE"
+  cp -f "$cfg_amazon" "$CONFIG_GEN_CONFIG_FILE"
+  cp -f "$cfg_maas"   "$CONFIG_GEN_CONFIG_FILE"
 
   yesOrNo $false "Deploy on MaaS Cluster"
   if [ $REPLY -eq $true ]; then
     osciedIBC2013Scenario_maas
   fi
+
+  yesOrNo $false "Deploy on Amazon"
+  if [ $REPLY -eq $true ]; then
+    osciedIBC2013Scenario_amazon
+  fi
 }
 
 osciedIBC2013Scenario_maas()
 {
-  techo 'Deploy services on private MaaS Cluster'
+  techo '1/2 Deploy services on private MaaS Cluster'
 
   pecho 'Cleanup and bootstrap juju maas environment'
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
     sudo juju destroy-environment -e 'maas'
-    sudo juju bootstrap -e 'maas'
+    sudo juju bootstrap -e 'maas' -v
   fi
 
   pecho 'Deploy Storage (2 instance without replication)'
@@ -137,5 +144,146 @@ osciedIBC2013Scenario_maas()
     pause
     juju add-relation -e 'maas' oscied-orchestra:publisher oscied-publisher1:publisher
     juju add-relation -e 'maas' oscied-orchestra:publisher oscied-publisher2:publisher
+  fi
+}
+
+osciedIBC2013Scenario_amazon()
+{
+  techo "2/2 Deploy services on Amazon"
+
+  tm='instance-type=t1.micro'
+  mm='instance-type=m1.medium'
+
+  pecho 'Cleanup and bootstrap juju amazon environment'
+  yesOrNo $false 'do it now'
+  if [ $REPLY -eq $true ]; then
+    sudo juju destroy-environment -e 'amazon'
+    sudo juju bootstrap -e 'amazon' -v
+  fi
+
+  pecho 'Deploy Orchestra (1 instance)'
+  yesOrNo $false 'deploy it now'
+  if [ $REPLY -eq $true ]; then
+    if [ -f "$cfg_amazon" ]; then
+      mecho "Using user define Orchestra configuration : $cfg_amazon"
+      juju deploy -e 'amazon' --config "$cfg_amazon" --repository=. local:$RELEASE/oscied-orchestra || xecho '1'
+    else
+      mecho 'Using default Orchestra configuration'
+      juju deploy -e 'amazon' --repository=. local:$RELEASE/oscied-orchestra || xecho '1'
+    fi
+    juju expose -e 'amazon' oscied-orchestra || xecho '2'
+  fi
+
+  pecho 'Deploy Storage (1 instance)'
+  yesOrNo $false 'deploy it now'
+  if [ $REPLY -eq $true ]; then
+    if [ -f "$cfg_amazon" ]; then
+      mecho "Using user define Storage configuration : $cfg_amazon"
+      juju deploy -e 'amazon' --config "$cfg_amazon" --repository=. local:$RELEASE/oscied-storage || xecho '1'
+    else
+      mecho 'Using default Storage configuration'
+      juju deploy -e 'amazon' --repository=. local:$RELEASE/oscied-storage || xecho '1'
+    fi
+    juju expose -e 'amazon' oscied-storage || xecho '2'
+  fi
+
+  pecho 'Deploy Web UI (1 instance)'
+  yesOrNo $false 'deploy it now'
+  if [ $REPLY -eq $true ]; then
+    if [ -f "$cfg_amazon" ]; then
+      mecho "Using user define Web UI configuration : $cfg_amazon"
+      juju deploy --to 1 -e 'amazon' --config "$cfg_amazon" --repository=. local:$RELEASE/oscied-webui || xecho '1'
+    else
+      mecho 'Using default Web UI configuration'
+      juju deploy --to 1 -e 'amazon' --repository=. local:$RELEASE/oscied-webui || xecho '1'
+    fi
+    juju expose -e 'amazon' oscied-webui || xecho '2'
+  fi
+
+  pecho 'Deploy Transform (1 instance)'
+  yesOrNo $false 'deploy it now'
+  if [ $REPLY -eq $true ]; then
+    if [ -f "$cfg_amazon" ]; then
+      mecho "Using user define Transform configuration : $cfg_amazon"
+      juju deploy --to 2 -e 'amazon' --config "$cfg_amazon" --repository=. local:$RELEASE/oscied-transform || xecho '1'
+    else
+      mecho 'Using default Transform configuration'
+      juju deploy --to 2 -e 'amazon' --repository=. local:$RELEASE/oscied-transform || xecho '1'
+    fi
+  fi
+
+  pecho 'Deploy Publisher (1 instance)'
+  yesOrNo $false 'deploy it now'
+  if [ $REPLY -eq $true ]; then
+    if [ -f "$cfg_amazon" ]; then
+      mecho "Using user define Publisher configuration : $cfg_amazon"
+      juju deploy --to 2 -e 'amazon' --config "$cfg_amazon" --repository=. local:$RELEASE/oscied-publisher || xecho '1'
+    else
+      mecho 'Using default Publisher configuration'
+      juju deploy --to 2 -e 'amazon' --repository=. local:$RELEASE/oscied-publisher || xecho '1'
+    fi
+    juju expose -e 'amazon' oscied-publisher || xecho '2'
+  fi
+
+  pecho 'Deploy haproxy (1 instance)'
+  yesOrNo $false 'deploy it now'
+  if [ $REPLY -eq $true ]; then
+    juju deploy -e 'amazon' cs:precise/haproxy || xecho '2'
+    juju expose -e 'amazon' haproxy || xecho '3'
+  fi
+
+  techo "3/5 Add relation between Storage and other services"
+
+  pecho 'Add-relation Storage <-> Transform'
+  yesOrNo $true 'add it now'
+  if [ $REPLY -eq $true ]; then
+    juju add-relation -e 'amazon' oscied-storage oscied-transform
+  fi
+
+  pecho 'Add-relation Storage <-> Publisher'
+  yesOrNo $true 'add it now'
+  if [ $REPLY -eq $true ]; then
+    juju add-relation -e 'amazon' oscied-storage oscied-publisher
+  fi
+
+  pecho 'Add-relation Storage <-> Orchestra'
+  yesOrNo $true 'add it now'
+  if [ $REPLY -eq $true ]; then
+    juju add-relation -e 'amazon' oscied-storage oscied-orchestra
+  fi
+
+  pecho 'Add-relation Storage <-> Web UI'
+  yesOrNo $true 'add it now'
+  if [ $REPLY -eq $true ]; then
+    juju add-relation -e 'amazon' oscied-storage oscied-webui
+  fi
+
+  techo "4/5 Add relation between Orchestra and other services"
+
+  pecho 'Add-relation Orchestra <-> Transform'
+  yesOrNo $true 'add it now'
+  if [ $REPLY -eq $true ]; then
+    juju add-relation -e 'amazon' oscied-orchestra:transform oscied-transform:transform
+  fi
+
+  pecho 'Add-relation Orchestra <-> Publisher'
+  yesOrNo $true 'add it now'
+  if [ $REPLY -eq $true ]; then
+    juju add-relation -e 'amazon' oscied-orchestra:publisher oscied-publisher:publisher
+  fi
+
+  pecho 'Add-relation Orchestra <-> Web UI'
+  yesOrNo $true 'add it now'
+  if [ $REPLY -eq $true ]; then
+    juju add-relation -e 'amazon' oscied-orchestra:api oscied-webui:api
+  fi
+
+  techo '5/5 Add relation between Web UI and HA Proxy'
+
+  pecho 'Add-relation haproxy <-> Web UI'
+  yesOrNo $false 'add it now'
+  if [ $REPLY -eq $true ]; then
+    juju unexpose -e 'amazon' oscied-webui
+    juju add-relation -e 'amazon' haproxy oscied-webui
   fi
 }

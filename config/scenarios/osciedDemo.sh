@@ -55,7 +55,7 @@ osciedDemoScenario_maas()
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
     sudo juju destroy-environment -e 'maas'
-    sudo juju bootstrap -e 'maas'
+    sudo juju bootstrap -e 'maas' -v
   fi
 
   pecho 'Deploy Orchestra (1 instance)'
@@ -195,7 +195,7 @@ osciedDemoScenario_amazon()
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
     sudo juju destroy-environment -e 'amazon'
-    sudo juju bootstrap -e 'amazon' --constraints "$tm"
+    sudo juju bootstrap -e 'amazon' -v
   fi
 
   mecho '[WARNING] Continue only when services deployed on the MaaS cluster are up and ready !'

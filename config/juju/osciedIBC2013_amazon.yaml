@@ -1,0 +1,65 @@
+oscied-orchestra:
+  verbose: "true"
+  cleanup: "true"
+  root_secret: "5FrvHcm7oyF4WQFW"
+  nodes_secret: "bdZccPuG9fibjwCS"
+  repositories_user: "oscied"
+  repositories_pass: "41nVGq07GmSgK9Ud"
+  oscied_repository: "https://github.com/ebu/OSCIED/charms"
+  mongo_admin_password: "Iz85QVjdCJugEosz"
+  mongo_nodes_password: "M2qlif8rdtKtBYil"
+  rabbit_password: "OZy23iO0D4UpYS2k"
+  storage_address: ""
+  storage_nat_address: ""
+  storage_fstype: ""
+  storage_mountpoint: ""
+  storage_options: ""
+oscied-publisher:
+  verbose: "true"
+  cleanup: "false"
+  concurrency: 2
+  rabbit_queues: "publisher_private"
+  mod_streaming: "false"
+  max_upload_size: 4294967296
+  max_execution_time: 180
+  max_input_time: 600
+  mongo_connection: ""
+  rabbit_connection: ""
+  api_nat_socket: ""
+  storage_address: ""
+  storage_nat_address: ""
+  storage_fstype: ""
+  storage_mountpoint: ""
+  storage_options: ""
+oscied-storage:
+  verbose: "true"
+  cleanup: "true"
+  allowed_ips: "*"
+  replica_count: 1
+oscied-transform:
+  verbose: "true"
+  cleanup: "false"
+  concurrency: 1
+  rabbit_queues: "transform_private"
+  mongo_connection: ""
+  rabbit_connection: ""
+  api_nat_socket: ""
+  storage_address: ""
+  storage_nat_address: ""
+  storage_fstype: ""
+  storage_mountpoint: ""
+  storage_options: ""
+oscied-webui:
+  verbose: "false"
+  cleanup: "true"
+  max_upload_size: 4294967296
+  max_execution_time: 180
+  max_input_time: 600
+  mysql_root_password: "OKDvS0B3DCZIJKcX"
+  mysql_user_password: "HydI1iM6Dfh3vuls"
+  api_url: ""
+  storage_address: ""
+  storage_nat_address: ""
+  storage_fstype: ""
+  storage_mountpoint: ""
+  storage_options: ""

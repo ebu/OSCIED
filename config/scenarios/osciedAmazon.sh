@@ -23,19 +23,17 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-osciedAmazonDescription='Launch oscied (minimal setup) on Amazon'
+osciedAmazonDescription='Launch oscied (nano setup) on Amazon'
 osciedAmazonScenario()
 {
   cd "$CHARMS_DEPLOY_PATH/.." || xecho "Unable to find path $CHARMS_DEPLOY_PATH/.."
   cfg="$CONFIG_JUJU_PATH/osciedAmazon.yaml"
   cp -f "$cfg" "$CONFIG_GEN_CONFIG_FILE"
-  tm='instance-type=t1.micro'
-  mm='instance-type=m1.medium'
 
   techo '1/5 Cleanup and bootstrap JuJu environment'
 
   sudo juju destroy-environment -e 'amazon'
-  sudo juju bootstrap -e 'amazon' --constraints "$tm"
+  sudo juju bootstrap -e 'amazon' -v
 
   techo '2/5 Deploy services on Amazon'
 
@@ -44,27 +42,12 @@ osciedAmazonScenario()
   if [ $REPLY -eq $true ]; then
     if [ -f "$cfg" ]; then
       mecho "Using user define Orchestra configuration : $cfg"
-      juju deploy -e 'amazon' --constraints "$tm" --config "$cfg" --repository=. local:$RELEASE/oscied-orchestra || \
-        xecho '1'
+      juju deploy -e 'amazon' --config "$cfg" --repository=. local:$RELEASE/oscied-orchestra || xecho '1'
     else
       mecho 'Using default Orchestra configuration'
-      juju deploy -e 'amazon' --constraints "$tm" --repository=. local:$RELEASE/oscied-orchestra || xecho '1'
+      juju deploy -e 'amazon' --repository=. local:$RELEASE/oscied-orchestra || xecho '1'
     fi
     juju expose -e 'amazon' oscied-orchestra || xecho '2'
-  fi
-
-  pecho 'Deploy Web UI (1 instance)'
-  yesOrNo $true 'deploy it now'
-  if [ $REPLY -eq $true ]; then
-    if [ -f "$cfg" ]; then
-      mecho "Using user define Web UI configuration : $cfg"
-      juju deploy -e 'amazon' --constraints "$mm" --config "$cfg" --repository=. local:$RELEASE/oscied-webui || \
-        xecho '1'
-    else
-      mecho 'Using default Web UI configuration'
-      juju deploy -e 'amazon' --constraints "$mm" --repository=. local:$RELEASE/oscied-webui || xecho '1'
-    fi
-    juju expose -e 'amazon' oscied-webui || xecho '2'
   fi
 
   pecho 'Deploy Storage (1 instance)'
@@ -72,13 +55,25 @@ osciedAmazonScenario()
   if [ $REPLY -eq $true ]; then
     if [ -f "$cfg" ]; then
       mecho "Using user define Storage configuration : $cfg"
-      juju deploy -e 'amazon' --constraints "$tm" --config "$cfg" --repository=. local:$RELEASE/oscied-storage || \
-        xecho '1'
+      juju deploy -e 'amazon' --config "$cfg" --repository=. local:$RELEASE/oscied-storage || xecho '1'
     else
       mecho 'Using default Storage configuration'
-      juju deploy -e 'amazon' --constraints "$tm" --repository=. local:$RELEASE/oscied-storage || xecho '1'
+      juju deploy -e 'amazon' --repository=. local:$RELEASE/oscied-storage || xecho '1'
     fi
     juju expose -e 'amazon' oscied-storage || xecho '2'
+  fi
+
+  pecho 'Deploy Web UI (1 instance)'
+  yesOrNo $true 'deploy it now'
+  if [ $REPLY -eq $true ]; then
+    if [ -f "$cfg" ]; then
+      mecho "Using user define Web UI configuration : $cfg"
+      juju deploy --to 1 -e 'amazon' --config "$cfg" --repository=. local:$RELEASE/oscied-webui || xecho '1'
+    else
+      mecho 'Using default Web UI configuration'
+      juju deploy --to 1 -e 'amazon' --repository=. local:$RELEASE/oscied-webui || xecho '1'
+    fi
+    juju expose -e 'amazon' oscied-webui || xecho '2'
   fi
 
   pecho 'Deploy Transform (1 instance)'
@@ -86,11 +81,10 @@ osciedAmazonScenario()
   if [ $REPLY -eq $true ]; then
     if [ -f "$cfg" ]; then
       mecho "Using user define Transform configuration : $cfg"
-      juju deploy -e 'amazon' --constraints "$mm" --config "$cfg" --repository=. local:$RELEASE/oscied-transform || \
-        xecho '1'
+      juju deploy --to 2 -e 'amazon' --config "$cfg" --repository=. local:$RELEASE/oscied-transform || xecho '1'
     else
       mecho 'Using default Transform configuration'
-      juju deploy -e 'amazon' --constraints "$mm" --repository=. local:$RELEASE/oscied-transform || xecho '1'
+      juju deploy --to 2 -e 'amazon' --repository=. local:$RELEASE/oscied-transform || xecho '1'
     fi
   fi
 
@@ -99,11 +93,10 @@ osciedAmazonScenario()
   if [ $REPLY -eq $true ]; then
     if [ -f "$cfg" ]; then
       mecho "Using user define Publisher configuration : $cfg"
-      juju deploy -e 'amazon' --constraints "$tm" --config "$cfg" --repository=. local:$RELEASE/oscied-publisher || \
-        xecho '1'
+      juju deploy --to 2 -e 'amazon' --config "$cfg" --repository=. local:$RELEASE/oscied-publisher || xecho '1'
     else
       mecho 'Using default Publisher configuration'
-      juju deploy -e 'amazon' --constraints "$tm" --repository=. local:$RELEASE/oscied-publisher || xecho '1'
+      juju deploy --to 2 -e 'amazon' --repository=. local:$RELEASE/oscied-publisher || xecho '1'
     fi
     juju expose -e 'amazon' oscied-publisher || xecho '2'
   fi
@@ -111,7 +104,7 @@ osciedAmazonScenario()
   pecho 'Deploy haproxy (1 instance)'
   yesOrNo $false 'deploy it now'
   if [ $REPLY -eq $true ]; then
-    juju deploy -e 'amazon' --constraints "$tm" cs:precise/haproxy || xecho '2'
+    juju deploy -e 'amazon' cs:precise/haproxy || xecho '2'
     juju expose -e 'amazon' haproxy || xecho '3'
   fi
 
