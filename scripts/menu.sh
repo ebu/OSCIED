@@ -658,7 +658,7 @@ rsync_helper()
 
   get_unit_public_url $true "$1" "$2"
   host="ubuntu@$REPLY"
-  dest="/var/lib/juju/units/$1-$2/charm"
+  dest="/var/lib/juju/agents/unit-$1-$2/charm"
   ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
   rsync -avhL --progress --delete -e "ssh -i '$ID_RSA'" --exclude=.git --exclude=config.json \
     --exclude=celeryconfig.py --exclude=*.pyc --exclude=local_config.pkl --exclude=charms \
