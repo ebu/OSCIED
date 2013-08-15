@@ -131,6 +131,7 @@ deploy()
   pecho 'Initialize JuJu orchestrator configuration'
   if [ ! -f $HOME/.ssh/id_rsa ]; then ssh-keygen -t rsa; fi # FIXME better trick
   ssh-add # Fix ERROR SSH forwarding error: Agent admitted failure to sign using the key.
+  mkdir -p "$JUJU_PATH" "$JUJU_STORAGE_PATH" 2>/dev/null
   if [ -f "$CONFIG_JUJU_ENVS_FILE" ]; then
     mecho "Using user defined environment : $CONFIG_JUJU_ENVS_FILE"
     cp "$CONFIG_JUJU_ENVS_FILE" "$JUJU_ENVS_FILE" || \
