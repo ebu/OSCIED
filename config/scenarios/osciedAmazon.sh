@@ -34,8 +34,8 @@ osciedAmazonScenario()
 
   techo '1/5 Cleanup and bootstrap JuJu environment'
 
-  juju destroy-environment -e 'amazon'
-  juju bootstrap -e 'amazon'
+  sudo juju destroy-environment -e 'amazon'
+  sudo juju bootstrap -e 'amazon' --constraints "$tm"
 
   techo '2/5 Deploy services on Amazon'
 

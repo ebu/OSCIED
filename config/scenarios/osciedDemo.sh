@@ -54,8 +54,8 @@ osciedDemoScenario_maas()
   pecho 'Cleanup and bootstrap juju maas environment'
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
-    juju destroy-environment -e 'maas'
-    juju bootstrap -e 'maas'
+    sudo juju destroy-environment -e 'maas'
+    sudo juju bootstrap -e 'maas'
   fi
 
   pecho 'Deploy Orchestra (1 instance)'
@@ -155,8 +155,8 @@ osciedDemoScenario_local()
   techo "2/3 Deploy services (LXC containers) into David's Workstation at hepia"
 
   pecho 'Cleanup and bootstrap juju local environment'
-  juju destroy-environment -e 'local'
-  juju bootstrap -e 'local'
+  sudo juju destroy-environment -e 'local'
+  sudo juju bootstrap -e 'local' -v
 
   mecho '[WARNING] Continue only when services deployed on the MaaS cluster are up and ready !'
   pause
@@ -194,8 +194,8 @@ osciedDemoScenario_amazon()
   pecho 'Cleanup and bootstrap juju amazon environment'
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
-    juju destroy-environment -e 'amazon'
-    juju bootstrap -e 'amazon'
+    sudo juju destroy-environment -e 'amazon'
+    sudo juju bootstrap -e 'amazon' --constraints "$tm"
   fi
 
   mecho '[WARNING] Continue only when services deployed on the MaaS cluster are up and ready !'

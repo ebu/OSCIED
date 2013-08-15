@@ -44,8 +44,8 @@ osciedIBC2013Scenario_maas()
   pecho 'Cleanup and bootstrap juju maas environment'
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
-    juju destroy-environment -e 'maas'
-    juju bootstrap -e 'maas'
+    sudo juju destroy-environment -e 'maas'
+    sudo juju bootstrap -e 'maas'
   fi
 
   pecho 'Deploy Storage (2 instance without replication)'

@@ -31,9 +31,11 @@ osciedLocalScenario()
   cp -f "$cfg" "$CONFIG_GEN_CONFIG_FILE"
 
   techo '1/5 Cleanup and bootstrap juju environment'
-
-  juju destroy-environment -e 'local'
-  juju bootstrap -e 'local'
+  yesOrNo $false 'do it now'
+  if [ $REPLY -eq $true ]; then
+    sudo juju destroy-environment -e 'local'
+    sudo juju bootstrap -e 'local' -v
+  fi
 
   techo '2/5 Deploy services on this computer'
 
