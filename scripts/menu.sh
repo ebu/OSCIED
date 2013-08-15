@@ -153,7 +153,7 @@ install()
   fi
 
   addAptPpaRepo ppa:juju/stable juju || xecho 'Unable to add juju PPA repository'
-  eval $install --reinstall juju-core || xecho 'Unable to install JuJu orchestrator'
+  eval $install --reinstall juju-core mongodb || xecho 'Unable to install JuJu orchestrator'
   # juju juju-jitsu ? lxc apt-cacher-ng libzookeeper-java zookeeper charm-tools
 
   #cat \
