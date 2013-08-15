@@ -221,6 +221,8 @@ api_init_setup()
   ok=$true
 
   [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
+  [ "$STORAGE_PRIVATE_IP" -a "$STORAGE_MOUNTPOINT" -a "$STORAGE_BRICK" ] || \
+    xecho 'You must execute juju-menu.sh config first'
 
   pecho 'Flush database'
   yesOrNo $false "do you really want to flush orchestrator $ORCHESTRA_URL"

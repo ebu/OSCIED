@@ -30,7 +30,7 @@ from setuptools import setup
 kwargs = {}
 
 setup(name='oscied-lib',
-      version='2.14.19',
+      version='2.15.19',
       packages=['oscied_lib'],
       description='Library of EBU/UER OSCIED Project',
       author='David Fischer',
