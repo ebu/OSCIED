@@ -24,7 +24,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import glob, re, shutil
+import os, re, shutil
 from kitchen.text.converters import to_bytes
 from CharmHooks import CharmHooks, DEFAULT_OS_ENV
 from StorageConfig import StorageConfig
@@ -50,7 +50,11 @@ class StorageHooks(CharmHooks):
 
     @property
     def brick(self):
-        return u'{0}:/exp{1}'.format(self.private_address, self.id)
+        return u'{0}:{1}/exp{2}'.format(self.private_address, self.bricks_path, self.id)
+
+    @property
+    def bricks_path(self):
+        return os.path.join(self.config.bricks_root_path, 'bricks')
 
     @property
     def volume(self):
@@ -114,7 +118,7 @@ class StorageHooks(CharmHooks):
         **Example output**::
 
             {'name': 'medias_volume_6', 'type': 'Distribute', 'status': 'Started',
-             'transport': 'tcp', 'bricks': ['domU-12-31-39-06-6C-E9.compute-1.internal:/exp6']}
+             'transport': 'tcp', 'bricks': ['domU-12-31-39-06-6C-E9.compute-1.internal:/mnt/bricks/exp6']}
         """
         stdout = self.volume_do(u'info', volume=volume, fail=False)[u'stdout']
         self.debug(u'Volume infos stdout: {0}'.format(repr(stdout)))
@@ -161,8 +165,8 @@ class StorageHooks(CharmHooks):
             self.cmd(u'apt-get -y autoremove')
             shutil.rmtree(u'/etc/glusterd',  ignore_errors=True)
             shutil.rmtree(u'/etc/glusterfs', ignore_errors=True)
-        for brick in glob.glob(u'/exp*'):
-            shutil.rmtree(brick, ignore_errors=True)
+        shutil.rmtree(self.config.bricks_path, ignore_errors=True)
+        os.makedirs(self.bricks_path)
         self.local_config.reset()
 
     def hook_start(self):
