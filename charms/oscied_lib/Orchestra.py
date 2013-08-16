@@ -340,8 +340,8 @@ class Orchestra(object):
             result_id = result.id
         if not result_id:
             raise ValueError(to_bytes(u'Unable to transmit task to workers of queue {0}.'.format(queue)))
-        logging.info(u'New transformation task {0} launched.'.format(result_id))
-        task = TransformTask(result_id, user._id, media_in._id, media_out._id, profile._id)
+        logging.info(u'New transformation task {0} -> queue {1}.'.format(result_id, queue))
+        task = TransformTask(user._id, media_in._id, media_out._id, profile._id, _id=result_id)
         task.add_statistic(u'add_date', datetime_now(), True)
         self._db.transform_tasks.save(task.__dict__)
         return result_id
@@ -370,11 +370,11 @@ class Orchestra(object):
         if valid_uuid(task, none_allowed=False):
             task = self.get_transform_task({u'_id': task})
         task.is_valid(True)
-        if task.revoked:
+        if task.status == states.REVOKED:
             raise ValueError(to_bytes(u'Transformation task {0} is already revoked !'.format(task._id)))
         if task.status in states.READY_STATES:
             raise ValueError(to_bytes(u'Cannot revoke a transformation task with status {0}.'.format(task.status)))
-        task.revoked = True
+        task.status = states.REVOKED
         if self.is_mock:
             pass  # FIXME TODO
         else:
@@ -425,7 +425,7 @@ class Orchestra(object):
             raise NotImplementedError(to_bytes(u'Cannot launch the task, input media status is {0}.'.format(
                                       media.status)))
         other = self.get_publish_task({u'media_id': media._id})
-        if other and other.status not in states.READY_STATES and not other.revoked:
+        if other and other.status not in states.READY_STATES and other.status != states.REVOKED:
             raise NotImplementedError(to_bytes(u'Cannot launch the task, input media will be published by another task '
                                       'with id {0}.'.format(other._id)))
         # FIXME create a one-time password to avoid fixed secret authentication ...
@@ -438,8 +438,8 @@ class Orchestra(object):
             result_id = result.id
         if not result_id:
             raise ValueError(to_bytes(u'Unable to transmit task to workers of queue {0}.'.format(queue)))
-        logging.info(u'New publication task {0} launched.'.format(result_id))
-        task = PublishTask(result_id, user._id, media._id, None)
+        logging.info(u'New publication task {0} -> queue {1}.'.format(result_id, queue))
+        task = PublishTask(user._id, media._id, _id=result_id)
         task.add_statistic(u'add_date', datetime_now(), True)
         self._db.publish_tasks.save(task.__dict__)
         return result_id
@@ -468,15 +468,16 @@ class Orchestra(object):
         if valid_uuid(task, none_allowed=False):
             task = self.get_publish_task({u'_id': task})
         task.is_valid(True)
-        if task.revoked:
+        if task.status in (states.REVOKED, 'REVOKING'):
             raise ValueError(to_bytes(u'Publication task {0} is already revoked !'.format(task._id)))
         if task.status in states.READY_STATES:
             raise ValueError(to_bytes(u'Cannot revoke a publication task with status {0}.'.format(task.status)))
-        task.revoked = True
         if self.is_mock:
             pass  # FIXME TODO
+            task.status = states.REVOKED
         else:
             revoke(task._id, terminate=terminate)
+            task.status = states.REVOKED
         self._db.publish_tasks.save(task.__dict__)
         if remove:
             self._db.publish_tasks.remove({u'_id': task._id})
@@ -510,7 +511,7 @@ class Orchestra(object):
         media_out = self.get_media({u'_id': task.media_out_id})
         if not media_out:
             raise IndexError(to_bytes(u'Unable to find output media with id {0}.'.format(task.media_out_id)))
-        if status == u'SUCCESS':
+        if status == states.SUCCESS:
             media_out.status = u'READY'
             self.save_media(media_out)
             logging.info(u'{0} Media {1} is now READY'.format(task_id, media_out.filename))
@@ -528,7 +529,7 @@ class Orchestra(object):
         media = self.get_media({u'_id': task.media_id})
         if not media:
             raise IndexError(to_bytes(u'Unable to find media with id {0}.'.format(task.media_id)))
-        if status == u'SUCCESS':
+        if status == states.SUCCESS:
             media.status = u'PUBLISHED'
             if not media.public_uris:
                 media.public_uris = {}

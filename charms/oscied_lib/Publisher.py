@@ -24,8 +24,8 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import os
-from celery import current_task
+import os, shutil, time
+from celery import current_task, states
 from celery.decorators import task
 from kitchen.text.converters import to_bytes
 from Callback import Callback
@@ -94,7 +94,7 @@ def publish_task(media_json, callback_json):
 
         # Here all seem okay
         print(u'{0} Publication task successful, media published as {1}'.format(request.id, publish_uri))
-        publish_callback(u'SUCCESS', publish_uri)
+        publish_callback(states.SUCCESS, publish_uri)
         return {u'hostname': request.hostname, u'start_date': infos[u'start_date'],
                 u'elapsed_time': infos[u'elapsed_time'], u'eta_time': 0, u'media_size': infos[u'src_size'],
                 u'publish_size': infos[u'src_size'], u'percent': 100}
