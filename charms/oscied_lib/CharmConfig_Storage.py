@@ -34,7 +34,7 @@ class CharmConfig_Storage(CharmConfig):
 
     def __init__(self, verbose=None, storage_address=u'', storage_fstype=u'', storage_mountpoint=u'',
                  storage_options=u'', storage_path=u'/mnt/storage', storage_mount_max_retry=5,
-                 storage_mount_sleep_delay=5, hosts_file=u'/etc/hosts'):
+                 storage_mount_sleep_delay=5, hosts_file=u'/etc/hosts', **kwargs):
         super(CharmConfig_Storage, self).__init__(verbose=verbose)
         self.storage_address = storage_address
         self.storage_fstype = storage_fstype
@@ -91,7 +91,6 @@ class CharmConfig_Storage(CharmConfig):
 
         **Example usage**:
 
-        >>> from Media import MEDIA_TEST
         >>> config = CharmConfig_Storage()
         >>> config.storage_address = u'10.1.1.2'
         >>> config.storage_fstype = u'glusterfs'

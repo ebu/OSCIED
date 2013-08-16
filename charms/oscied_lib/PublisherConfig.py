@@ -26,18 +26,15 @@
 
 from os.path import join
 from CharmConfig_Storage import CharmConfig_Storage, MEDIAS_PATH
+from CharmConfig_Subordinate import CharmConfig_Subordinate
 
 
-class PublisherConfig(CharmConfig_Storage):
+class PublisherConfig(CharmConfig_Storage, CharmConfig_Subordinate):
 
-    def __init__(self, api_nat_socket=u'', proxy_ips=[], celery_config_file=u'celeryconfig.py',
-                 celery_template_file=u'templates/celeryconfig.py.template',
-                 apache_config_file=u'/etc/apache2/apache2.conf', publish_uri=u'', publish_path=u'/var/www', **kwargs):
+    def __init__(self, proxy_ips=[], apache_config_file=u'/etc/apache2/apache2.conf', publish_uri=u'',
+                 publish_path=u'/var/www', **kwargs):
         super(PublisherConfig, self).__init__(**kwargs)
-        self.api_nat_socket = api_nat_socket
         self.proxy_ips = proxy_ips
-        self.celery_config_file = celery_config_file
-        self.celery_template_file = celery_template_file
         self.apache_config_file = apache_config_file
         self.publish_uri = publish_uri
         self.publish_path = publish_path
