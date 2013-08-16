@@ -335,8 +335,8 @@ class Orchestra(object):
             result_id = unicode(uuid.uuid4())
         else:
             result = Transform.transform_task.apply_async(
-                args=(object2json(user,     False), object2json(media_in, False), object2json(media_out, False),
-                      object2json(profile,  False), object2json(callback, False)), queue=queue)
+                args=(object2json(media_in, False), object2json(media_out, False), object2json(profile, False),
+                      object2json(callback, False)), queue=queue)
             result_id = result.id
         if not result_id:
             raise ValueError(to_bytes(u'Unable to transmit task to workers of queue {0}.'.format(queue)))
@@ -434,7 +434,7 @@ class Orchestra(object):
             result_id = unicode(uuid.uuid4())
         else:
             result = Publisher.publish_task.apply_async(
-                args=(object2json(user, False), object2json(media, False), object2json(callback, False)), queue=queue)
+                args=(object2json(media, False), object2json(callback, False)), queue=queue)
             result_id = result.id
         if not result_id:
             raise ValueError(to_bytes(u'Unable to transmit task to workers of queue {0}.'.format(queue)))

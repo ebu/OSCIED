@@ -31,7 +31,6 @@ from kitchen.text.converters import to_bytes
 from Callback import Callback
 from Media import Media
 from PublisherConfig import PublisherConfig
-from User import User
 from pyutils.py_filesystem import recursive_copy
 from pyutils.py_serialization import object2json
 from pyutils.py_unicode import configure_unicode
@@ -39,7 +38,7 @@ from pyutils.py_unicode import configure_unicode
 configure_unicode()
 
 @task(name=u'Publisher.publish_task')
-def publish_task(user_json, media_json, callback_json):
+def publish_task(media_json, callback_json):
 
     def copy_callback(start_date, elapsed_time, eta_time, src_size, dst_size, ratio):
         publish_task.update_state(state=u'PROGRESS', meta={
@@ -72,13 +71,11 @@ def publish_task(user_json, media_json, callback_json):
 
         # Read current configuration to translate files uri to local paths
         config = PublisherConfig.read(u'local_config.pkl')
-        print object2json(config, True)
+        print(object2json(config, True))
 
         # Load and check task parameters
-        user = User.from_json(user_json)
         media = Media.from_json(media_json)
         callback = Callback.from_json(callback_json)
-        user.is_valid(True)
         media.is_valid(True)
         callback.is_valid(True)
 

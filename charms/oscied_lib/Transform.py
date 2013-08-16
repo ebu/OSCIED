@@ -33,7 +33,6 @@ from Callback import Callback
 from Media import Media
 from TransformConfig import TransformConfig
 from TransformProfile import TransformProfile
-from User import User
 from pyutils.py_datetime import datetime_now, duration2secs
 from pyutils.py_ffmpeg import get_media_duration, get_media_tracks
 from pyutils.py_filesystem import get_size, recursive_copy, try_makedirs
@@ -53,7 +52,7 @@ FFMPEG_REGEX = re.compile(
 
 
 @task(name=u'Transform.transform_task')
-def transform_task(user_json, media_in_json, media_out_json, profile_json, callback_json):
+def transform_task(media_in_json, media_out_json, profile_json, callback_json):
 
     def copy_callback(start_date, elapsed_time, eta_time, src_size, dst_size, ratio):
         transform_task.update_state(state=u'PROGRESS', meta={
@@ -83,15 +82,13 @@ def transform_task(user_json, media_in_json, media_out_json, profile_json, callb
 
         # Read current configuration to translate files uri to local paths
         config = TransformConfig.read(u'local_config.pkl')
-        print object2json(config, True)
+        print(object2json(config, True))
 
         # Load and check task parameters
-        user = User.from_json(user_json)
         media_in = Media.from_json(media_in_json)
         media_out = Media.from_json(media_out_json)
         profile = TransformProfile.from_json(profile_json)
         callback = Callback.from_json(callback_json)
-        user.is_valid(True)
         media_in.is_valid(True)
         media_out.is_valid(True)
         profile.is_valid(True)
