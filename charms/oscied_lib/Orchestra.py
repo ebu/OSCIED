@@ -58,8 +58,8 @@ class Orchestra(object):
             self._db = mongomock.Connection().orchestra
         else:
             self._db = pymongo.Connection(config.mongo_admin_connection)[u'orchestra']
-        self.root_user = User(UUID_ZERO, u'root', u'oscied', u'root@oscied.org', self.config.root_secret, True)
-        self.nodes_user = User(UUID_ZERO, u'nodes', u'oscied', u'nodes@oscied.org', self.config.nodes_secret, False)
+        self.root_user = User(u'root', u'oscied', u'root@oscied.org', self.config.root_secret, True, _id=UUID_ZERO)
+        self.nodes_user = User(u'nodes', u'oscied', u'nodes@oscied.org', self.config.nodes_secret, False, _id=UUID_ZERO)
 
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Properties >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -325,7 +325,7 @@ class Orchestra(object):
             raise IndexError(to_bytes(u'No transformation profile with id {0}.'.format(profile_id)))
         if not queue in self.config.transform_queues:
             raise IndexError(to_bytes(u'No transformation queue with name {0}.'.format(queue)))
-        media_out = Media(None, user_id, media_in_id, None, None, filename, metadata, u'PENDING')
+        media_out = Media(user_id, media_in_id, None, None, filename, metadata, u'PENDING')
         media_out.uri = self.config.storage_medias_uri(media_out)
         TransformTask.validate_task(media_in, profile, media_out)
         self.save_media(media_out)  # Save pending output media
@@ -421,7 +421,7 @@ class Orchestra(object):
             raise IndexError(to_bytes(u'No media with id {0}.'.format(media_id)))
         if not queue in self.config.publisher_queues:
             raise IndexError(to_bytes(u'No publication queue with name {0}.'.format(queue)))
-        if not media.status in (u'READY',):
+        if media.status != u'READY':
             raise NotImplementedError(to_bytes(u'Cannot launch the task, input media status is {0}.'.format(
                                       media.status)))
         other = self.get_publish_task({u'media_id': media._id})
@@ -543,19 +543,39 @@ class Orchestra(object):
             logging.info(u'{0} Error: {1}'.format(task_id, status))
             logging.info(u'{0} Media {1} is not modified'.format(task_id, media.filename))
 
+    def publish_revoke_callback(self, task_id, publish_uri, status):
+        task = self.get_publish_task({u'revoke_task_id': task_id})
+        if not task:
+            raise IndexError(to_bytes(u'No publication task with revoke_task_id {0}.'.format(task_id)))
+        media = self.get_media({u'_id': task.media_id})
+        if not media:
+            raise IndexError(to_bytes(u'Unable to find media with id {0}.'.format(task.media_id)))
+        if status == states.SUCCESS:
+            del media.public_uris[task._id]
+            media.status = u'READY' if len(media.public_uris) == 0 else u'PUBLISHED'
+            task.status = states.REVOKED
+            self.save_media(media)
+            self._db.publish_tasks.save(task.__dict__)
+            logging.info(u'{0} Media {1} is now {2}'.format(task_id, media.filename, media.status))
+        else:
+            task.add_statistic('revoke_error_details', status.replace(u'\n', u'\\n'), True)
+            self._db.publish_tasks.save(task.__dict__)
+            logging.info(u'{0} Error: {1}'.format(task_id, status))
+            logging.info(u'{0} Media {1} is not modified'.format(task_id, media.filename))
+
 
 def get_test_orchestra(api_init_csv_directory):
     from OrchestraConfig import ORCHESTRA_CONFIG_TEST
     orchestra = Orchestra(ORCHESTRA_CONFIG_TEST)
     reader = csv_reader(os.path.join(api_init_csv_directory, u'users.csv'))
     for first_name, last_name, email, secret, admin_platform in reader:
-        user = User(None, first_name, last_name, email, secret, admin_platform)
+        user = User(first_name, last_name, email, secret, admin_platform)
         print(u'Adding user {0}'.format(user.name))
         orchestra.save_user(user, hash_secret=True)
     users = orchestra.get_users()
     i, reader = 0, csv_reader(os.path.join(api_init_csv_directory, u'medias.csv'))
     for uri, filename, title in reader:
-        media = Media(None, users[i]._id, None, uri, None, filename, {u'title': title}, u'READY')
+        media = Media(users[i]._id, None, uri, None, filename, {u'title': title}, u'READY')
         print(u'Adding media {0}'.format(media.metadata[u'title']))
         orchestra.save_media(media)
         i = (i + 1) % len(users)

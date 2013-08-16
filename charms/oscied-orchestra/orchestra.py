@@ -501,7 +501,7 @@ def api_user_post():
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
         data = get_request_json(request)
-        user = User(None, data[u'first_name'], data[u'last_name'], data[u'mail'], data[u'secret'],
+        user = User(data[u'first_name'], data[u'last_name'], data[u'mail'], data[u'secret'],
                     data[u'admin_platform'])
         orchestra.save_user(user, hash_secret=True)
         delattr(user, u'secret')  # do not send back user's secret
@@ -894,7 +894,7 @@ def api_media_post():
     try:
         auth_user = requires_auth(request=request, allow_any=True)
         data = get_request_json(request)
-        media = Media(None, auth_user._id, None, data[u'uri'], None, data[u'filename'], data[u'metadata'], u'READY')
+        media = Media(auth_user._id, None, data[u'uri'], None, data[u'filename'], data[u'metadata'], u'READY')
         orchestra.save_media(media)
         return ok_200(media, True)
     except Exception as e:
