@@ -165,7 +165,7 @@ class StorageHooks(CharmHooks):
             self.cmd(u'apt-get -y autoremove')
             shutil.rmtree(u'/etc/glusterd',  ignore_errors=True)
             shutil.rmtree(u'/etc/glusterfs', ignore_errors=True)
-        shutil.rmtree(self.config.bricks_path, ignore_errors=True)
+        shutil.rmtree(self.bricks_path, ignore_errors=True)
         os.makedirs(self.bricks_path)
         self.local_config.reset()
 
