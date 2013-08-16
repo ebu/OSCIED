@@ -2100,7 +2100,6 @@ def api_transform_task_id_delete(id):
 
 @app.route(u'/publish/queue', methods=[u'GET'])
 @app.route(u'/publisher/queue', methods=[u'GET'])
-@app.route(u'/unpublish/queue', methods=[u'GET'])
 def api_publish_queue():
     """
     Return an array containing the publish queues.
@@ -2277,7 +2276,6 @@ def api_publish_task_post():
         * Schedule tasks by specifying start time (...)
         * Handle the registration of tasks related to PENDING medias
         * Permit to publish a media on more than one (1) publication queue
-        * Permit to unpublish a media vbia a unpublish (broadcast) message
 
     **Example request**:
 
@@ -2535,9 +2533,7 @@ def api_publish_task_id_delete(id):
             raise IndexError(to_bytes(u'No publish task with id {0}.'.format(id)))
         if auth_user._id != task.user_id:
             abort(403, u'You are not allowed to revoke publish task with id {0}.'.format(id))
-        orchestra.revoke_publish_task(task=task, terminate=True, remove=False)
-        logging.info(u'here will be launched an unpublish task')
-        #orchestra.launch_unpublish_task(auth_user._id, task, '/unpublish/callback')
+        orchestra.revoke_publish_task(task=task, callback_url=u'/publish/revoke/callback', terminate=True, remove=False)
         return ok_200(u'The publish task "{0}" has been revoked. Corresponding media will be unpublished from here.'
                       .format(task._id), False)
     except Exception as e:
@@ -2663,29 +2659,66 @@ def api_publish_task_hook():
     except Exception as e:
         map_exceptions(e)
 
-# @app.route(u'/unpublish/callback', methods=[u'POST'])
-# def api_unpublish_task_hook_0():
 
-#     # This method will be ALWAYS called by publisher workers when they finish their work.
-#     # The orchestrator will update it's internal state (only workers/nodes can do that)
-#     if request.method == 'POST':
-#         requires_auth(request=request, allow_node=True)
-#         data = request.json
-#         if not data:
-#             abort(415, 'Requires json content-type')
-#         try:
-#             task_id = data['task_id']
-#             publish_task_id = data['publish_task_id']
-#             status = data['status']
-#             logging.debug('task ' + task_id + ', publish_task_id ' + publish_task_id + ', status ' + status)
-#             orchestra.unpublish_callback(task_id, publish_task_id, status)
-#         except (ValueError, TypeError) as error:
-#             abort(400, str(error))
-#         except KeyError as error:
-#             abort(400, 'Key ' + str(error) + ' not found')
-#         except IndexError as error:
-#             abort(404, str(error))
-#         return ok_200('Your work is much appreciated, thanks !', False)
+@app.route(u'/publish/revoke/callback', methods=[u'POST'])
+def api_revoke_publish_task_hook():
+    """
+    This method is called by publisher workers when they finish their work (revoke).
+
+    If task is successful, the orchestrator will update media's ``status`` and ``public_uris``
+    attribute.
+    Else, the orchestrator will append ``error_details`` to ``statistic`` attribute of task.
+
+    **Example request**:
+
+    .. sourcecode:: http
+
+        POST /publish/revoke/callback HTTP/1.1
+        Host: somewhere.com
+        Header: node:abcdef
+        Accept: application/json
+        Content-Type: application/json
+
+        {
+          "task_id": "1b96dcd6-7460-11e2-a06d-3085a9accb47",
+          "publish_uri": "http://<address>/medias/<user_id>/<media_id>/
+                          Project_London_trailer_2009.mp4",
+          "status": "SUCCESS"
+        }
+
+    **Example response**:
+
+    .. sourcecode:: http
+
+        HTTP/1.1 200 OK
+        Vary: Accept
+        Content-Type: application/json
+
+        {"status": 200, "value": "Your work is much appreciated, thanks !"}
+
+    :Allowed: Node
+    :query task_id: Task's id (required)
+    :query publish_uri: Revoked publication URI of the media (required)
+    :query status: Task's status (SUCCESS) or error's details (required)
+    :statuscode 200: OK
+    :statuscode 400: Key ``key`` not found. *or* on type or value error
+    :statuscode 401: Authenticate.
+    :statuscode 403: Authentication Failed.
+    :statuscode 404: No publish task with id ``id``.
+    :statuscode 404: Unable to find media with id ``id``.
+    :statuscode 415: Requires (valid) json content-type.
+    """
+    try:
+        requires_auth(request=request, allow_node=True)
+        data = get_request_json(request)
+        task_id = data[u'task_id']
+        publish_uri = data[u'publish_uri'] if u'publish_uri' in data else None
+        status = data[u'status']
+        logging.debug(u'task {0}, revoked publish_uri {1}, status {2}'.format(task_id, publish_uri, status))
+        orchestra.publish_revoke_callback(task_id, publish_uri, status)
+        return ok_200(u'Your work is much appreciated, thanks !', False)
+    except Exception as e:
+        map_exceptions(e)
 
 # Main -----------------------------------------------------------------------------------------------------------------
 

@@ -79,7 +79,6 @@ class Orchestra(object):
         self._db.drop_collection(u'transform_profiles')
         self._db.drop_collection(u'transform_tasks')
         self._db.drop_collection(u'publish_tasks')
-        self._db.drop_collection(u'unpublish_tasks')
         logging.info(u"Orchestra database's collections dropped !")
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -459,11 +458,11 @@ class Orchestra(object):
     def update_publish_task(self, task):
         raise NotImplementedError(to_bytes(u'maybe in a near future.'))
 
-    def revoke_publish_task(self, task, terminate=False, remove=False):
+    def revoke_publish_task(self, task, callback_url, terminate=False, remove=False):
         u"""
         This do not delete tasks from tasks database (if remove=False) but set revoked attribute in tasks database and
         broadcast revoke request to publication units with celery. If the task is actually running it will be cancelled
-        if terminated = True. The output media will be deleted.
+        if terminated = True. In any case, the output media will be deleted (task running or successfully finished).
         """
         if valid_uuid(task, none_allowed=False):
             task = self.get_publish_task({u'_id': task})
@@ -477,7 +476,19 @@ class Orchestra(object):
             task.status = states.REVOKED
         else:
             revoke(task._id, terminate=terminate)
-            task.status = states.REVOKED
+            if task.status == states.SUCCESS:
+                # Send revoke task to the worker that published the media
+                callback = Callback(self.config.api_url + callback_url, u'node', self.config.nodes_secret)
+                queue = task.get_hostname()
+                result = Publisher.revoke_publish_task.apply_async(
+                    args=(task.publish_uri, object2json(callback, False)), queue=queue)
+                if not result.id:
+                    raise ValueError(to_bytes(u'Unable to transmit task to queue {0}.'.format(queue)))
+                logging.info(u'New revoke publication task {0} -> queue {1}.'.format(result.id, queue))
+                task.revoke_task_id = result.id
+                task.status = 'REVOKING'
+            else:
+                task.status = states.REVOKED
         self._db.publish_tasks.save(task.__dict__)
         if remove:
             self._db.publish_tasks.remove({u'_id': task._id})

@@ -85,18 +85,19 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
         print(object2json(config, True))
 
         # Load and check task parameters
-        media_in = Media.from_json(media_in_json)
-        media_out = Media.from_json(media_out_json)
-        profile = TransformProfile.from_json(profile_json)
         callback = Callback.from_json(callback_json)
-        media_in.is_valid(True)
-        media_out.is_valid(True)
-        profile.is_valid(True)
         callback.is_valid(True)
 
         # Update callback socket according to configuration
         if config.api_nat_socket and len(config.api_nat_socket) > 0:
             callback.replace_netloc(config.api_nat_socket)
+
+        media_in = Media.from_json(media_in_json)
+        media_out = Media.from_json(media_out_json)
+        profile = TransformProfile.from_json(profile_json)
+        media_in.is_valid(True)
+        media_out.is_valid(True)
+        profile.is_valid(True)
 
         # Verify that media file can be accessed and create output path
         media_in_path = config.storage_medias_path(media_in, generate=False)
