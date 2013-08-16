@@ -46,7 +46,7 @@ class CharmHooks_Subordinate(CharmHooks):
 
     @property
     def rabbit_hostname(self):
-        return u'{0}_{1}'.join(self.screen_name, self.public_address)
+        return u'{0}_{1}'.format(self.screen_name, self.public_address)
 
     @property
     def rabbit_queues(self):

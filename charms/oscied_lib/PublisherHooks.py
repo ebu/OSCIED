@@ -24,16 +24,14 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import os, multiprocessing, setuptools.archive_util, shutil, time
+import os, multiprocessing, setuptools.archive_util, shutil
 from codecs import open
-from kitchen.text.converters import to_bytes
 from CharmHooks import DEFAULT_OS_ENV
 from CharmHooks_Storage import CharmHooks_Storage
 from CharmHooks_Subordinate import CharmHooks_Subordinate
 from CharmHooks_Website import CharmHooks_Website
 from PublisherConfig import PublisherConfig
 from pyutils.py_filesystem import first_that_exist
-from pyutils.py_subprocess import screen_launch, screen_list, screen_kill
 
 
 class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Website):
@@ -109,16 +107,10 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         else:
             self.save_local_config()  # Update local configuration file for publisher daemon
             self.cmd(u'service apache2 start')
-            if screen_list(u'Publisher', log=self.debug) == []:
-                screen_launch(u'Publisher', [u'celeryd', u'--config', u'celeryconfig', u'-Q', self.rabbit_queues])
-            time.sleep(5)
-            if screen_list(u'Publisher', log=self.debug) == []:
-                raise RuntimeError(to_bytes(u'Publisher is not ready'))
-            else:
-                self.remark(u'Publisher successfully started')
+            self.start_celeryd()
 
     def hook_stop(self):
-        screen_kill(u'Publisher', log=self.debug)
+        self.stop_celeryd()
         self.cmd(u'service apache2 stop', fail=False)
 
 # Main -----------------------------------------------------------------------------------------------------------------
