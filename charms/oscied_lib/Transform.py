@@ -78,7 +78,7 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
         callback, encoder_out, request = None, u'', current_task.request
 
         # Let's the task begin !
-        print(u'{0} Transform task started'.format(request.id))
+        print(u'{0} Transformation task started'.format(request.id))
 
         # Read current configuration to translate files uri to local paths
         config = TransformConfig.read(u'local_config.pkl')
@@ -249,7 +249,7 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
         # Here all seem okay -------------------------------------------------------------------------------------------
         media_out_size = get_size(media_out_root)
         media_out_duration = get_media_duration(media_out_path)
-        print(u'{0} Transform task successful, output media {1}'.format(request.id, media_out.filename))
+        print(u'{0} Transformation task successful, output media {1}'.format(request.id, media_out.filename))
         transform_callback(u'SUCCESS')
         return {u'hostname': request.hostname, u'start_date': start_date, u'elapsed_time': elapsed_time,
                 u'eta_time': 0, u'media_in_size': media_in_size, u'media_in_duration': media_in_duration,
@@ -258,6 +258,6 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
     except Exception as error:
 
         # Here something went wrong
-        print(u'{0} Transform task failed '.format(request.id))
+        print(u'{0} Transformation task failed '.format(request.id))
         transform_callback(u'ERROR\n{0}\n\nOUTPUT\n{1}'.format(unicode(error), encoder_out))
         raise

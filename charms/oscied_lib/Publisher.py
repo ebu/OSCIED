@@ -67,7 +67,7 @@ def publish_task(media_json, callback_json):
         request = current_task.request
 
         # Let's the task begin !
-        print(u'{0} Publish task started'.format(request.id))
+        print(u'{0} Publication task started'.format(request.id))
 
         # Read current configuration to translate files uri to local paths
         config = PublisherConfig.read(u'local_config.pkl')
@@ -93,7 +93,7 @@ def publish_task(media_json, callback_json):
         infos = recursive_copy(media_root, publish_root, copy_callback, RATIO_DELTA, TIME_DELTA)
 
         # Here all seem okay
-        print(u'{0} Publish task successful, media published as {1}'.format(request.id, publish_uri))
+        print(u'{0} Publication task successful, media published as {1}'.format(request.id, publish_uri))
         publish_callback(u'SUCCESS', publish_uri)
         return {u'hostname': request.hostname, u'start_date': infos[u'start_date'],
                 u'elapsed_time': infos[u'elapsed_time'], u'eta_time': 0, u'media_size': infos[u'src_size'],
@@ -102,6 +102,6 @@ def publish_task(media_json, callback_json):
     except Exception as error:
 
         # Here something went wrong
-        print(u'{0} Publish task failed'.format(request.id))
+        print(u'{0} Publication task failed'.format(request.id))
         publish_callback(unicode(error), None)
         raise
