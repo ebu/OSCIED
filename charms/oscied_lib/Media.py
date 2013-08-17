@@ -32,15 +32,15 @@ from pyutils.py_validation import valid_filename, valid_uuid
 
 class Media(OsciedDBModel):
 
-    STATUS = (u'PENDING', u'READY', u'PUBLISHED', u'DELETED')
+    STATUS = (u'PENDING', u'READY', u'DELETED')
 
-    def __init__(self, _id=None, user_id=None, parent_id=None, uri=None, public_uris=None, filename=None, metadata={},
-                 status=u'PENDING'):
-        super(Media, self).__init__(_id)
+    def __init__(self, user_id=None, parent_id=None, uri=None, public_uris=None, filename=None, metadata={},
+                 status=u'PENDING', **kwargs):
+        super(Media, self).__init__(**kwargs)
         self.user_id = user_id
         self.parent_id = parent_id
         self.uri = uri
-        self.public_uris = public_uris
+        self.public_uris = public_uris or {}
         try:
             self.filename = unicode(filename).replace(u' ', u'_')
         except:
@@ -64,8 +64,8 @@ class Media(OsciedDBModel):
         return os.path.splitext(self.filename)[1].lower() == u'.mpd'
 
     def is_valid(self, raise_exception):
-        if not valid_uuid(self._id, none_allowed=False):
-            self._E(raise_exception, u'_id is not a valid uuid string')
+        if not super(Media, self).is_valid(raise_exception):
+            return False
         if hasattr(self, u'user_id') and not valid_uuid(self.user_id, none_allowed=False):
             self._E(raise_exception, u'user_id is not a valid uuid string')
         # FIXME check use if loaded
@@ -97,7 +97,7 @@ class Media(OsciedDBModel):
         delattr(self, u'user_id')
         delattr(self, u'parent_id')
 
-MEDIA_TEST = Media(None, unicode(uuid.uuid4()), unicode(uuid.uuid4()), None, None, u'tabby.mpg',
+MEDIA_TEST = Media(unicode(uuid.uuid4()), unicode(uuid.uuid4()), None, None, u'tabby.mpg',
                    {u'title': u"Tabby's adventures §1", u'description': u'My cat drinking water'}, u'PENDING')
 MEDIA_TEST.uri = ORCHESTRA_CONFIG_TEST.storage_medias_uri(MEDIA_TEST)
 MEDIA_TEST.add_metadata(u'title', u'not authorized overwrite', False)

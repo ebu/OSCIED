@@ -25,19 +25,17 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 from os.path import join
+from urlparse import urlparse
 from CharmConfig_Storage import CharmConfig_Storage, MEDIAS_PATH
+from CharmConfig_Subordinate import CharmConfig_Subordinate
 
 
-class PublisherConfig(CharmConfig_Storage):
+class PublisherConfig(CharmConfig_Storage, CharmConfig_Subordinate):
 
-    def __init__(self, api_nat_socket=u'', proxy_ips=[], celery_config_file=u'celeryconfig.py',
-                 celery_template_file=u'templates/celeryconfig.py.template',
-                 apache_config_file=u'/etc/apache2/apache2.conf', publish_uri=u'', publish_path=u'/var/www', **kwargs):
+    def __init__(self, proxy_ips=[], apache_config_file=u'/etc/apache2/apache2.conf', publish_uri=u'',
+                 publish_path=u'/var/www', **kwargs):
         super(PublisherConfig, self).__init__(**kwargs)
-        self.api_nat_socket = api_nat_socket
         self.proxy_ips = proxy_ips
-        self.celery_config_file = celery_config_file
-        self.celery_template_file = celery_template_file
         self.apache_config_file = apache_config_file
         self.publish_uri = publish_uri
         self.publish_path = publish_path
@@ -46,8 +44,28 @@ class PublisherConfig(CharmConfig_Storage):
         common = join(MEDIAS_PATH, media.user_id, media._id, media.filename)
         return (join(self.publish_path, common), join(self.publish_uri, common))
 
+    def publish_uri_to_path(self, uri):
+        u"""Convert a URI to a publication path or None if the URI does not start with self.publish_uri.
+
+        **Example usage**:
+
+        >>> import copy
+        >>> config = copy.copy(PUBLISHER_CONFIG_TEST)
+        >>> print(config.publish_uri, config.publish_uri_to_path(u'test.mp4'))
+        (u'', None)
+        >>> config.update_publish_uri(u'my_host.com')
+        >>> print(config.publish_uri_to_path(u'http://another_host.com/a_path/a_file.txt'))
+        None
+        >>> print(config.publish_uri_to_path(u'http://my_host.com/a_path/a_file.txt'))
+        /var/www/a_path/a_file.txt
+        """
+        url = urlparse(uri)
+        if u'{0}://{1}'.format(url.scheme, url.netloc) != self.publish_uri:
+            return None
+        return join(self.publish_path, url.path[1:].rstrip('/'))
+
     def update_publish_uri(self, public_address):
-        self.publish_uri = u'http://%s' % public_address
+        self.publish_uri = u'http://{0}'.format(public_address)
 
 PUBLISHER_CONFIG_TEST = PublisherConfig(api_nat_socket=u'129.194.185.47:5000', storage_address=u'10.1.1.2',
                                         storage_fstype=u'glusterfs', storage_mountpoint=u'medias_volume')

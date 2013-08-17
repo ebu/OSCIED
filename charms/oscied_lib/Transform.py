@@ -25,7 +25,7 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 import os, re, select, shlex, time
-from celery import current_task
+from celery import current_task, states
 from celery.decorators import task
 from kitchen.text.converters import to_bytes
 from subprocess import Popen, PIPE
@@ -33,7 +33,6 @@ from Callback import Callback
 from Media import Media
 from TransformConfig import TransformConfig
 from TransformProfile import TransformProfile
-from User import User
 from pyutils.py_datetime import datetime_now, duration2secs
 from pyutils.py_ffmpeg import get_media_duration, get_media_tracks
 from pyutils.py_filesystem import get_size, recursive_copy, try_makedirs
@@ -53,7 +52,7 @@ FFMPEG_REGEX = re.compile(
 
 
 @task(name=u'Transform.transform_task')
-def transform_task(user_json, media_in_json, media_out_json, profile_json, callback_json):
+def transform_task(media_in_json, media_out_json, profile_json, callback_json):
 
     def copy_callback(start_date, elapsed_time, eta_time, src_size, dst_size, ratio):
         transform_task.update_state(state=u'PROGRESS', meta={
@@ -79,27 +78,26 @@ def transform_task(user_json, media_in_json, media_out_json, profile_json, callb
         callback, encoder_out, request = None, u'', current_task.request
 
         # Let's the task begin !
-        print(u'{0} Transform task started'.format(request.id))
+        print(u'{0} Transformation task started'.format(request.id))
 
         # Read current configuration to translate files uri to local paths
         config = TransformConfig.read(u'local_config.pkl')
-        print object2json(config, True)
+        print(object2json(config, True))
 
         # Load and check task parameters
-        user = User.from_json(user_json)
-        media_in = Media.from_json(media_in_json)
-        media_out = Media.from_json(media_out_json)
-        profile = TransformProfile.from_json(profile_json)
         callback = Callback.from_json(callback_json)
-        user.is_valid(True)
-        media_in.is_valid(True)
-        media_out.is_valid(True)
-        profile.is_valid(True)
         callback.is_valid(True)
 
         # Update callback socket according to configuration
         if config.api_nat_socket and len(config.api_nat_socket) > 0:
             callback.replace_netloc(config.api_nat_socket)
+
+        media_in = Media.from_json(media_in_json)
+        media_out = Media.from_json(media_out_json)
+        profile = TransformProfile.from_json(profile_json)
+        media_in.is_valid(True)
+        media_out.is_valid(True)
+        profile.is_valid(True)
 
         # Verify that media file can be accessed and create output path
         media_in_path = config.storage_medias_path(media_in, generate=False)
@@ -252,8 +250,8 @@ def transform_task(user_json, media_in_json, media_out_json, profile_json, callb
         # Here all seem okay -------------------------------------------------------------------------------------------
         media_out_size = get_size(media_out_root)
         media_out_duration = get_media_duration(media_out_path)
-        print(u'{0} Transform task successful, output media {1}'.format(request.id, media_out.filename))
-        transform_callback(u'SUCCESS')
+        print(u'{0} Transformation task successful, output media {1}'.format(request.id, media_out.filename))
+        transform_callback(states.SUCCESS)
         return {u'hostname': request.hostname, u'start_date': start_date, u'elapsed_time': elapsed_time,
                 u'eta_time': 0, u'media_in_size': media_in_size, u'media_in_duration': media_in_duration,
                 u'media_out_size': media_out_size, u'media_out_duration': media_out_duration, u'percent': 100}
@@ -261,6 +259,6 @@ def transform_task(user_json, media_in_json, media_out_json, profile_json, callb
     except Exception as error:
 
         # Here something went wrong
-        print(u'{0} Transform task failed '.format(request.id))
+        print(u'{0} Transformation task failed '.format(request.id))
         transform_callback(u'ERROR\n{0}\n\nOUTPUT\n{1}'.format(unicode(error), encoder_out))
         raise

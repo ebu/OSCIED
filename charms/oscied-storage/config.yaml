@@ -25,4 +25,11 @@ options:
     description: |
         Set replica count.
         Medias volume is not created (and started) until N nodes are connected.
+        Then, the volume will be expanded of N bricks every time you'll add exactly N new nodes.
         Default means no redundancy at all.
+  bricks_root_path:
+    type: string
+    default: '/mnt'
+    description: |
+        Set the root path where bricks are stored.
+        This option is useful to allow you using the attached EBS storage (or whatsoever).

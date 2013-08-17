@@ -27,6 +27,7 @@
 import uuid
 from kitchen.text.converters import to_bytes
 from pyutils.py_serialization import JsoneableObject
+from pyutils.py_validation import valid_uuid
 
 
 class OsciedDBModel(JsoneableObject):
@@ -35,6 +36,11 @@ class OsciedDBModel(JsoneableObject):
         if not _id:
             _id = unicode(uuid.uuid4())
         self._id = _id
+
+    def is_valid(self, raise_exception):
+        if not valid_uuid(self._id, none_allowed=False):
+            self._E(raise_exception, u'_id is not a valid uuid string')
+        return True
 
     def _E(self, raise_exception, message):
         if raise_exception:

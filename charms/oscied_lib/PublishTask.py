@@ -24,28 +24,24 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from celery.result import AsyncResult
 from Media import MEDIA_TEST
-from OsciedDBModel import OsciedDBModel
+from OsciedDBTask import OsciedDBTask
 from User import USER_TEST
 from pyutils.py_validation import valid_uuid
 
 
-class PublishTask(OsciedDBModel):
+class PublishTask(OsciedDBTask):
 
-    def __init__(self, _id=None, user_id=None, media_id=None, publish_uri=None, statistic={}, revoked=False,
-                 status=u'UNKNOWN'):
-        super(PublishTask, self).__init__(_id)
+    def __init__(self, user_id=None, media_id=None, publish_uri=None, revoke_task_id=None, **kwargs):
+        super(PublishTask, self).__init__(**kwargs)
         self.user_id = user_id
         self.media_id = media_id
         self.publish_uri = publish_uri
-        self.statistic = statistic
-        self.revoked = revoked
-        self.status = status
+        self.revoke_task_id = revoke_task_id
 
     def is_valid(self, raise_exception):
-        if not valid_uuid(self._id, none_allowed=False):
-            self._E(raise_exception, u'_id is not a valid uuid string')
+        if not super(PublishTask, self).is_valid(raise_exception):
+            return False
         if hasattr(self, u'user_id') and not valid_uuid(self.user_id, none_allowed=False):
             self._E(raise_exception, u'user_id is not a valid uuid string')
         # FIXME check user if loaded
@@ -53,31 +49,9 @@ class PublishTask(OsciedDBModel):
             self._E(raise_exception, u'media_id is not a valid uuid string')
         # FIXME check media if loaded
         # FIXME check publish_uri
-        # FIXME check statistic
-        # FIXME check revoked
-        # FIXME check status
+        if not valid_uuid(self.revoke_task_id, none_allowed=True):
+            self._E(raise_exception, u'revoke_task_id is not a valid uuid string')
         return True
-
-    def add_statistic(self, key, value, overwrite):
-        if overwrite or not key in self.statistic:
-            self.statistic[key] = value
-
-    def get_statistic(self, key):
-        return self.statistic[key] if key in self.statistic else None
-
-    def append_async_result(self):
-        async_result = AsyncResult(self._id)
-        if async_result:
-            try:
-                self.status = async_result.status
-                try:
-                    self.statistic.update(async_result.result)
-                except:
-                    self.statistic[u'error'] = unicode(async_result.result)
-            except NotImplementedError:
-                self.status = u'UNKNOWN'
-        else:
-            self.status = u'UNKNOWN'
 
     def load_fields(self, user, media):
         self.user = user
@@ -85,4 +59,5 @@ class PublishTask(OsciedDBModel):
         delattr(self, u'user_id')
         delattr(self, u'media_id')
 
-PUBLISH_JOB_TEST = PublishTask(None, USER_TEST._id, MEDIA_TEST._id, u'http://amazon.com/salut.mpg')
+PUBLISH_JOB_TEST = PublishTask(user_id=USER_TEST._id, media_id=MEDIA_TEST._id,
+                               publish_uri=u'http://amazon.com/salut.mpg')

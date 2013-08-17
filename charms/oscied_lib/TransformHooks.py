@@ -24,14 +24,12 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import os, multiprocessing, setuptools.archive_util, shutil, time
-from kitchen.text.converters import to_bytes
+import os, multiprocessing, setuptools.archive_util, shutil
 from CharmHooks import DEFAULT_OS_ENV
 from CharmHooks_Storage import CharmHooks_Storage
 from CharmHooks_Subordinate import CharmHooks_Subordinate
 from TransformConfig import TransformConfig
 from pyutils.py_filesystem import first_that_exist
-from pyutils.py_subprocess import screen_launch, screen_list, screen_kill
 
 
 class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
@@ -89,16 +87,10 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
             self.remark(u'Do not start transform daemon : No RabbitMQ queues declared')
         else:
             self.save_local_config()  # Update local configuration file for transform daemon
-            if screen_list(u'Transform', log=self.debug) == []:
-                screen_launch(u'Transform', [u'celeryd', u'--config', u'celeryconfig', u'-Q', self.rabbit_queues])
-            time.sleep(5)
-            if screen_list(u'Transform', log=self.debug) == []:
-                raise RuntimeError(to_bytes(u'Transform is not ready'))
-            else:
-                self.remark(u'Transform successfully started')
+            self.start_celeryd()
 
     def hook_stop(self):
-        screen_kill(u'Transform', log=self.debug)
+        self.stop_celeryd()
 
 # Main -----------------------------------------------------------------------------------------------------------------
 

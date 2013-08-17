@@ -27,13 +27,13 @@
 from passlib.hash import pbkdf2_sha512
 from passlib.utils import consteq
 from OsciedDBModel import OsciedDBModel
-from pyutils.py_validation import valid_email, valid_secret, valid_uuid
+from pyutils.py_validation import valid_email, valid_secret
 
 
 class User(OsciedDBModel):
 
-    def __init__(self, _id=None, first_name=None, last_name=None, mail=None, secret=None, admin_platform=False):
-        super(User, self).__init__(_id)
+    def __init__(self, first_name=None, last_name=None, mail=None, secret=None, admin_platform=False, **kwargs):
+        super(User, self).__init__(**kwargs)
         self.first_name = first_name
         self.last_name = last_name
         self.mail = mail
@@ -52,8 +52,8 @@ class User(OsciedDBModel):
 
     # FIXME test other fields
     def is_valid(self, raise_exception):
-        if not valid_uuid(self._id, none_allowed=False):
-            self._E(raise_exception, u'_id is not a valid uuid string')
+        if not super(User, self).is_valid(raise_exception):
+            return False
         if not valid_email(self.mail):
             self._E(raise_exception, u'mail is not a valid email address')
         if not self.is_secret_hashed and not valid_secret(self.secret, True):
@@ -107,4 +107,4 @@ class User(OsciedDBModel):
             return pbkdf2_sha512.verify(secret, self.secret)
         return consteq(secret, self.secret)
 
-USER_TEST = User(None, u'David', u'Fischer', u'david.fischer.ch@gmail.com', u'Secr4taB', True)
+USER_TEST = User(u'David', u'Fischer', u'david.fischer.ch@gmail.com', u'Secr4taB', True)

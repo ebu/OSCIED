@@ -104,7 +104,9 @@ get_unit_config()
   option=$3
 
   # Example : sS'storage_address' p29 S'ip-10-245-189-174.ec2.internal' p30
-  val=$(juju ssh $name/$number "cat /var/lib/juju/agents/unit-$name-*/charm/local_config.pkl" | tr '\n' ' ')
+  chmod_agent_path="sudo chmod +rx /var/lib/juju/agents/unit-$name-$number"
+  cat_local_config="cat /var/lib/juju/agents/unit-$name-$number/charm/local_config.pkl"
+  val=$(juju ssh $name/$number "$chmod_agent_path; $cat_local_config" | tr '\n' ' ')
   REPLY=$(expr match "$val" ".*S'$option' p[0-9]\+ .'*\([^ ']*\)")
 }
 

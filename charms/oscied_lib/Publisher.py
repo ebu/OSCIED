@@ -24,14 +24,14 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import os
-from celery import current_task
+import os, shutil, time
+from celery import current_task, states
 from celery.decorators import task
 from kitchen.text.converters import to_bytes
 from Callback import Callback
 from Media import Media
 from PublisherConfig import PublisherConfig
-from User import User
+from pyutils.py_datetime import datetime_now
 from pyutils.py_filesystem import recursive_copy
 from pyutils.py_serialization import object2json
 from pyutils.py_unicode import configure_unicode
@@ -39,7 +39,7 @@ from pyutils.py_unicode import configure_unicode
 configure_unicode()
 
 @task(name=u'Publisher.publish_task')
-def publish_task(user_json, media_json, callback_json):
+def publish_task(media_json, callback_json):
 
     def copy_callback(start_date, elapsed_time, eta_time, src_size, dst_size, ratio):
         publish_task.update_state(state=u'PROGRESS', meta={
@@ -68,23 +68,22 @@ def publish_task(user_json, media_json, callback_json):
         request = current_task.request
 
         # Let's the task begin !
-        print(u'{0} Publish task started'.format(request.id))
+        print(u'{0} Publication task started'.format(request.id))
 
         # Read current configuration to translate files uri to local paths
         config = PublisherConfig.read(u'local_config.pkl')
-        print object2json(config, True)
+        print(object2json(config, True))
 
         # Load and check task parameters
-        user = User.from_json(user_json)
-        media = Media.from_json(media_json)
         callback = Callback.from_json(callback_json)
-        user.is_valid(True)
-        media.is_valid(True)
         callback.is_valid(True)
 
         # Update callback socket according to configuration
         if config.api_nat_socket and len(config.api_nat_socket) > 0:
             callback.replace_netloc(config.api_nat_socket)
+
+        media = Media.from_json(media_json)
+        media.is_valid(True)
 
         # Verify that media file can be accessed
         media_path = config.storage_medias_path(media, generate=False)
@@ -96,8 +95,8 @@ def publish_task(user_json, media_json, callback_json):
         infos = recursive_copy(media_root, publish_root, copy_callback, RATIO_DELTA, TIME_DELTA)
 
         # Here all seem okay
-        print(u'{0} Publish task successful, media published as {1}'.format(request.id, publish_uri))
-        publish_callback(u'SUCCESS', publish_uri)
+        print(u'{0} Publication task successful, media published as {1}'.format(request.id, publish_uri))
+        publish_callback(states.SUCCESS, publish_uri)
         return {u'hostname': request.hostname, u'start_date': infos[u'start_date'],
                 u'elapsed_time': infos[u'elapsed_time'], u'eta_time': 0, u'media_size': infos[u'src_size'],
                 u'publish_size': infos[u'src_size'], u'percent': 100}
@@ -105,6 +104,64 @@ def publish_task(user_json, media_json, callback_json):
     except Exception as error:
 
         # Here something went wrong
-        print(u'{0} Publish task failed'.format(request.id))
+        print(u'{0} Publication task failed'.format(request.id))
         publish_callback(unicode(error), None)
+        raise
+
+@task(name=u'Publisher.revoke_publish_task')
+def revoke_publish_task(publish_uri, callback_json):
+
+    def revoke_publish_callback(status, publish_uri):
+        data = {u'task_id': request.id, u'status': status}
+        if publish_uri:
+            data[u'publish_uri'] = publish_uri
+        data_json = object2json(data, False)
+        if callback is None:
+            print(u'{0} [ERROR] Unable to callback orchestrator: {1}'.format(request.id, data_json))
+        else:
+            r = callback.post(data_json)
+            print(u'{0} Code {1} {2} : {3}'.format(request.id, r.status_code, r.reason, r._content))
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    try:
+        # Avoid 'referenced before assignment'
+        callback = None
+        request = current_task.request
+
+        # Let's the task begin !
+        print(u'{0} Revoke publication task started'.format(request.id))
+
+        # Read current configuration to translate files uri to local paths
+        config = PublisherConfig.read(u'local_config.pkl')
+        print(object2json(config, True))
+
+        # Load and check task parameters
+        callback = Callback.from_json(callback_json)
+        callback.is_valid(True)
+
+        # Update callback socket according to configuration
+        if config.api_nat_socket and len(config.api_nat_socket) > 0:
+            callback.replace_netloc(config.api_nat_socket)
+
+        publish_root = os.path.dirname(config.publish_uri_to_path(publish_uri))
+        if not publish_root:
+            raise ValueError(to_bytes(u'Media is not hosted on this publication point.'))
+
+        # Remove publication directory
+        start_date, start_time = datetime_now(), time.time()
+        shutil.rmtree(publish_root, ignore_errors=False)
+        elapsed_time = time.time() - start_time
+
+        # Here all seem okay
+        print(u'{0} Revoke publication task successful, media unpublished from {1}'.format(request.id, publish_uri))
+        revoke_publish_callback(states.SUCCESS, publish_uri)
+        return {u'hostname': request.hostname, u'start_date': start_date, u'elapsed_time': elapsed_time, u'eta_time': 0,
+                u'percent': 100}
+
+    except Exception as error:
+
+        # Here something went wrong
+        print(u'{0} Revoke publication task failed'.format(request.id))
+        revoke_publish_callback(unicode(error), None)
         raise

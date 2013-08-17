@@ -24,31 +24,26 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from celery.result import AsyncResult
 from kitchen.text.converters import to_bytes
 from Media import MEDIA_TEST
-from OsciedDBModel import OsciedDBModel
+from OsciedDBTask import OsciedDBTask
 from TransformProfile import TRANSFORM_PROFILE_TEST
 from User import USER_TEST
 from pyutils.py_validation import valid_uuid
 
 
-class TransformTask(OsciedDBModel):
+class TransformTask(OsciedDBTask):
 
-    def __init__(self, _id=None, user_id=None, media_in_id=None, media_out_id=None, profile_id=None, statistic={},
-                 revoked=False, status=u'UNKNOWN'):
-        super(TransformTask, self).__init__(_id)
+    def __init__(self, user_id=None, media_in_id=None, media_out_id=None, profile_id=None, **kwargs):
+        super(TransformTask, self).__init__(**kwargs)
         self.user_id = user_id
         self.media_in_id = media_in_id
         self.media_out_id = media_out_id
         self.profile_id = profile_id
-        self.statistic = statistic
-        self.revoked = revoked
-        self.status = status
 
     def is_valid(self, raise_exception):
-        if not valid_uuid(self._id, none_allowed=False):
-            self._E(raise_exception, u'_id is not a valid uuid string')
+        if not super(TransformTask, self).is_valid(raise_exception):
+            return False
         if hasattr(self, u'user_id') and not valid_uuid(self.user_id, none_allowed=False):
             self._E(raise_exception, u'user_id is not a valid uuid string')
         # FIXME check user if loaded
@@ -61,31 +56,7 @@ class TransformTask(OsciedDBModel):
         if hasattr(self, u'profile_id') and not valid_uuid(self.profile_id, none_allowed=False):
             self._E(raise_exception, u'profile_id is not a valid uuid string')
         # FIXME check profile if loaded
-        # FIXME check statistic
-        # FIXME check revoked
-        # FIXME check status
         return True
-
-    def add_statistic(self, key, value, overwrite):
-        if overwrite or not key in self.statistic:
-            self.statistic[key] = value
-
-    def get_statistic(self, key):
-        return self.statistic[key] if key in self.statistic else None
-
-    def append_async_result(self):
-        async_result = AsyncResult(self._id)
-        if async_result:
-            try:
-                self.status = async_result.status
-                try:
-                    self.statistic.update(async_result.result)
-                except:
-                    self.statistic[u'error'] = unicode(async_result.result)
-            except NotImplementedError:
-                self.status = u'UNKNOWN'
-        else:
-            self.status = u'UNKNOWN'
 
     def load_fields(self, user, media_in, media_out, profile):
         self.user = user
@@ -99,7 +70,7 @@ class TransformTask(OsciedDBModel):
 
     @staticmethod
     def validate_task(media_in, profile, media_out):
-        if not media_in.status in (u'READY', u'PUBLISHED'):
+        if media_in.status != u'READY':
             raise NotImplementedError(to_bytes(u'Cannot launch the task, input media status is {0}.'.format(
                                       media_in.status)))
         if media_in.is_dash and profile.encoder_name != u'copy':
@@ -112,4 +83,5 @@ class TransformTask(OsciedDBModel):
             raise ValueError(to_bytes(u'Cannot launch the task, output media is a MPD but task is not based on a '
                              'MPEG-DASH encoder called {0}.'.format(profile.encoder_name)))
 
-TRANSFORM_JOB_TEST = TransformTask(None, USER_TEST._id, MEDIA_TEST._id, MEDIA_TEST._id, TRANSFORM_PROFILE_TEST._id)
+TRANSFORM_JOB_TEST = TransformTask(user_id=USER_TEST._id, media_in_id=MEDIA_TEST._id, media_out_id=MEDIA_TEST._id,
+                                   profile_id=TRANSFORM_PROFILE_TEST._id)

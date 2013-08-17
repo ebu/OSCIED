@@ -24,9 +24,10 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import pymongo.uri_parser, shutil
+import pymongo.uri_parser, shutil, time
 from kitchen.text.converters import to_bytes
 from CharmHooks import CharmHooks
+from pyutils.py_subprocess import screen_launch, screen_list, screen_kill
 
 
 class CharmHooks_Subordinate(CharmHooks):
@@ -40,8 +41,16 @@ class CharmHooks_Subordinate(CharmHooks):
     # ------------------------------------------------------------------------------------------------------------------
 
     @property
+    def screen_name(self):
+        return self.__class__.__name__.lower().replace('hooks', '')
+
+    @property
+    def rabbit_hostname(self):
+        return u'{0}_{1}'.format(self.screen_name, self.public_address)
+
+    @property
     def rabbit_queues(self):
-        return u','.join([self.config.rabbit_queues, self.public_address])
+        return u','.join([self.config.rabbit_queues, self.rabbit_hostname])
 
     @property
     def subordinate_config_is_enabled(self):
@@ -83,6 +92,21 @@ class CharmHooks_Subordinate(CharmHooks):
     def subordinate_hook_bypass(self):
         if self.subordinate_config_is_enabled:
             raise RuntimeError(to_bytes(u'Orchestrator is set in config, subordinate relation is disabled'))
+
+    def start_celeryd(self, retry_count=15, retry_delay=1):
+        if screen_list(self.screen_name, log=self.debug) == []:
+            screen_launch(self.screen_name, [u'celeryd', u'--config', u'celeryconfig',
+                                             u'--hostname', self.rabbit_hostname, u'-Q', self.rabbit_queues])
+        for start_delay in range(retry_count):
+            time.sleep(retry_delay)
+            if screen_list(self.screen_name, log=self.debug) != []:
+                start_time = start_delay * retry_delay
+                self.remark(u'{0} successfully started in {1} seconds'.format(self.screen_name, start_time))
+                return
+        raise RuntimeError(to_bytes(u'Worker {0} is not ready'.format(self.screen_name)))
+
+    def stop_celeryd(self):
+        screen_kill(self.screen_name, log=self.debug)
 
     # ------------------------------------------------------------------------------------------------------------------
 

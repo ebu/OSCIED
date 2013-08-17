@@ -24,31 +24,14 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from setuptools import setup
+from CharmConfig import CharmConfig
 
-# FIXME 2to3 + classifiers ?
-kwargs = {}
 
-setup(name='oscied-lib',
-      version='2.19.20',
-      packages=['oscied_lib'],
-      description='Library of EBU/UER OSCIED Project',
-      author='David Fischer',
-      author_email='david.fischer.ch@gmail.com',
-      url='https://github.com/ebu/OSCIED',
-      license='GNU GPLv3',  # FIXME update license
-      install_requires=[
-            'configobj',    # FIXME version
-            'celery',       # FIXME version
-            'flask',        # FIXME version
-            'mongomock',    # FIXME version
-            'passlib',      # FIXME version
-            'pyaml',        # FIXME version
-            'pymongo',      # FIXME version
-            #'pyutils',     # installed by setup.sh
-            'requests',     # FIXME version
-            'six'],         # FIXME version
-      #dependency_links=['https://github.com/davidfischer-ch/pyutils/tarball/master#egg=pyutils-2.0.1-beta'],
-      setup_requires=['coverage', 'mock', 'nose'],
-      tests_require=['coverage', 'mock', 'nose'],
-      test_suite='nose.main', **kwargs)
+class CharmConfig_Subordinate(CharmConfig):
+
+    def __init__(self, verbose=None, api_nat_socket=u'', celery_config_file=u'celeryconfig.py',
+                 celery_template_file=u'templates/celeryconfig.py.template', **kwargs):
+        super(CharmConfig_Subordinate, self).__init__(verbose=verbose)
+        self.api_nat_socket = api_nat_socket
+        self.celery_config_file = celery_config_file
+        self.celery_template_file = celery_template_file

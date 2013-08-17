@@ -25,16 +25,13 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 from CharmConfig_Storage import CharmConfig_Storage
+from CharmConfig_Subordinate import CharmConfig_Subordinate
 
 
-class TransformConfig(CharmConfig_Storage):
+class TransformConfig(CharmConfig_Storage, CharmConfig_Subordinate):
 
-    def __init__(self, api_nat_socket=u'', celery_config_file=u'celeryconfig.py',
-                 celery_template_file=u'templates/celeryconfig.py.template', **kwargs):
+    def __init__(self, **kwargs):
         super(TransformConfig, self).__init__(**kwargs)
-        self.api_nat_socket = api_nat_socket
-        self.celery_config_file = celery_config_file
-        self.celery_template_file = celery_template_file
 
 TRANSFORM_CONFIG_TEST = TransformConfig(api_nat_socket=u'129.194.185.47:5000', storage_address=u'10.1.1.2',
                                         storage_fstype=u'glusterfs', storage_mountpoint=u'medias_volume')

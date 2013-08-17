@@ -89,6 +89,8 @@ class TestOrchestraHooks(object):
         self.hooks.cmd = mock_cmd()
         self.hooks.hook_config_changed()
         assert_equal(self.hooks.cmd.call_args_list, [
+            call(u'service mongodb start',         fail=False),
+            call(u'service rabbitmq-server start', fail=False),
             call(u'mongo f.js'),
             call(u'mongo orchestra f.js'),
             call(u'mongo celery g.js'),

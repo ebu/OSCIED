@@ -124,7 +124,8 @@ install()
     lu-importUtils . || xecho 'Unable to import utilities of logicielsUbuntu'
   fi
 
-  $udo "$CHARMS_PATH/setup.sh"
+  cd "$CHARMS_PATH" || xecho "Unable to find path $CHARMS_PATH"
+  $udo "./setup.sh" || xecho 'Unable to install OSCIED Library'
 
   pecho 'Install prerequisites'
   eval $install bzr rst2pdf texlive-latex-recommended texlive-latex-extra \
@@ -618,7 +619,6 @@ api_get_all()
   test_api 200 GET $ORCHESTRA_URL/transform/task          "$user1_auth" ''
   test_api 200 GET $ORCHESTRA_URL/publish/queue           "$user1_auth" ''
   test_api 200 GET $ORCHESTRA_URL/publisher/queue         "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/unpublish/queue         "$user1_auth" ''
   test_api 200 GET $ORCHESTRA_URL/publish/task/count      "$user1_auth" ''
   test_api 200 GET $ORCHESTRA_URL/publish/task/HEAD       "$user1_auth" ''
   test_api 200 GET $ORCHESTRA_URL/publish/task            "$user1_auth" ''
