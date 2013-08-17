@@ -70,7 +70,7 @@ class TransformTask(OsciedDBTask):
 
     @staticmethod
     def validate_task(media_in, profile, media_out):
-        if not media_in.status in (u'READY', u'PUBLISHED'):
+        if media_in.status != u'READY':
             raise NotImplementedError(to_bytes(u'Cannot launch the task, input media status is {0}.'.format(
                                       media_in.status)))
         if media_in.is_dash and profile.encoder_name != u'copy':

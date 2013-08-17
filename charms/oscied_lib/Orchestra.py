@@ -455,8 +455,23 @@ class Orchestra(object):
             task.append_async_result()
         return task
 
-    def update_publish_task(self, task):
-        raise NotImplementedError(to_bytes(u'maybe in a near future.'))
+    def update_publish_task_and_media(self, task, publish_uri=None, revoke_task_id=None, status=None):
+        if status:
+            task.status = status
+            media = self.get_media({u'_id': task.media_id})
+            if not media:
+                raise IndexError(to_bytes(u'Unable to find media with id {0}.'.format(task.media_id)))
+            if task.status == states.SUCCESS:
+                task.publish_uri = publish_uri
+                media.public_uris[task._id] = publish_uri
+            elif task.status == states.REVOKED:
+                del media.public_uris[task._id]
+            elif task.status == 'REVOKING':
+                task.revoke_task_id = revoke_task_id
+            self.save_media(media)
+            self._db.publish_tasks.save(task.__dict__)
+            return media
+        return None
 
     def revoke_publish_task(self, task, callback_url, terminate=False, remove=False):
         u"""
@@ -468,28 +483,21 @@ class Orchestra(object):
             task = self.get_publish_task({u'_id': task})
         task.is_valid(True)
         if task.status in (states.REVOKED, 'REVOKING'):
-            raise ValueError(to_bytes(u'Publication task {0} is already revoked !'.format(task._id)))
-        if task.status in states.READY_STATES:
             raise ValueError(to_bytes(u'Cannot revoke a publication task with status {0}.'.format(task.status)))
-        if self.is_mock:
-            pass  # FIXME TODO
-            task.status = states.REVOKED
-        else:
+        if not self.is_mock:
             revoke(task._id, terminate=terminate)
-            if task.status == states.SUCCESS:
-                # Send revoke task to the worker that published the media
-                callback = Callback(self.config.api_url + callback_url, u'node', self.config.nodes_secret)
-                queue = task.get_hostname()
-                result = Publisher.revoke_publish_task.apply_async(
-                    args=(task.publish_uri, object2json(callback, False)), queue=queue)
-                if not result.id:
-                    raise ValueError(to_bytes(u'Unable to transmit task to queue {0}.'.format(queue)))
-                logging.info(u'New revoke publication task {0} -> queue {1}.'.format(result.id, queue))
-                task.revoke_task_id = result.id
-                task.status = 'REVOKING'
-            else:
-                task.status = states.REVOKED
-        self._db.publish_tasks.save(task.__dict__)
+        if task.status == states.SUCCESS and not self.is_mock:
+            # Send revoke task to the worker that published the media
+            callback = Callback(self.config.api_url + callback_url, u'node', self.config.nodes_secret)
+            queue = task.get_hostname()
+            result = Publisher.revoke_publish_task.apply_async(
+                args=(task.publish_uri, object2json(callback, False)), queue=queue)
+            if not result.id:
+                raise ValueError(to_bytes(u'Unable to transmit task to queue {0}.'.format(queue)))
+            logging.info(u'New revoke publication task {0} -> queue {1}.'.format(result.id, queue))
+            self.update_publish_task_and_media(task, revoke_task_id=result.id, status='REVOKING')
+        else:
+            self.update_publish_task_and_media(task, status=states.REVOKED)
         if remove:
             self._db.publish_tasks.remove({u'_id': task._id})
 
@@ -537,17 +545,8 @@ class Orchestra(object):
         task = self.get_publish_task({u'_id': task_id})
         if not task:
             raise IndexError(to_bytes(u'No publication task with id {0}.'.format(task_id)))
-        media = self.get_media({u'_id': task.media_id})
-        if not media:
-            raise IndexError(to_bytes(u'Unable to find media with id {0}.'.format(task.media_id)))
         if status == states.SUCCESS:
-            media.status = u'PUBLISHED'
-            if not media.public_uris:
-                media.public_uris = {}
-            task.publish_uri = publish_uri
-            media.public_uris[task_id] = publish_uri
-            self._db.publish_tasks.save(task.__dict__)
-            self.save_media(media)
+            media = self.update_publish_task_and_media(task, publish_uri=publish_uri, status=status)
             logging.info(u'{0} Media {1} is now PUBLISHED'.format(task_id, media.filename))
         else:
             task.add_statistic('error_details', status.replace(u'\n', u'\\n'), True)
@@ -559,15 +558,8 @@ class Orchestra(object):
         task = self.get_publish_task({u'revoke_task_id': task_id})
         if not task:
             raise IndexError(to_bytes(u'No publication task with revoke_task_id {0}.'.format(task_id)))
-        media = self.get_media({u'_id': task.media_id})
-        if not media:
-            raise IndexError(to_bytes(u'Unable to find media with id {0}.'.format(task.media_id)))
         if status == states.SUCCESS:
-            del media.public_uris[task._id]
-            media.status = u'READY' if len(media.public_uris) == 0 else u'PUBLISHED'
-            task.status = states.REVOKED
-            self.save_media(media)
-            self._db.publish_tasks.save(task.__dict__)
+            media = self.update_publish_task_and_media(task, status=states.REVOKED)
             logging.info(u'{0} Media {1} is now {2}'.format(task_id, media.filename, media.status))
         else:
             task.add_statistic('revoke_error_details', status.replace(u'\n', u'\\n'), True)

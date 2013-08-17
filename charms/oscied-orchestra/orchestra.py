@@ -1978,7 +1978,7 @@ def api_transform_task_id_get(id):
                 "duration": "00:02:44.88", "size": 54871886,
                 "title": "Project London - Official Trailer (2009)"
               },
-              "status": "PUBLISHED"
+              "status": "READY"
             },
             "media_out": {
               "_id": "52ea73ac-74f3-11e2-afdb-3085a9acc5ff",
@@ -2450,7 +2450,7 @@ def api_publish_task_id_get(id):
                 "size": 54871886,
                 "title": "Project London - Official Trailer (2009)"
               },
-              "status": "PUBLISHED"
+              "status": "READY"
             },
             "user": { "name": "David Fischer", "...": "..." },
             "statistic": {

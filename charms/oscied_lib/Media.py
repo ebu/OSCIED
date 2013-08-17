@@ -32,7 +32,7 @@ from pyutils.py_validation import valid_filename, valid_uuid
 
 class Media(OsciedDBModel):
 
-    STATUS = (u'PENDING', u'READY', u'PUBLISHED', u'DELETED')
+    STATUS = (u'PENDING', u'READY', u'DELETED')
 
     def __init__(self, user_id=None, parent_id=None, uri=None, public_uris=None, filename=None, metadata={},
                  status=u'PENDING', **kwargs):
@@ -40,7 +40,7 @@ class Media(OsciedDBModel):
         self.user_id = user_id
         self.parent_id = parent_id
         self.uri = uri
-        self.public_uris = public_uris
+        self.public_uris = public_uris or {}
         try:
             self.filename = unicode(filename).replace(u' ', u'_')
         except:

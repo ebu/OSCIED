@@ -14,6 +14,7 @@
          <th>Added on</th>
          <th>Added by</th>
          <th>Status</th>
+         <th>Public URLs</th>
          <th></th>
       </tr>
    </thead>
@@ -25,7 +26,7 @@
          <td>
             <?php
                $status = isset($media->status)?strtoupper($media->status):'UNKNOWN';
-               if ($status == 'READY' or $status == 'PUBLISHED'): ?>
+               if ($status == 'READY'): ?>
             <a href="<?= site_url('media/force_download/'.$media->_id) ?>"><?= isset($media->filename)?$media->filename:'Untitled' ?></a>
             <?php else: ?>
             <?= isset($media->filename)?$media->filename:'Untitled' ?>
@@ -47,7 +48,13 @@
             <span class="<?= $class ?>"><?= $status ?></span>
          </td>
          <td>
-            <?php if (($media->user->_id == $this->user->id()) and ($status == 'READY' or $status == 'PUBLISHED')): ?>
+            <?php foreach ($media->public_uris as $public_uri): ?>
+               <a href="<?= $public_uri ?>"><i class="icon-play"></i></a>
+            <?php endforeach; ?>
+            <!--<?php if (count((array)$media->public_uris) > 0): ?><i class="icon-ok"></i><?php endif; ?>i-->
+         </td>
+         <td>
+            <?php if (($media->user->_id == $this->user->id()) and ($status == 'READY')): ?>
             <a class="delete" title="<?= $media->metadata->title ?>" href="<?= site_url('media/delete/'.$media->_id) ?>"><button class="btn btn-mini btn-danger">Delete</button></a>
             <?php endif; ?>
          </td>
