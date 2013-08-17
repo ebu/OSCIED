@@ -106,7 +106,7 @@ class CharmHooks_Subordinate(CharmHooks):
         raise RuntimeError(to_bytes(u'Worker {0} is not ready'.format(self.screen_name)))
 
     def stop_celeryd(self):
-        screen_kill(self.worker_type, log=self.debug)
+        screen_kill(self.screen_name, log=self.debug)
 
     # ------------------------------------------------------------------------------------------------------------------
 
