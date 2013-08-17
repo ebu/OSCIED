@@ -55,7 +55,7 @@
                case 'RETRY':    $class = 'progress progress-striped progress-warning';     break;
                case 'SUCCESS':  $class = 'progress progress-striped progress-success';     break;
                case 'FAILURE':  $class = 'progress progress-striped progress-danger';      break;
-               case 'REVOKING': $class = 'progress progress-striped progress-info active'  break;
+               case 'REVOKING': $class = 'progress progress-striped progress-info active'; break;
                case 'REVOKED':  $class = 'progress progress-striped progress-info';        break;
                case 'UNKNOWN':  $class = 'progress progress-striped progress-danger';      break;
                default:         $class = 'progress progress-striped progres-info';         break;

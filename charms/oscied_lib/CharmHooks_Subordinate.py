@@ -96,10 +96,10 @@ class CharmHooks_Subordinate(CharmHooks):
     def start_celeryd(self, retry_count=15, retry_delay=1):
         if screen_list(self.screen_name, log=self.debug) == []:
             screen_launch(self.screen_name, [u'celeryd', u'--config', u'celeryconfig',
-                                             u'hostname', self.rabbit_hostname, u'-Q', self.rabbit_queues])
+                                             u'--hostname', self.rabbit_hostname, u'-Q', self.rabbit_queues])
         for start_delay in range(retry_count):
             time.sleep(retry_delay)
-            if screen_list(self.screen_name, log=self.debug) == []:
+            if screen_list(self.screen_name, log=self.debug) != []:
                 start_time = start_delay * retry_delay
                 self.remark(u'{0} successfully started in {1} seconds'.format(self.screen_name, start_time))
                 return
