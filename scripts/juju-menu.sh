@@ -331,7 +331,7 @@ log()
   fi
   ok=$true
 
-  screen -dmS juju-log juju debug-log
+  screen -dmS juju-log juju debug-log > "$JUJU_LOG"
 }
 
 config()

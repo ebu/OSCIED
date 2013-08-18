@@ -84,6 +84,7 @@ CONFIG_SCENARIOS_PATH="$CONFIG_PATH/scenarios"
 
 ID_RSA="$HOME/.ssh/id_rsa"
 ID_RSA_PUB="$HOME/.ssh/id_rsa.pub"
+JUJU_LOG="$BASE_PATH/juju-debug.log"
 JUJU_PATH="$HOME/.juju"
 JUJU_STORAGE_PATH="$JUJU_PATH/local/"
 JUJU_ENVS_FILE="$JUJU_PATH/environments.yaml"
