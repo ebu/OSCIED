@@ -154,8 +154,7 @@ install()
   fi
 
   addAptPpaRepo ppa:juju/stable juju || xecho 'Unable to add juju PPA repository'
-  eval $install --reinstall juju-core mongodb || xecho 'Unable to install JuJu orchestrator'
-  # juju juju-jitsu ? lxc apt-cacher-ng libzookeeper-java zookeeper charm-tools
+  eval $install --reinstall juju-core juju-local || xecho 'Unable to install JuJu orchestrator'
 
   #cat \
   # /var/lib/apt/lists/ppa.launchpad.net_juju_pkgs_ubuntu_dists_quantal_main_binary-amd64_Packages \
