@@ -423,6 +423,8 @@ class Orchestra(object):
         if media.status != u'READY':
             raise NotImplementedError(to_bytes(u'Cannot launch the task, input media status is {0}.'.format(
                                       media.status)))
+        if len(media.public_uris) > 0:
+            raise NotImplementedError(to_bytes(u'Cannot launch the task, input media is already published.'))
         other = self.get_publish_task({u'media_id': media._id})
         if other and other.status not in states.READY_STATES and other.status != states.REVOKED:
             raise NotImplementedError(to_bytes(u'Cannot launch the task, input media will be published by another task '

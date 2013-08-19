@@ -35,6 +35,7 @@ from pyutils.py_datetime import datetime_now
 from pyutils.py_filesystem import recursive_copy
 from pyutils.py_serialization import object2json
 from pyutils.py_unicode import configure_unicode
+from pyutils.py_validation import valid_uri
 
 configure_unicode()
 
@@ -62,11 +63,11 @@ def publish_task(media_json, callback_json):
     RATIO_DELTA = 0.01  # Update status if at least 1% of progress
     TIME_DELTA = 1      # Update status if at least 1 second(s) elapsed
 
-    try:
-        # Avoid 'referenced before assignment'
-        callback = None
-        request = current_task.request
+    # Avoid 'referenced before assignment'
+    callback = publish_root = None
+    request = current_task.request
 
+    try:
         # Let's the task begin !
         print(u'{0} Publication task started'.format(request.id))
 
@@ -93,6 +94,8 @@ def publish_task(media_json, callback_json):
         media_root, publish_root = os.path.dirname(media_path), os.path.dirname(publish_path)
 
         infos = recursive_copy(media_root, publish_root, copy_callback, RATIO_DELTA, TIME_DELTA)
+        if not valid_uri(publish_uri, check_404=True):
+            raise IOError(to_bytes(u'Media seem unreachable from publication URI {0}'.format(publish_uri)))
 
         # Here all seem okay
         print(u'{0} Publication task successful, media published as {1}'.format(request.id, publish_uri))
@@ -105,6 +108,8 @@ def publish_task(media_json, callback_json):
 
         # Here something went wrong
         print(u'{0} Publication task failed'.format(request.id))
+        if publish_root:
+            shutil.rmtree(publish_root, ignore_errors=True)
         publish_callback(unicode(error), None)
         raise
 
@@ -124,11 +129,11 @@ def revoke_publish_task(publish_uri, callback_json):
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    try:
-        # Avoid 'referenced before assignment'
-        callback = None
-        request = current_task.request
+    # Avoid 'referenced before assignment'
+    callback = None
+    request = current_task.request
 
+    try:
         # Let's the task begin !
         print(u'{0} Revoke publication task started'.format(request.id))
 
@@ -150,7 +155,9 @@ def revoke_publish_task(publish_uri, callback_json):
 
         # Remove publication directory
         start_date, start_time = datetime_now(), time.time()
-        shutil.rmtree(publish_root, ignore_errors=False)
+        shutil.rmtree(publish_root, ignore_errors=True)
+        if valid_uri(publish_uri, check_404=True):
+            raise IOError(to_bytes(u'Media seem reachable from publication URI {0}'.format(publish_uri)))
         elapsed_time = time.time() - start_time
 
         # Here all seem okay
