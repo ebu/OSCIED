@@ -146,7 +146,8 @@ deploy()
   pecho "Copy JuJu environments file & SSH keys to Orchestra charm's deployment path"
   cp -f "$ID_RSA"         "$CHARMS_DEPLOY_PATH/oscied-orchestra/ssh/"
   cp -f "$ID_RSA_PUB"     "$CHARMS_DEPLOY_PATH/oscied-orchestra/ssh/"
-  cp -f "$JUJU_ENVS_FILE" "$CHARMS_DEPLOY_PATH/oscied-orchestra/"
+  cp -f "$JUJU_ENVS_FILE" "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/"
+  find "$JUJU_PATH" -type f -name '*.pem' -exec cp -f {} "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/" \;
 
   cd "$CONFIG_SCENARIOS_PATH" || xecho "Unable to find path $CONFIG_SCENARIOS_PATH"
 

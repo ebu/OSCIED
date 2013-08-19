@@ -127,9 +127,9 @@ class OrchestraHooks(CharmHooks_Storage):
         rsync(self.local_config.ssh_template_path, self.local_config.ssh_config_path, recursive=True, log=self.debug)
 
         self.info(u'Configure JuJu Service Orchestrator')
-        if not os.path.exists(self.local_config.juju_config_file):
-            try_makedirs(os.path.dirname(self.local_config.juju_config_file))
-            shutil.copy(self.local_config.juju_template_file, self.local_config.juju_config_file)
+        juju_config_path = os.path.dirname(self.local_config.juju_config_file)
+        try_makedirs(juju_config_path)
+        rsync(self.local_config.juju_template_path, juju_config_path, recursive=True, log=self.debug)
 
         self.info(u'Configure MongoDB Scalable NoSQL DB')
         with open(u'f.js', u'w', u'utf-8') as mongo_f:

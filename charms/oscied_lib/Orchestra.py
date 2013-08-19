@@ -277,19 +277,19 @@ class Orchestra(object):
     def get_transform_units_count(self, environment):
         return juju.get_units_count(environment, self.config.transform_service)
 
-    def remove_transform_unit(self, environment, number, terminate):
-        juju.remove_unit(environment, self.config.transform_service, number, terminate)
+    def destroy_transform_unit(self, environment, number, destroy_machine):
+        juju.destroy_unit(environment, self.config.transform_service, number, destroy_machine)
         if self.get_transform_units_count(environment) == 0:
             return juju.destroy_service(environment, self.config.transform_service, fail=False)
 
-    def remove_transform_units(self, environment, num_units, terminate):
+    def destroy_transform_units(self, environment, num_units, destroy_machine):
         u"""
 
         .. warning::
 
             FIXME implement more robust resources listing and removing, sometimes juju fail during a call
-            (e.g. remove_transform_units with num_units=10) and then some machines are not terminated.
-            Maybe implement a garbage collector method callable by user when he want to terminate useless machines ?
+            (e.g. destroy_transform_units with num_units=10) and then some machines are not destroyed.
+            Maybe implement a garbage collector method callable by user when he want to destroy useless machines ?
         """
         units = self.get_transform_units(environment)
         numbers = []
@@ -297,7 +297,7 @@ class Orchestra(object):
             num_units -= 1
             if num_units < 0:
                 break
-            juju.remove_unit(environment, self.config.transform_service, unit_number, terminate)
+            juju.destroy_unit(environment, self.config.transform_service, unit_number, destroy_machine)
             numbers.append(unit_number)
         if self.get_transform_units_count(environment) == 0:
             juju.destroy_service(environment, self.config.transform_service, fail=False)

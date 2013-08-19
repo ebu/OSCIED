@@ -36,7 +36,7 @@ class OrchestraConfig(CharmConfig_Storage):
                  celery_template_file=u'templates/celeryconfig.py.template',
                  mongo_config_file=u'/etc/mongodb.conf', ssh_config_path=u'~/.ssh',
                  ssh_template_path=u'ssh', juju_config_file=u'~/.juju/environments.yaml',
-                 juju_template_file=u'environments.yaml', charms_config=u'config.yaml',
+                 juju_template_path=u'juju/', charms_config=u'config.yaml',
                  charms_release=u'raring', charms_repository=u'charms', **kwargs):
         super(OrchestraConfig, self).__init__(**kwargs)
         self.api_url = api_url
@@ -51,7 +51,7 @@ class OrchestraConfig(CharmConfig_Storage):
         self.ssh_config_path = expanduser(ssh_config_path)
         self.ssh_template_path = ssh_template_path
         self.juju_config_file = expanduser(juju_config_file)
-        self.juju_template_file = juju_template_file
+        self.juju_template_path = juju_template_path
         self.charms_config = charms_config
         self.charms_release = charms_release
         self.charms_repository = charms_repository
