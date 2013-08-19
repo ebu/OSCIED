@@ -61,7 +61,7 @@ CELERY_DEFAULT_QUEUE = 'black_hole'
 CELERY_DEFAULT_EXCHANGE = '/'
 CELERY_DEFAULT_EXCHANGE_TYPE = 'topic'
 
-CELERY_IMPORTS = ('oscied_lib.Transform', 'oscied_lib.Publisher',)
+CELERY_IMPORTS = ('oscied_lib.TransformWorker', 'oscied_lib.PublisherWorker',)
 CELERY_IGNORE_RESULT = False
 CELERY_SEND_EVENTS = True
 CELERY_TASK_SERIALIZER = 'json'

@@ -24,41 +24,22 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from OsciedDBModel import OsciedDBModel
-from pyutils.py_validation import valid_uuid
-
-ENCODERS_NAMES = (u'copy', u'ffmpeg', u'dashcast')
+import uuid
+from models import Media, User, TransformProfile, PublishTask, TransformTask
 
 
-class TransformProfile(OsciedDBModel):
-
-    def __init__(self, _id=None, title=None, description=None, encoder_name=None, encoder_string=None):
-        super(TransformProfile, self).__init__(_id)
-        self.title = title
-        self.description = description
-        self.encoder_name = encoder_name
-        self.encoder_string = encoder_string
-
-    @property
-    def is_dash(self):
-        u"""
-        >>> import copy
-        >>> profile = copy.copy(TRANSFORM_PROFILE_TEST)
-        >>> assert(not profile.is_dash)
-        >>> profile.encoder_name = u'dashcast'
-        >>> assert(profile.is_dash)
-        """
-        return self.encoder_name == u'dashcast'
-
-    # FIXME test other fields
-    def is_valid(self, raise_exception):
-        if not valid_uuid(self._id, none_allowed=False):
-            self._E(raise_exception, u'_id is not a valid uuid string')
-        if not self.title or not self.title.strip():
-            self._E(raise_exception, u'title is required')
-        if not self.encoder_name in ENCODERS_NAMES:
-            self._E(raise_exception, u'encoder_name is not a valid encoder')
-        return True
+MEDIA_TEST = Media(unicode(uuid.uuid4()), unicode(uuid.uuid4()), None, None, u'tabby.mpg',
+                   {u'title': u"Tabby's adventures §1", u'description': u'My cat drinking water'}, u'PENDING')
+MEDIA_TEST.uri = ORCHESTRA_CONFIG_TEST.storage_medias_uri(MEDIA_TEST)
+MEDIA_TEST.add_metadata(u'title', u'not authorized overwrite', False)
+MEDIA_TEST.add_metadata(u'size', 4096, True)
+USER_TEST = User(u'David', u'Fischer', u'david.fischer.ch@gmail.com', u'Secr4taB', True)
 
 TRANSFORM_PROFILE_TEST = TransformProfile(None, u'HD 1080p', u'MP4 H.264 1080p, audio copy', u'ffmpeg',
                                           u'-c:a copy ...')
+
+PUBLISH_JOB_TEST = PublishTask(user_id=USER_TEST._id, media_id=MEDIA_TEST._id,
+                               publish_uri=u'http://amazon.com/salut.mpg')
+
+TRANSFORM_JOB_TEST = TransformTask(user_id=USER_TEST._id, media_in_id=MEDIA_TEST._id, media_out_id=MEDIA_TEST._id,
+                                   profile_id=TRANSFORM_PROFILE_TEST._id)

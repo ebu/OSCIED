@@ -59,7 +59,7 @@ class CharmConfig_Storage(CharmConfig):
         **Example usage**:
 
         >>> import copy
-        >>> from Media import MEDIA_TEST
+        >>> from test_models import MEDIA_TEST
         >>> media = copy.copy(MEDIA_TEST)
         >>> config = CharmConfig_Storage()
         >>> config.storage_address = u'10.1.1.2'
@@ -121,7 +121,7 @@ class CharmConfig_Storage(CharmConfig):
 
         **Example usage**:
 
-        >>> from Media import MEDIA_TEST
+        >>> from test_models import MEDIA_TEST
         >>> config = CharmConfig_Storage()
         >>> config.storage_address = u'10.1.1.2'
         >>> config.storage_fstype = u'glusterfs'

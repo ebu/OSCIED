@@ -29,7 +29,7 @@ from celery import current_task, states
 from celery.decorators import task
 from kitchen.text.converters import to_bytes
 from Callback import Callback
-from Media import Media
+from models import Media
 from PublisherConfig import PublisherConfig
 from pyutils.py_datetime import datetime_now
 from pyutils.py_filesystem import recursive_copy
@@ -39,7 +39,7 @@ from pyutils.py_validation import valid_uri
 
 configure_unicode()
 
-@task(name=u'Publisher.publish_task')
+@task(name=u'PublisherWorker.publish_task')
 def publish_task(media_json, callback_json):
 
     def copy_callback(start_date, elapsed_time, eta_time, src_size, dst_size, ratio):
@@ -113,7 +113,7 @@ def publish_task(media_json, callback_json):
         publish_callback(unicode(error), None)
         raise
 
-@task(name=u'Publisher.revoke_publish_task')
+@task(name=u'PublisherWorker.revoke_publish_task')
 def revoke_publish_task(publish_uri, callback_json):
 
     def revoke_publish_callback(status, publish_uri):

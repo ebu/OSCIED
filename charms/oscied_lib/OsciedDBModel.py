@@ -32,7 +32,7 @@ from pyutils.py_validation import valid_uuid
 
 class OsciedDBModel(JsoneableObject):
 
-    def __init__(self, _id=None):
+    def __init__(self, _id=None, **kwargs):
         if not _id:
             _id = unicode(uuid.uuid4())
         self._id = _id

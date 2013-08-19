@@ -27,12 +27,12 @@
 import os, re, select, shlex, time
 from celery import current_task, states
 from celery.decorators import task
+#from celery.signals import celeryd_after_setup, worker_shutdown
 from kitchen.text.converters import to_bytes
 from subprocess import Popen, PIPE
 from Callback import Callback
-from Media import Media
+from models import Media, TransformProfile
 from TransformConfig import TransformConfig
-from TransformProfile import TransformProfile
 from pyutils.py_datetime import datetime_now, duration2secs
 from pyutils.py_ffmpeg import get_media_duration, get_media_tracks
 from pyutils.py_filesystem import get_size, recursive_copy, try_makedirs
@@ -51,7 +51,16 @@ FFMPEG_REGEX = re.compile(
     r'time=\s*(?P<time>\S+)\s+bitrate=\s*(?P<bitrate>\S+)')
 
 
-@task(name=u'Transform.transform_task')
+#@celeryd_after_setup.connect
+#def setup_direct_queue(sender, instance, **kwargs):
+#    queue_name = sender   # sender is the hostname of the worker
+#    instance.app.amqp.queues.select_add(queue_name)
+#@worker_shutdown.connect
+#def test(**kwargs):
+#    print(kwargs)
+
+
+@task(name=u'TransformWorker.transform_task')
 def transform_task(media_in_json, media_out_json, profile_json, callback_json):
 
     def copy_callback(start_date, elapsed_time, eta_time, src_size, dst_size, ratio):

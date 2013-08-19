@@ -32,14 +32,10 @@ from celery.task.control import revoke
 #from celery.events.state import state
 from kitchen.text.converters import to_bytes
 from random import randint
-import Publisher, Transform
+import PublisherWorker, TransformWorker
 from Callback import Callback
-from Media import Media
-from PublishTask import PublishTask
+from models import Media, User, TransformProfile, PublishTask, TransformTask, ENCODERS_NAMES
 from Storage import Storage
-from TransformProfile import TransformProfile, ENCODERS_NAMES
-from TransformTask import TransformTask
-from User import User
 import pyutils.py_juju as juju
 from pyutils.pyutils import UUID_ZERO
 from pyutils.py_datetime import datetime_now
@@ -333,7 +329,7 @@ class Orchestra(object):
         if self.is_mock:
             result_id = unicode(uuid.uuid4())
         else:
-            result = Transform.transform_task.apply_async(
+            result = TransformWorker.transform_task.apply_async(
                 args=(object2json(media_in, False), object2json(media_out, False), object2json(profile, False),
                       object2json(callback, False)), queue=queue)
             result_id = result.id
@@ -434,7 +430,7 @@ class Orchestra(object):
         if self.is_mock:
             result_id = unicode(uuid.uuid4())
         else:
-            result = Publisher.publish_task.apply_async(
+            result = PublisherWorker.publish_task.apply_async(
                 args=(object2json(media, False), object2json(callback, False)), queue=queue)
             result_id = result.id
         if not result_id:
@@ -492,7 +488,7 @@ class Orchestra(object):
             # Send revoke task to the worker that published the media
             callback = Callback(self.config.api_url + callback_url, u'node', self.config.nodes_secret)
             queue = task.get_hostname()
-            result = Publisher.revoke_publish_task.apply_async(
+            result = PublisherWorker.revoke_publish_task.apply_async(
                 args=(task.publish_uri, object2json(callback, False)), queue=queue)
             if not result.id:
                 raise ValueError(to_bytes(u'Unable to transmit task to queue {0}.'.format(queue)))
