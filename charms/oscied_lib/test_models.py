@@ -25,6 +25,7 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 import uuid
+from OrchestraConfig import ORCHESTRA_CONFIG_TEST
 from models import Media, User, TransformProfile, PublishTask, TransformTask
 
 
