@@ -1616,7 +1616,7 @@ def api_transform_unit_delete(environment):
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
         data = get_request_json(request)
-        numbers = orchestra.remove_transform_units(environment, int(data[u'num_units']), True)
+        numbers = orchestra.destroy_transform_units(environment, int(data[u'num_units']), True)
         return ok_200(u'Removed {0} (requested {1}) transform units with number(s) {2} from environment "{3}"'.format(
                       len(numbers), data[u'num_units'], numbers, environment), False)
     except Exception as e:
@@ -1653,7 +1653,7 @@ def api_transform_unit_number_delete(environment, number):
     """
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        orchestra.remove_transform_unit(environment, number, True)
+        orchestra.destroy_transform_unit(environment, number, True)
         return ok_200(u'The transform unit {0} has been removed of environment {1}.'.format(number, environment), False)
     except Exception as e:
         map_exceptions(e)
