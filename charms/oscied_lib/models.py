@@ -24,17 +24,82 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import os
+import os, uuid
+from celery import states
+from celery.result import AsyncResult
 from kitchen.text.converters import to_bytes
 from passlib.hash import pbkdf2_sha512
 from passlib.utils import consteq
-from OsciedDBModel import OsciedDBModel
-from OsciedDBTask import OsciedDBTask
-from pyutils.py_validation import valid_email, valid_secret
-from pyutils.py_validation import valid_filename, valid_uuid
+from pyutils.py_serialization import JsoneableObject
+from pyutils.py_validation import valid_email, valid_filename, valid_secret, valid_uuid
+
 
 ENCODERS_NAMES = (u'copy', u'ffmpeg', u'dashcast')
 
+
+class OsciedDBModel(JsoneableObject):
+
+    def __init__(self, _id=None, **kwargs):
+        if not _id:
+            _id = unicode(uuid.uuid4())
+        self._id = _id
+
+    def is_valid(self, raise_exception):
+        if not valid_uuid(self._id, none_allowed=False):
+            self._E(raise_exception, u'_id is not a valid uuid string')
+        return True
+
+    def _E(self, raise_exception, message):
+        if raise_exception:
+            raise TypeError(to_bytes(u'{0} : {1}'.format(self.__class__.__name__, message)))
+        return False
+    # FIXME add load_fields(self, **kwargs):
+
+
+class OsciedDBTask(OsciedDBModel):
+
+    def __init__(self, _id=None, statistic={}, status=u'UNKNOWN'):
+        super(OsciedDBTask, self).__init__(_id)
+        self.statistic = statistic
+        self.status = status
+
+    def is_valid(self, raise_exception):
+        if not super(OsciedDBTask, self).is_valid(raise_exception):
+            return False
+        # FIXME check statistic
+        # FIXME check status
+        return True
+
+    def get_hostname(self):
+        try:
+            return AsyncResult(self._id).result['hostname']
+        except:
+            return None
+
+    def add_statistic(self, key, value, overwrite):
+        if overwrite or not key in self.statistic:
+            self.statistic[key] = value
+
+    def get_statistic(self, key):
+        return self.statistic[key] if key in self.statistic else None
+
+    def append_async_result(self):
+        async_result = AsyncResult(self._id)
+        if async_result:
+            try:
+                if self.status not in (states.REVOKED, 'REVOKING'):
+                    self.status = async_result.status
+                try:
+                    self.statistic.update(async_result.result)
+                except:
+                    self.statistic[u'error'] = unicode(async_result.result)
+            except NotImplementedError:
+                self.status = u'UNKNOWN'
+        else:
+            self.status = u'UNKNOWN'
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 
 class Media(OsciedDBModel):
 
@@ -62,6 +127,7 @@ class Media(OsciedDBModel):
         **Example usage**:
 
         >>> import copy
+        >>> from test_models import MEDIA_TEST
         >>> media = copy.copy(MEDIA_TEST)
         >>> assert(not media.is_dash)
         >>> media.filename = u'test.mpd'
@@ -141,6 +207,7 @@ class User(OsciedDBModel):
         **Example usage**:
 
         >>> import copy
+        >>> from test_models import USER_TEST
         >>> user = copy.copy(USER_TEST)
         >>> user.is_secret_hashed
         False
@@ -166,6 +233,7 @@ class User(OsciedDBModel):
         **Example usage**:
 
         >>> import copy
+        >>> from test_models import USER_TEST
         >>> user = copy.copy(USER_TEST)
         >>> user.verify_secret(u'bad_secret')
         False
@@ -195,6 +263,7 @@ class TransformProfile(OsciedDBModel):
     def is_dash(self):
         u"""
         >>> import copy
+        >>> from test_models import TRANSFORM_PROFILE_TEST
         >>> profile = copy.copy(TRANSFORM_PROFILE_TEST)
         >>> assert(not profile.is_dash)
         >>> profile.encoder_name = u'dashcast'
