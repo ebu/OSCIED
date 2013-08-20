@@ -252,8 +252,8 @@ class User(OsciedDBModel):
 
 class TransformProfile(OsciedDBModel):
 
-    def __init__(self, _id=None, title=None, description=None, encoder_name=None, encoder_string=None):
-        super(TransformProfile, self).__init__(_id)
+    def __init__(self, title=None, description=None, encoder_name=None, encoder_string=None, **kwargs):
+        super(TransformProfile, self).__init__(**kwargs)
         self.title = title
         self.description = description
         self.encoder_name = encoder_name
@@ -277,6 +277,8 @@ class TransformProfile(OsciedDBModel):
             self._E(raise_exception, u'_id is not a valid uuid string')
         if not self.title or not self.title.strip():
             self._E(raise_exception, u'title is required')
+        if not self.description or not self.title.strip():
+            self._E(raise_exception, u'description is required')
         if not self.encoder_name in ENCODERS_NAMES:
             self._E(raise_exception, u'encoder_name is not a valid encoder')
         return True

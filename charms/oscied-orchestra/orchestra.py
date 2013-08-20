@@ -1161,7 +1161,7 @@ def api_environment_count():
     """
     try:
         requires_auth(request=request, allow_root=True, allow_any=True)
-        return ok_200(orchestra.get_environments_count(), False)
+        return ok_200(len(orchestra.get_environments()), False)
     except Exception as e:
         map_exceptions(e)
 
@@ -1383,7 +1383,7 @@ def api_transform_profile_post():
     :query title: New profile's title (required)
     :query description: New profile's description (required)
     :query encoder_name: New profile's encoder name (required)
-    :query encoder_string: New profile's encoder-specific string (required)
+    :query encoder_string: New profile's encoder-specific string (optional)
     :statuscode 200: OK
     :statuscode 400: Key ``key`` not found. *or* on type or value error
     :statuscode 400: Duplicate transform profile title ``profile``.
@@ -1394,8 +1394,7 @@ def api_transform_profile_post():
     try:
         requires_auth(request=request, allow_any=True)
         data = get_request_json(request)
-        profile = TransformProfile(None, data[u'title'], data[u'description'], data[u'encoder_name'],
-                                   data[u'encoder_string'])
+        profile = TransformProfile(data[u'title'], data[u'description'], data[u'encoder_name'], data[u'encoder_string'])
         orchestra.save_transform_profile(profile)
         return ok_200(profile, True)
     except Exception as e:
