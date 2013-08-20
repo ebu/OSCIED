@@ -28,11 +28,8 @@ import os, shutil, socket, string
 from codecs import open
 from kitchen.text.converters import to_bytes
 from random import choice
-from CharmHooks import DEFAULT_OS_ENV
-from CharmHooks_Storage import CharmHooks_Storage
-from CharmHooks_Website import CharmHooks_Website
-from CharmConfig_Storage import MEDIAS_PATH, UPLOADS_PATH
 from oscied_config import WebuiLocalConfig
+from oscied_hook_base import CharmHooks_Storage, CharmHooks_Website, DEFAULT_OS_ENV, MEDIAS_PATH, UPLOADS_PATH
 from pyutils.py_filesystem import chown, first_that_exist, try_makedirs, try_symlink
 from pyutils.py_subprocess import rsync
 

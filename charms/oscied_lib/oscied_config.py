@@ -27,9 +27,7 @@
 import re
 from os.path import expanduser, join
 from urlparse import urlparse
-from oscied_config_base import CharmLocalConfig, CharmLocalConfig_Subordinate, CharmLocalConfig_Storage
-from CharmConfig_Storage import CharmConfig_Storage, MEDIAS_PATH
-from CharmConfig_Subordinate import CharmConfig_Subordinate
+from oscied_config_base import CharmLocalConfig, CharmLocalConfig_Subordinate, CharmLocalConfig_Storage, MEDIAS_PATH
 
 
 class OrchestraLocalConfig(CharmLocalConfig_Storage):

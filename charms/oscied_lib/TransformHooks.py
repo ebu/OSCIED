@@ -25,10 +25,8 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 import os, multiprocessing, setuptools.archive_util, shutil
-from CharmHooks import DEFAULT_OS_ENV
-from CharmHooks_Storage import CharmHooks_Storage
-from CharmHooks_Subordinate import CharmHooks_Subordinate
 from oscied_config import TransformLocalConfig
+from oscied_hook_base import CharmHooks_Storage, CharmHooks_Subordinate, DEFAULT_OS_ENV
 from pyutils.py_filesystem import first_that_exist
 
 

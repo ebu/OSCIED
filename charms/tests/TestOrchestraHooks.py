@@ -34,8 +34,8 @@ from copy import copy
 from mock import call
 from nose.tools import assert_equal
 from pyutils.py_mock import mock_cmd
-from oscied_lib.CharmHooks import DEFAULT_OS_ENV
 from oscied_lib.oscied_config import OrchestraLocalConfig
+from oscied_lib.oscied_hook_base import DEFAULT_OS_ENV
 from oscied_lib.OrchestraHooks import OrchestraHooks
 
 CONFIG = {

@@ -26,8 +26,8 @@
 
 import os, re, shutil
 from kitchen.text.converters import to_bytes
-from CharmHooks import CharmHooks, DEFAULT_OS_ENV
 from oscied_config import StorageLocalConfig
+from oscied_hook_base import CharmHooks, DEFAULT_OS_ENV
 from pyutils.py_filesystem import first_that_exist
 
 

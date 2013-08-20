@@ -34,8 +34,8 @@ from mock import call, Mock
 from nose.tools import assert_equal, raises
 import pyutils.py_mock as py_mock
 from pyutils.py_mock import mock_cmd, mock_side_effect
-from oscied_lib.CharmHooks import DEFAULT_OS_ENV
 from oscied_lib.oscied_config import StorageLocalConfig
+from oscied_lib.oscied_hook_base import DEFAULT_OS_ENV
 from oscied_lib.StorageHooks import StorageHooks
 
 CONFIG = {u'verbose': False, u'replica_count': 1, u'allowed_ips': u'*', u'bricks_root_path': u'/mnt/somewhere'}
