@@ -610,6 +610,6 @@ if __name__ == u'__main__':
     configure_unicode()
     orchestra = get_test_orchestra(u'../../config/api')
     print(u'They are {0} registered users.'.format(len(orchestra.get_users())))
-    print(u'They are {0} available medias.'.format(len(orchestra.get_medias())))
+    print(u'They are {0} available media assets.'.format(len(orchestra.get_medias())))
     print(u'They are {0} available transformation profiles.'.format(len(orchestra.get_transform_profiles())))
     print(u'They are {0} launched transformation tasks.'.format(len(orchestra.get_transform_tasks())))
