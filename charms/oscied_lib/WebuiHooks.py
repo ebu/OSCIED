@@ -29,7 +29,8 @@ from codecs import open
 from kitchen.text.converters import to_bytes
 from random import choice
 from oscied_config import WebuiLocalConfig
-from oscied_hook_base import CharmHooks_Storage, CharmHooks_Website, DEFAULT_OS_ENV, MEDIAS_PATH, UPLOADS_PATH
+from oscied_config_base import MEDIAS_PATH, UPLOADS_PATH
+from oscied_hook_base import CharmHooks_Storage, CharmHooks_Website, DEFAULT_OS_ENV
 from pyutils.py_filesystem import chown, first_that_exist, try_makedirs, try_symlink
 from pyutils.py_subprocess import rsync
 
