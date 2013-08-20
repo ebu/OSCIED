@@ -1201,6 +1201,23 @@ def api_environment_post():
         map_exceptions(e)
 
 
+@app.route(u'/environment/name/<name>', methods=[u'GET'])
+def api_environment_name_get(name):
+    u"""
+    Return an environment serialized to JSON.
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, role=u'admin_platform')
+        (environments, default) = orchestra.get_environments()
+        return ok_200(environments[default] if name == 'default' else environments[name], False)
+    except Exception as e:
+        map_exceptions(e)
+
+
 @app.route(u'/environment/name/<name>', methods=[u'DELETE'])
 def api_environment_name_delete(name):
     """
