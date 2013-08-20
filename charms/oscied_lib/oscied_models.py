@@ -58,8 +58,8 @@ class OsciedDBModel(JsoneableObject):
 
 class OsciedDBTask(OsciedDBModel):
 
-    def __init__(self, _id=None, statistic={}, status=u'UNKNOWN'):
-        super(OsciedDBTask, self).__init__(_id)
+    def __init__(self, _id=None, statistic={}, status=u'UNKNOWN', **kwargs):
+        super(OsciedDBTask, self).__init__(_id, **kwargs)
         self.statistic = statistic
         self.status = status
 
