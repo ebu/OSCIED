@@ -1160,14 +1160,14 @@ def api_environment_count():
     .. warning:: TODO
     """
     try:
-        requires_auth(request=request, allow_root=True, allow_any=True)
+        requires_auth(request=request, allow_root=True, role=u'admin_platform')
         return ok_200(len(orchestra.get_environments()), False)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route(u'/environment', methods=[u'GET'])
-def api_environment_get():
+@app.route(u'/environment/HEAD', methods=[u'GET'])
+def api_environment_get_head():
     """
     Return an array containing the environments serialized to JSON.
 
@@ -1176,8 +1176,25 @@ def api_environment_get():
     .. warning:: TODO
     """
     try:
-        requires_auth(request=request, allow_root=True, allow_any=True)
+        requires_auth(request=request, allow_root=True, role=u'admin_platform')
         (environments, default) = orchestra.get_environments()
+        return ok_200({u'environments': environments, u'default': default}, False)
+    except Exception as e:
+        map_exceptions(e)
+
+
+@app.route(u'/environment', methods=[u'GET'])
+def api_environment_get():
+    """
+    Return an array containing the environments (with status) serialized to JSON.
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, role=u'admin_platform')
+        (environments, default) = orchestra.get_environments(get_status=True)
         return ok_200({u'environments': environments, u'default': default}, False)
     except Exception as e:
         map_exceptions(e)
@@ -1195,8 +1212,25 @@ def api_environment_post():
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
         data = get_request_json(request)
+        raise NotImplementedError(to_bytes(u'This method is not implemented in current release.'))
         return ok_200(orchestra.add_environment(data[u'name'], data[u'type'], data[u'region'], data[u'access_key'],
                       data[u'secret_key'], data[u'control_bucket']), False)
+    except Exception as e:
+        map_exceptions(e)
+
+
+@app.route(u'/environment/name/<name>/HEAD', methods=[u'GET'])
+def api_environment_name_get_head(name):
+    u"""
+    Return an environment containing his status serialized to JSON.
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, role=u'admin_platform')
+        return ok_200(orchestra.get_environments(name), False)
     except Exception as e:
         map_exceptions(e)
 
@@ -1212,8 +1246,7 @@ def api_environment_name_get(name):
     """
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        (environments, default) = orchestra.get_environments()
-        return ok_200(environments[default] if name == 'default' else environments[name], False)
+        return ok_200(orchestra.get_environment(name, get_status=True), False)
     except Exception as e:
         map_exceptions(e)
 

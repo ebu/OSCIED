@@ -188,13 +188,11 @@ class Orchestra(object):
         """
         return juju.destroy_environment(self.config.juju_config_file, name, remove)
 
-    def get_environments(self):
-        return juju.get_environments(self.config.juju_config_file, get_status=False)
+    def get_environment(self, name, get_status=False):
+        return juju.get_environment(self.config.juju_config_file, name, get_status)
 
-    def get_environment(self, name):
-        (environments, default) = self.get_environments()
-        if name not in environments:
-            raise ValueError(to_bytes(u'No environment with name {0}.'.format(name)))
+    def get_environments(self, get_status=False):
+        return juju.get_environments(self.config.juju_config_file, get_status)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -233,6 +231,8 @@ class Orchestra(object):
 
     def add_or_deploy_transform_units(self, environment, num_units):
         environments, default = self.get_environments()
+        if environment == 'default':
+            environment = default
         same_environment = (environment == default)
         config = juju.load_unit_config(self.config.transform_config)
         config[u'rabbit_queues'] = u'transform_{0}'.format(environment)
@@ -609,7 +609,7 @@ if __name__ == u'__main__':
     from pyutils.py_unicode import configure_unicode
     configure_unicode()
     orchestra = get_test_orchestra(u'../../config/api')
-    print(u'They are {0} registered users.'.format(len(orchestra.get_users())))
-    print(u'They are {0} available media assets.'.format(len(orchestra.get_medias())))
-    print(u'They are {0} available transformation profiles.'.format(len(orchestra.get_transform_profiles())))
-    print(u'They are {0} launched transformation tasks.'.format(len(orchestra.get_transform_tasks())))
+    print(u'There are {0} registered users.'.format(len(orchestra.get_users())))
+    print(u'There are {0} available media assets.'.format(len(orchestra.get_medias())))
+    print(u'There are {0} available transformation profiles.'.format(len(orchestra.get_transform_profiles())))
+    print(u'There are {0} launched transformation tasks.'.format(len(orchestra.get_transform_tasks())))
