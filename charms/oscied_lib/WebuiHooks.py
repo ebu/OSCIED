@@ -32,7 +32,7 @@ from CharmHooks import DEFAULT_OS_ENV
 from CharmHooks_Storage import CharmHooks_Storage
 from CharmHooks_Website import CharmHooks_Website
 from CharmConfig_Storage import MEDIAS_PATH, UPLOADS_PATH
-from WebuiConfig import WebuiConfig
+from oscied_config import WebuiLocalConfig
 from pyutils.py_filesystem import chown, first_that_exist, try_makedirs, try_symlink
 from pyutils.py_subprocess import rsync
 
@@ -47,7 +47,7 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(WebuiHooks, self).__init__(metadata, default_config, default_os_env)
-        self.local_config = WebuiConfig.read(local_config_filename, store_filename=True)
+        self.local_config = WebuiLocalConfig.read(local_config_filename, store_filename=True)
         self.debug(u'My __dict__ is {0}'.format(self.__dict__))
 
     # ------------------------------------------------------------------------------------------------------------------

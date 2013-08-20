@@ -32,7 +32,7 @@ sys.path.append(abspath(join(dirname(dirname(__file__)), u'pyutils')))
 from copy import copy
 from nose.tools import assert_equal
 from oscied_lib.CharmHooks import DEFAULT_OS_ENV
-from oscied_lib.TransformConfig import TransformConfig
+from oscied_lib.oscied_config import TransformLocalConfig
 from oscied_lib.TransformHooks import TransformHooks
 
 CONFIG_DEFAULT = {
@@ -55,7 +55,7 @@ OS_ENV[u'JUJU_UNIT_NAME'] = u'oscied-transform/0'
 class TestTransformHooks(object):
 
     def create_hooks(self, default_config):
-        TransformConfig().write(u'test.pkl')
+        TransformLocalConfig().write(u'test.pkl')
         hooks = TransformHooks(None, default_config, u'test.pkl', OS_ENV)
         hooks.local_config.storage_mount_sleep_delay = 0.01
         hooks.local_config.hosts_file = u'hosts'  # Avoid writing to system hosts file !

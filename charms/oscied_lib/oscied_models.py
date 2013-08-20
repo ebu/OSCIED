@@ -127,7 +127,7 @@ class Media(OsciedDBModel):
         **Example usage**:
 
         >>> import copy
-        >>> from test_models import MEDIA_TEST
+        >>> from oscied_models_test import MEDIA_TEST
         >>> media = copy.copy(MEDIA_TEST)
         >>> assert(not media.is_dash)
         >>> media.filename = u'test.mpd'
@@ -207,7 +207,7 @@ class User(OsciedDBModel):
         **Example usage**:
 
         >>> import copy
-        >>> from test_models import USER_TEST
+        >>> from oscied_models_test import USER_TEST
         >>> user = copy.copy(USER_TEST)
         >>> user.is_secret_hashed
         False
@@ -233,7 +233,7 @@ class User(OsciedDBModel):
         **Example usage**:
 
         >>> import copy
-        >>> from test_models import USER_TEST
+        >>> from oscied_models_test import USER_TEST
         >>> user = copy.copy(USER_TEST)
         >>> user.verify_secret(u'bad_secret')
         False
@@ -263,7 +263,7 @@ class TransformProfile(OsciedDBModel):
     def is_dash(self):
         u"""
         >>> import copy
-        >>> from test_models import TRANSFORM_PROFILE_TEST
+        >>> from oscied_models_test import TRANSFORM_PROFILE_TEST
         >>> profile = copy.copy(TRANSFORM_PROFILE_TEST)
         >>> assert(not profile.is_dash)
         >>> profile.encoder_name = u'dashcast'

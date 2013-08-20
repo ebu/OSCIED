@@ -24,44 +24,6 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import requests
-from urlparse import urlparse, ParseResult
-from pyutils.py_serialization import JsoneableObject
-
-
-class Callback(JsoneableObject):
-    def __init__(self, url=None, username=None, password=None):
-        self.url = url
-        self.username = username
-        self.password = password
-
-    def is_valid(self, raise_exception):
-        # FIXME check fields
-        return True
-
-    def replace_netloc(self, netloc):
-        u"""
-        Replace network location of the media URI.
-
-        **Example usage**:
-
-        >>> import copy
-        >>> callback = copy.copy(CALLBACK_TEST)
-        >>> callback.is_valid(True)
-        True
-        >>> print(callback.url)
-        http://127.0.0.1:5000/media
-        >>> callback.replace_netloc(u'129.194.185.47:5003')
-        >>> print(callback.url)
-        http://129.194.185.47:5003/media
-        """
-        url = urlparse(self.url)
-        url = ParseResult(url.scheme, netloc, url.path, url.params, url.query, url.fragment)
-        self.url = url.geturl()
-
-    def post(self, data_json):
-#       return requests.post(self.url, data_json, auth=(self.username, self.password))
-        headers = {u'Content-type': u'application/json', u'Accept': u'text/plain'}
-        return requests.post(self.url, headers=headers, data=data_json, auth=(self.username, self.password))
+from oscied_util import Callback
 
 CALLBACK_TEST = Callback(u'http://127.0.0.1:5000/media', u'toto', u'1234')

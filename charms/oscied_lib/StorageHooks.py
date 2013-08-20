@@ -27,7 +27,7 @@
 import os, re, shutil
 from kitchen.text.converters import to_bytes
 from CharmHooks import CharmHooks, DEFAULT_OS_ENV
-from StorageConfig import StorageConfig
+from oscied_config import StorageLocalConfig
 from pyutils.py_filesystem import first_that_exist
 
 
@@ -35,7 +35,7 @@ class StorageHooks(CharmHooks):
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(StorageHooks, self).__init__(metadata, default_config, default_os_env)
-        self.local_config = StorageConfig.read(local_config_filename, store_filename=True)
+        self.local_config = StorageLocalConfig.read(local_config_filename, store_filename=True)
         self.debug(u'My __dict__ is {0}'.format(self.__dict__))
 
     # ------------------------------------------------------------------------------------------------------------------

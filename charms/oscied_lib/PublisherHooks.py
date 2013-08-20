@@ -30,7 +30,7 @@ from CharmHooks import DEFAULT_OS_ENV
 from CharmHooks_Storage import CharmHooks_Storage
 from CharmHooks_Subordinate import CharmHooks_Subordinate
 from CharmHooks_Website import CharmHooks_Website
-from PublisherConfig import PublisherConfig
+from oscied_config import PublisherLocalConfig
 from pyutils.py_filesystem import first_that_exist
 
 
@@ -42,7 +42,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(PublisherHooks, self).__init__(metadata, default_config, default_os_env)
-        self.local_config = PublisherConfig.read(local_config_filename, store_filename=True)
+        self.local_config = PublisherLocalConfig.read(local_config_filename, store_filename=True)
         self.local_config.update_publish_uri(self.public_address)
         self.debug(u'My __dict__ is {0}'.format(self.__dict__))
 

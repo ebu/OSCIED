@@ -28,7 +28,7 @@ import os, multiprocessing, setuptools.archive_util, shutil
 from CharmHooks import DEFAULT_OS_ENV
 from CharmHooks_Storage import CharmHooks_Storage
 from CharmHooks_Subordinate import CharmHooks_Subordinate
-from TransformConfig import TransformConfig
+from oscied_config import TransformLocalConfig
 from pyutils.py_filesystem import first_that_exist
 
 
@@ -40,7 +40,7 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(TransformHooks, self).__init__(metadata, default_config, default_os_env)
-        self.local_config = TransformConfig.read(local_config_filename, store_filename=True)
+        self.local_config = TransformLocalConfig.read(local_config_filename, store_filename=True)
         self.debug(u'My __dict__ is {0}'.format(self.__dict__))
 
     # ------------------------------------------------------------------------------------------------------------------

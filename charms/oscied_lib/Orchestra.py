@@ -33,9 +33,8 @@ from celery.task.control import revoke
 from kitchen.text.converters import to_bytes
 from random import randint
 import PublisherWorker, TransformWorker
-from Callback import Callback
-from models import Media, User, TransformProfile, PublishTask, TransformTask, ENCODERS_NAMES
-from Storage import Storage
+from oscied_models import Media, User, TransformProfile, PublishTask, TransformTask, ENCODERS_NAMES
+from oscied_util import Callback, Storage
 import pyutils.py_juju as juju
 from pyutils.pyutils import UUID_ZERO
 from pyutils.py_datetime import datetime_now
@@ -567,7 +566,7 @@ class Orchestra(object):
 
 
 def get_test_orchestra(api_init_csv_directory):
-    from OrchestraConfig import ORCHESTRA_CONFIG_TEST
+    from oscied_config_test import ORCHESTRA_CONFIG_TEST
     orchestra = Orchestra(ORCHESTRA_CONFIG_TEST)
     reader = csv_reader(os.path.join(api_init_csv_directory, u'users.csv'))
     for first_name, last_name, email, secret, admin_platform in reader:

@@ -35,7 +35,7 @@ from nose.tools import assert_equal, raises
 import pyutils.py_mock as py_mock
 from pyutils.py_mock import mock_cmd, mock_side_effect
 from oscied_lib.CharmHooks import DEFAULT_OS_ENV
-from oscied_lib.StorageConfig import StorageConfig
+from oscied_lib.oscied_config import StorageLocalConfig
 from oscied_lib.StorageHooks import StorageHooks
 
 CONFIG = {u'verbose': False, u'replica_count': 1, u'allowed_ips': u'*', u'bricks_root_path': u'/mnt/somewhere'}
@@ -47,7 +47,7 @@ class TestStorageHooks(object):
     #return {'stdout': INFOS_STDOUT, 'stderr': None, 'returncode': 0}
 
     def setUp(self):
-        StorageConfig().write(u'test.pkl')
+        StorageLocalConfig().write(u'test.pkl')
         self.hooks = StorageHooks(None, CONFIG, u'test.pkl', OS_ENV)
 
     def tearDown(self):

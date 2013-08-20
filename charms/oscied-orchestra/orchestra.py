@@ -35,11 +35,9 @@ from werkzeug.exceptions import HTTPException
 from pyutils.py_logging import setup_logging
 from pyutils.py_serialization import object2json
 from pyutils.py_validation import valid_uuid
-from oscied_lib.Media import Media
 from oscied_lib.Orchestra import Orchestra
-from oscied_lib.OrchestraConfig import OrchestraConfig
-from oscied_lib.TransformProfile import TransformProfile
-from oscied_lib.User import User
+from oscied_lib.oscied_config import OrchestraLocalConfig
+from oscied_lib.oscied_models import Media, User, TransformProfile
 
 
 # Global variables -----------------------------------------------------------------------------------------------------
@@ -2728,7 +2726,7 @@ if __name__ == u'__main__':
     configure_unicode()
 
     try:
-        config = OrchestraConfig.read(u'local_config.pkl')
+        config = OrchestraLocalConfig.read(u'local_config.pkl')
         setup_logging(filename=u'orchestra.log', console=True, level=config.log_level)
         logging.info(u'OSCIED Orchestra by David Fischer 2013')
         logging.info(u'Configuration : {0}'.format(unicode(object2json(config, True))))

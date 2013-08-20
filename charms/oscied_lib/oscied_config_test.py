@@ -24,39 +24,24 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import logging
-from pyutils.py_serialization import PickleableObject
+from oscied_config import (
+    OrchestraLocalConfig, PublisherLocalConfig, StorageLocalConfig, TransformLocalConfig, WebuiLocalConfig)
 
+ORCHESTRA_CONFIG_TEST = OrchestraLocalConfig(
+    storage_address=u'127.0.0.1', storage_fstype=u'glusterfs', storage_mountpoint=u'medias_volume_0',
+    api_url=u'http://127.0.0.1:5000', root_secret=u'toto', nodes_secret=u'abcd', mongo_admin_connection=u'',
+    mongo_nodes_connection=u'...', rabbit_connection=u'...')
 
-class CharmConfig(PickleableObject):
+PUBLISHER_CONFIG_TEST = PublisherLocalConfig(
+    api_nat_socket=u'129.194.185.47:5000', storage_address=u'10.1.1.2', storage_fstype=u'glusterfs',
+    storage_mountpoint=u'medias_volume')
 
-    def __init__(self, verbose=True):
-        self.verbose = verbose
+STORAGE_CONFIG_TEST = StorageLocalConfig(u'*', False)
 
-    def __repr__(self):
-        return unicode(self.__dict__)
+TRANSFORM_CONFIG_TEST = TransformLocalConfig(
+    api_nat_socket=u'129.194.185.47:5000', storage_address=u'10.1.1.2', storage_fstype=u'glusterfs',
+    storage_mountpoint=u'medias_volume')
 
-    @property
-    def log_level(self):
-        return logging.DEBUG if self.verbose else logging.INFO
-
-    def reset(self):
-        u"""
-        Reset attributes to theirs default values.
-
-        **Example usage**:
-
-        >>> config = CharmConfig(verbose=True)
-        >>> config._pickle_filename = u'my_file.pkl'
-        >>> print(config.verbose)
-        True
-        >>> config.verbose = False
-        >>> print(config.verbose)
-        False
-        >>> config.reset()
-        >>> print(config.verbose)
-        True
-        >>> print(config._pickle_filename)
-        my_file.pkl
-        """
-        self.__init__()
+WEBUI_CONFIG_TEST = WebuiLocalConfig(
+    api_url=u'10.10.4.3:5000', storage_address=u'10.1.1.2', storage_fstype=u'glusterfs',
+    storage_mountpoint=u'medias_volume')

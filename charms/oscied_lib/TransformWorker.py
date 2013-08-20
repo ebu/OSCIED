@@ -30,9 +30,9 @@ from celery.decorators import task
 #from celery.signals import celeryd_after_setup, worker_shutdown
 from kitchen.text.converters import to_bytes
 from subprocess import Popen, PIPE
-from Callback import Callback
-from models import Media, TransformProfile
-from TransformConfig import TransformConfig
+from oscied_config import TransformLocalConfig
+from oscied_models import Media, TransformProfile
+from oscied_util import Callback
 from pyutils.py_datetime import datetime_now, duration2secs
 from pyutils.py_ffmpeg import get_media_duration, get_media_tracks
 from pyutils.py_filesystem import get_size, recursive_copy, try_makedirs
@@ -90,7 +90,7 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
         print(u'{0} Transformation task started'.format(request.id))
 
         # Read current configuration to translate files uri to local paths
-        config = TransformConfig.read(u'local_config.pkl')
+        config = TransformLocalConfig.read(u'local_config.pkl')
         print(object2json(config, True))
 
         # Load and check task parameters

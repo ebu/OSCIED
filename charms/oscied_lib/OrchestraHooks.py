@@ -30,7 +30,7 @@ from kitchen.text.converters import to_bytes
 from configobj import ConfigObj
 from CharmHooks import DEFAULT_OS_ENV
 from CharmHooks_Storage import CharmHooks_Storage
-from OrchestraConfig import OrchestraConfig
+from oscied_config import OrchestraLocalConfig
 from pyutils.py_filesystem import first_that_exist, try_makedirs
 from pyutils.py_subprocess import rsync, screen_launch, screen_list, screen_kill
 
@@ -43,7 +43,7 @@ class OrchestraHooks(CharmHooks_Storage):
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(OrchestraHooks, self).__init__(metadata, default_config, default_os_env)
-        self.local_config = OrchestraConfig.read(local_config_filename, store_filename=True)
+        self.local_config = OrchestraLocalConfig.read(local_config_filename, store_filename=True)
         self.debug(u'My __dict__ is {0}'.format(self.__dict__))
 
     # ------------------------------------------------------------------------------------------------------------------

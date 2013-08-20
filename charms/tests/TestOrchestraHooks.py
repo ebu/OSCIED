@@ -35,7 +35,7 @@ from mock import call
 from nose.tools import assert_equal
 from pyutils.py_mock import mock_cmd
 from oscied_lib.CharmHooks import DEFAULT_OS_ENV
-from oscied_lib.OrchestraConfig import OrchestraConfig
+from oscied_lib.oscied_config import OrchestraLocalConfig
 from oscied_lib.OrchestraHooks import OrchestraHooks
 
 CONFIG = {
@@ -63,10 +63,13 @@ class OrchestraHooks_tmp(OrchestraHooks):
         return [u'celery']
 
 
+import pyutils.py_subprocess
+pyutils.py_subprocess.rsync = mock_cmd()
+
 class TestOrchestraHooks(object):
 
     def setUp(self):
-        OrchestraConfig().write(u'test.pkl')
+        OrchestraLocalConfig().write(u'test.pkl')
         self.hooks = OrchestraHooks_tmp(None, CONFIG, u'test.pkl', OS_ENV)
         shutil.copy(self.hooks.local_config.hosts_file, 'hosts')
         shutil.copy(u'mongodb.conf', u'mongodb_test.conf')

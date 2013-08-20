@@ -24,18 +24,53 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+import logging
 from os.path import join, sep
-from CharmConfig import CharmConfig
+from pyutils.py_serialization import PickleableObject
 
 MEDIAS_PATH, UPLOADS_PATH = u'medias', u'uploads'
 
 
-class CharmConfig_Storage(CharmConfig):
+class CharmLocalConfig(PickleableObject):
+
+    def __init__(self, verbose=True):
+        self.verbose = verbose
+
+    def __repr__(self):
+        return unicode(self.__dict__)
+
+    @property
+    def log_level(self):
+        return logging.DEBUG if self.verbose else logging.INFO
+
+    def reset(self):
+        u"""
+        Reset attributes to theirs default values.
+
+        **Example usage**:
+
+        >>> config = CharmLocalConfig(verbose=True)
+        >>> config._pickle_filename = u'my_file.pkl'
+        >>> print(config.verbose)
+        True
+        >>> config.verbose = False
+        >>> print(config.verbose)
+        False
+        >>> config.reset()
+        >>> print(config.verbose)
+        True
+        >>> print(config._pickle_filename)
+        my_file.pkl
+        """
+        self.__init__()
+
+
+class CharmLocalConfig_Storage(CharmLocalConfig):
 
     def __init__(self, verbose=None, storage_address=u'', storage_fstype=u'', storage_mountpoint=u'',
                  storage_options=u'', storage_path=u'/mnt/storage', storage_mount_max_retry=5,
                  storage_mount_sleep_delay=5, hosts_file=u'/etc/hosts', **kwargs):
-        super(CharmConfig_Storage, self).__init__(verbose=verbose)
+        super(CharmLocalConfig_Storage, self).__init__(verbose=verbose)
         self.storage_address = storage_address
         self.storage_fstype = storage_fstype
         self.storage_mountpoint = storage_mountpoint
@@ -59,9 +94,9 @@ class CharmConfig_Storage(CharmConfig):
         **Example usage**:
 
         >>> import copy
-        >>> from test_models import MEDIA_TEST
+        >>> from oscied_models_test import MEDIA_TEST
         >>> media = copy.copy(MEDIA_TEST)
-        >>> config = CharmConfig_Storage()
+        >>> config = CharmLocalConfig_Storage()
         >>> config.storage_address = u'10.1.1.2'
         >>> config.storage_fstype = u'glusterfs'
         >>> config.storage_mountpoint='medias_volume'
@@ -91,7 +126,7 @@ class CharmConfig_Storage(CharmConfig):
 
         **Example usage**:
 
-        >>> config = CharmConfig_Storage()
+        >>> config = CharmLocalConfig_Storage()
         >>> config.storage_address = u'10.1.1.2'
         >>> config.storage_fstype = u'glusterfs'
         >>> config.storage_mountpoint='medias_volume'
@@ -121,8 +156,8 @@ class CharmConfig_Storage(CharmConfig):
 
         **Example usage**:
 
-        >>> from test_models import MEDIA_TEST
-        >>> config = CharmConfig_Storage()
+        >>> from oscied_models_test import MEDIA_TEST
+        >>> config = CharmLocalConfig_Storage()
         >>> config.storage_address = u'10.1.1.2'
         >>> config.storage_fstype = u'glusterfs'
         >>> config.storage_mountpoint = u'medias_volume'
@@ -134,3 +169,13 @@ class CharmConfig_Storage(CharmConfig):
         if media:
             return self.storage_uri(path=join(MEDIAS_PATH, media.user_id, media._id, media.filename))
         return self.storage_uri(path=MEDIAS_PATH)
+
+
+class CharmLocalConfig_Subordinate(CharmLocalConfig):
+
+    def __init__(self, verbose=None, api_nat_socket=u'', celery_config_file=u'celeryconfig.py',
+                 celery_template_file=u'templates/celeryconfig.py.template', **kwargs):
+        super(CharmLocalConfig_Subordinate, self).__init__(verbose=verbose)
+        self.api_nat_socket = api_nat_socket
+        self.celery_config_file = celery_config_file
+        self.celery_template_file = celery_template_file

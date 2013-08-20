@@ -28,9 +28,9 @@ import os, shutil, time
 from celery import current_task, states
 from celery.decorators import task
 from kitchen.text.converters import to_bytes
-from Callback import Callback
-from models import Media
-from PublisherConfig import PublisherConfig
+from oscied_config import PublisherLocalConfig
+from oscied_models import Media
+from oscied_util import Callback
 from pyutils.py_datetime import datetime_now
 from pyutils.py_filesystem import recursive_copy
 from pyutils.py_serialization import object2json
@@ -72,7 +72,7 @@ def publish_task(media_json, callback_json):
         print(u'{0} Publication task started'.format(request.id))
 
         # Read current configuration to translate files uri to local paths
-        config = PublisherConfig.read(u'local_config.pkl')
+        config = PublisherLocalConfig.read(u'local_config.pkl')
         print(object2json(config, True))
 
         # Load and check task parameters
@@ -138,7 +138,7 @@ def revoke_publish_task(publish_uri, callback_json):
         print(u'{0} Revoke publication task started'.format(request.id))
 
         # Read current configuration to translate files uri to local paths
-        config = PublisherConfig.read(u'local_config.pkl')
+        config = PublisherLocalConfig.read(u'local_config.pkl')
         print(object2json(config, True))
 
         # Load and check task parameters
