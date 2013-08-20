@@ -64,7 +64,7 @@ class OrchestraHooks_tmp(OrchestraHooks):
 
 
 import pyutils.py_subprocess
-pyutils.py_subprocess.rsync = mock_cmd()
+pyutils.py_subprocess.cmd = mock_cmd()
 
 class TestOrchestraHooks(object):
 
@@ -91,6 +91,15 @@ class TestOrchestraHooks(object):
     def test_config_changed(self):
         self.hooks.cmd = mock_cmd()
         self.hooks.hook_config_changed()
+        # Check calls of cmd done by rsync
+        assert_equal(len(pyutils.py_subprocess.cmd.call_args_list), 2)
+        assert_equal(pyutils.py_subprocess.cmd.call_args_list[0][0],
+                     ([u'rsync', u'-a', u'-r', u'../oscied-orchestra/ssh/', u'/home/david/.ssh/'],))
+        assert_equal(pyutils.py_subprocess.cmd.call_args_list[0][1]['fail'], True)
+        assert_equal(pyutils.py_subprocess.cmd.call_args_list[1][0],
+                     ([u'rsync', u'-a', u'-r', u'juju', u'/home/david/.juju/'],))
+        assert_equal(pyutils.py_subprocess.cmd.call_args_list[1][1]['fail'], True)
+        # Check calls of cmd done by OrchestraHooks
         assert_equal(self.hooks.cmd.call_args_list, [
             call(u'service mongodb start',         fail=False),
             call(u'service rabbitmq-server start', fail=False),
