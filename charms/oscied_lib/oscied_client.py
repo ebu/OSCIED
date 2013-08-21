@@ -26,6 +26,7 @@
 
 from requests import get, patch, post, delete
 from oscied_models import Media, User, TransformProfile, TransformTask
+from pyutils.py_flask import map_exceptions
 from pyutils.py_serialization import object2json
 
 
@@ -102,11 +103,7 @@ class OrchestraAPIClient(object):
         auth = auth or self.auth
         auth = (auth.mail, auth.secret) if isinstance(auth, User) else auth
         url = u'http://{0}'.format(resource)
-        json_dict = verb(url, auth=auth, data=data, headers=headers, timeout=self.timeout).json()
-        if json_dict[u'status'] == 200:
-            return json_dict[u'value']
-        else:
-            raise IOError(json_dict)
+        return map_exceptions(verb(url, auth=auth, data=data, headers=headers, timeout=self.timeout).json())
 
     # Mapping of the API methods ---------------------------------------------------------------------------------------
 
