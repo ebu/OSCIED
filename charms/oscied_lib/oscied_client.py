@@ -129,6 +129,14 @@ class OrchestraAPIClient(object):
             self.auth = user
         return user
 
+    def login_or_add(self, user, add_auth):
+        try:
+            return self.login(user.mail, user.secret)
+        except:
+            self.auth = add_auth
+            self.auth = self.users.add(user)
+            return self.auth
+
     @property
     def encoders(self):
         return self.do_request(get, u'{0}/transform/profile/encoder'.format(self.api_url))

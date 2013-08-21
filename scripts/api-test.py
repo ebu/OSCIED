@@ -53,14 +53,8 @@ if __name__ == '__main__':
     client.auth = root
     admin = User(first_name=u'Admin', last_name=u'Test', mail=u'a@u.test', secret=u'AdminS3cret', admin_platform=True)
     user = User(first_name=u'User', last_name=u'Test', mail=u'u@u.test', secret=u'SimpleS3cret')
-    try:
-        admin = client.login(admin.mail, admin.secret)
-    except:
-        admin = client.users.add(admin)
-    try:
-        user = client.login(user.mail, user.secret)
-    except:
-        user = client.users.add(user)
+    admin = client.login_or_create(admin)
+    user = client.login_or_create(user)
 
     print(u'Test user API')
 
