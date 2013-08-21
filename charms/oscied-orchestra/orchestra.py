@@ -28,13 +28,11 @@
 
 import logging
 import sys
-from bson.objectid import ObjectId
-from flask import Flask, abort, request, Response
+from flask import Flask, abort, request
 from kitchen.text.converters import to_bytes
-from werkzeug.exceptions import HTTPException
+from pyutils.py_flask import check_id, get_request_json, json_response, map_exceptions
 from pyutils.py_logging import setup_logging
 from pyutils.py_serialization import object2json
-from pyutils.py_validation import valid_uuid
 from oscied_lib.Orchestra import Orchestra
 from oscied_lib.oscied_config import OrchestraLocalConfig
 from oscied_lib.oscied_models import Media, User, TransformProfile
@@ -126,105 +124,43 @@ def requires_auth(request, allow_root=False, allow_node=False, allow_any=False, 
 
 # Utilities ------------------------------------------------------------------------------------------------------------
 
-
-def check_id(id):
-    if valid_uuid(id, objectid_allowed=False, none_allowed=False):
-        return id
-    elif valid_uuid(id, objectid_allowed=True, none_allowed=False):
-        return ObjectId(id)
-    raise ValueError(to_bytes(u'Wrong id format {0}'.format(id)))
-
-
-def get_request_json(request, required_keys=[]):
-    try:
-        data = request.json
-    except:
-        raise ValueError(to_bytes(u'Requires valid JSON content-type.'))
-    for key in required_keys:
-        if not key in data:
-            raise ValueError(to_bytes(u'Missing key "{0}" from JSON content.'.format(key)))
-    if not data:
-        raise ValueError(to_bytes(u'Requires JSON content-type.'))
-    return data
-
-
 @app.errorhandler(400)
 def error_400(value=None):
-    response = Response(response=object2json({u'status': 400, u'value': value}, False), status=400,
-                        mimetype=u'application/json')
-    response.status_code = 400
-    return response
+    return json_response(400, value=value, include_properties=False)
 
 
 @app.errorhandler(401)
 def error_401(value=None):
-    response = Response(response=object2json({u'status': 401, u'value': value}, False), status=401,
-                        mimetype=u'application/json')
-    response.status_code = 401
-    return response
+    return json_response(401, value=value, include_properties=False)
 
 
 @app.errorhandler(403)
 def error_403(value=None):
-    response = Response(response=object2json({u'status': 403, u'value': value}, False), status=403,
-                        mimetype=u'application/json')
-    response.status_code = 403
-    return response
+    return json_response(403, value=value, include_properties=False)
 
 
 @app.errorhandler(404)
 def error_404(value=None):
-    response = Response(response=object2json({u'status': 404, u'value': value}, False), status=404,
-                        mimetype=u'application/json')
-    response.status_code = 404
-    return response
+    return json_response(404, value=value, include_properties=False)
 
 
 @app.errorhandler(415)
 def error_415(value=None):
-    response = Response(response=object2json({u'status': 415, u'value': value}, False), status=415,
-                        mimetype=u'application/json')
-    response.status_code = 415
-    return response
+    return json_response(415, value=value, include_properties=False)
 
 
 @app.errorhandler(500)
 def error_500(value=None):
-    response = Response(response=object2json({u'status': 500, u'value': value}, False), status=500,
-                        mimetype=u'application/json')
-    response.status_code = 500
-    return response
+    return json_response(500, value=value, include_properties=False)
 
 
 @app.errorhandler(501)
 def error_501(value=None):
-    response = Response(response=object2json({u'status': 501, u'value': value}, False), status=501,
-                        mimetype=u'application/json')
-    response.status_code = 501
-    return response
+    return json_response(501, value=value, include_properties=False)
 
 
 def ok_200(value, include_properties):
-    response = Response(response=object2json({u'status': 200, u'value': value}, include_properties), status=200,
-                        mimetype=u'application/json')
-    response.status_code = 200
-    return response
-
-
-def map_exceptions(e):
-    if isinstance(e, HTTPException):
-        raise
-    if isinstance(e, TypeError):
-        abort(400, unicode(e))
-    elif isinstance(e, KeyError):
-        abort(400, u'Key {0} not found.'.format(e))
-    elif isinstance(e, IndexError):
-        abort(404, unicode(e))
-    elif isinstance(e, ValueError):
-        abort(415, unicode(e))
-    elif isinstance(e, NotImplementedError):
-        abort(501, unicode(e))
-    abort(500, '{0} {1} {2}'.format(e.__class__.__name__, repr(e), unicode(e)))
+    return json_response(200, value=value, include_properties=include_properties)
 
 
 # Index ----------------------------------------------------------------------------------------------------------------
