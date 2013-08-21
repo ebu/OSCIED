@@ -29,6 +29,7 @@ osciedIBC2013Scenario()
   cd "$CHARMS_DEPLOY_PATH/.." || xecho "Unable to find path $CHARMS_DEPLOY_PATH/.."
   cfg_amazon="$CONFIG_JUJU_PATH/osciedIBC2013_amazon.yaml"
   cfg_maas="$CONFIG_JUJU_PATH/osciedIBC2013_maas.yaml"
+  mecho "Using user define Publisher configuration : $cfg_maas"
 
   cp -f "$cfg_amazon" "$CONFIG_GEN_CONFIG_FILE"
   cp -f "$cfg_maas"   "$CONFIG_GEN_CONFIG_FILE"
@@ -56,7 +57,6 @@ osciedIBC2013Scenario_maas()
   fi
 
   pecho 'Deploy Storage (2 instance without replication)'
-  mecho "Using user define Storage configuration : $cfg_maas"
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
     juju deploy -n 2 -e 'maas' --config "$cfg_maas" --repository=. local:$RELEASE/oscied-storage || xecho '1'
@@ -66,7 +66,6 @@ osciedIBC2013Scenario_maas()
   # FIXME periodic check of juju status to wait until the storage service to be up and ready
 
   pecho 'Deploy Orchestra (1 instance)'
-  mecho "Using user define Orchestra configuration : $cfg_maas"
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
     juju deploy --to 0 -e 'maas' --config "$cfg_maas" --repository=. local:$RELEASE/oscied-orchestra || \
@@ -77,7 +76,6 @@ osciedIBC2013Scenario_maas()
   # FIXME periodic check of juju status to wait until the orchestra service to be up and ready
 
   pecho 'Deploy Web UI (1 instance)'
-  mecho "Using user define Web UI configuration : $cfg_maas"
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
     juju deploy --to 0 -e 'maas' --config "$cfg_maas" --repository=. local:$RELEASE/oscied-webui || xecho '1'
@@ -85,7 +83,6 @@ osciedIBC2013Scenario_maas()
   fi
 
   pecho 'Deploy Transform (2 instances)'
-  mecho "Using user define Transform configuration : $cfg_maas"
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
     juju deploy --to 1 -e 'maas' --config "$cfg_maas" --repository=. \
@@ -97,7 +94,6 @@ osciedIBC2013Scenario_maas()
   # FIXME periodic check of juju status to wait until the publication service to be up and ready
 
   pecho 'Deploy Publisher (2 instances)'
-  mecho "Using user define Publisher configuration : $cfg_maas"
   yesOrNo $false 'do it now'
   if [ $REPLY -eq $true ]; then
     juju deploy --to 1 -e 'maas' --config "$cfg_maas" --repository=. local:$RELEASE/oscied-publisher oscied-publisher1 \

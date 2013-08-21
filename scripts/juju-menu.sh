@@ -149,13 +149,14 @@ deploy()
   cp -f "$JUJU_ENVS_FILE" "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/"
   find "$JUJU_PATH" -type f -name '*.pem' -exec cp -f {} "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/" \;
 
-  cd "$CONFIG_SCENARIOS_PATH" || xecho "Unable to find path $CONFIG_SCENARIOS_PATH"
+  cd "$CONFIG_PATH" || xecho "Unable to find path $CONFIG_PATH"
 
   pecho 'Initialize scenarios menu'
-  find . -type f -name '*.sh' | sort > $listing
+  find . -type f -name 'scenario.sh' | sort > $listing
   scenariosList=''
   while read scenario
   do
+    
     . "$scenario" # Include scenario source
     name=$(basename "$scenario" .sh)
     description=$(eval "echo \${${name}Description} | sed 's: :_:g'")

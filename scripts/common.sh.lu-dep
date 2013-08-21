@@ -58,29 +58,28 @@ DAVID_REPORT_UML_PATH="$DAVID_REPORT_PATH/uml"
 WIKI_BUILD_PATH="$DOCS_PATH/wiki/build"
 WIKI_SOURCE_PATH="$DOCS_PATH/wiki/source"
 
-# # Generated configuration
-CONFIG_GEN_PATH="$CONFIG_PATH/generated"
-CONFIG_GEN_AUTHS_FILE="$CONFIG_GEN_PATH/auths.list"
-CONFIG_GEN_IDS_FILE="$CONFIG_GEN_PATH/ids.list"
-CONFIG_GEN_JSON_FILE="$CONFIG_GEN_PATH/json.list"
-CONFIG_GEN_UNITS_FILE="$CONFIG_GEN_PATH/units.list"
-CONFIG_GEN_CONFIG_FILE="$CONFIG_GEN_PATH/config.yaml"
+# Symbolic link to current configuration's path
+CONFIG_CURRENT_PATH="$CONFIG_PATH/current"
 
-# # Orchestra related configuration (e.g. initial setup)
-CONFIG_API_PATH="$CONFIG_PATH/api"
-CONFIG_API_USERS_FILE="$CONFIG_API_PATH/users.csv"
-CONFIG_API_MEDIAS_FILE="$CONFIG_API_PATH/medias.csv"
-CONFIG_API_TPROFILES_FILE="$CONFIG_API_PATH/tprofiles.csv"
+# Generated configuration
+CONFIG_GEN_PATH="$CONFIG_CURRENT_PATH/generated"
+CONFIG_GEN_AUTHS_FILE="$CONFIG_CURRENT_PATH/auths.list"
+CONFIG_GEN_IDS_FILE="$CONFIG_CURRENT_PATH/ids.list"
+CONFIG_GEN_JSON_FILE="$CONFIG_CURRENT_PATH/json.list"
+CONFIG_GEN_UNITS_FILE="$CONFIG_CURRENT_PATH/units.list"
+CONFIG_GEN_CONFIG_FILE="$CONFIG_CURRENT_PATH/config.yaml"
 
-# # JuJu related configuration (e.g. environments)
-CONFIG_JUJU_PATH="$CONFIG_PATH/juju"
-CONFIG_JUJU_ID_RSA="$CONFIG_JUJU_PATH/id_rsa"
-CONFIG_JUJU_ID_RSA_PUB="$CONFIG_JUJU_PATH/id_rsa.pub"
-CONFIG_JUJU_ENVS_FILE="$CONFIG_JUJU_PATH/environments.yaml"
+# Orchestra related configuration (e.g. initial setup)
+CONFIG_API_USERS_FILE="$CONFIG_CURRENT_PATH/users.csv"
+CONFIG_API_MEDIAS_FILE="$CONFIG_CURRENT_PATH/medias.csv"
+CONFIG_API_TPROFILES_FILE="$CONFIG_CURRENT_PATH/tprofiles.csv"
+
+# JuJu related configuration (e.g. environments)
+CONFIG_JUJU_ID_RSA="$CONFIG_CURRENT_PATH/id_rsa"
+CONFIG_JUJU_ID_RSA_PUB="$CONFIG_CURRENT_PATH/id_rsa.pub"
+CONFIG_JUJU_ENVS_FILE="$CONFIG_CURRENT_PATH/environments.yaml"
 CONFIG_JUJU_FILES_PATH="$CONFIG_PATH/juju_files"
 CONFIG_JUJU_TEMPL_FILE="$CONFIG_JUJU_FILES_PATH/environments.yaml.template"
-
-CONFIG_SCENARIOS_PATH="$CONFIG_PATH/scenarios"
 
 ID_RSA="$HOME/.ssh/id_rsa"
 ID_RSA_PUB="$HOME/.ssh/id_rsa.pub"
