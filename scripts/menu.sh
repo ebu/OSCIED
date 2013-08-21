@@ -69,11 +69,6 @@ main()
               cleanup              'Cleanup configuration of charms (deploy path)'       \
               revup                "Increment all charm's revision (+1)"                 \
               api_init_setup       "${a}Initialize demo setup with Orchestra API"        \
-              api_launch_transform "${a}Launch a transformation task with Orchestra API" \
-              api_revoke_transform "${a}Revoke a transformation task with Orchestra API" \
-              api_launch_publish   "${a}Launch a publication task with Orchestra API"    \
-              api_revoke_publish   "${a}Revoke a publication task with Orchestra API"    \
-              api_get_all          "${a}Get listings of all things with Orchestra API"   \
               webui_test_common    'Test some functions of Web UI hooks'                 \
               rsync_orchestra      'Rsync local code to running Orchestra instance'      \
               rsync_publisher      'Rsync local code to running Publisher instance'      \
@@ -300,114 +295,6 @@ api_init_setup()
   #$udo cp "$SCRIPTS_PATH/common.sh" /mnt/storage/uploads/tabby.mpg
   #test_api 200 POST $ORCHESTRA_URL/media "$admin_auth" "$media1_json"; save_id 'media1' "$ID"
 
-}
-
-api_launch_transform()
-{
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) api_launch_transform"
-  fi
-  ok=$true
-
-  [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
-
-  pecho 'Gather required authorizations and IDs'
-  get_auth 'user1';     user1_auth=$REPLY
-  get_id   'media1';    media1_id=$REPLY
-  get_id   'tprofile2'; tprofile1_id=$REPLY
-
-  pecho 'Launch a transformation task'
-  json_ttask "$media1_id" "$tprofile1_id" "tabby2.mpg" 'transcoded media1' 'transform_private' 'high'
-  echo "$JSON"
-  test_api 200 POST $ORCHESTRA_URL/transform/task "$user1_auth" "$JSON"
-  save_id 'ttask1' "$ID"
-  get_id  'ttask1'
-  echo $REPLY
-}
-
-api_revoke_transform()
-{
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) api_revoke_transform"
-  fi
-  ok=$true
-
-  [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
-
-  pecho 'Gather required authorizations and IDs'
-  get_auth 'user1';  user1_auth=$REPLY
-  get_id   'ttask1'; ttask1_id=$REPLY
-
-  pecho 'Revoke a transform task'
-  test_api 200 DELETE $ORCHESTRA_URL/transform/task/id/$ttask1_id "$user1_auth" ''
-}
-
-api_launch_publish()
-{
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) api_launch_publish"
-  fi
-  ok=$true
-
-  [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
-
-  pecho 'Gather required authorizations and IDs'
-  get_auth 'user1';  user1_auth=$REPLY
-  get_id   'media1'; media1_id=$REPLY
-
-  pecho 'Launch a publication task'
-  json_ptask "$media1_id" 'publisher_private' 'high'
-  echo "$JSON"
-  test_api 200 POST $ORCHESTRA_URL/publish/task "$user1_auth" "$JSON"
-  save_id 'ptask1' "$ID"
-  get_id  'ptask1'
-  echo $REPLY
-}
-
-api_revoke_publish()
-{
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) api_revoke_pubish"
-  fi
-  ok=$true
-
-  [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
-
-  pecho 'Gather required authorizations and IDs'
-  get_auth 'user1'; user1_auth=$REPLY
-  get_id   'ptask1'; ptask1_id=$REPLY
-
-  pecho 'Revoke a publish task'
-  test_api 200 DELETE $ORCHESTRA_URL/publish/task/id/$ptask1_id "$user1_auth" ''
-}
-
-api_get_all()
-{
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) api_get_all"
-  fi
-  ok=$true
-
-  [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
-
-  get_auth 'user1'; user1_auth=$REPLY
-  test_api 200 GET $ORCHESTRA_URL                         '' ''
-  test_api 200 GET $ORCHESTRA_URL/user/count              "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/user                    "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/media/count             "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/media/HEAD              "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/media                   "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/transform/profile/count "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/transform/profile       "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/transform/queue         "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/transform/task/count    "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/transform/task/HEAD     "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/transform/task          "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/publish/queue           "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/publisher/queue         "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/publish/task/count      "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/publish/task/HEAD       "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/publish/task            "$user1_auth" ''
 }
 
 webui_test_common()
