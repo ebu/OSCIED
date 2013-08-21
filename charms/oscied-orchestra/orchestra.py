@@ -1097,7 +1097,8 @@ def api_environment_count():
     """
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        return ok_200(len(orchestra.get_environments()), False)
+        (environments, default) = orchestra.get_environments()
+        return ok_200(len(environments), False)
     except Exception as e:
         map_exceptions(e)
 
