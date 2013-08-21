@@ -39,9 +39,9 @@ from oscied_lib.oscied_hook_base import DEFAULT_OS_ENV
 from oscied_lib.OrchestraHooks import OrchestraHooks
 
 CONFIG = {
-    u'verbose': True, u'root_secret': u'toto', u'nodes_secret': u'abcd', u'repositories_user': u'oscied',
+    u'verbose': True, u'root_secret': u'toto', u'node_secret': u'abcd', u'repositories_user': u'oscied',
     u'repositories_pass': u'', u'charms_repository': u'https://github.com/ebu/OSCIED/charms',
-    u'mongo_admin_password': u'Mongo_admin_1234', u'mongo_nodes_password': u'Mongo_user_1234',
+    u'mongo_admin_password': u'Mongo_admin_1234', u'mongo_node_password': u'Mongo_user_1234',
     u'rabbit_password': u'Alice_in_wonderland', u'storage_address': u'', u'storage_nat_address': u'',
     u'storage_fstype': u'', 'storage_mountpoint': u'', u'storage_options': u''
 }
@@ -56,7 +56,7 @@ class OrchestraHooks_tmp(OrchestraHooks):
 
     @property
     def rabbit_users(self):
-        return [u'nodes']
+        return [u'node']
 
     @property
     def rabbit_vhosts(self):
@@ -106,11 +106,11 @@ class TestOrchestraHooks(object):
             call(u'mongo f.js'),
             call(u'mongo orchestra f.js'),
             call(u'mongo celery g.js'),
-            call(u'rabbitmqctl delete_user guest',                    fail=False),
-            call(u'rabbitmqctl delete_vhost /',                       fail=False),
-            call(u'rabbitmqctl add_user nodes "Alice_in_wonderland"', fail=False),
-            call(u'rabbitmqctl add_vhost celery',                     fail=False),
-            call(u'rabbitmqctl set_permissions -p celery nodes ".*" ".*" ".*"', fail=False)])
+            call(u'rabbitmqctl delete_user guest',                   fail=False),
+            call(u'rabbitmqctl delete_vhost /',                      fail=False),
+            call(u'rabbitmqctl add_user node "Alice_in_wonderland"', fail=False),
+            call(u'rabbitmqctl add_vhost celery',                    fail=False),
+            call(u'rabbitmqctl set_permissions -p celery node ".*" ".*" ".*"', fail=False)])
 
 if __name__ == u'__main__':
     import nose

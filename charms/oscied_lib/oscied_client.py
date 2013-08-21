@@ -25,6 +25,7 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 from requests import get, patch, post, delete
+from kitchen.text.converters import to_bytes
 from oscied_models import Media, User, TransformProfile, TransformTask
 from pyutils.py_flask import map_exceptions
 from pyutils.py_serialization import object2json
@@ -48,7 +49,7 @@ class OsciedCRUDMapper(object):
         return self.api_client.do_request(get, self.get_url(extra='count'))
 
     def __getitem__(self, index):
-        response_dict = self.do_request(get, self.get_url(index))
+        response_dict = self.api_client.do_request(get, self.get_url(index))
         return response_dict if self.cls is None else self.cls(**response_dict)
 
     def __setitem__(self, index, value):
@@ -68,11 +69,16 @@ class OsciedCRUDMapper(object):
 
     def add(self, *args, **kwargs):
         if not(bool(args) ^ bool(kwargs)):
-            raise ValueError(u'You must set args OR kwargs.')
+            raise ValueError(to_bytes(u'You must set args OR kwargs.'))
         if args and len(args) != 1:
-            raise ValueError(u'args should contain only 1 value.')
+            raise ValueError(to_bytes(u'args should contain only 1 value.'))
         value = args[0] if args else kwargs
-        return self.api_client.do_request(post, self.get_url(), data=object2json(value, include_properties=False))
+        response = self.api_client.do_request(post, self.get_url(), data=object2json(value, include_properties=False))
+        instance = self.cls(**response)
+        # Recover user's secret
+        if isinstance(instance, User):
+            instance.secret = value.secret if args else kwargs['secret']
+        return instance
 
     def list(self, head=False):
         values = []
@@ -86,9 +92,10 @@ class OsciedCRUDMapper(object):
 
 class OrchestraAPIClient(object):
 
-    def __init__(self, hostname, port=5000, auth=None, timeout=10.0):
+    def __init__(self, hostname, port=5000, auth=None, environment='default', timeout=10.0):
         self.api_url = u'{0}:{1}'.format(hostname, port)
         self.auth = auth
+        self.environment = environment
         self.timeout = timeout
         self.users = OsciedCRUDMapper(self, 'user', User)
         self.medias = OsciedCRUDMapper(self, 'media', Media)
@@ -117,6 +124,7 @@ class OrchestraAPIClient(object):
     def login(self, mail, secret, update_auth=True):
         user = User(**self.do_request(get, u'{0}/user/login'.format(self.api_url), (mail, secret)))
         if update_auth:
+            # Recover user's secret
             user.secret = secret
             self.auth = user
         return user
