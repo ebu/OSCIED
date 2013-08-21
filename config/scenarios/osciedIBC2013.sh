@@ -179,6 +179,7 @@ osciedIBC2013Scenario_amazon()
   if [ $REPLY -eq $true ]; then
     if [ -f "$cfg_amazon" ]; then
       mecho "Using user define Storage configuration : $cfg_amazon"
+#      juju deploy -e 'amazon' --config "$cfg_amazon" --constraints "arch=amd64 cpu-cores=2 mem=1G" --repository=. \
       juju deploy -e 'amazon' --config "$cfg_amazon" --repository=. local:$RELEASE/oscied-storage || xecho '1'
     else
       mecho 'Using default Storage configuration'
