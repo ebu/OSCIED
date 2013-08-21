@@ -29,8 +29,8 @@ from oscied_config import (
 
 ORCHESTRA_CONFIG_TEST = OrchestraLocalConfig(
     storage_address=u'127.0.0.1', storage_fstype=u'glusterfs', storage_mountpoint=u'medias_volume_0',
-    api_url=u'http://127.0.0.1:5000', root_secret=u'toto', nodes_secret=u'abcd', mongo_admin_connection=u'',
-    mongo_nodes_connection=u'...', rabbit_connection=u'...')
+    api_url=u'http://127.0.0.1:5000', root_secret=u'toto', node_secret=u'abcd', mongo_admin_connection=u'',
+    mongo_node_connection=u'...', rabbit_connection=u'...')
 
 PUBLISHER_CONFIG_TEST = PublisherLocalConfig(
     api_nat_socket=u'129.194.185.47:5000', storage_address=u'10.1.1.2', storage_fstype=u'glusterfs',

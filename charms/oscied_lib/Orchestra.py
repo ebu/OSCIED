@@ -54,7 +54,7 @@ class Orchestra(object):
         else:
             self._db = pymongo.Connection(config.mongo_admin_connection)[u'orchestra']
         self.root_user = User(u'root', u'oscied', u'root@oscied.org', self.config.root_secret, True, _id=UUID_ZERO)
-        self.nodes_user = User(u'nodes', u'oscied', u'nodes@oscied.org', self.config.nodes_secret, False, _id=UUID_ZERO)
+        self.node_user = User(u'node', u'oscied', u'node@oscied.org', self.config.node_secret, False, _id=UUID_ZERO)
 
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Properties >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -239,7 +239,7 @@ class Orchestra(object):
         if not same_environment:
             raise NotImplementedError(to_bytes(u'Unable to launch transformation units into non-default environment '
                                       '{0} (default is {1}).'.format(environment, default)))
-            config[u'mongo_connection'] = self.config.mongo_nodes_connection
+            config[u'mongo_connection'] = self.config.mongo_node_connection
             config[u'rabbit_connection'] = self.config.rabbit_connection
             # FIXME copy storage configuration, first method
             config[u'storage_address'] = self.config.storage_address
@@ -324,7 +324,7 @@ class Orchestra(object):
         TransformTask.validate_task(media_in, profile, media_out)
         self.save_media(media_out)  # Save pending output media
         # FIXME create a one-time password to avoid fixed secret authentication ...
-        callback = Callback(self.config.api_url + callback_url, u'node', self.config.nodes_secret)
+        callback = Callback(self.config.api_url + callback_url, u'node', self.config.node_secret)
         if self.is_mock:
             result_id = unicode(uuid.uuid4())
         else:
@@ -425,7 +425,7 @@ class Orchestra(object):
             raise NotImplementedError(to_bytes(u'Cannot launch the task, input media will be published by another task '
                                       'with id {0}.'.format(other._id)))
         # FIXME create a one-time password to avoid fixed secret authentication ...
-        callback = Callback(self.config.api_url + callback_url, u'node', self.config.nodes_secret)
+        callback = Callback(self.config.api_url + callback_url, u'node', self.config.node_secret)
         if self.is_mock:
             result_id = unicode(uuid.uuid4())
         else:
@@ -485,7 +485,7 @@ class Orchestra(object):
             revoke(task._id, terminate=terminate)
         if task.status == states.SUCCESS and not self.is_mock:
             # Send revoke task to the worker that published the media
-            callback = Callback(self.config.api_url + callback_url, u'node', self.config.nodes_secret)
+            callback = Callback(self.config.api_url + callback_url, u'node', self.config.node_secret)
             queue = task.get_hostname()
             result = PublisherWorker.revoke_publish_task.apply_async(
                 args=(task.publish_uri, object2json(callback, False)), queue=queue)

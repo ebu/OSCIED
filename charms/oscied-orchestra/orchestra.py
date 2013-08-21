@@ -94,7 +94,7 @@ def requires_auth(request, allow_root=False, allow_node=False, allow_any=False, 
     username = auth.username
     password = auth.password
     root = (username == u'root' and password == orchestra.config.root_secret)
-    node = (username == u'node' and password == orchestra.config.nodes_secret)
+    node = (username == u'node' and password == orchestra.config.node_secret)
     user = None
     if not root and not node:
         user = orchestra.get_user({u'mail': username}, secret=password)
@@ -106,7 +106,7 @@ def requires_auth(request, allow_root=False, allow_node=False, allow_any=False, 
         return orchestra.root_user
     if node and allow_node:
         logging.info(u'Allowed authenticated worker/node')
-        return orchestra.nodes_user
+        return orchestra.node_user
     if user and allow_any:
         logging.info(u'Allowed authenticated user {0}'.format(user.name))
         return user

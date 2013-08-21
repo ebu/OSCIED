@@ -55,12 +55,12 @@ class OrchestraHooks(CharmHooks_Storage):
         return u'mongodb://admin:{0}@localhost:27017/orchestra'.format(self.config.mongo_admin_password)
 
     @property
-    def mongo_nodes_connection(self):
-        return u'mongodb://nodes:{0}@{1}:27017/celery'.format(self.config.mongo_nodes_password, self.private_address)
+    def mongo_node_connection(self):
+        return u'mongodb://node:{0}@{1}:27017/celery'.format(self.config.mongo_node_password, self.private_address)
 
     @property
     def rabbit_connection(self):
-        return u'amqp://nodes:{0}@{1}:5672/celery'.format(self.config.rabbit_password, self.private_address)
+        return u'amqp://node:{0}@{1}:5672/celery'.format(self.config.rabbit_password, self.private_address)
 
     @property
     def rabbit_users(self):
@@ -78,12 +78,12 @@ class OrchestraHooks(CharmHooks_Storage):
         self.info(u'Configure RabbitMQ Message Broker')
         self.cmd(u'rabbitmqctl delete_user guest', fail=False)
         self.cmd(u'rabbitmqctl delete_vhost /', fail=False)
-        self.cmd(u'rabbitmqctl add_user nodes "{0}"'.format(self.config.rabbit_password), fail=False)
+        self.cmd(u'rabbitmqctl add_user node "{0}"'.format(self.config.rabbit_password), fail=False)
         self.cmd(u'rabbitmqctl add_vhost celery', fail=False)
-        self.cmd(u'rabbitmqctl set_permissions -p celery nodes ".*" ".*" ".*"', fail=False)
+        self.cmd(u'rabbitmqctl set_permissions -p celery node ".*" ".*" ".*"', fail=False)
         users, vhosts = self.rabbit_users, self.rabbit_vhosts
         self.debug(u'RabbitMQ users: {0} vhosts: {1}'.format(users, vhosts))
-        if u'guest' in users or u'nodes' not in users or u'/' in vhosts or u'celery' not in vhosts:
+        if u'guest' in users or u'node' not in users or u'/' in vhosts or u'celery' not in vhosts:
             raise RuntimeError(to_bytes(u'Unable to configure RabbitMQ'))
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -134,7 +134,7 @@ class OrchestraHooks(CharmHooks_Storage):
         with open(u'f.js', u'w', u'utf-8') as mongo_f:
             mongo_f.write(u"db.addUser('admin', '{0}', false);".format(self.config.mongo_admin_password))
         with open(u'g.js', u'w', u'utf-8') as mongo_g:
-            mongo_g.write(u"db.addUser('nodes', '{0}', false);".format(self.config.mongo_nodes_password))
+            mongo_g.write(u"db.addUser('node', '{0}', false);".format(self.config.mongo_node_password))
         self.cmd(u'mongo f.js')
         self.cmd(u'mongo orchestra f.js')
         self.cmd(u'mongo celery g.js')
@@ -154,13 +154,13 @@ class OrchestraHooks(CharmHooks_Storage):
         self.local_config.api_url = self.api_url(local=False)
         self.local_config.root_secret = self.config.root_secret
         self.local_config.mongo_admin_connection = self.mongo_admin_connection
-        self.local_config.mongo_nodes_connection = self.mongo_nodes_connection
+        self.local_config.mongo_node_connection = self.mongo_node_connection
         self.local_config.rabbit_connection = self.rabbit_connection
         infos = {
             u'rabbit': unicode(self.rabbit_connection),
             u'port': unicode(27017),
-            u'username': u'nodes',
-            u'password': unicode(self.config.mongo_nodes_password),
+            u'username': u'node',
+            u'password': unicode(self.config.mongo_node_password),
         }
         self.template2config(self.local_config.celery_template_file, self.local_config.celery_config_file, infos)
         self.remark(u'Orchestrator successfully configured')
@@ -220,7 +220,7 @@ class OrchestraHooks(CharmHooks_Storage):
         # FIXME something to do (register unit ?)
 
     def hook_publisher_relation_joined(self):
-        self.relation_set(mongo_connection=self.mongo_nodes_connection,
+        self.relation_set(mongo_connection=self.mongo_node_connection,
                           rabbit_connection=self.rabbit_connection)
 
     def hook_publisher_relation_changed(self):
@@ -233,7 +233,7 @@ class OrchestraHooks(CharmHooks_Storage):
         # FIXME something to do (register unit ?)
 
     def hook_transform_relation_joined(self):
-        self.relation_set(mongo_connection=self.mongo_nodes_connection,
+        self.relation_set(mongo_connection=self.mongo_node_connection,
                           rabbit_connection=self.rabbit_connection)
 
     def hook_transform_relation_changed(self):

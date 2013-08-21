@@ -13,7 +13,7 @@ options:
     type: string
     default: "toto"
     description: Secret key used by API clients to manage users.  Please change it in production.
-  nodes_secret:
+  node_secret:
     type: string
     default: "abcd"
     description: Secret key used by workers/nodes to callback API when they finish their task.  Please change it in production.
@@ -33,7 +33,7 @@ options:
     type: string
     default: "Mongo_admin_1234"
     description: Database administrator password.
-  mongo_nodes_password:
+  mongo_node_password:
     type: string
     default: "Mongo_user_1234"
     description: Database nodes password.

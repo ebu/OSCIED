@@ -32,8 +32,8 @@ from oscied_config_base import CharmLocalConfig, CharmLocalConfig_Subordinate, C
 
 class OrchestraLocalConfig(CharmLocalConfig_Storage):
 
-    def __init__(self, api_url=u'', root_secret=u'', nodes_secret=u'', mongo_admin_connection=u'',
-                 mongo_nodes_connection=u'', rabbit_connection=u'',
+    def __init__(self, api_url=u'', root_secret=u'', node_secret=u'', mongo_admin_connection=u'',
+                 mongo_node_connection=u'', rabbit_connection=u'',
                  celery_config_file=u'celeryconfig.py',
                  celery_template_file=u'templates/celeryconfig.py.template',
                  mongo_config_file=u'/etc/mongodb.conf', ssh_config_path=u'~/.ssh',
@@ -43,9 +43,9 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
         super(OrchestraLocalConfig, self).__init__(**kwargs)
         self.api_url = api_url
         self.root_secret = root_secret
-        self.nodes_secret = nodes_secret
+        self.node_secret = node_secret
         self.mongo_admin_connection = mongo_admin_connection
-        self.mongo_nodes_connection = mongo_nodes_connection
+        self.mongo_node_connection = mongo_node_connection
         self.rabbit_connection = rabbit_connection
         self.celery_config_file = celery_config_file
         self.celery_template_file = celery_template_file

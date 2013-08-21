@@ -130,12 +130,12 @@ get_root_secret()
 get_node_secret()
 {
   if [ -f "$CONFIG_GEN_CONFIG_FILE" ]; then
-    line=$(cat "$CONFIG_GEN_CONFIG_FILE" | grep nodes_secret)
+    line=$(cat "$CONFIG_GEN_CONFIG_FILE" | grep node_secret)
     node=$(expr match "$line" '.*"\(.*\)".*')
   else
     node='abcd'
   fi
-  [ ! "$node" ] && xecho 'Unable to detect nodes secret !'
+  [ ! "$node" ] && xecho 'Unable to detect node secret !'
   REPLY="$node"
 }
 
