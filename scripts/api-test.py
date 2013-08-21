@@ -36,7 +36,8 @@ if __name__ == '__main__':
     configure_unicode()
 
     # Gather arguments
-    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter, epilog=u'''TODO.''')
+    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
+                            epilog=u'''Live-test security and functionalities of a running orchestrator.''')
     parser.add_argument(u'host',        action=u'store', default=None)
     parser.add_argument(u'port',        action=u'store', default=5000)
     parser.add_argument(u'root_secret', action=u'store', default=None)
@@ -44,7 +45,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
     root = (u'root', args.root_secret)
     node = (u'node', args.node_secret)
+
     client = OrchestraAPIClient(args.host, args.port, root)
+    print(client.about)
 
     print(u'Register some test users')
     client.auth = root
