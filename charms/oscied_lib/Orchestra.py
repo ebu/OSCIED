@@ -462,11 +462,14 @@ class Orchestra(object):
                 task.publish_uri = publish_uri
                 media.public_uris[task._id] = publish_uri
             elif task.status == states.REVOKED:
-                del media.public_uris[task._id]
+                try:  # Remove if missing or not !
+                    del media.public_uris[task._id]
+                except:
+                    pass
             elif task.status == 'REVOKING':
                 task.revoke_task_id = revoke_task_id
-            self.save_media(media)
-            self._db.publish_tasks.save(task.__dict__)
+            self.save_media(media)  # FIXME do not save if not modified.
+            self._db.publish_tasks.save(task.__dict__)  # FIXME The same here.
             return media
         return None
 
