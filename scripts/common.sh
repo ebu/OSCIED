@@ -93,9 +93,148 @@ BAD_AUTH='charlie@hacker.com:challenge_accepted'
 
 # Utilities ============================================================================================================
 
+_check_config()
+{
+  if [ "$STORAGE_PRIVATE_IP" -a "$STORAGE_MOUNTPOINT" -a "$STORAGE_BRICK" ]; then
+    echo ''
+  elif [ $# -gt 0 ]; then
+    echo '[DISABLED] '
+  else
+    xecho 'You must execute menu.sh config first'
+  fi
+}
+
+_check_juju()
+{
+  if which juju > /dev/null; then
+    echo ''
+  elif [ $# -gt 0 ]; then
+    echo '[DISABLED] '
+  else
+    xecho 'JuJu must be installed, this method is disabled'
+  fi
+}
+
+_deploy_helper()
+{
+  if [ $# -ne 1 ]; then
+    xecho "Usage: $(basename $0).overwrite_helper scenario"
+  fi
+  scenario=$1
+
+  techo "Deploy scenario $scenario"
+
+  pecho 'Update symlink to current scenario'
+  rm -f "$SCENARIO_CURRENT_PATH" 2>/dev/null
+  ln -s "$scenario" "$SCENARIO_CURRENT_PATH" || xecho 'Unable to update symlink'
+
+  pecho 'Initialize JuJu orchestrator configuration'
+  if [ -f "$ID_RSA" ]; then
+    suffix=$(md5sum "$ID_RSA" | cut -d' ' -f1)
+    mecho "Backup certificate $ID_RSA into ${ID_RSA}_$suffix"
+    cp -f "$ID_RSA"     "${ID_RSA}_$suffix"     || xecho 'Unable to backup certificate file (1/2)'
+    cp -f "$ID_RSA_PUB" "${ID_RSA_PUB}_$suffix" || xecho 'Unable to backup certificate file (2/2)'
+  fi
+  if [ ! -f "$SCENARIO_JUJU_ID_RSA" ]; then
+    recho 'It is strongly advised to create a certificate per scenario'
+    yesOrNo $default 'generate it now'
+    if [ $REPLY -eq $true ]; then
+      ssh-keygen -t rsa -b 2048 -f "$SCENARIO_JUJU_ID_RSA"
+    fi
+  fi
+  if [ -f "$SCENARIO_JUJU_ID_RSA" ]; then
+    mecho "Using scenario's certificate file : $SCENARIO_JUJU_ID_RSA"
+    # And make scenario's certificate the default
+    cp -f "$SCENARIO_JUJU_ID_RSA"     "$ID_RSA"     || xecho 'Unable to copy certificate file (1/2)'
+    cp -f "$SCENARIO_JUJU_ID_RSA_PUB" "$ID_RSA_PUB" || xecho 'Unable to copy certificate file (2/2)'
+  fi
+  # Fix ERROR SSH forwarding error: Agent admitted failure to sign using the key.
+  ssh-add "$ID_RSA"
+
+  # FIXME and what about *.pem stuff ?
+
+  mkdir -p "$JUJU_PATH" "$JUJU_STORAGE_PATH" 2>/dev/null
+  # Backup any already existing environments file (magic stuff) !
+  if [ -f "$JUJU_ENVS_FILE" ]; then
+    suffix=$(md5sum "$JUJU_ENVS_FILE" | cut -d' ' -f1)
+    cp -f "$JUJU_ENVS_FILE" "${JUJU_ENVS_FILE}_$suffix" || xecho 'Unable to backup environments file'
+  fi
+  if [ -f "$SCENARIO_JUJU_ENVS_FILE" ]; then
+    mecho "Using scenario's environments file : $SCENARIO_JUJU_ENVS_FILE"
+    cp "$SCENARIO_JUJU_ENVS_FILE" "$JUJU_ENVS_FILE" || xecho 'Unable to copy environments file'
+  else
+    mecho 'Using juju to generate default environments file'
+    juju generate-config -w || xecho "Unable to generate juju's environments file"
+  fi
+  $udo ufw disable # Fix master thesis ticket #80 - Juju stuck in pending when using LXC
+
+  pecho "Copy JuJu environments file & SSH keys to Orchestra charm's deployment path"
+  cp -f "$ID_RSA"         "$CHARMS_DEPLOY_PATH/oscied-orchestra/ssh/"
+  cp -f "$ID_RSA_PUB"     "$CHARMS_DEPLOY_PATH/oscied-orchestra/ssh/"
+  cp -f "$JUJU_ENVS_FILE" "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/"
+  find "$JUJU_PATH" -type f -name '*.pem' -exec cp -f {} "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/" \;
+
+  pecho 'Execute scenario script'
+  python "$scenario/scenario.py"
+}
+
+_overwrite_helper()
+{
+  if [ $# -ne 2 ]; then
+    xecho "Usage: $(basename $0).overwrite_helper source destination"
+  fi
+
+  mkdir -p "$CHARMS_DEPLOY_PATH/$2" 2>/dev/null
+  rsync -rtvh -LH --delete --progress --exclude='.git' --exclude='*.log' --exclude='*.pyc' \
+    --exclude='celeryconfig.py' --exclude='build' --exclude='dist' --exclude='*.egg-info' \
+    "$CHARMS_PATH/$1/" "$CHARMS_DEPLOY_PATH/$2/" || xecho "Unable to overwrite $2 charm"
+}
+
+_rsync_helper()
+{
+  if [ $# -ne 2 ]; then
+    xecho "Usage: $(basename $0).rsync_publisher charm id"
+  fi
+
+  chmod 600 "$ID_RSA" || xecho 'Unable to find id_rsa certificate'
+
+  _get_unit_public_url $true "$1" "$2"
+  host="ubuntu@$REPLY"
+  dest="/var/lib/juju/agents/unit-$1-$2/charm"
+  ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
+  rsync -avhL --progress --delete -e "ssh -i '$ID_RSA'" --exclude=.git --exclude=config.json \
+    --exclude=celeryconfig.py --exclude=*.pyc --exclude=local_config.pkl --exclude=charms \
+    --exclude=ssh --exclude=environments.yaml --exclude=*.log "$CHARMS_PATH/$1/" "$host:$dest/"
+  ssh -i "$ID_RSA" "$host" -n "sudo chown root:root $dest -R"
+}
+
+_standalone_execute_hook()
+{
+  if [ $# -ne 2 ]; then
+    xecho "Usage: $(basename $0).standalone_execute_hook path hook"
+  fi
+
+  pecho 'Install juju-log & open-port tricks'
+  if ! getInterfaceIPv4 "$NETWORK_IFACE" '4'; then
+    xecho "Unable to detect network interface $NETWORK_IFACE IP address"
+  fi
+  ip=$REPLY
+  $udo sh -c "cp -f $TEMPLATES_PATH/juju-log      $jujulog;  chmod 777 $jujulog"
+  $udo sh -c "cp -f $TEMPLATES_PATH/open-port     $openport; chmod 777 $openport"
+  $udo sh -c "cp -f $TEMPLATES_PATH/something-get $cget;     chmod 777 $cget"
+  $udo sh -c "cp -f $TEMPLATES_PATH/something-get $rget;     chmod 777 $rget"
+  $udo sh -c "cp -f $TEMPLATES_PATH/something-get $uget;     chmod 777 $uget"
+  $udo sh -c "cp -f $TEMPLATES_PATH/something-get.list /tmp/;"
+  $udo sh -c "sed -i 's:127.0.0.1:$ip:g' /tmp/something-get.list"
+  pecho "Execute hook script $2"
+  cd "$1"  || xecho "Unable to find path $1"
+  $udo $2  || xecho 'Hook is unsucessful'
+  recho 'Hook successful'
+}
+
 # Parse config.json of a actually running charm instance ! -------------------------------------------------------------
 
-get_unit_config()
+_get_unit_config()
 {
   if [ $# -ne 3 ]; then
     xecho "Usage: $(basename $0).get_config_unit name number option"
@@ -115,7 +254,7 @@ get_unit_config()
 
 # Parse orchestra.yaml configuration file to get options value ---------------------------------------------------------
 
-get_root_secret()
+_get_root_secret()
 {
   if [ -f "$SCENARIO_CONFIG_FILE" ]; then
     line=$(cat "$SCENARIO_CONFIG_FILE" | grep root_secret)
@@ -127,7 +266,7 @@ get_root_secret()
   REPLY="$root"
 }
 
-get_node_secret()
+_get_node_secret()
 {
   if [ -f "$SCENARIO_CONFIG_FILE" ]; then
     line=$(cat "$SCENARIO_CONFIG_FILE" | grep node_secret)
@@ -141,25 +280,26 @@ get_node_secret()
 
 # Parse charm's units URLs listing file to get specific URLs -----------------------------------------------------------
 
-get_units_dialog_listing()
+_get_units_dialog_listing()
 {
   REPLY=$(cat "$SCENARIO_CONFIG_FILE" | sort | sed 's:=: :g;s:\n: :g')
   [ ! $REPLY ] && xecho 'Unable to generate units listing for dialog'
 }
 
-get_services_dialog_listing()
+_get_services_dialog_listing()
 {
   REPLY=$(cat "$SCENARIO_CONFIG_FILE" | sort | sed 's:/[0-9]*=: :g;s:\n: :g' | uniq)
   [ ! $REPLY ] && xecho 'Unable to generate services listing for dialog'
 }
 
-get_unit_public_url()
+_get_unit_public_url()
 {
   if [ $# -gt 3 ]; then
     xecho "Usage: $(basename $0).get_unit_public_url fail name (number)"
   fi
   fail=$1
   name=$2
+
   [ $# -eq 3 ] && number=$3 || number='.*'
   if [ -f "$SCENARIO_CONFIG_FILE" ]; then
     url=$(cat "$SCENARIO_CONFIG_FILE" | grep -m 1 "^$name/$number=" | cut -d '=' -f2)
@@ -170,36 +310,36 @@ get_unit_public_url()
   REPLY="$url"
 }
 
-get_orchestra_url()
+_get_orchestra_url()
 {
   if [ $# -eq 0 ]; then
-    get_unit_public_url $false 'oscied-orchestra'
+    _get_unit_public_url $false 'oscied-orchestra'
   elif [ $# -eq 1 ]; then
-    get_unit_public_url $false 'oscied-orchestra' "$1"
+    _get_unit_public_url $false 'oscied-orchestra' "$1"
   else
     xecho "Usage: $(basename $0).get_orchestra_url (number)"
   fi
   [ "$REPLY" ] && REPLY="http://$REPLY:5000"
 }
 
-get_storage_uploads_url()
+_get_storage_uploads_url()
 {
   REPLY="glusterfs://$STORAGE_PRIVATE_IP/$STORAGE_MOUNTPOINT/uploads"
 
 }
 
-get_storage_medias_url()
+_get_storage_medias_url()
 {
   REPLY="glusterfs://$STORAGE_PRIVATE_IP/$STORAGE_MOUNTPOINT/medias"
 }
 
-storage_upload_media()
+_storage_upload_media()
 {
   if [ $# -ne 1 ]; then
     xecho "Usage: $(basename $0).storage_upload_media filename"
   fi
 
-  get_unit_public_url $true 'oscied-storage'
+  _get_unit_public_url $true 'oscied-storage'
   host="ubuntu@$REPLY"
   bkp_path='/home/ubuntu/uploads'
   dst_path="$STORAGE_BRICK/uploads"
@@ -210,67 +350,46 @@ storage_upload_media()
     xecho "Unable to synchronize ($dst_path->$dst_path) paths in storage"
   ssh -i "$ID_RSA" "$host" -n "sudo chown www-data:www-data $dst_path/ -R" || \
     xecho "Unable to set owner www-data for $dst_path path in storage"
-  get_storage_uploads_url
+  _get_storage_uploads_url
   REPLY="$REPLY/$(basename $1)"
-}
-
-# Wrapper to juju ------------------------------------------------------------------------------------------------------
-
-juju_unit_add()
-{
-  if [ $# -ne 1 ]; then
-    xecho "Usage: $(basename $0).juju_unit_add service"
-  fi
-  juju add-unit "$1"
-}
-
-juju_unit_remove()
-{
-  if [ $# -ne 1 ]; then
-    xecho "Usage: $(basename $0).juju_unit_remove unit"
-  fi
-  if juju remove-unit "$1"; then
-    cat "$SCENARIO_GEN_UNITS_FILE" | grep -v "$1=.*" > $tmpfile
-    mv $tmpfile "$SCENARIO_GEN_UNITS_FILE"
-  fi
 }
 
 # Save and get configuration from corresponding generated files --------------------------------------------------------
 
-save_auth()
+_save_auth()
 {
   cat "$SCENARIO_GEN_AUTHS_FILE" 2>/dev/null | grep -v "^$1=" > /tmp/$$
   echo "$1=$2" >> /tmp/$$
   mv /tmp/$$ "$SCENARIO_GEN_AUTHS_FILE"
 }
 
-get_auth()
+_get_auth()
 {
   REPLY=$(cat "$SCENARIO_GEN_AUTHS_FILE" 2>/dev/null | grep "^$1=" | cut -d '=' -f2)
   [ ! "$REPLY" ] && xecho "Unable to detect $1 authentication"
 }
 
-save_id()
+_save_id()
 {
   cat "$SCENARIO_GEN_IDS_FILE" 2>/dev/null | grep -v "^$1=" > /tmp/$$
   echo "$1=$2" >> /tmp/$$
   mv /tmp/$$ "$SCENARIO_GEN_IDS_FILE"
 }
 
-get_id()
+_get_id()
 {
   REPLY=$(cat "$SCENARIO_GEN_IDS_FILE" 2>/dev/null | grep "^$1=" | cut -d '=' -f2)
   [ ! "$REPLY" ] && xecho "Unable to detect $1 ID"
 }
 
-save_json()
+_save_json()
 {
   cat "$SCENARIO_GEN_JSON_FILE" 2>/dev/null | grep -v "^$1=" > /tmp/$$
   echo "$1=$2" >> /tmp/$$
   mv /tmp/$$ "$SCENARIO_GEN_JSON_FILE"
 }
 
-get_json()
+_get_json()
 {
   REPLY=$(cat "$SCENARIO_GEN_JSON_FILE" 2>/dev/null | grep "^$1=" | cut -d '=' -f2)
   [ ! "$REPLY" ] && xecho "Unable to detect $1 json"
@@ -278,7 +397,7 @@ get_json()
 
 # Generate valid json strings of Orchestra API's objects ---------------------------------------------------------------
 
-json_user()
+_json_user()
 {
   if [ $# -ne 5 ]; then
     xecho "Usage: $(basename $0).json_user fname lname mail secret aplaftorm"
@@ -288,7 +407,7 @@ json_user()
   JSON="{\"first_name\":\"$1\",\"last_name\":\"$2\",\"mail\":\"$3\",\"secret\":\"$4\",\"$a\":$5}"
 }
 
-json_media()
+_json_media()
 {
   if [ $# -ne 3 ]; then
     xecho "Usage: $(basename $0).json_media uri vfilename title"
@@ -297,7 +416,7 @@ json_media()
   JSON="{\"uri\":\"$1\",\"filename\":\"$2\",\"metadata\":{\"title\":\"$3\"}}"
 }
 
-json_tprofile()
+_json_tprofile()
 {
   if [ $# -ne 4 ]; then
     xecho "Usage: $(basename $0).json_tprofile title description encoder_name encoder_string"
@@ -306,7 +425,7 @@ json_tprofile()
   JSON="{\"title\":\"$1\",\"description\":\"$2\",\"encoder_name\":\"$3\",\"encoder_string\":\"$4\"}"
 }
 
-json_ttask()
+_json_ttask()
 {
   d='metadata'
   m='media_in_id'
@@ -322,7 +441,7 @@ json_ttask()
   JSON="{\"$m\":\"$1\",\"$p\":\"$2\",\"$v\":\"$3\",\"$d\":{\"$t\":\"$4\"},\"$q\":\"$5\",\"$y\":\"$6\"}"
 }
 
-json_ptask()
+_json_ptask()
 {
   if [ $# -ne 3 ]; then
     xecho "Usage: $(basename $0).json_ttask media_id queue priority"
@@ -333,7 +452,7 @@ json_ptask()
 
 # Used to call / test Orchestra REST API -------------------------------------------------------------------------------
 
-test_api()
+_test_api()
 {
   if [ $# -ne 5 ]; then
     xecho "Usage: $(basename $0).test_api code method call user data"
