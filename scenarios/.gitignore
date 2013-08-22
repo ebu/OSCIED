@@ -1,2 +1,4 @@
 generated/
 environments.yaml
+id_rsa
+id_rsa.pub

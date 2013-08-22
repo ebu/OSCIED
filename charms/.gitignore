@@ -1,4 +1,1 @@
-build/
-deploy/
-dist/
-setup.log
+celeryconfig.py

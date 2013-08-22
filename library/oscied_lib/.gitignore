@@ -1,4 +1,3 @@
 build/
 dist/
 oscied_lib.egg-info/
-celeryconfig.py
