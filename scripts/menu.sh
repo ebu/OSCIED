@@ -115,11 +115,11 @@ install()
     exit 0
   else
     cd "$SCRIPTS_PATH" || xecho "Unable to find path $SCRIPTS_PATH"
-    lu-importUtils . || xecho 'Unable to import utilities of logicielsUbuntu'
+    lu-importUtils .   || xecho 'Unable to import utilities of logicielsUbuntu'
   fi
 
-  cd "$CHARMS_PATH" || xecho "Unable to find path $CHARMS_PATH"
-  $udo "./setup.sh" || xecho 'Unable to install OSCIED Library'
+  cd "$LIBRARY_PATH" || xecho "Unable to find path $LIBRARY_PATH"
+  $udo "./setup.sh"  || xecho 'Unable to install OSCIED Library'
 
   pecho 'Install prerequisites'
   eval $install bzr rst2pdf texlive-latex-recommended texlive-latex-extra \

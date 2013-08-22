@@ -25,6 +25,6 @@
 [submodule "tools/sqlalchemy-source"]
 	path = tools/sqlalchemy-source
 	url = https://github.com/zzzeek/sqlalchemy
-[submodule "tools/pyutils"]
-	path = tools/pyutils
+[submodule "library/pyutils"]
+	path = library/pyutils
 	url = git://github.com/davidfischer-ch/pyutils.git
