@@ -138,7 +138,7 @@ deploy()
     recho 'It is strongly advised to create a certificate per scenario'
     yesOrNo $true 'generate it now'
     if [ $REPLY -eq $true ]; then
-      ssh-keygen -t rsa "$SCENARIO_JUJU_ID_RSA"
+      ssh-keygen -t rsa -b 2048 -f "$SCENARIO_JUJU_ID_RSA"
     fi
   fi
   if [ -f "$SCENARIO_JUJU_ID_RSA" ]; then
