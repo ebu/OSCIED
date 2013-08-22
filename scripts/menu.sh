@@ -67,9 +67,7 @@ main()
               --menu 'Please select an operation' 0 0 0 \
               install              'Download / update documents and tools'               \
               cleanup              'Cleanup configuration of charms (deploy path)'       \
-              revup                "Increment all charm's revision (+1)"                 \
               api_init_setup       "${a}Initialize demo setup with Orchestra API"        \
-              webui_test_common    'Test some functions of Web UI hooks'                 \
               rsync_orchestra      'Rsync local code to running Orchestra instance'      \
               rsync_publisher      'Rsync local code to running Publisher instance'      \
               rsync_storage        'Rsync local code to running Storage instance'        \
@@ -190,22 +188,6 @@ cleanup()
   git clean -fd     # Remove all untracked files and directories
 }
 
-revup()
-{
-  if [ $# -eq 0 ]; then
-    xecho "Usage: $(basename $0) revup"
-  fi
-  ok=$true
-
-  cd "$CHARMS_PATH" || xecho "Unable to find path $CHARMS_PATH"
-  find . -maxdepth 2 -type f -path "*/oscied-*/*" -name revision | while read revision
-  do
-    value=$(cat "$revision")
-    echo $((value+1)) > "$revision"
-    mecho "$(basename $(dirname $(dirname $revision))) is not at revision $(cat $revision)"
-  done
-}
-
 api_init_setup()
 {
   if [ $# -ne 0 ]; then
@@ -293,33 +275,6 @@ api_init_setup()
   #$udo mkdir -p /mnt/storage/medias /mnt/storage/uploads
   #$udo cp "$SCRIPTS_PATH/common.sh" /mnt/storage/uploads/tabby.mpg
   #test_api 200 POST $ORCHESTRA_URL/media "$admin_auth" "$media1_json"; save_id 'media1' "$ID"
-
-}
-
-webui_test_common()
-{
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) webui_test_common"
-  fi
-  ok=$true
-
-  . "$CHARMS_PATH/oscied-webui/hooks_lib/common.sh"
-
-  ip1='10.10.4.3'
-  ip2='10.10.0.7'
-  ip3='1.1.1.1'
-  ip4='2.2.2.2'
-  rm proxy_ips 2>/dev/null
-  update_proxies add    $ip1; [ "$(cat proxy_ips)" != "$ip1"           ] && xecho '1'
-  update_proxies add    $ip2; [ "$(cat proxy_ips)" != "$ip1,$ip2"      ] && xecho '2'
-  update_proxies add    $ip3; [ "$(cat proxy_ips)" != "$ip1,$ip2,$ip3" ] && xecho '3'
-  update_proxies remove $ip3; [ "$(cat proxy_ips)" != "$ip1,$ip2"      ] && xecho '4'
-  update_proxies remove $ip3; [ "$(cat proxy_ips)" != "$ip1,$ip2"      ] && xecho '5'
-  update_proxies add    $ip4; [ "$(cat proxy_ips)" != "$ip1,$ip2,$ip4" ] && xecho '6'
-  update_proxies remove $ip2; [ "$(cat proxy_ips)" != "$ip1,$ip4"      ] && xecho '7'
-  update_proxies remove $ip1; [ "$(cat proxy_ips)" != "$ip4"           ] && xecho '8'
-  rm proxy_ips
-  mecho 'Unit test passed (update_proxies OK)'
 }
 
 rsync_helper()
