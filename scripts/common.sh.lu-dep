@@ -175,7 +175,7 @@ _deploy_helper()
   find "$JUJU_PATH" -type f -name '*.pem' -exec cp -f {} "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/" \;
 
   pecho 'Execute scenario script'
-  python "$scenario/scenario.py"
+  $udo python "$scenario/scenario.py"
 }
 
 _overwrite_helper()
