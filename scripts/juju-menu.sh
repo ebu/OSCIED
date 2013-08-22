@@ -67,15 +67,14 @@ main()
       $DIALOG --backtitle 'OSCIED Operations with JuJu' \
               --menu 'Please select an operation' 0 0 0 \
               deploy          'Launch a deployment scenario'             \
-              destroy         'Destroy a deployed environment'           \
-              standalone      'Play with a charm locally (yes, really)'  \
+              config          'Update units public URL listing file'     \
               status          'Display juju status'                      \
               log             'Launch juju debug log in a screen'        \
-              config          'Update units public URL listing file'     \
+              standalone      'Play with a charm locally (yes, really)'  \
               unit_ssh        'Access to units with secure shell'        \
               unit_add        'Add a new unit to a running service'      \
               unit_remove     'Remove an unit from a running service'    \
-              service_destroy 'Destroy a running service'  2> $tmpfile
+              destroy         'Destroy a deployed environment' 2> $tmpfile
 
       retval=$?
       operation=$(cat $tmpfile)
@@ -203,25 +202,92 @@ deploy()
   fi
 }
 
-destroy()
+config()
 {
   if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) destroy"
+    xecho "Usage: $(basename $0) config"
   fi
   ok=$true
 
-  # Environments menu
-  while true
-  do
-    $DIALOG --backtitle 'OSCIED Operations with JuJu > Destroy Environment' \
-            --menu 'Please select an environment' 0 0 0 \
-            'amazon' '-' 'local' '-' 'maas' '-' 2> $tmpfile
+  content=''
+  count=1
+  last_name=''
+  orchestra=''
+  juju status 2>/dev/null | \
+  {
+    while read line
+    do
+      name=$(expr match "$line" '.*\(oscied-.*/[0-9]*\):.*')
+      address=$(expr match "$line" '.*public-address: *\([^ ]*\) *')
+      [ "$name" ] && last_name=$name
+      if [ "$address" -a "$last_name" ]; then
+        mecho "$last_name -> $address"
+        [ "$content" ] && content="$content\n"
+        content="$content$last_name=$address"
+        last_name=''
+      fi
+      count=$((count+1))
 
-    retval=$?
-    environment=$(cat $tmpfile)
-    [ $retval -ne 0 -o ! "$environment" ] && break
-    juju destroy-environment --environment "$environment"
-  done
+      if echo $name | grep -q 'oscied-orchestra'; then
+        orchestra=$name
+      fi
+    done
+
+    if [ "$content" ]; then
+      echo $e_ "$content" > "$SCENARIO_GEN_UNITS_FILE"
+      recho "Charms's units public URLs listing file updated"
+    else
+      xecho "Unable to detect charms's units public URLs"
+    fi
+
+    if [ "$orchestra" ]; then
+      pecho "Auto-detect storage internal IP address by parsing $orchestra unit configuration"
+      number=$(expr match "$orchestra" '.*/\([0-9]*\)')
+      get_unit_config 'oscied-orchestra' "$number" 'storage_address'
+      if [ ! "$REPLY" ]; then
+        xecho 'Unable to detect storage internal IP address'
+      else
+        mecho "Updating common.sh with detected storage internal IP = $REPLY"
+        sed -i "s#STORAGE_PRIVATE_IP=.*#STORAGE_PRIVATE_IP='$REPLY'#" "$SCRIPTS_PATH/common.sh"
+      fi
+      get_unit_config 'oscied-orchestra' "$number" 'storage_mountpoint'
+      if [ ! "$REPLY" ]; then
+        xecho 'Unable to detect storage mountpoint'
+      else
+        number=$(expr match "$REPLY" '.*_\([0-9]*\)')
+        # FIXME hard-coded brick directory !
+        brick="/mnt/bricks/exp$number"
+        mecho "Updating common.sh with detected storage mountpoint = $REPLY and brick = $brick"
+        sed -i -e "s#STORAGE_MOUNTPOINT=.*#STORAGE_MOUNTPOINT='$REPLY'#" \
+               -e "s#STORAGE_BRICK=.*#STORAGE_BRICK='$brick'#" "$SCRIPTS_PATH/common.sh"
+      fi
+    else
+      recho 'Unable to detect orchestrator unit name'
+    fi
+  }
+}
+
+status()
+{
+  if [ $# -ne 0 ]; then
+    xecho "Usage: $(basename $0) status"
+  fi
+  ok=$true
+
+  techo 'Status of default environment'; juju status
+  techo 'Status of amazon environment';  juju status --environment amazon
+  techo 'Status of local environment';   juju status --environment local
+  techo 'Status of maas environment';    juju status --environment maas
+}
+
+log()
+{
+  if [ $# -ne 0 ]; then
+    xecho "Usage: $(basename $0) log"
+  fi
+  ok=$true
+
+  screen -dmS juju-log juju debug-log > "$JUJU_LOG"
 }
 
 standalone()
@@ -315,94 +381,6 @@ _standalone_execute_hook()
   recho 'Hook successful'
 }
 
-status()
-{
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) status"
-  fi
-  ok=$true
-
-  techo 'Status of default environment'; juju status
-  techo 'Status of amazon environment';  juju status --environment amazon
-  techo 'Status of local environment';   juju status --environment local
-  techo 'Status of maas environment';    juju status --environment maas
-}
-
-log()
-{
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) log"
-  fi
-  ok=$true
-
-  screen -dmS juju-log juju debug-log > "$JUJU_LOG"
-}
-
-config()
-{
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) config"
-  fi
-  ok=$true
-
-  content=''
-  count=1
-  last_name=''
-  orchestra=''
-  juju status 2>/dev/null | \
-  {
-    while read line
-    do
-      name=$(expr match "$line" '.*\(oscied-.*/[0-9]*\):.*')
-      address=$(expr match "$line" '.*public-address: *\([^ ]*\) *')
-      [ "$name" ] && last_name=$name
-      if [ "$address" -a "$last_name" ]; then
-        mecho "$last_name -> $address"
-        [ "$content" ] && content="$content\n"
-        content="$content$last_name=$address"
-        last_name=''
-      fi
-      count=$((count+1))
-
-      if echo $name | grep -q 'oscied-orchestra'; then
-        orchestra=$name
-      fi
-    done
-
-    if [ "$content" ]; then
-      echo $e_ "$content" > "$SCENARIO_GEN_UNITS_FILE"
-      recho "Charms's units public URLs listing file updated"
-    else
-      xecho "Unable to detect charms's units public URLs"
-    fi
-
-    if [ "$orchestra" ]; then
-      pecho "Auto-detect storage internal IP address by parsing $orchestra unit configuration"
-      number=$(expr match "$orchestra" '.*/\([0-9]*\)')
-      get_unit_config 'oscied-orchestra' "$number" 'storage_address'
-      if [ ! "$REPLY" ]; then
-        xecho 'Unable to detect storage internal IP address'
-      else
-        mecho "Updating common.sh with detected storage internal IP = $REPLY"
-        sed -i "s#STORAGE_PRIVATE_IP=.*#STORAGE_PRIVATE_IP='$REPLY'#" "$SCRIPTS_PATH/common.sh"
-      fi
-      get_unit_config 'oscied-orchestra' "$number" 'storage_mountpoint'
-      if [ ! "$REPLY" ]; then
-        xecho 'Unable to detect storage mountpoint'
-      else
-        number=$(expr match "$REPLY" '.*_\([0-9]*\)')
-        # FIXME hard-coded brick directory !
-        brick="/mnt/bricks/exp$number"
-        mecho "Updating common.sh with detected storage mountpoint = $REPLY and brick = $brick"
-        sed -i -e "s#STORAGE_MOUNTPOINT=.*#STORAGE_MOUNTPOINT='$REPLY'#" \
-               -e "s#STORAGE_BRICK=.*#STORAGE_BRICK='$brick'#" "$SCRIPTS_PATH/common.sh"
-      fi
-    else
-      recho 'Unable to detect orchestrator unit name'
-    fi
-  }
-}
-
 unit_ssh()
 {
   if [ $# -ne 0 ]; then
@@ -477,6 +455,27 @@ unit_remove()
   else
     juju_unit_remove "$unit"
   fi
+}
+
+destroy()
+{
+  if [ $# -ne 0 ]; then
+    xecho "Usage: $(basename $0) destroy"
+  fi
+  ok=$true
+
+  # Environments menu
+  while true
+  do
+    $DIALOG --backtitle 'OSCIED Operations with JuJu > Destroy Environment' \
+            --menu 'Please select an environment' 0 0 0 \
+            'amazon' '-' 'local' '-' 'maas' '-' 2> $tmpfile
+
+    retval=$?
+    environment=$(cat $tmpfile)
+    [ $retval -ne 0 -o ! "$environment" ] && break
+    juju destroy-environment --environment "$environment"
+  done
 }
 
 main "$@"
