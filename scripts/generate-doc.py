@@ -33,9 +33,9 @@ from common import (
     DAVID_REPORT_COMMON_FILE, DAVID_REPORT_REFERENCES_FILE, DAVID_REPORT_LINKS_FILE,
     WIKI_BUILD_PATH, WIKI_SOURCE_PATH, xprint
 )
-from pyutils.py_filesystem import try_makedirs, try_remove
-from pyutils.py_subprocess import cmd
-from pyutils.py_unicode import configure_unicode
+from oscied_lib.pyutils.py_filesystem import try_makedirs, try_remove
+from oscied_lib.pyutils.py_subprocess import cmd
+from oscied_lib.pyutils.py_unicode import configure_unicode
 
 if __name__ == u'__main__':
     configure_unicode()

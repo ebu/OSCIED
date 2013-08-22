@@ -30,24 +30,10 @@ from os.path import dirname, join
 
 # Constants ============================================================================================================
 
-# FIXME Current implementation of orchestra doesn't accept external IP you must execute juju-menu.sh
-# -> config to update storage's related constants automatically
-
-STORAGE_PRIVATE_IP = u''
-STORAGE_MOUNTPOINT = u''
-STORAGE_BRICK = u''
-RELEASE = u'raring'      # Update this according to your needs
-NETWORK_IFACE = u'eth0'  # Update this according to your needs
-
 SCRIPTS_PATH = os.getcwd()
 BASE_PATH = dirname(SCRIPTS_PATH)
-CHARMS_PATH = join(BASE_PATH, u'charms')
-CHARMS_DEPLOY_PATH = join(CHARMS_PATH, u'deploy', RELEASE)
-CONFIG_PATH = join(BASE_PATH, u'config')
 DOCS_PATH = join(BASE_PATH, u'docs')
-MEDIAS_PATH = join(BASE_PATH, u'medias')
 TOOLS_PATH = join(BASE_PATH, u'tools')
-REFERENCES_PATH = join(DOCS_PATH, u'references')
 
 # Reports related configuration (e.g. listing of components)
 REPORT_TOOLS_PLANTUML_BINARY = join(TOOLS_PATH, u'plantuml.jar')
@@ -62,37 +48,6 @@ DAVID_REPORT_REFERENCES_FILE = join(DAVID_REPORT_SOURCE_PATH, u'appendices-refer
 
 WIKI_BUILD_PATH = join(DOCS_PATH, u'wiki', u'build')
 WIKI_SOURCE_PATH = join(DOCS_PATH, u'wiki', u'source')
-
-# # Generated configuration
-CONFIG_GEN_PATH = join(CONFIG_PATH, u'generated')
-CONFIG_GEN_AUTHS_FILE = join(CONFIG_GEN_PATH, u'auths.list')
-CONFIG_GEN_IDS_FILE = join(CONFIG_GEN_PATH, u'ids.list')
-CONFIG_GEN_JSON_FILE = join(CONFIG_GEN_PATH, u'json.list')
-CONFIG_GEN_UNITS_FILE = join(CONFIG_GEN_PATH, u'units.list')
-CONFIG_GEN_CONFIG_FILE = join(CONFIG_GEN_PATH, u'config.yaml')
-
-# # Orchestra related configuration (e.g. initial setup)
-CONFIG_API_PATH = join(CONFIG_PATH, u'api')
-CONFIG_API_USERS_FILE = join(CONFIG_API_PATH, u'users.csv')
-CONFIG_API_MEDIAS_FILE = join(CONFIG_API_PATH, u'medias.csv')
-CONFIG_API_TPROFILES_FILE = join(CONFIG_API_PATH, u'tprofiles.csv')
-
-# # JuJu related configuration (e.g. environments)
-CONFIG_JUJU_PATH = join(CONFIG_PATH, u'juju')
-CONFIG_JUJU_ID_RSA = join(CONFIG_JUJU_PATH, u'id_rsa')
-CONFIG_JUJU_ID_RSA_PUB = join(CONFIG_JUJU_PATH, u'id_rsa.pub')
-CONFIG_JUJU_ENVS_FILE = join(CONFIG_JUJU_PATH, u'environments.yaml')
-CONFIG_JUJU_FILES_PATH = join(CONFIG_PATH, u'juju_files')
-CONFIG_JUJU_TEMPL_FILE = join(CONFIG_JUJU_FILES_PATH, u'environments.yaml.template')
-
-CONFIG_SCENARIOS_PATH = join(CONFIG_PATH, u'scenarios')
-
-HOME = os.environ[u'HOME']
-ID_RSA = join(HOME, u'.ssh', u'id_rsa')
-JUJU_PATH = join(HOME, u'.juju')
-JUJU_ENVS_FILE = join(JUJU_PATH, u'environments.yaml')
-
-BAD_AUTH = u'charlie@hacker.com:challenge_accepted'
 
 
 def xprint(message):

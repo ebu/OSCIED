@@ -26,13 +26,11 @@
 
 # FIXME handle SIGTERM to save state
 
-import uuid, time
+import time
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-from nose.tools import assert_raises
 from oscied_lib.oscied_models import User
 from oscied_lib.oscied_client import OrchestraAPIClient
 from pyutils.py_datetime import datetime_now
-from pyutils.py_exception import assert_raises_item
 from pyutils.py_unicode import configure_unicode
 
 EVENTS_TIMETABLE = {1: '0', 59: 'time'}
