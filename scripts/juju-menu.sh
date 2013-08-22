@@ -71,9 +71,8 @@ main()
               destroy         'Destroy a deployed environment'           \
               standalone      'Play with a charm locally (yes, really)'  \
               status          'Display juju status'                      \
-              status_svg      'Display juju status as a SVG graphic'     \
               log             'Launch juju debug log in a screen'        \
-              config          'Update units public url listing file'     \
+              config          'Update units public URL listing file'     \
               unit_ssh        'Access to units with secure shell'        \
               unit_add        'Add a new unit to a running service'      \
               unit_remove     'Remove an unit from a running service'    \
@@ -129,17 +128,42 @@ deploy()
   ok=$true
 
   pecho 'Initialize JuJu orchestrator configuration'
-  if [ ! -f $HOME/.ssh/id_rsa ]; then ssh-keygen -t rsa; fi # FIXME better trick
-  ssh-add # Fix ERROR SSH forwarding error: Agent admitted failure to sign using the key.
+  if [ -f "$ID_RSA" ]; then
+    suffix=$(md5sum "$ID_RSA" | cut -d' ' -f1)
+    mecho "Backup certificate $ID_RSA into ${ID_RSA}_$suffix"
+    cp -f "$ID_RSA"     "${ID_RSA}_$suffix"     || xecho 'Unable to backup certificate file (1/2)'
+    cp -f "$ID_RSA_PUB" "${ID_RSA_PUB}_$suffix" || xecho 'Unable to backup certificate file (2/2)'
+  fi
+  if [ ! -f "$SCENARIO_JUJU_ID_RSA" ]; then
+    recho 'It is strongly advised to create a certificate per scenario'
+    yesOrNo $true 'generate it now'
+    if [ $REPLY -eq $true ]; then
+      ssh-keygen -t rsa "$SCENARIO_JUJU_ID_RSA"
+    fi
+  fi
+  if [ -f "$SCENARIO_JUJU_ID_RSA" ]; then
+    mecho "Using scenario's certificate file : $SCENARIO_JUJU_ID_RSA"
+    # And make scenario's certificate the default
+    cp -f "$SCENARIO_JUJU_ID_RSA"     "$ID_RSA"     || xecho 'Unable to copy certificate file (1/2)'
+    cp -f "$SCENARIO_JUJU_ID_RSA_PUB" "$ID_RSA_PUB" || xecho 'Unable to copy certificate file (2/2)'
+  fi
+  # Fix ERROR SSH forwarding error: Agent admitted failure to sign using the key.
+  ssh-add "$ID_RSA"
+
+  # FIXME and what about *.pem stuff ?
+
   mkdir -p "$JUJU_PATH" "$JUJU_STORAGE_PATH" 2>/dev/null
-  if [ -f "$CONFIG_JUJU_ENVS_FILE" ]; then
-    mecho "Using user defined environment : $CONFIG_JUJU_ENVS_FILE"
-    cp "$CONFIG_JUJU_ENVS_FILE" "$JUJU_ENVS_FILE" || \
-      xecho "Unable to copy juju's configuration file"
+  # Backup any already existing environments file (magic stuff) !
+  if [ -f "$JUJU_ENVS_FILE" ]; then
+    suffix=$(md5sum "$JUJU_ENVS_FILE" | cut -d' ' -f1)
+    cp -f "$JUJU_ENVS_FILE" "${JUJU_ENVS_FILE}_$suffix" || xecho 'Unable to backup environments file'
+  fi
+  if [ -f "$SCENARIO_JUJU_ENVS_FILE" ]; then
+    mecho "Using scenario's environments file : $SCENARIO_JUJU_ENVS_FILE"
+    cp "$SCENARIO_JUJU_ENVS_FILE" "$JUJU_ENVS_FILE" || xecho 'Unable to copy environments file'
   else
-    mecho 'Using default template to generate environment'
-    sed "s:RELEASE:$RELEASE:g" "$CONFIG_JUJU_TEMPL_FILE" > "$JUJU_ENVS_FILE" || \
-      xecho "Unable to generate juju's configuration file"
+    mecho 'Using juju to generate default environments file'
+    juju generate-config -w || xecho "Unable to generate juju's environments file"
   fi
   $udo ufw disable # Fix master thesis ticket #80 - Juju stuck in pending when using LXC
 
@@ -149,24 +173,22 @@ deploy()
   cp -f "$JUJU_ENVS_FILE" "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/"
   find "$JUJU_PATH" -type f -name '*.pem' -exec cp -f {} "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/" \;
 
-  cd "$CONFIG_PATH" || xecho "Unable to find path $CONFIG_PATH"
+  cd "$SCENARIOS_PATH" || xecho "Unable to find path $SCENARIOS_PATH"
 
   pecho 'Initialize scenarios menu'
-  find . -type f -name 'scenario.sh' | sort > $listing
+  find . -type f -name 'scenario.py' | sort > $listing
   scenariosList=''
   while read scenario
   do
-    
-    . "$scenario" # Include scenario source
-    name=$(basename "$scenario" .sh)
-    description=$(eval "echo \${${name}Description} | sed 's: :_:g'")
+    name=$(dirname "$scenario" | sed 's:\./::')
+    description=$(grep 'description = ' "$scenario" | cut -d'=' -f2 | sed "s: *'::g;s: :_:g")
     scenariosList="$scenariosList$name $description "
   done < $listing
 
   if [ "$scenario_auto" ]; then
     techo 'OSCIED Operations with JuJu > Deployment Scenarios [AUTO]'
-    mecho "Scenario is $scenario_auto"
-    eval "${scenario_auto}Scenario"
+    mecho "Launch scenario $scenario_auto"
+    python "$scenario_auto/scenario.py"
   else
     # Scenarios menu
     while true
@@ -178,7 +200,8 @@ deploy()
       retval=$?
       scenario=$(cat $tmpfile)
       [ $retval -ne 0 -o ! "$scenario" ] && break
-      eval "${scenario}Scenario"
+      mecho "Launch scenario $scenario_auto"
+      python "$scenario/scenario.py"
       [ $retval -eq 0 ] && pause
     done
   fi
@@ -283,12 +306,12 @@ standalone_execute_hook()
     xecho "Unable to detect network interface $NETWORK_IFACE IP address"
   fi
   ip=$REPLY
-  $udo sh -c "cp -f $CONFIG_JUJU_FILES_PATH/juju-log      $jujulog;  chmod 777 $jujulog"
-  $udo sh -c "cp -f $CONFIG_JUJU_FILES_PATH/open-port     $openport; chmod 777 $openport"
-  $udo sh -c "cp -f $CONFIG_JUJU_FILES_PATH/something-get $cget;     chmod 777 $cget"
-  $udo sh -c "cp -f $CONFIG_JUJU_FILES_PATH/something-get $rget;     chmod 777 $rget"
-  $udo sh -c "cp -f $CONFIG_JUJU_FILES_PATH/something-get $uget;     chmod 777 $uget"
-  $udo sh -c "cp -f $CONFIG_JUJU_FILES_PATH/something-get.list /tmp/;"
+  $udo sh -c "cp -f $TEMPLATES_PATH/juju-log      $jujulog;  chmod 777 $jujulog"
+  $udo sh -c "cp -f $TEMPLATES_PATH/open-port     $openport; chmod 777 $openport"
+  $udo sh -c "cp -f $TEMPLATES_PATH/something-get $cget;     chmod 777 $cget"
+  $udo sh -c "cp -f $TEMPLATES_PATH/something-get $rget;     chmod 777 $rget"
+  $udo sh -c "cp -f $TEMPLATES_PATH/something-get $uget;     chmod 777 $uget"
+  $udo sh -c "cp -f $TEMPLATES_PATH/something-get.list /tmp/;"
   $udo sh -c "sed -i 's:127.0.0.1:$ip:g' /tmp/something-get.list"
   pecho "Execute hook script $2"
   cd "$1"  || xecho "Unable to find path $1"
@@ -307,23 +330,6 @@ status()
   techo 'Status of amazon environment';  juju status --environment amazon
   techo 'Status of local environment';   juju status --environment local
   techo 'Status of maas environment';    juju status --environment maas
-}
-
-status_svg()
-{
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) status_svg"
-  fi
-  ok=$true
-
-  cd $HOME
-  e='--environment'
-  f='--format'
-  techo 'Status of default environment'; juju status $f svg --output default_status.svg
-  techo 'Status of amazon environment';  juju status $e amazon $f svg --output amazon_status.svg
-  techo 'Status of local environment';   juju status $e local  $f svg --output local_status.svg
-  techo 'Status of maas environment';    juju status $e maas   $f svg --output maas_status.svg
-  eog *_status.svg
 }
 
 log()
@@ -368,7 +374,7 @@ config()
     done
 
     if [ "$content" ]; then
-      echo $e_ "$content" > "$CONFIG_GEN_UNITS_FILE"
+      echo $e_ "$content" > "$SCENARIO_GEN_UNITS_FILE"
       recho "Charms's units public URLs listing file updated"
     else
       xecho "Unable to detect charms's units public URLs"
@@ -389,7 +395,7 @@ config()
         xecho 'Unable to detect storage mountpoint'
       else
         number=$(expr match "$REPLY" '.*_\([0-9]*\)')
-        # FIXME hardcoded brick directory !
+        # FIXME hard-coded brick directory !
         brick="/mnt/bricks/exp$number"
         mecho "Updating common.sh with detected storage mountpoint = $REPLY and brick = $brick"
         sed -i -e "s#STORAGE_MOUNTPOINT=.*#STORAGE_MOUNTPOINT='$REPLY'#" \
@@ -412,7 +418,7 @@ unit_ssh()
   [ $REPLY -eq $true ] && config
 
   # Initialize remote menu
-  unitsList=$(cat "$CONFIG_GEN_UNITS_FILE" | sort | sed 's:=: :g;s:\n: :g')
+  unitsList=$(cat "$SCENARIO_GEN_UNITS_FILE" | sort | sed 's:=: :g;s:\n: :g')
 
   # Remote menu
   while true

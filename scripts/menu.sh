@@ -242,7 +242,7 @@ api_init_setup()
     save_json "user$count" "$JSON"
     save_id   "user$count" "$ID"
     count=$((count+1))
-  done < "$CONFIG_API_USERS_FILE"
+  done < "$SCENARIO_API_USERS_FILE"
   IFS=$savedIFS
 
   get_auth 'user1'; user1_auth=$REPLY
@@ -269,7 +269,7 @@ api_init_setup()
     save_json "media$count" "$JSON"
     save_id   "media$count" "$ID"
     count=$((count+1))
-  done < "$CONFIG_API_MEDIAS_FILE"
+  done < "$SCENARIO_API_MEDIAS_FILE"
   IFS=$savedIFS
 
   pecho 'Add transform profiles'
@@ -287,7 +287,7 @@ api_init_setup()
     save_json "tprofile$count" "$JSON"
     save_id   "tprofile$count" "$ID"
     count=$((count+1))
-  done < "$CONFIG_API_TPROFILES_FILE"
+  done < "$SCENARIO_API_TPROFILES_FILE"
   IFS=$savedIFS
 
   #pecho 'Add medias'
