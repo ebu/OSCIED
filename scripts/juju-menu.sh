@@ -66,7 +66,6 @@ main()
     do
       $DIALOG --backtitle 'OSCIED Operations with JuJu' \
               --menu 'Please select an operation' 0 0 0 \
-              overwrite       'Overwrite charms in deployment path'      \
               deploy          'Launch a deployment scenario'             \
               destroy         'Destroy a deployed environment'           \
               standalone      'Play with a charm locally (yes, really)'  \
@@ -88,26 +87,7 @@ main()
   fi
 }
 
-overwrite()
-{
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) overwrite"
-  fi
-  ok=$true
-
-  overwrite_helper 'oscied-orchestra' 'oscied-orchestra'
-  overwrite_helper 'oscied-publisher' 'oscied-publisher'
-  overwrite_helper 'oscied-storage'   'oscied-storage'
-  overwrite_helper 'oscied-transform' 'oscied-transform'
-  overwrite_helper 'oscied-webui'     'oscied-webui'
-  overwrite_helper 'oscied-storage'   "oscied-orchestra/charms/$RELEASE/oscied-storage"
-  overwrite_helper 'oscied-transform' "oscied-orchestra/charms/$RELEASE/oscied-transform"
-  overwrite_helper 'oscied-publisher' "oscied-orchestra/charms/$RELEASE/oscied-publisher"
-  overwrite_helper 'oscied-webui'     "oscied-orchestra/charms/$RELEASE/oscied-webui"
-  lu-importUtils "$CHARMS_DEPLOY_PATH"
-}
-
-overwrite_helper()
+_overwrite_helper()
 {
   [ $# -ne 2 ] && xecho 'OUPS !'
   mkdir -p "$CHARMS_DEPLOY_PATH/$2" 2>/dev/null
@@ -127,6 +107,23 @@ deploy()
   fi
   ok=$true
 
+  [ "$scenario_auto" ] && default=$true_auto || default=$true
+
+  pecho 'Overwrite charms in deployment path'
+  yesOrNo $default 'do it now'
+  if [ $REPLY -eq $true ]; then
+    _overwrite_helper 'oscied-orchestra' 'oscied-orchestra'
+    _overwrite_helper 'oscied-publisher' 'oscied-publisher'
+    _overwrite_helper 'oscied-storage'   'oscied-storage'
+    _overwrite_helper 'oscied-transform' 'oscied-transform'
+    _overwrite_helper 'oscied-webui'     'oscied-webui'
+    _overwrite_helper 'oscied-storage'   "oscied-orchestra/charms/$RELEASE/oscied-storage"
+    _overwrite_helper 'oscied-transform' "oscied-orchestra/charms/$RELEASE/oscied-transform"
+    _overwrite_helper 'oscied-publisher' "oscied-orchestra/charms/$RELEASE/oscied-publisher"
+    _overwrite_helper 'oscied-webui'     "oscied-orchestra/charms/$RELEASE/oscied-webui"
+    lu-importUtils "$CHARMS_DEPLOY_PATH"
+  fi
+
   pecho 'Initialize JuJu orchestrator configuration'
   if [ -f "$ID_RSA" ]; then
     suffix=$(md5sum "$ID_RSA" | cut -d' ' -f1)
@@ -136,7 +133,7 @@ deploy()
   fi
   if [ ! -f "$SCENARIO_JUJU_ID_RSA" ]; then
     recho 'It is strongly advised to create a certificate per scenario'
-    yesOrNo $true 'generate it now'
+    yesOrNo $default 'generate it now'
     if [ $REPLY -eq $true ]; then
       ssh-keygen -t rsa -b 2048 -f "$SCENARIO_JUJU_ID_RSA"
     fi
@@ -175,21 +172,20 @@ deploy()
 
   cd "$SCENARIOS_PATH" || xecho "Unable to find path $SCENARIOS_PATH"
 
-  pecho 'Initialize scenarios menu'
-  find . -type f -name 'scenario.py' | sort > $listing
-  scenariosList=''
-  while read scenario
-  do
-    name=$(dirname "$scenario" | sed 's:\./::')
-    description=$(grep 'description = ' "$scenario" | cut -d'=' -f2 | sed "s: *'::g;s: :_:g")
-    scenariosList="$scenariosList$name $description "
-  done < $listing
-
   if [ "$scenario_auto" ]; then
     techo 'OSCIED Operations with JuJu > Deployment Scenarios [AUTO]'
     mecho "Launch scenario $scenario_auto"
     python "$scenario_auto/scenario.py"
   else
+    pecho 'Initialize scenarios menu'
+    find . -type f -name 'scenario.py' | sort > $listing
+    scenariosList=''
+    while read scenario
+    do
+      name=$(dirname "$scenario" | sed 's:\./::')
+      description=$(grep 'description = ' "$scenario" | cut -d'=' -f2 | sed "s: *'::g;s: :_:g")
+      scenariosList="$scenariosList$name $description "
+    done < $listing
     # Scenarios menu
     while true
     do
@@ -246,7 +242,7 @@ standalone()
   if [ "$charm_auto" -a "$hook_auto" ]; then
     techo 'OSCIED Operations with JuJu > Charms Standalone [AUTO]'
     mecho "Charm is $charm_auto, hook is $hook_auto"
-    standalone_execute_hook "$CHARMS_DEPLOY_PATH/$charm_auto" "$hook_auto"
+    _standalone_execute_hook "$CHARMS_DEPLOY_PATH/$charm_auto" "$hook_auto"
   else
     # Initialize charms menu
     find . -mindepth 1 -maxdepth 1 -type d | sort > $listing
@@ -287,7 +283,7 @@ standalone()
         retval=$?
         hook=$(cat $tmpfile)
         [ $retval -ne 0 -o ! "$hook" ] && break
-        standalone_execute_hook "$charm" "$hook"
+        _standalone_execute_hook "$charm" "$hook"
         [ $retval -eq 0 ] && pause
       done
 
@@ -297,7 +293,7 @@ standalone()
   fi
 }
 
-standalone_execute_hook()
+_standalone_execute_hook()
 {
   [ $# -ne 2 ] && xecho 'OUPS !'
 
