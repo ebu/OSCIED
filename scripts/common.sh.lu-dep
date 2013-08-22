@@ -62,6 +62,7 @@ WIKI_SOURCE_PATH="$DOCS_PATH/wiki/source"
 
 # Symbolic link to current configuration's path
 SCENARIO_CURRENT_PATH="$SCENARIOS_PATH/current"
+SCENARIO_CONFIG_FILE="$SCENARIO_CURRENT_PATH/config.yaml"
 
 # Generated configuration
 SCENARIO_GEN_PATH="$SCENARIO_CURRENT_PATH/generated"
@@ -69,7 +70,6 @@ SCENARIO_GEN_AUTHS_FILE="$SCENARIO_CURRENT_PATH/auths.list"
 SCENARIO_GEN_IDS_FILE="$SCENARIO_CURRENT_PATH/ids.list"
 SCENARIO_GEN_JSON_FILE="$SCENARIO_CURRENT_PATH/json.list"
 SCENARIO_GEN_UNITS_FILE="$SCENARIO_CURRENT_PATH/units.list"
-SCENARIO_GEN_CONFIG_FILE="$SCENARIO_CURRENT_PATH/config.yaml"
 
 # Orchestra related configuration (e.g. initial setup)
 SCENARIO_API_USERS_FILE="$SCENARIO_CURRENT_PATH/users.csv"
@@ -117,8 +117,8 @@ get_unit_config()
 
 get_root_secret()
 {
-  if [ -f "$CONFIG_GEN_CONFIG_FILE" ]; then
-    line=$(cat "$CONFIG_GEN_CONFIG_FILE" | grep root_secret)
+  if [ -f "$SCENARIO_CONFIG_FILE" ]; then
+    line=$(cat "$SCENARIO_CONFIG_FILE" | grep root_secret)
     root=$(expr match "$line" '.*"\(.*\)".*')
   else
     root='toto'
@@ -129,8 +129,8 @@ get_root_secret()
 
 get_node_secret()
 {
-  if [ -f "$CONFIG_GEN_CONFIG_FILE" ]; then
-    line=$(cat "$CONFIG_GEN_CONFIG_FILE" | grep node_secret)
+  if [ -f "$SCENARIO_CONFIG_FILE" ]; then
+    line=$(cat "$SCENARIO_CONFIG_FILE" | grep node_secret)
     node=$(expr match "$line" '.*"\(.*\)".*')
   else
     node='abcd'
@@ -143,13 +143,13 @@ get_node_secret()
 
 get_units_dialog_listing()
 {
-  REPLY=$(cat "$CONFIG_GEN_UNITS_FILE" | sort | sed 's:=: :g;s:\n: :g')
+  REPLY=$(cat "$SCENARIO_CONFIG_FILE" | sort | sed 's:=: :g;s:\n: :g')
   [ ! $REPLY ] && xecho 'Unable to generate units listing for dialog'
 }
 
 get_services_dialog_listing()
 {
-  REPLY=$(cat "$CONFIG_GEN_UNITS_FILE" | sort | sed 's:/[0-9]*=: :g;s:\n: :g' | uniq)
+  REPLY=$(cat "$SCENARIO_CONFIG_FILE" | sort | sed 's:/[0-9]*=: :g;s:\n: :g' | uniq)
   [ ! $REPLY ] && xecho 'Unable to generate services listing for dialog'
 }
 
@@ -161,8 +161,8 @@ get_unit_public_url()
   fail=$1
   name=$2
   [ $# -eq 3 ] && number=$3 || number='.*'
-  if [ -f "$CONFIG_GEN_UNITS_FILE" ]; then
-    url=$(cat "$CONFIG_GEN_UNITS_FILE" | grep -m 1 "^$name/$number=" | cut -d '=' -f2)
+  if [ -f "$SCENARIO_CONFIG_FILE" ]; then
+    url=$(cat "$SCENARIO_CONFIG_FILE" | grep -m 1 "^$name/$number=" | cut -d '=' -f2)
   else
     url='127.0.0.1'
   fi
@@ -230,8 +230,8 @@ juju_unit_remove()
     xecho "Usage: $(basename $0).juju_unit_remove unit"
   fi
   if juju remove-unit "$1"; then
-    cat "$CONFIG_GEN_UNITS_FILE" | grep -v "$1=.*" > $tmpfile
-    mv $tmpfile "$CONFIG_GEN_UNITS_FILE"
+    cat "$SCENARIO_GEN_UNITS_FILE" | grep -v "$1=.*" > $tmpfile
+    mv $tmpfile "$SCENARIO_GEN_UNITS_FILE"
   fi
 }
 
@@ -239,40 +239,40 @@ juju_unit_remove()
 
 save_auth()
 {
-  cat "$CONFIG_GEN_AUTHS_FILE" 2>/dev/null | grep -v "^$1=" > /tmp/$$
+  cat "$SCENARIO_GEN_AUTHS_FILE" 2>/dev/null | grep -v "^$1=" > /tmp/$$
   echo "$1=$2" >> /tmp/$$
-  mv /tmp/$$ "$CONFIG_GEN_AUTHS_FILE"
+  mv /tmp/$$ "$SCENARIO_GEN_AUTHS_FILE"
 }
 
 get_auth()
 {
-  REPLY=$(cat "$CONFIG_GEN_AUTHS_FILE" 2>/dev/null | grep "^$1=" | cut -d '=' -f2)
+  REPLY=$(cat "$SCENARIO_GEN_AUTHS_FILE" 2>/dev/null | grep "^$1=" | cut -d '=' -f2)
   [ ! "$REPLY" ] && xecho "Unable to detect $1 authentication"
 }
 
 save_id()
 {
-  cat "$CONFIG_GEN_IDS_FILE" 2>/dev/null | grep -v "^$1=" > /tmp/$$
+  cat "$SCENARIO_GEN_IDS_FILE" 2>/dev/null | grep -v "^$1=" > /tmp/$$
   echo "$1=$2" >> /tmp/$$
-  mv /tmp/$$ "$CONFIG_GEN_IDS_FILE"
+  mv /tmp/$$ "$SCENARIO_GEN_IDS_FILE"
 }
 
 get_id()
 {
-  REPLY=$(cat "$CONFIG_GEN_IDS_FILE" 2>/dev/null | grep "^$1=" | cut -d '=' -f2)
+  REPLY=$(cat "$SCENARIO_GEN_IDS_FILE" 2>/dev/null | grep "^$1=" | cut -d '=' -f2)
   [ ! "$REPLY" ] && xecho "Unable to detect $1 ID"
 }
 
 save_json()
 {
-  cat "$CONFIG_GEN_JSON_FILE" 2>/dev/null | grep -v "^$1=" > /tmp/$$
+  cat "$SCENARIO_GEN_JSON_FILE" 2>/dev/null | grep -v "^$1=" > /tmp/$$
   echo "$1=$2" >> /tmp/$$
-  mv /tmp/$$ "$CONFIG_GEN_JSON_FILE"
+  mv /tmp/$$ "$SCENARIO_GEN_JSON_FILE"
 }
 
 get_json()
 {
-  REPLY=$(cat "$CONFIG_GEN_JSON_FILE" 2>/dev/null | grep "^$1=" | cut -d '=' -f2)
+  REPLY=$(cat "$SCENARIO_GEN_JSON_FILE" 2>/dev/null | grep "^$1=" | cut -d '=' -f2)
   [ ! "$REPLY" ] && xecho "Unable to detect $1 json"
 }
 
