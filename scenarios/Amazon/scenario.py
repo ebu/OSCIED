@@ -24,21 +24,20 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from oscied_lib.pyutils.py_juju import DeploymentScenario
+from library.oscied_lib.pyutils.py_juju import DeploymentScenario
 
-description = u'Launch oscied (minimal setup) locally (LXC provider)'
+description = u'Launch oscied (nano setup) on Amazon'
 
-class Local(DeploymentScenario):
+class Amazon(DeploymentScenario):
 
     def run(self):
         print(description)
-        self.bootstrap(u'local', wait_started=True)
-        self.launch_log(u'local')
-        self.deploy(u'oscied-transform', 1)
-        self.deploy(u'oscied-publisher', 1, expose=True)
+        self.bootstrap(u'amazon', wait_started=True)
         self.deploy(u'oscied-orchestra', 1, expose=True)
-        self.deploy(u'oscied-webui',     1, expose=True)
         self.deploy(u'oscied-storage',   1)
+        self.deploy(u'oscied-transform', 1, to=2)
+        self.deploy(u'oscied-webui',     1, to=1, expose=True)
+        self.deploy(u'oscied-publisher', 1, to=2, expose=True)
         has_proxy = self.deploy(u'haproxy', 1, expose=True, release=u'precise', required=False)
 
         for peer in (u'orchestra', u'webui', u'transform', u'publisher'):
@@ -51,4 +50,4 @@ class Local(DeploymentScenario):
                 self.unexpose_service(u'oscied-webui')
 
 if __name__ == u'__main__':
-    Local().main()
+    Amazon().main()

@@ -1,3 +1,4 @@
+build/
 cover/
 .coverage
 setup.log
