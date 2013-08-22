@@ -25,6 +25,9 @@
 #
 #  Retrieved from git clone https://github.com/davidfischer-ch/pyutils.git
 
-if __name__ == '__main__':
+def main():
     from oscied_lib.pyutils.py_unittest import runtests
-    runtests(__file__, package=u'library', package_path=u'../oscied_lib')
+    return runtests(__file__, package=u'library', package_path=u'../oscied_lib')
+
+if __name__ == '__main__':
+    main()
