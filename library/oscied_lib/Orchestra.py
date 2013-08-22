@@ -585,7 +585,7 @@ def get_test_orchestra(api_init_csv_directory):
         i = (i + 1) % len(users)
     reader = csv_reader(os.path.join(api_init_csv_directory, u'tprofiles.csv'))
     for title, description, encoder_name, encoder_string in reader:
-        profile = TransformProfile(None, title, description, encoder_name, encoder_string)
+        profile = TransformProfile(title, description, encoder_name, encoder_string)
         print(u'Adding transformation profile {0}'.format(profile.title))
         orchestra.save_transform_profile(profile)
     reader = csv_reader(os.path.join(api_init_csv_directory, u'ttasks.csv'))
@@ -611,7 +611,7 @@ def get_test_orchestra(api_init_csv_directory):
 if __name__ == u'__main__':
     from pyutils.py_unicode import configure_unicode
     configure_unicode()
-    orchestra = get_test_orchestra(u'../../config/api')
+    orchestra = get_test_orchestra(u'../../scenarios/current')
     print(u'There are {0} registered users.'.format(len(orchestra.get_users())))
     print(u'There are {0} available media assets.'.format(len(orchestra.get_medias())))
     print(u'There are {0} available transformation profiles.'.format(len(orchestra.get_transform_profiles())))

@@ -25,9 +25,8 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 import os, sys
-from os.path import abspath, dirname, join
+from os.path import abspath, dirname
 sys.path.append(abspath(dirname(dirname(__file__))))
-sys.path.append(abspath(join(dirname(dirname(__file__)), u'pyutils')))
 
 from copy import copy
 from nose.tools import assert_equal
@@ -61,7 +60,7 @@ class TestTransformHooks(object):
         hooks.local_config.hosts_file = u'hosts'  # Avoid writing to system hosts file !
         hooks.local_config.celery_config_file = u'celeryconfig.py'
         hooks.local_config.celery_template_file = os.path.join(
-            u'../oscied-transform', hooks.local_config.celery_template_file)
+            u'../../charms/oscied-transform', hooks.local_config.celery_template_file)
         return hooks
 
     def tearDown(self):
@@ -87,7 +86,7 @@ class TestTransformHooks(object):
     def test_subordinate_register_transform(self):
         self.hooks = self.create_hooks(CONFIG_TRANSFORM)
         self.hooks.local_config.celery_template_file = os.path.join(
-            u'../oscied-transform', self.hooks.local_config.celery_template_file)
+            u'../../charms/oscied-transform', self.hooks.local_config.celery_template_file)
         self.hooks.subordinate_register(mongo=u'fail', rabbit=u'fail')
         assert_equal(self.hooks.local_config.api_nat_socket, CONFIG_TRANSFORM[u'api_nat_socket'])
         celeryconfig = {}

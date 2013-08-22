@@ -30,9 +30,9 @@ import logging
 import sys
 from flask import Flask, abort, request
 from kitchen.text.converters import to_bytes
-from pyutils.py_flask import check_id, get_request_json, json_response, map_exceptions
-from pyutils.py_logging import setup_logging
-from pyutils.py_serialization import object2json
+from library.oscied_lib.pyutils.py_flask import check_id, get_request_json, json_response, map_exceptions
+from library.oscied_lib.pyutils.py_logging import setup_logging
+from library.oscied_lib.pyutils.py_serialization import object2json
 from library.oscied_lib.Orchestra import Orchestra
 from library.oscied_lib.oscied_config import OrchestraLocalConfig
 from library.oscied_lib.oscied_models import Media, User, TransformProfile
@@ -2708,7 +2708,7 @@ def api_revoke_publish_task_hook():
 
 if __name__ == u'__main__':
 
-    from pyutils.py_unicode import configure_unicode
+    from library.oscied_lib.pyutils.py_unicode import configure_unicode
     configure_unicode()
 
     try:

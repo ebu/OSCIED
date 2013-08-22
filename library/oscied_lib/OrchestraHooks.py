@@ -250,7 +250,7 @@ class OrchestraHooks(CharmHooks_Storage):
 if __name__ == u'__main__':
     from pyutils.py_unicode import configure_unicode
     configure_unicode()
-    OrchestraHooks(first_that_exist(u'metadata.yaml',    u'../oscied-orchestra/metadata.yaml'),
-                   first_that_exist(u'config.yaml',      u'../oscied-orchestra/config.yaml'),
-                   first_that_exist(u'local_config.pkl', u'../oscied-orchestra/local_config.pkl'),
+    OrchestraHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-orchestra/metadata.yaml'),
+                   first_that_exist(u'config.yaml',      u'../../charms/oscied-orchestra/config.yaml'),
+                   first_that_exist(u'local_config.pkl', u'../../charms/oscied-orchestra/local_config.pkl'),
                    DEFAULT_OS_ENV).trigger()

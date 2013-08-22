@@ -95,7 +95,7 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
 if __name__ == u'__main__':
     from pyutils.py_unicode import configure_unicode
     configure_unicode()
-    TransformHooks(first_that_exist(u'metadata.yaml',    u'../oscied-transform/metadata.yaml'),
-                   first_that_exist(u'config.yaml',      u'../oscied-transform/config.yaml'),
-                   first_that_exist(u'local_config.pkl', u'../oscied-transform/local_config.pkl'),
+    TransformHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-transform/metadata.yaml'),
+                   first_that_exist(u'config.yaml',      u'../../charms/oscied-transform/config.yaml'),
+                   first_that_exist(u'local_config.pkl', u'../../charms/oscied-transform/local_config.pkl'),
                    DEFAULT_OS_ENV).trigger()

@@ -25,15 +25,14 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 import os, sys
-from os.path import abspath, dirname, join
+from os.path import abspath, dirname
 sys.path.append(abspath(dirname(dirname(__file__))))
-sys.path.append(abspath(join(dirname(dirname(__file__)), u'pyutils')))
 
 import shutil
 from copy import copy
 from mock import call
 from nose.tools import assert_equal
-from pyutils.py_mock import mock_cmd
+from oscied_lib.pyutils.py_mock import mock_cmd
 from oscied_lib.oscied_config import OrchestraLocalConfig
 from oscied_lib.oscied_hook_base import DEFAULT_OS_ENV
 from oscied_lib.OrchestraHooks import OrchestraHooks
@@ -63,8 +62,8 @@ class OrchestraHooks_tmp(OrchestraHooks):
         return [u'celery']
 
 
-import pyutils.py_subprocess
-pyutils.py_subprocess.cmd = mock_cmd()
+import oscied_lib.pyutils.py_subprocess
+oscied_lib.pyutils.py_subprocess.cmd = mock_cmd()
 
 class TestOrchestraHooks(object):
 
@@ -76,9 +75,9 @@ class TestOrchestraHooks(object):
         self.hooks.local_config.hosts_file = u'hosts'  # Avoid writing to system hosts file !
         self.hooks.local_config.celery_config_file = u'celeryconfig.py'
         self.hooks.local_config.celery_template_file = os.path.join(
-            u'../oscied-orchestra', self.hooks.local_config.celery_template_file)
+            u'../../charms/oscied-orchestra', self.hooks.local_config.celery_template_file)
         self.hooks.local_config.ssh_template_path = os.path.join(
-            u'../oscied-orchestra', self.hooks.local_config.ssh_template_path)
+            u'../../charms/oscied-orchestra', self.hooks.local_config.ssh_template_path)
         self.hooks.local_config.mongo_config_file = u'mongodb_test.conf'
 
     def tearDown(self):
@@ -92,13 +91,13 @@ class TestOrchestraHooks(object):
         self.hooks.cmd = mock_cmd()
         self.hooks.hook_config_changed()
         # Check calls of cmd done by rsync
-        assert_equal(len(pyutils.py_subprocess.cmd.call_args_list), 2)
-        assert_equal(pyutils.py_subprocess.cmd.call_args_list[0][0],
-                     ([u'rsync', u'-a', u'-r', u'../oscied-orchestra/ssh/', u'/home/david/.ssh/'],))
-        assert_equal(pyutils.py_subprocess.cmd.call_args_list[0][1]['fail'], True)
-        assert_equal(pyutils.py_subprocess.cmd.call_args_list[1][0],
+        assert_equal(len(oscied_lib.pyutils.py_subprocess.cmd.call_args_list), 2)
+        assert_equal(oscied_lib.pyutils.py_subprocess.cmd.call_args_list[0][0],
+                     ([u'rsync', u'-a', u'-r', u'../../charms/oscied-orchestra/ssh/', u'/home/david/.ssh/'],))
+        assert_equal(oscied_lib.pyutils.py_subprocess.cmd.call_args_list[0][1]['fail'], True)
+        assert_equal(oscied_lib.pyutils.py_subprocess.cmd.call_args_list[1][0],
                      ([u'rsync', u'-a', u'-r', u'juju', u'/home/david/.juju/'],))
-        assert_equal(pyutils.py_subprocess.cmd.call_args_list[1][1]['fail'], True)
+        assert_equal(oscied_lib.pyutils.py_subprocess.cmd.call_args_list[1][1]['fail'], True)
         # Check calls of cmd done by OrchestraHooks
         assert_equal(self.hooks.cmd.call_args_list, [
             call(u'service mongodb start',         fail=False),

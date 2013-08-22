@@ -25,15 +25,14 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 import os, sys
-from os.path import abspath, dirname, join
+from os.path import abspath, dirname
 sys.path.append(abspath(dirname(dirname(__file__))))
-sys.path.append(abspath(join(dirname(dirname(__file__)), u'pyutils')))
 
 from copy import copy
 from mock import call, Mock
 from nose.tools import assert_equal, raises
-import pyutils.py_mock as py_mock
-from pyutils.py_mock import mock_cmd, mock_side_effect
+import oscied_lib.pyutils.py_mock as py_mock
+from oscied_lib.pyutils.py_mock import mock_cmd, mock_side_effect
 from oscied_lib.oscied_config import StorageLocalConfig
 from oscied_lib.oscied_hook_base import DEFAULT_OS_ENV
 from oscied_lib.StorageHooks import StorageHooks

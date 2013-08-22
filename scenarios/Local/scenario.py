@@ -24,7 +24,7 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 import os
-from pyutils.py_console import confirm
+from library.pyutils.py_console import confirm
 
 description = 'Launch oscied (minimal setup) locally (LXC provider)'
 

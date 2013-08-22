@@ -25,16 +25,15 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 import sys
-from os.path import abspath, dirname, join
+from os.path import abspath, dirname
 from requests import get, post
 sys.path.append(abspath(dirname(dirname(__file__))))
-sys.path.append(abspath(join(dirname(dirname(__file__)), u'pyutils')))
 
 from mock import call
 from nose.tools import assert_equal, assert_raises
+from oscied_lib.pyutils.py_mock import mock_cmd
 from oscied_lib.oscied_client import OsciedCRUDMapper, OrchestraAPIClient
 from oscied_lib.oscied_models import User
-from pyutils.py_mock import mock_cmd
 
 
 class FakeAPIClient(object):

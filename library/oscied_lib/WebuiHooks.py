@@ -196,7 +196,7 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
 if __name__ == u'__main__':
     from pyutils.py_unicode import configure_unicode
     configure_unicode()
-    WebuiHooks(first_that_exist(u'metadata.yaml',    u'../oscied-webui/metadata.yaml'),
-               first_that_exist(u'config.yaml',      u'../oscied-webui/config.yaml'),
-               first_that_exist(u'local_config.pkl', u'../oscied-webui/local_config.pkl'),
+    WebuiHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-webui/metadata.yaml'),
+               first_that_exist(u'config.yaml',      u'../../charms/oscied-webui/config.yaml'),
+               first_that_exist(u'local_config.pkl', u'../../charms/oscied-webui/local_config.pkl'),
                DEFAULT_OS_ENV).trigger()

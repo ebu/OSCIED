@@ -73,7 +73,7 @@ class OsciedCRUDMapper(object):
             raise ValueError(to_bytes(u'args should contain only 1 value.'))
         value = args[0] if args else kwargs
         response = self.api_client.do_request(post, self.get_url(), data=object2json(value, include_properties=False))
-        instance = self.cls(**response)
+        instance = self.cls(**response) if self.cls else response
         # Recover user's secret
         if isinstance(instance, User):
             instance.secret = value.secret if args else kwargs['secret']

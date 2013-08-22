@@ -115,7 +115,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
 if __name__ == u'__main__':
     from pyutils.py_unicode import configure_unicode
     configure_unicode()
-    PublisherHooks(first_that_exist(u'metadata.yaml',    u'../oscied-publisher/metadata.yaml'),
-                   first_that_exist(u'config.yaml',      u'../oscied-publisher/config.yaml'),
-                   first_that_exist(u'local_config.pkl', u'../oscied-publisher/local_config.pkl'),
+    PublisherHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-publisher/metadata.yaml'),
+                   first_that_exist(u'config.yaml',      u'../../charms/oscied-publisher/config.yaml'),
+                   first_that_exist(u'local_config.pkl', u'../../charms/oscied-publisher/local_config.pkl'),
                    DEFAULT_OS_ENV).trigger()
