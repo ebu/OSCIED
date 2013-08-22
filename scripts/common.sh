@@ -50,16 +50,6 @@ TEMPLATES_PATH="$BASE_PATH/templates"
 TOOLS_PATH="$BASE_PATH/tools"
 REFERENCES_PATH="$DOCS_PATH/references"
 
-# Reports related configuration (e.g. listing of components)
-REPORT_TOOLS_PLANTUML_BINARY="$TOOLS_PATH/plantuml.jar"
-DAVID_REPORT_RELEASE_PATH="$DOCS_PATH/david/master_thesis"
-DAVID_REPORT_PATH="$DOCS_PATH/david/master_thesis_rst"
-DAVID_REPORT_BUILD_PATH="$DAVID_REPORT_PATH/build"
-DAVID_REPORT_UML_PATH="$DAVID_REPORT_PATH/uml"
-
-WIKI_BUILD_PATH="$DOCS_PATH/wiki/build"
-WIKI_SOURCE_PATH="$DOCS_PATH/wiki/source"
-
 # Symbolic link to current configuration's path
 SCENARIO_CURRENT_PATH="$SCENARIOS_PATH/current"
 SCENARIO_CONFIG_FILE="$SCENARIO_CURRENT_PATH/config.yaml"
@@ -89,7 +79,6 @@ JUJU_PATH="$HOME/.juju"
 JUJU_STORAGE_PATH="$JUJU_PATH/local/"
 JUJU_ENVS_FILE="$JUJU_PATH/environments.yaml"
 
-BAD_AUTH='charlie@hacker.com:challenge_accepted'
 
 # Utilities ============================================================================================================
 
