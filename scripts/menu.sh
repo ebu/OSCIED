@@ -66,7 +66,6 @@ main()
       $DIALOG --backtitle 'OSCIED General Operations' \
               --menu 'Please select an operation' 0 0 0 \
               install              'Download / update documents and tools'               \
-              cleanup              'Cleanup configuration of charms (deploy path)'       \
               api_init_setup       "${a}Initialize demo setup with Orchestra API"        \
               rsync_orchestra      'Rsync local code to running Orchestra instance'      \
               rsync_publisher      'Rsync local code to running Publisher instance'      \
@@ -174,18 +173,6 @@ install()
 
   pecho 'Fixes #7 - https://github.com/ebu/OSCIED/issues/7'
   $udo sed -i 's:#!/usr/bin/python3.*:#!/usr/bin/python3 -Es:' /usr/bin/lxc-ls
-}
-
-cleanup()
-{
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) cleanup"
-  fi
-  ok=$true
-
-  cd "$CHARMS_DEPLOY_PATH" || xecho "Unable to find path $CHARMS_DEPLOY_PATH"
-  git reset --hard  # Revert changes to modified files
-  git clean -fd     # Remove all untracked files and directories
 }
 
 api_init_setup()
