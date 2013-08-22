@@ -33,9 +33,9 @@ from kitchen.text.converters import to_bytes
 from pyutils.py_flask import check_id, get_request_json, json_response, map_exceptions
 from pyutils.py_logging import setup_logging
 from pyutils.py_serialization import object2json
-from oscied_lib.Orchestra import Orchestra
-from oscied_lib.oscied_config import OrchestraLocalConfig
-from oscied_lib.oscied_models import Media, User, TransformProfile
+from library.oscied_lib.Orchestra import Orchestra
+from library.oscied_lib.oscied_config import OrchestraLocalConfig
+from library.oscied_lib.oscied_models import Media, User, TransformProfile
 
 
 # Global variables -----------------------------------------------------------------------------------------------------

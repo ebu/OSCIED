@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-python -m oscied_lib.StorageHooks uninstall
+python -m library.oscied_lib.StorageHooks uninstall
