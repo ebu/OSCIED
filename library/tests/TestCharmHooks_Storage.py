@@ -29,12 +29,12 @@ from os.path import abspath, dirname
 sys.path.append(abspath(dirname(dirname(__file__))))
 
 import shutil
-import oscied_lib.pyutils.py_mock
+import oscied_lib.pyutils.py_unittest
 from codecs import open
 from copy import copy
 from mock import call
 from nose.tools import assert_equal
-from oscied_lib.pyutils.py_mock import mock_cmd, mock_side_effect
+from oscied_lib.pyutils.py_unittest import mock_cmd, mock_side_effect
 from oscied_lib.oscied_config import TransformLocalConfig
 from oscied_lib.oscied_hook_base import CharmHooks_Storage, DEFAULT_OS_ENV
 
@@ -91,7 +91,7 @@ class TestCharmHooks_Storage(object):
     def test_storage_remount_storage_config_nat_hosts_updated(self):
         self.hooks, system_hosts = self.create_hooks(CharmHooks_Storage_tmp, CONFIG_STORAGE_NAT)
         self.hooks.cmd = mock_cmd()
-        oscied_lib.pyutils.py_mock.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
+        oscied_lib.pyutils.py_unittest.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
         self.hooks.storage_remount()
         assert_equal(self.hooks.cmd.call_args_list,
             [call([u'mount', u'-t', u'glusterfs', u'proxy.ch:/medias_volume_0', u'/mnt/storage'])])
@@ -101,7 +101,7 @@ class TestCharmHooks_Storage(object):
     def test_storage_remount_storage_config(self):
         self.hooks, system_hosts = self.create_hooks(CharmHooks_Storage_tmp, CONFIG_STORAGE)
         self.hooks.cmd = mock_cmd()
-        oscied_lib.pyutils.py_mock.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
+        oscied_lib.pyutils.py_unittest.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
         self.hooks.storage_remount()
         assert_equal(self.hooks.cmd.call_args_list,
             [call([u'mount', u'-t', u'glusterfs', u'home.ch:/medias_volume_0', u'/mnt/storage'])])
@@ -110,9 +110,9 @@ class TestCharmHooks_Storage(object):
     def test_storage_remount_storage_config_do_not_re_re_mount(self):
         self.hooks, system_hosts = self.create_hooks(CharmHooks_Storage_tmp, CONFIG_STORAGE)
         self.hooks.cmd = mock_cmd()
-        oscied_lib.pyutils.py_mock.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
+        oscied_lib.pyutils.py_unittest.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
         self.hooks.storage_remount()
-        oscied_lib.pyutils.py_mock.MOCK_SIDE_EFFECT_RETURNS = [Exception(u'oups')]
+        oscied_lib.pyutils.py_unittest.MOCK_SIDE_EFFECT_RETURNS = [Exception(u'oups')]
         self.hooks.storage_remount()
         self.hooks.storage_remount()
         assert_equal(self.hooks.cmd.call_args_list,
@@ -122,9 +122,9 @@ class TestCharmHooks_Storage(object):
     def test_storage_remount_do_not_re_re_mount(self):
         self.hooks, system_hosts = self.create_hooks(CharmHooks_Storage_tmp, CONFIG_DEFAULT)
         self.hooks.cmd = mock_cmd()
-        oscied_lib.pyutils.py_mock.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
+        oscied_lib.pyutils.py_unittest.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
         self.hooks.storage_remount(address=u'home.ch', fstype=u'glusterfs', mountpoint=u'my_vol_0')
-        oscied_lib.pyutils.py_mock.MOCK_SIDE_EFFECT_RETURNS = [Exception(u'oups')]
+        oscied_lib.pyutils.py_unittest.MOCK_SIDE_EFFECT_RETURNS = [Exception(u'oups')]
         self.hooks.storage_remount(address=u'home.ch', fstype=u'glusterfs', mountpoint=u'my_vol_0')
         self.hooks.storage_remount(address=u'home.ch', fstype=u'glusterfs', mountpoint=u'my_vol_0')
         assert_equal(self.hooks.cmd.call_args_list,

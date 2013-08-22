@@ -31,8 +31,8 @@ sys.path.append(abspath(dirname(dirname(__file__))))
 from copy import copy
 from mock import call, Mock
 from nose.tools import assert_equal, raises
-import oscied_lib.pyutils.py_mock as py_mock
-from oscied_lib.pyutils.py_mock import mock_cmd, mock_side_effect
+import oscied_lib.pyutils.py_unittest as py_unittest
+from oscied_lib.pyutils.py_unittest import mock_cmd, mock_side_effect
 from oscied_lib.oscied_config import StorageLocalConfig
 from oscied_lib.oscied_hook_base import DEFAULT_OS_ENV
 from oscied_lib.StorageHooks import StorageHooks
@@ -96,7 +96,7 @@ class TestStorageHooks(object):
     def test_install_replica_1_with_client(self):
         self.hooks.local_config.allowed_ips = []
 
-        py_mock.MOCK_SIDE_EFFECT_RETURNS = [
+        py_unittest.MOCK_SIDE_EFFECT_RETURNS = [
             u'', u'', u'', u'',  # apt-get + ntp
             u'', u'',  # volume_create_or_expand
             {u'stdout': u'\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started'
@@ -135,7 +135,7 @@ class TestStorageHooks(object):
 
         # FIXME unit test relation departed & co with known input values from a live test with juju to fix issue #66
 
-        # py_mock.MOCK_SIDE_EFFECT_RETURNS = [
+        # py_unittest.MOCK_SIDE_EFFECT_RETURNS = [
         #     u'10.1.1.11', u'10.1.1.11',  # peer-relation changed loop
         #     u'FIXME TODO',  # volume_create_or_expand
         #     ]

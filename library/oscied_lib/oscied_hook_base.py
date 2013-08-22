@@ -237,8 +237,8 @@ class CharmHooks(object):
         >>> print(hooks.config.pingu)
         bi bi
         >>> hooks.config.verbose = True
-        >>> hooks.load_config(u'../oscied-orchestra/config.yaml')  # doctest: +ELLIPSIS
-        [DEBUG] Load config from file ../oscied-orchestra/config.yaml
+        >>> hooks.load_config(u'../../charms/oscied-orchestra/config.yaml')  # doctest: +ELLIPSIS
+        [DEBUG] Load config from file ../../charms/oscied-orchestra/config.yaml
         [DEBUG] Convert boolean option verbose true -> True
         [DEBUG] Convert boolean option cleanup true -> True
         >>> hasattr(hooks.config, u'rabbit_password')
@@ -270,8 +270,8 @@ class CharmHooks(object):
         >>> hooks.metadata
         {u'ensemble': u'oscied'}
         >>> hooks.config.verbose = True
-        >>> hooks.load_metadata(u'../oscied-orchestra/metadata.yaml')  # doctest: +ELLIPSIS
-        [DEBUG] Load metadatas from file ../oscied-orchestra/metadata.yaml
+        >>> hooks.load_metadata(u'../../charms/oscied-orchestra/metadata.yaml')  # doctest: +ELLIPSIS
+        [DEBUG] Load metadatas from file ../../charms/oscied-orchestra/metadata.yaml
         >>> print(hooks.metadata[u'maintainer'])
         OSCIED Main Developper <david.fischer.ch@gmail.com>
         """
