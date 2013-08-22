@@ -131,7 +131,6 @@ install()
   cd "$REFERENCES_PATH"|| xecho "Unable to find path $REFERENCES_PATH"
   openstack='http://docs.openstack.org'
   wget -N $openstack/trunk/openstack-compute/install/apt/openstack-install-guide-apt-trunk.pdf
-  wget -N $openstack/cli/quick-start/content/cli-guide.pdf
   wget -N $openstack/api/openstack-compute/programmer/openstackapi-programming.pdf
   wget -N $openstack/folsom/openstack-compute/admin/bk-compute-adminguide-folsom.pdf
   wget -N $openstack/folsom/openstack-network/admin/bk-quantum-admin-guide-folsom.pdf
