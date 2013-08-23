@@ -165,7 +165,7 @@ _deploy_helper()
     "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/" \;
 
   pecho "Execute script of scenario $scenario"
-  $udo python "$scenario/scenario.py"
+  $udo python "$scenario/scenario.py" "$(dirname "$CHARMS_DEPLOY_PATH")" -r "$RELEASE"
 }
 
 _overwrite_helper()
