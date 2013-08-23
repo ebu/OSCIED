@@ -74,6 +74,7 @@ main()
               status           "${b}Display juju status"                        \
               log              "${b}Launch juju debug log in a screen"          \
               api_init_setup   "${a}Initialize demo setup with Orchestra API"   \
+              browse_webui     'Launch a browser to browse the Web UI'          \
               rsync_orchestra  'Rsync local code to running Orchestra instance' \
               rsync_publisher  'Rsync local code to running Publisher instance' \
               rsync_storage    'Rsync local code to running Storage instance'   \
@@ -472,6 +473,12 @@ api_init_setup()
   #$udo mkdir -p /mnt/storage/medias /mnt/storage/uploads
   #$udo cp "$SCRIPTS_PATH/common.sh" /mnt/storage/uploads/tabby.mpg
   #_test_api 200 POST $orchestra_url/media "$admin_auth" "$media1_json"; _save_id 'media1' "$ID"
+}
+
+browse_webui()
+{
+  _get_unit_public_url $true 'oscied-webui'
+  xdg-open "http://$REPLY"
 }
 
 rsync_orchestra()
