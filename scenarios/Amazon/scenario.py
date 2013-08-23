@@ -33,12 +33,12 @@ class Amazon(DeploymentScenario):
     def run(self):
         print(description)
         self.bootstrap(u'amazon', wait_started=True)
-        self.deploy(u'oscied-orchestra', 1, expose=True)
-        self.deploy(u'oscied-storage',   1)
-        self.deploy(u'oscied-transform', 1, to=2)
-        self.deploy(u'oscied-webui',     1, to=1, expose=True)
-        self.deploy(u'oscied-publisher', 1, to=2, expose=True)
-        has_proxy = self.deploy(u'haproxy', 1, expose=True, release=u'precise', required=False)
+        self.deploy(u'oscied-orchestra', local=True, expose=True)
+        self.deploy(u'oscied-storage',   local=True)
+        self.deploy(u'oscied-transform', local=True, to=2)
+        self.deploy(u'oscied-webui',     local=True, to=1, expose=True)
+        self.deploy(u'oscied-publisher', local=True, to=2, expose=True)
+        has_proxy = self.deploy(u'haproxy', expose=True, release=u'precise', required=False)[0]
 
         for peer in (u'orchestra', u'webui', u'transform', u'publisher'):
             self.add_relation(u'oscied-storage', u'oscied-{0}'.format(peer))

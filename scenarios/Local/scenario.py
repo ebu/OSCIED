@@ -24,6 +24,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+from os.path import join
 from oscied_lib.pyutils.py_juju import DeploymentScenario
 
 description = u'Launch oscied (minimal setup) locally (LXC provider)'
@@ -34,12 +35,12 @@ class Local(DeploymentScenario):
         print(description)
         self.bootstrap(u'local', wait_started=True)
         self.launch_log(u'local')
-        self.deploy(u'oscied-transform', 1)
-        self.deploy(u'oscied-publisher', 1, expose=True)
-        self.deploy(u'oscied-orchestra', 1, expose=True)
-        self.deploy(u'oscied-webui',     1, expose=True)
-        self.deploy(u'oscied-storage',   1)
-        has_proxy = self.deploy(u'haproxy', 1, expose=True, release=u'precise', required=False)
+        self.deploy(u'oscied-transform', local=True)
+        self.deploy(u'oscied-publisher', local=True, expose=True)
+        self.deploy(u'oscied-orchestra', local=True, expose=True)
+        self.deploy(u'oscied-webui',     local=True, expose=True)
+        self.deploy(u'oscied-storage',   local=True)
+        has_proxy = self.deploy(u'haproxy', expose=True, release=u'precise', required=False)[0]
 
         for peer in (u'orchestra', u'webui', u'transform', u'publisher'):
             self.add_relation(u'oscied-storage', u'oscied-{0}'.format(peer))
@@ -51,4 +52,4 @@ class Local(DeploymentScenario):
                 self.unexpose_service(u'oscied-webui')
 
 if __name__ == u'__main__':
-    Local().main()
+    Local().main(config=join(dirname(__file__), u'config.yaml'))
