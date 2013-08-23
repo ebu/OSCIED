@@ -161,9 +161,10 @@ _deploy_helper()
   cp -f "$ID_RSA"         "$CHARMS_DEPLOY_PATH/oscied-orchestra/ssh/"
   cp -f "$ID_RSA_PUB"     "$CHARMS_DEPLOY_PATH/oscied-orchestra/ssh/"
   cp -f "$JUJU_ENVS_FILE" "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/"
-  find "$JUJU_PATH" -type f -name '*.pem' -exec cp -f {} "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/" \;
+  find "$JUJU_PATH" -mindepth 1 -maxdepth 1 -type f -name '*.pem' -exec cp -f {} \
+    "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/" \;
 
-  pecho 'Execute scenario script'
+  pecho "Execute script of scenario $scenario"
   $udo python "$scenario/scenario.py"
 }
 
