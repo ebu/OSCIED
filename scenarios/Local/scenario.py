@@ -35,12 +35,12 @@ class Local(DeploymentScenario):
         print(description)
         self.bootstrap(u'local', wait_started=True)
         self.launch_log(u'local')
-        self.deploy(u'oscied-transform', local=True)
-        self.deploy(u'oscied-publisher', local=True, expose=True)
-        self.deploy(u'oscied-orchestra', local=True, expose=True)
-        self.deploy(u'oscied-webui',     local=True, expose=True)
-        self.deploy(u'oscied-storage',   local=True)
-        has_proxy = self.deploy(u'haproxy', expose=True, release=u'precise', required=False)[0]
+        self.deploy(u'oscied-transform', u'oscied-transform', local=True)
+        self.deploy(u'oscied-publisher', u'oscied-publisher', local=True, expose=True)
+        self.deploy(u'oscied-orchestra', u'oscied-orchestra', local=True, expose=True)
+        self.deploy(u'oscied-webui',     u'oscied-webui',     local=True, expose=True)
+        self.deploy(u'oscied-storage',   u'oscied-storage',   local=True)
+        has_proxy = self.deploy(u'haproxy', u'haproxy', expose=True, release=u'precise', required=False)[0]
 
         for peer in (u'orchestra', u'webui', u'transform', u'publisher'):
             self.add_relation(u'oscied-storage', u'oscied-{0}'.format(peer))
