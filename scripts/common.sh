@@ -30,11 +30,6 @@ if ! osciedCommonImported 2>/dev/null; then
 
 # Constants ============================================================================================================
 
-# FIXME Current implementation of orchestra doesn't accept external IP you must execute juju-menu.sh
-# -> config to update storage's related constants automatically
-STORAGE_PRIVATE_IP=''
-STORAGE_MOUNTPOINT=''
-STORAGE_BRICK=''
 RELEASE='raring'      # Update this according to your needs
 NETWORK_IFACE='eth0'  # Update this according to your needs
 
@@ -52,14 +47,14 @@ REFERENCES_PATH="$DOCS_PATH/references"
 
 # Symbolic link to current configuration's path
 SCENARIO_CURRENT_PATH="$SCENARIOS_PATH/current"
-SCENARIO_CONFIG_FILE="$SCENARIO_CURRENT_PATH/config.yaml"
 
 # Generated configuration
 SCENARIO_GEN_PATH="$SCENARIO_CURRENT_PATH/generated"
-SCENARIO_GEN_AUTHS_FILE="$SCENARIO_CURRENT_PATH/auths.list"
-SCENARIO_GEN_IDS_FILE="$SCENARIO_CURRENT_PATH/ids.list"
-SCENARIO_GEN_JSON_FILE="$SCENARIO_CURRENT_PATH/json.list"
-SCENARIO_GEN_UNITS_FILE="$SCENARIO_CURRENT_PATH/units.list"
+SCENARIO_GEN_AUTHS_FILE="$SCENARIO_GEN_PATH/auths.list"
+SCENARIO_GEN_IDS_FILE="$SCENARIO_GEN_PATH/ids.list"
+SCENARIO_GEN_JSON_FILE="$SCENARIO_GEN_PATH/json.list"
+SCENARIO_GEN_UNITS_FILE="$SCENARIO_GEN_PATH/units.list"
+SCENARIO_GEN_STORAGE_FILE="$SCENARIO_GEN_PATH/storage.inc"
 
 # Orchestra related configuration (e.g. initial setup)
 SCENARIO_API_USERS_FILE="$SCENARIO_CURRENT_PATH/users.csv"
@@ -82,8 +77,19 @@ JUJU_ENVS_FILE="$JUJU_PATH/environments.yaml"
 
 # Utilities ============================================================================================================
 
+_reload_config()
+{
+  STORAGE_PRIVATE_IP=''
+  STORAGE_MOUNTPOINT=''
+  STORAGE_BRICK=''  
+  if [ -f "$SCENARIO_GEN_STORAGE_FILE" ]; then
+    . "$SCENARIO_GEN_STORAGE_FILE"
+  fi
+}
+
 _check_config()
 {
+  _reload_config
   if [ "$STORAGE_PRIVATE_IP" -a "$STORAGE_MOUNTPOINT" -a "$STORAGE_BRICK" ]; then
     echo ''
   elif [ $# -gt 0 ]; then
@@ -222,7 +228,7 @@ _standalone_execute_hook()
   recho 'Hook successful'
 }
 
-# Parse config.json of a actually running charm instance ! -------------------------------------------------------------
+# Parse local_config.pkl of a actually running charm instance ! --------------------------------------------------------
 
 _get_unit_config()
 {
@@ -237,48 +243,22 @@ _get_unit_config()
   chmod1="sudo chmod +rx /var/lib/juju/agents/unit-$name-$number/"
   chmod2="sudo chmod +rx /var/lib/juju/agents/unit-$name-$number/charm/"
   chmod3="sudo chmod +rx /var/lib/juju/agents/unit-$name-$number/charm/local_config.pkl"
-  cat_local_config="cat /var/lib/juju/agents/unit-$name-$number/charm/local_config.pkl"
-  val=$(juju ssh $name/$number "$chmod1; $chmod2; $chmod3; $cat_local_config" | tr '\n' ' ')
+  cat_local_config="/var/lib/juju/agents/unit-$name-$number/charm/local_config.pkl"
+  val=$(juju ssh $name/$number "$chmod1; $chmod2; $chmod3; tr '\n' ' ' < $cat_local_config")
   REPLY=$(expr match "$val" ".*S'$option' p[0-9]\+ .'*\([^ ']*\)")
-}
-
-# Parse orchestra.yaml configuration file to get options value ---------------------------------------------------------
-
-_get_root_secret()
-{
-  if [ -f "$SCENARIO_CONFIG_FILE" ]; then
-    line=$(cat "$SCENARIO_CONFIG_FILE" | grep root_secret)
-    root=$(expr match "$line" '.*"\(.*\)".*')
-  else
-    root='toto'
-  fi
-  [ ! "$root" ] && xecho 'Unable to detect root secret !'
-  REPLY="$root"
-}
-
-_get_node_secret()
-{
-  if [ -f "$SCENARIO_CONFIG_FILE" ]; then
-    line=$(cat "$SCENARIO_CONFIG_FILE" | grep node_secret)
-    node=$(expr match "$line" '.*"\(.*\)".*')
-  else
-    node='abcd'
-  fi
-  [ ! "$node" ] && xecho 'Unable to detect node secret !'
-  REPLY="$node"
 }
 
 # Parse charm's units URLs listing file to get specific URLs -----------------------------------------------------------
 
 _get_units_dialog_listing()
 {
-  REPLY=$(cat "$SCENARIO_CONFIG_FILE" | sort | sed 's:=: :g;s:\n: :g')
+  REPLY=$(cat "$SCENARIO_GEN_UNITS_FILE" | sort | sed 's:=: :g;s:\n: :g')
   [ ! $REPLY ] && xecho 'Unable to generate units listing for dialog'
 }
 
 _get_services_dialog_listing()
 {
-  REPLY=$(cat "$SCENARIO_CONFIG_FILE" | sort | sed 's:/[0-9]*=: :g;s:\n: :g' | uniq)
+  REPLY=$(cat "$SCENARIO_GEN_UNITS_FILE" | sort | sed 's:/[0-9]*=: :g;s:\n: :g' | uniq)
   [ ! $REPLY ] && xecho 'Unable to generate services listing for dialog'
 }
 
@@ -291,8 +271,8 @@ _get_unit_public_url()
   name=$2
 
   [ $# -eq 3 ] && number=$3 || number='.*'
-  if [ -f "$SCENARIO_CONFIG_FILE" ]; then
-    url=$(cat "$SCENARIO_CONFIG_FILE" | grep -m 1 "^$name/$number=" | cut -d '=' -f2)
+  if [ -f "$SCENARIO_GEN_UNITS_FILE" ]; then
+    url=$(cat "$SCENARIO_GEN_UNITS_FILE" | grep -m 1 "^$name/$number=" | cut -d '=' -f2)
   else
     url='127.0.0.1'
   fi

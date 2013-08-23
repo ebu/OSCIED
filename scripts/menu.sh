@@ -40,10 +40,6 @@ main()
 
   autoInstall dialog dialog
 
-  _get_root_secret;   ROOT_AUTH="root:$REPLY"
-  _get_node_secret;   NODE_AUTH="node:$REPLY"
-  _get_orchestra_url; ORCHESTRA_URL=$REPLY
-
   mkdir -p "$MEDIAS_PATH" 2>/dev/null
 
   listing=/tmp/$$.list
@@ -226,7 +222,7 @@ deploy()
   cd "$SCENARIOS_PATH" || xecho "Unable to find path $SCENARIOS_PATH"
 
   if [ "$scenario_auto" ]; then
-    techo 'OSCIED Operations with JuJu > Deployment Scenarios [AUTO]'
+    techo 'OSCIED Main Menu > Deployment Scenarios [AUTO]'
     _deploy_helper "$scenario_auto"
   else
     pecho 'Initialize scenarios menu'
@@ -246,7 +242,7 @@ deploy()
     pause
     while true
     do
-      $DIALOG --backtitle 'OSCIED Operations with JuJu > Deployment Scenarios' \
+      $DIALOG --backtitle 'OSCIED Main Menu > Deployment Scenarios' \
               --menu 'Please select a deployment scenario' 0 0 0 \
               $scenariosList 2> $tmpfile
 
@@ -272,58 +268,59 @@ config()
   count=1
   last_name=''
   orchestra=''
-  juju status 2>/dev/null | \
-  {
-    while read line
-    do
-      name=$(expr match "$line" '.*\(oscied-.*/[0-9]*\):.*')
-      address=$(expr match "$line" '.*public-address: *\([^ ]*\) *')
-      [ "$name" ] && last_name=$name
-      if [ "$address" -a "$last_name" ]; then
-        mecho "$last_name -> $address"
-        [ "$content" ] && content="$content\n"
-        content="$content$last_name=$address"
-        last_name=''
-      fi
-      count=$((count+1))
-
-      if echo $name | grep -q 'oscied-orchestra'; then
-        orchestra=$name
-      fi
-    done
-
-    if [ "$content" ]; then
-      echo $e_ "$content" > "$SCENARIO_GEN_UNITS_FILE"
-      recho "Charms's units public URLs listing file updated"
-    else
-      xecho "Unable to detect charms's units public URLs"
+  juju status 2>/dev/null > $tmpfile
+  while read line
+  do
+    name=$(expr match "$line" '.*\(oscied-.*/[0-9]*\):.*')
+    address=$(expr match "$line" '.*public-address: *\([^ ]*\) *')
+    [ "$name" ] && last_name=$name
+    if [ "$address" -a "$last_name" ]; then
+      mecho "$last_name -> $address"
+      [ "$content" ] && content="$content\n"
+      content="$content$last_name=$address"
+      last_name=''
     fi
+    count=$((count+1))
 
-    if [ "$orchestra" ]; then
-      pecho "Auto-detect storage internal IP address by parsing $orchestra unit configuration"
-      number=$(expr match "$orchestra" '.*/\([0-9]*\)')
-      _get_unit_config 'oscied-orchestra' "$number" 'storage_address'
-      if [ ! "$REPLY" ]; then
-        xecho 'Unable to detect storage internal IP address'
-      else
-        mecho "Updating common.sh with detected storage internal IP = $REPLY"
-        sed -i "s#STORAGE_PRIVATE_IP=.*#STORAGE_PRIVATE_IP='$REPLY'#" "$SCRIPTS_PATH/common.sh"
-      fi
-      _get_unit_config 'oscied-orchestra' "$number" 'storage_mountpoint'
-      if [ ! "$REPLY" ]; then
-        xecho 'Unable to detect storage mountpoint'
-      else
-        number=$(expr match "$REPLY" '.*_\([0-9]*\)')
-        # FIXME hard-coded brick directory !
-        brick="/mnt/bricks/exp$number"
-        mecho "Updating common.sh with detected storage mountpoint = $REPLY and brick = $brick"
-        sed -i -e "s#STORAGE_MOUNTPOINT=.*#STORAGE_MOUNTPOINT='$REPLY'#" \
-               -e "s#STORAGE_BRICK=.*#STORAGE_BRICK='$brick'#" "$SCRIPTS_PATH/common.sh"
-      fi
-    else
-      recho 'Unable to detect orchestrator unit name'
+    if echo $name | grep -q 'oscied-orchestra'; then
+      orchestra=$name
     fi
-  }
+  done < $tmpfile
+
+  if [ "$content" ]; then
+    mkdir -p "$SCENARIO_GEN_PATH" 2>/dev/null
+    echo $e_ "$content" > "$SCENARIO_GEN_UNITS_FILE"
+    recho "Charms's units public URLs listing file updated"
+  else
+    xecho "Unable to detect charms's units public URLs"
+  fi
+
+  if [ "$orchestra" ]; then
+    pecho "Auto-detect storage internal IP address by parsing $orchestra unit configuration"
+    number=$(expr match "$orchestra" '.*/\([0-9]*\)')
+    content=''
+    _get_unit_config 'oscied-orchestra' "$number" 'storage_address'
+    if [ ! "$REPLY" ]; then
+      xecho 'Unable to detect storage internal IP address'
+    else
+      mecho "Updating storage.inc with detected storage internal IP = $REPLY"
+      content="${content}STORAGE_PRIVATE_IP='$REPLY'\n"
+    fi
+    _get_unit_config 'oscied-orchestra' "$number" 'storage_mountpoint'
+    if [ ! "$REPLY" ]; then
+      xecho 'Unable to detect storage mountpoint'
+    else
+      number=$(expr match "$REPLY" '.*_\([0-9]*\)')
+      # FIXME hard-coded brick directory !
+      brick="/mnt/bricks/exp$number"
+      mecho "Updating storage.inc with detected storage mountpoint = $REPLY and brick = $brick"
+      content="${content}STORAGE_MOUNTPOINT='$REPLY'\nSTORAGE_BRICK='$brick'"
+    fi
+    echo $e_ "$content" > "$SCENARIO_GEN_STORAGE_FILE"
+    _reload_config
+  else
+    recho 'Unable to detect orchestrator unit name'
+  fi
 }
 
 status()
@@ -362,13 +359,49 @@ api_init_setup()
   fi
   ok=$true
 
+  _get_orchestra_url
+  orchestra_url=$REPLY
+
+  # Detect root secret
+  find "$SCENARIO_CURRENT_PATH" -follow -type f -name "config*.yaml" | sort > $tmpfile
+  config_files=''
+  while read yaml
+  do
+    config_file=$(basename "$yaml")
+    config_files="$config_files$config_file - "
+  done < $tmpfile
+  if [ ! "$config_files" ]; then
+    xecho 'Unable to detect configuration files of current scenario !'
+  fi
+  # Config menu
+  while true
+  do
+    $DIALOG --backtitle 'OSCIED Main Menu > API Initial Setup' \
+            --menu 'Please select a source configuration file to detect root secret' 0 0 0 \
+            $config_files 2> $tmpfile
+
+    retval=$?
+    config_file="$SCENARIO_CURRENT_PATH/$(cat $tmpfile)"
+    root_secret=$(expr match "$(grep 'root_secret' "$config_file")" '.*"\(.*\)".*')
+
+    # Config menu exit door
+    [ $retval -eq 0 ] && break
+    [ $retval -ne 0 ] && { recho 'Operation aborted by user'; pause; return; }
+  done
+
+  if [ "$root_secret" ]; then
+    root_auth="root:$root_secret"
+  else
+    xecho 'Unable to detect root secret !'
+  fi
+
   pecho 'Flush database'
-  yesOrNo $false "do you really want to flush orchestrator $ORCHESTRA_URL"
+  yesOrNo $false "do you really want to flush orchestrator $orchestra_url"
   if [ $REPLY -eq $false ]; then
     recho 'operation aborted by user'
     exit 0
   fi
-  _test_api 200 POST $ORCHESTRA_URL/flush "$ROOT_AUTH" ''
+  _test_api 200 POST $orchestra_url/flush "$root_auth" ''
 
   pecho 'Add users'
   count=1
@@ -381,7 +414,7 @@ api_init_setup()
     fi
     _json_user "$fname" "$lname" "$mail" "$secret" "$aplatform"
     echo "$JSON"
-    _test_api 200 POST $ORCHESTRA_URL/user "$ROOT_AUTH" "$JSON"
+    _test_api 200 POST $orchestra_url/user "$root_auth" "$JSON"
     _save_auth "user$count" "$mail:$secret"
     _save_json "user$count" "$JSON"
     _save_id   "user$count" "$ID"
@@ -389,7 +422,8 @@ api_init_setup()
   done < "$SCENARIO_API_USERS_FILE"
   IFS=$savedIFS
 
-  get_auth 'user1'; user1_auth=$REPLY
+  _get_auth 'user1'
+  user1_auth=$REPLY
 
   pecho 'Add medias'
   count=1
@@ -409,7 +443,7 @@ api_init_setup()
     _storage_upload_media "$media" || xecho "Unable to upload media"
     _json_media "$REPLY" "$vfilename" "$title"
     echo "$JSON"
-    _test_api 200 POST $ORCHESTRA_URL/media "$user1_auth" "$JSON"
+    _test_api 200 POST $orchestra_url/media "$user1_auth" "$JSON"
     _save_json "media$count" "$JSON"
     _save_id   "media$count" "$ID"
     count=$((count+1))
@@ -427,7 +461,7 @@ api_init_setup()
     fi
     _json_tprofile "$title" "$description" "$encoder_name" "$encoder_string"
     echo "$JSON"
-    _test_api 200 POST $ORCHESTRA_URL/transform/profile "$user1_auth" "$JSON"
+    _test_api 200 POST $orchestra_url/transform/profile "$user1_auth" "$JSON"
     _save_json "tprofile$count" "$JSON"
     _save_id   "tprofile$count" "$ID"
     count=$((count+1))
@@ -437,7 +471,7 @@ api_init_setup()
   #pecho 'Add medias'
   #$udo mkdir -p /mnt/storage/medias /mnt/storage/uploads
   #$udo cp "$SCRIPTS_PATH/common.sh" /mnt/storage/uploads/tabby.mpg
-  #_test_api 200 POST $ORCHESTRA_URL/media "$admin_auth" "$media1_json"; _save_id 'media1' "$ID"
+  #_test_api 200 POST $orchestra_url/media "$admin_auth" "$media1_json"; _save_id 'media1' "$ID"
 }
 
 rsync_orchestra()
@@ -616,7 +650,7 @@ unit_add()
   [ $REPLY -eq $true ] && config
 
   # Initialize add unit menu
-  get_services_dialog_listing
+  _get_services_dialog_listing
   $DIALOG --backtitle 'OSCIED Operations with JuJu > Scale-up a Service' \
           --menu 'Please select a service' 0 0 0 $REPLY 2> $tmpfile
 
