@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
-./setup.sh
-python -m oscied_lib.PublisherHooks install
+./library/setup.sh
+python -m library.oscied_lib.PublisherHooks install

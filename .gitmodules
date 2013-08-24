@@ -19,12 +19,12 @@
 [submodule "tools/logicielsUbuntu"]
 	path = tools/logicielsUbuntu
 	url = git://github.com/davidfischer-ch/logicielsUbuntu.git
-[submodule "charms/pyutils"]
-	path = charms/pyutils
-	url = git://github.com/davidfischer-ch/pyutils.git
 [submodule "docs/wiki/build"]
 	path = docs/wiki/build
 	url = git@github.com:ebu/OSCIED.wiki.git
 [submodule "tools/sqlalchemy-source"]
 	path = tools/sqlalchemy-source
 	url = https://github.com/zzzeek/sqlalchemy
+[submodule "library/pyutils-source"]
+	path = library/pyutils-source
+	url = git://github.com/davidfischer-ch/pyutils.git

@@ -40,19 +40,21 @@ main()
 
   autoInstall dialog dialog
 
-  get_root_secret;   ROOT_AUTH="root:$REPLY"
-  get_node_secret;   NODE_AUTH="node:$REPLY"
-  get_orchestra_url; ORCHESTRA_URL=$REPLY
-
   mkdir -p "$MEDIAS_PATH" 2>/dev/null
 
   listing=/tmp/$$.list
   tmpfile=/tmp/$$
-  trap "rm -f '$listing' '$tmpfile' 2>/dev/null" INT TERM EXIT
+  jujulog='/usr/local/bin/juju-log'
+  openport='/usr/local/bin/open-port'
+  cget='/usr/local/bin/config-get'
+  rget='/usr/local/bin/relation-get'
+  uget='/usr/local/bin/unit-get'
+  trap "rm -f '$listing' '$tmpfile' '$jujulog' '$openport' '$cget' '$rget' '$uget' 2>/dev/null" \
+    INT TERM EXIT
 
   if [ "$operation_auto" ]; then
     ok=$false
-    techo 'OSCIED General Operations [AUTO]'
+    techo 'OSCIED Menu [AUTO]'
     mecho "Operation is $operation_auto"
     eval $operation_auto "$@"
     if [ $ok -eq $false ]; then
@@ -62,19 +64,27 @@ main()
     # Initialize main menu
     while true
     do
-      [ "$ORCHESTRA_URL" ] && a='' || a='[DISABLED] '
-      $DIALOG --backtitle 'OSCIED General Operations' \
+      a=$(_check_config 'non mais allô quoi !')
+      b=$(_check_juju 'non mais allô quoi !')
+      $DIALOG --backtitle 'OSCIED Menu' \
               --menu 'Please select an operation' 0 0 0 \
-              install              'Download / update documents and tools'               \
-              cleanup              'Cleanup configuration of charms (deploy path)'       \
-              revup                "Increment all charm's revision (+1)"                 \
-              api_init_setup       "${a}Initialize demo setup with Orchestra API"        \
-              webui_test_common    'Test some functions of Web UI hooks'                 \
-              rsync_orchestra      'Rsync local code to running Orchestra instance'      \
-              rsync_publisher      'Rsync local code to running Publisher instance'      \
-              rsync_storage        'Rsync local code to running Storage instance'        \
-              rsync_transform      'Rsync local code to running Transform instance'      \
-              rsync_webui          'Rsync local code to running Web UI instance' 2> $tmpfile
+              install          'Download / update documents and tools'          \
+              deploy           "${b}Launch a deployment scenario"               \
+              config           "${b}Update units public URL listing file"       \
+              status           "${b}Display juju status"                        \
+              log              "${b}Launch juju debug log in a screen"          \
+              api_init_setup   "${a}Initialize demo setup with Orchestra API"   \
+              browse_webui     'Launch a browser to browse the Web UI'          \
+              rsync_orchestra  'Rsync local code to running Orchestra instance' \
+              rsync_publisher  'Rsync local code to running Publisher instance' \
+              rsync_storage    'Rsync local code to running Storage instance'   \
+              rsync_transform  'Rsync local code to running Transform instance' \
+              rsync_webui      'Rsync local code to running Web UI instance'    \
+              standalone       'Play with a charm locally (yes, really)'        \
+              unit_ssh         "${b}Access to units with secure shell"          \
+              unit_add         "${b}Add a new unit to a running service"        \
+              unit_remove      "${b}Remove an unit from a running service"      \
+              destroy          "${b}Destroy a deployed environment" 2> $tmpfile
 
       retval=$?
       operation=$(cat $tmpfile)
@@ -91,6 +101,8 @@ main()
   fi
 }
 
+# Operations -----------------------------------------------------------------------------------------------------------
+
 install()
 {
   if [ $# -ne 0 ]; then
@@ -102,7 +114,7 @@ install()
 
   pecho 'Update submodules'
   cd "$BASE_PATH" || xecho "Unable to find path $BASE_PATH"
-  git submodule init && git submodule update && git submodule status
+  git submodule update --init && git submodule status
 
   pecho 'Import logicielsUbuntu'
   if ! which lu-importUtils > /dev/null; then
@@ -115,23 +127,23 @@ install()
     exit 0
   else
     cd "$SCRIPTS_PATH" || xecho "Unable to find path $SCRIPTS_PATH"
-    lu-importUtils . || xecho 'Unable to import utilities of logicielsUbuntu'
+    lu-importUtils .   || xecho 'Unable to import utilities of logicielsUbuntu'
   fi
 
-  cd "$CHARMS_PATH" || xecho "Unable to find path $CHARMS_PATH"
-  $udo "./setup.sh" || xecho 'Unable to install OSCIED Library'
+  cd "$LIBRARY_PATH" || xecho "Unable to find path $LIBRARY_PATH"
+  $udo "./setup.sh"  || xecho 'Unable to install OSCIED Library'
 
   pecho 'Install prerequisites'
-  eval $install bzr rst2pdf texlive-latex-recommended texlive-latex-extra \
+  eval $install bzr default-jre imagemagick rst2pdf texlive-latex-recommended texlive-latex-extra \
     texlive-fonts-recommended || xecho 'Unable to install packages'
-  $udo pip install --upgrade coverage docutils nose pygments rednose sphinx sphinxcontrib-email \
-    sphinxcontrib-googlechart sphinxcontrib-httpdomain || xecho 'Unable to install python packages'
+  $udo pip install --upgrade sphinx sphinxcontrib-email sphinxcontrib-googlechart sphinxcontrib-httpdomain || \
+    xecho 'Unable to install sphinx python packages'
+  $udo easy_install rednose || xecho 'Unable to install rednose python package' # NEVER install it with pip ;-)
 
   pecho 'Download references'
   cd "$REFERENCES_PATH"|| xecho "Unable to find path $REFERENCES_PATH"
   openstack='http://docs.openstack.org'
   wget -N $openstack/trunk/openstack-compute/install/apt/openstack-install-guide-apt-trunk.pdf
-  wget -N $openstack/cli/quick-start/content/cli-guide.pdf
   wget -N $openstack/api/openstack-compute/programmer/openstackapi-programming.pdf
   wget -N $openstack/folsom/openstack-compute/admin/bk-compute-adminguide-folsom.pdf
   wget -N $openstack/folsom/openstack-network/admin/bk-quantum-admin-guide-folsom.pdf
@@ -143,8 +155,8 @@ install()
   clonezilla='http://switch.dl.sourceforge.net/project/clonezilla'
   wget -N $clonezilla/clonezilla_live_stable/2.1.1-25/clonezilla-live-2.1.1-25-amd64.zip
 
-  if [ -d 'juju-source' ]; then cd 'juju-source' && bzr merge && cd ..
-  else bzr branch lp:juju 'juju-source'
+  if [ -d 'juju-core-source' ]; then cd 'juju-core-source' && bzr merge && cd ..
+  else bzr branch lp:juju-core 'juju-core-source'
   fi
 
   addAptPpaRepo ppa:juju/stable juju || xecho 'Unable to add juju PPA repository'
@@ -179,52 +191,219 @@ install()
   $udo sed -i 's:#!/usr/bin/python3.*:#!/usr/bin/python3 -Es:' /usr/bin/lxc-ls
 }
 
-cleanup()
+deploy()
 {
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) cleanup"
+  _check_juju
+
+  if [ $# -eq 1 ]; then
+    scenario_auto=$1
+  elif [ $# -eq 0 ]; then
+    scenario_auto=''
+  else
+    xecho "Usage: $(basename $0) deploy [scenario]"
   fi
   ok=$true
 
-  cd "$CHARMS_DEPLOY_PATH" || xecho "Unable to find path $CHARMS_DEPLOY_PATH"
-  git reset --hard  # Revert changes to modified files
-  git clean -fd     # Remove all untracked files and directories
+  [ "$scenario_auto" ] && default=$true_auto || default=$true
+
+  pecho 'Overwrite charms in deployment path'
+  yesOrNo $default 'do it now'
+  if [ $REPLY -eq $true ]; then
+    _overwrite_helper 'oscied-orchestra' 'oscied-orchestra'
+    _overwrite_helper 'oscied-publisher' 'oscied-publisher'
+    _overwrite_helper 'oscied-storage'   'oscied-storage'
+    _overwrite_helper 'oscied-transform' 'oscied-transform'
+    _overwrite_helper 'oscied-webui'     'oscied-webui'
+    _overwrite_helper 'oscied-storage'   "oscied-orchestra/charms/$RELEASE/oscied-storage"
+    _overwrite_helper 'oscied-transform' "oscied-orchestra/charms/$RELEASE/oscied-transform"
+    _overwrite_helper 'oscied-publisher' "oscied-orchestra/charms/$RELEASE/oscied-publisher"
+    _overwrite_helper 'oscied-webui'     "oscied-orchestra/charms/$RELEASE/oscied-webui"
+    lu-importUtils "$CHARMS_DEPLOY_PATH"
+  fi
+
+  cd "$SCENARIOS_PATH" || xecho "Unable to find path $SCENARIOS_PATH"
+
+  if [ "$scenario_auto" ]; then
+    techo 'OSCIED Main Menu > Deployment Scenarios [AUTO]'
+    _deploy_helper "$scenario_auto"
+  else
+    pecho 'Initialize scenarios menu'
+    current=$(readlink "$SCENARIO_CURRENT_PATH" 2>/dev/null)
+    find . -type f -name 'scenario.py' | sort > $listing
+    scenariosList=''
+    while read scenario
+    do
+      name=$(dirname "$scenario" | sed 's:\./::')
+      description=$(grep 'description = ' "$scenario" | cut -d'=' -f2 | sed "s: *'::g;s: :_:g")
+      if [ "$current" -a "$current" = "$name" ]; then
+        description="[CURRENT]_$description"
+      fi
+      scenariosList="$scenariosList$name $description "
+    done < $listing
+    # Scenarios menu
+    pause
+    while true
+    do
+      $DIALOG --backtitle 'OSCIED Main Menu > Deployment Scenarios' \
+              --menu 'Please select a deployment scenario' 0 0 0 \
+              $scenariosList 2> $tmpfile
+
+      retval=$?
+      scenario=$(cat $tmpfile)
+      [ $retval -ne 0 -o ! "$scenario" ] && break
+      _deploy_helper "$scenario"
+      [ $retval -eq 0 ] && pause
+    done
+  fi
 }
 
-revup()
+config()
 {
-  if [ $# -eq 0 ]; then
-    xecho "Usage: $(basename $0) revup"
+  _check_juju
+
+  if [ $# -ne 0 ]; then
+    xecho "Usage: $(basename $0) config"
   fi
   ok=$true
 
-  cd "$CHARMS_PATH" || xecho "Unable to find path $CHARMS_PATH"
-  find . -maxdepth 2 -type f -path "*/oscied-*/*" -name revision | while read revision
+  content=''
+  count=1
+  last_name=''
+  orchestra=''
+  juju status 2>/dev/null > $tmpfile
+  while read line
   do
-    value=$(cat "$revision")
-    echo $((value+1)) > "$revision"
-    mecho "$(basename $(dirname $(dirname $revision))) is not at revision $(cat $revision)"
-  done
+    name=$(expr match "$line" '.*\(oscied-.*/[0-9]*\):.*')
+    address=$(expr match "$line" '.*public-address: *\([^ ]*\) *')
+    [ "$name" ] && last_name=$name
+    if [ "$address" -a "$last_name" ]; then
+      mecho "$last_name -> $address"
+      [ "$content" ] && content="$content\n"
+      content="$content$last_name=$address"
+      last_name=''
+    fi
+    count=$((count+1))
+
+    if echo $name | grep -q 'oscied-orchestra'; then
+      orchestra=$name
+    fi
+  done < $tmpfile
+
+  if [ "$content" ]; then
+    mkdir -p "$SCENARIO_GEN_PATH" 2>/dev/null
+    echo $e_ "$content" > "$SCENARIO_GEN_UNITS_FILE"
+    recho "Charms's units public URLs listing file updated"
+  else
+    xecho "Unable to detect charms's units public URLs"
+  fi
+
+  if [ "$orchestra" ]; then
+    pecho "Auto-detect storage internal IP address by parsing $orchestra unit configuration"
+    number=$(expr match "$orchestra" '.*/\([0-9]*\)')
+    content=''
+    _get_unit_config 'oscied-orchestra' "$number" 'storage_address'
+    if [ ! "$REPLY" ]; then
+      xecho 'Unable to detect storage internal IP address'
+    else
+      mecho "Updating storage.inc with detected storage internal IP = $REPLY"
+      content="${content}STORAGE_PRIVATE_IP='$REPLY'\n"
+    fi
+    _get_unit_config 'oscied-orchestra' "$number" 'storage_mountpoint'
+    if [ ! "$REPLY" ]; then
+      xecho 'Unable to detect storage mountpoint'
+    else
+      number=$(expr match "$REPLY" '.*_\([0-9]*\)')
+      # FIXME hard-coded brick directory !
+      brick="/mnt/bricks/exp$number"
+      mecho "Updating storage.inc with detected storage mountpoint = $REPLY and brick = $brick"
+      content="${content}STORAGE_MOUNTPOINT='$REPLY'\nSTORAGE_BRICK='$brick'"
+    fi
+    echo $e_ "$content" > "$SCENARIO_GEN_STORAGE_FILE"
+    _reload_config
+  else
+    recho 'Unable to detect orchestrator unit name'
+  fi
+}
+
+status()
+{
+  _check_juju
+
+  if [ $# -ne 0 ]; then
+    xecho "Usage: $(basename $0) status"
+  fi
+  ok=$true
+
+  techo 'Status of default environment'; juju status
+  techo 'Status of amazon environment';  juju status --environment amazon
+  techo 'Status of local environment';   juju status --environment local
+  techo 'Status of maas environment';    juju status --environment maas
+}
+
+log()
+{
+  _check_juju
+
+  if [ $# -ne 0 ]; then
+    xecho "Usage: $(basename $0) log"
+  fi
+  ok=$true
+
+  screen -dmS juju-log juju debug-log > "$JUJU_LOG"
 }
 
 api_init_setup()
 {
+  _check_config
+
   if [ $# -ne 0 ]; then
     xecho "Usage: $(basename $0) api_init_setup"
   fi
   ok=$true
 
-  [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
-  [ "$STORAGE_PRIVATE_IP" -a "$STORAGE_MOUNTPOINT" -a "$STORAGE_BRICK" ] || \
-    xecho 'You must execute juju-menu.sh config first'
+  _get_orchestra_url
+  orchestra_url=$REPLY
+
+  # Detect root secret
+  find "$SCENARIO_CURRENT_PATH" -follow -type f -name "config*.yaml" | sort > $tmpfile
+  config_files=''
+  while read yaml
+  do
+    config_file=$(basename "$yaml")
+    config_files="$config_files$config_file - "
+  done < $tmpfile
+  if [ ! "$config_files" ]; then
+    xecho 'Unable to detect configuration files of current scenario !'
+  fi
+  # Config menu
+  while true
+  do
+    $DIALOG --backtitle 'OSCIED Main Menu > API Initial Setup' \
+            --menu 'Please select a source configuration file to detect root secret' 0 0 0 \
+            $config_files 2> $tmpfile
+
+    retval=$?
+    config_file="$SCENARIO_CURRENT_PATH/$(cat $tmpfile)"
+    root_secret=$(expr match "$(grep 'root_secret' "$config_file")" '.*"\(.*\)".*')
+
+    # Config menu exit door
+    [ $retval -eq 0 ] && break
+    [ $retval -ne 0 ] && { recho 'Operation aborted by user'; pause; return; }
+  done
+
+  if [ "$root_secret" ]; then
+    root_auth="root:$root_secret"
+  else
+    xecho 'Unable to detect root secret !'
+  fi
 
   pecho 'Flush database'
-  yesOrNo $false "do you really want to flush orchestrator $ORCHESTRA_URL"
+  yesOrNo $false "do you really want to flush orchestrator $orchestra_url"
   if [ $REPLY -eq $false ]; then
     recho 'operation aborted by user'
     exit 0
   fi
-  test_api 200 POST $ORCHESTRA_URL/flush "$ROOT_AUTH" ''
+  _test_api 200 POST $orchestra_url/flush "$root_auth" ''
 
   pecho 'Add users'
   count=1
@@ -235,17 +414,18 @@ api_init_setup()
     if [ ! "$fname" -o ! "$lname" -o ! "$mail" -o ! "$secret" -o ! "$aplatform" ]; then
       xecho "Line $count : Bad line format !"
     fi
-    json_user "$fname" "$lname" "$mail" "$secret" "$aplatform"
+    _json_user "$fname" "$lname" "$mail" "$secret" "$aplatform"
     echo "$JSON"
-    test_api 200 POST $ORCHESTRA_URL/user "$ROOT_AUTH" "$JSON"
-    save_auth "user$count" "$mail:$secret"
-    save_json "user$count" "$JSON"
-    save_id   "user$count" "$ID"
+    _test_api 200 POST $orchestra_url/user "$root_auth" "$JSON"
+    _save_auth "user$count" "$mail:$secret"
+    _save_json "user$count" "$JSON"
+    _save_id   "user$count" "$ID"
     count=$((count+1))
-  done < "$CONFIG_API_USERS_FILE"
+  done < "$SCENARIO_API_USERS_FILE"
   IFS=$savedIFS
 
-  get_auth 'user1'; user1_auth=$REPLY
+  _get_auth 'user1'
+  user1_auth=$REPLY
 
   pecho 'Add medias'
   count=1
@@ -262,14 +442,14 @@ api_init_setup()
       continue
     fi
     mecho "Uploading media $uri to uploads into shared storage unit ..."
-    storage_upload_media "$media" || xecho "Unable to upload media"
-    json_media "$REPLY" "$vfilename" "$title"
+    _storage_upload_media "$media" || xecho "Unable to upload media"
+    _json_media "$REPLY" "$vfilename" "$title"
     echo "$JSON"
-    test_api 200 POST $ORCHESTRA_URL/media "$user1_auth" "$JSON"
-    save_json "media$count" "$JSON"
-    save_id   "media$count" "$ID"
+    _test_api 200 POST $orchestra_url/media "$user1_auth" "$JSON"
+    _save_json "media$count" "$JSON"
+    _save_id   "media$count" "$ID"
     count=$((count+1))
-  done < "$CONFIG_API_MEDIAS_FILE"
+  done < "$SCENARIO_API_MEDIAS_FILE"
   IFS=$savedIFS
 
   pecho 'Add transform profiles'
@@ -281,64 +461,20 @@ api_init_setup()
     if [ ! "$title" -o ! "$description" -o ! "encoder_name" -o ! "$encoder_string" ]; then
       xecho "Line $count : Bad line format !"
     fi
-    json_tprofile "$title" "$description" "$encoder_name" "$encoder_string"
+    _json_tprofile "$title" "$description" "$encoder_name" "$encoder_string"
     echo "$JSON"
-    test_api 200 POST $ORCHESTRA_URL/transform/profile "$user1_auth" "$JSON"
-    save_json "tprofile$count" "$JSON"
-    save_id   "tprofile$count" "$ID"
+    _test_api 200 POST $orchestra_url/transform/profile "$user1_auth" "$JSON"
+    _save_json "tprofile$count" "$JSON"
+    _save_id   "tprofile$count" "$ID"
     count=$((count+1))
-  done < "$CONFIG_API_TPROFILES_FILE"
+  done < "$SCENARIO_API_TPROFILES_FILE"
   IFS=$savedIFS
-
-  #pecho 'Add medias'
-  #$udo mkdir -p /mnt/storage/medias /mnt/storage/uploads
-  #$udo cp "$SCRIPTS_PATH/common.sh" /mnt/storage/uploads/tabby.mpg
-  #test_api 200 POST $ORCHESTRA_URL/media "$admin_auth" "$media1_json"; save_id 'media1' "$ID"
-
 }
 
-webui_test_common()
+browse_webui()
 {
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) webui_test_common"
-  fi
-  ok=$true
-
-  . "$CHARMS_PATH/oscied-webui/hooks_lib/common.sh"
-
-  ip1='10.10.4.3'
-  ip2='10.10.0.7'
-  ip3='1.1.1.1'
-  ip4='2.2.2.2'
-  rm proxy_ips 2>/dev/null
-  update_proxies add    $ip1; [ "$(cat proxy_ips)" != "$ip1"           ] && xecho '1'
-  update_proxies add    $ip2; [ "$(cat proxy_ips)" != "$ip1,$ip2"      ] && xecho '2'
-  update_proxies add    $ip3; [ "$(cat proxy_ips)" != "$ip1,$ip2,$ip3" ] && xecho '3'
-  update_proxies remove $ip3; [ "$(cat proxy_ips)" != "$ip1,$ip2"      ] && xecho '4'
-  update_proxies remove $ip3; [ "$(cat proxy_ips)" != "$ip1,$ip2"      ] && xecho '5'
-  update_proxies add    $ip4; [ "$(cat proxy_ips)" != "$ip1,$ip2,$ip4" ] && xecho '6'
-  update_proxies remove $ip2; [ "$(cat proxy_ips)" != "$ip1,$ip4"      ] && xecho '7'
-  update_proxies remove $ip1; [ "$(cat proxy_ips)" != "$ip4"           ] && xecho '8'
-  rm proxy_ips
-  mecho 'Unit test passed (update_proxies OK)'
-}
-
-rsync_helper()
-{
-  if [ $# -ne 2 ]; then
-    xecho "Usage: $(basename $0).rsync_publisher charm id"
-  fi
-
-  chmod 600 "$ID_RSA" || xecho 'Unable to find id_rsa certificate'
-
-  get_unit_public_url $true "$1" "$2"
-  host="ubuntu@$REPLY"
-  dest="/var/lib/juju/agents/unit-$1-$2/charm"
-  ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
-  rsync -avhL --progress --delete -e "ssh -i '$ID_RSA'" --exclude=.git --exclude=config.json \
-    --exclude=celeryconfig.py --exclude=*.pyc --exclude=local_config.pkl --exclude=charms \
-    --exclude=ssh --exclude=environments.yaml --exclude=*.log "$CHARMS_PATH/$1/" "$host:$dest/"
-  ssh -i "$ID_RSA" "$host" -n "sudo chown root:root $dest -R"
+  _get_unit_public_url $true 'oscied-webui'
+  xdg-open "http://$REPLY"
 }
 
 rsync_orchestra()
@@ -348,7 +484,7 @@ rsync_orchestra()
   fi
   ok=$true
 
-  rsync_helper 'oscied-orchestra' "$RSYNC_UNIT_ID"
+  _rsync_helper 'oscied-orchestra' "$RSYNC_UNIT_ID"
 }
 
 rsync_publisher()
@@ -358,7 +494,7 @@ rsync_publisher()
   fi
   ok=$true
 
-  rsync_helper 'oscied-publisher' "$RSYNC_UNIT_ID"
+  _rsync_helper 'oscied-publisher' "$RSYNC_UNIT_ID"
 }
 
 rsync_storage()
@@ -370,7 +506,7 @@ rsync_storage()
 
   chmod 600 "$ID_RSA" || xecho 'Unable to find id_rsa certificate'
 
-  rsync_helper 'oscied-storage' "$RSYNC_UNIT_ID"
+  _rsync_helper 'oscied-storage' "$RSYNC_UNIT_ID"
 }
 
 rsync_transform()
@@ -380,7 +516,7 @@ rsync_transform()
   fi
   ok=$true
 
-  rsync_helper 'oscied-transform' "$RSYNC_UNIT_ID"
+  _rsync_helper 'oscied-transform' "$RSYNC_UNIT_ID"
 }
 
 rsync_webui()
@@ -392,17 +528,193 @@ rsync_webui()
 
   chmod 600 "$ID_RSA" || xecho 'Unable to find id_rsa certificate'
 
-  rsync_helper 'oscied-webui' "$RSYNC_UNIT_ID"
+  _rsync_helper 'oscied-webui' "$RSYNC_UNIT_ID"
 
-  get_unit_public_url $true 'oscied-webui' "$RSYNC_UNIT_ID"
+  _get_unit_public_url $true 'oscied-webui' "$RSYNC_UNIT_ID"
   host="ubuntu@$REPLY"
   dest='/var/www'
   ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
   rsync -avh --progress -e "ssh -i '$ID_RSA'" --exclude=.git --exclude=.htaccess \
-    --exclude=application/config/config.php --exclude=application/config/database.php \
-    --exclude=medias --exclude=uploads --exclude=orchestra_relation_ok --delete \
-    "$CHARMS_PATH/oscied-webui/www/" "$host:$dest/"
+    --exclude=application/config/config.php --exclude=application/config/database.php --exclude=medias \
+    --exclude=uploads --exclude=orchestra_relation_ok --delete "$CHARMS_PATH/oscied-webui/www/" "$host:$dest/"
   ssh -i "$ID_RSA" "$host" -n "sudo chown www-data:www-data $dest -R"
+}
+
+standalone()
+{
+  if [ $# -eq 2 ]; then
+    charm_auto=$1
+    hook_auto=$2
+  elif [ $# -eq 0 ]; then
+    charm_auto=''
+    hook_auto=''
+  else
+    xecho "Usage: $(basename $0) standalone [charm hook]"
+  fi
+  ok=$true
+
+  cd "$CHARMS_DEPLOY_PATH" || xecho "Unable to find path $CHARMS_DEPLOY_PATH"
+
+  if [ "$charm_auto" -a "$hook_auto" ]; then
+    techo 'OSCIED Operations with JuJu > Charms Standalone [AUTO]'
+    mecho "Charm is $charm_auto, hook is $hook_auto"
+    _standalone_execute_hook "$CHARMS_DEPLOY_PATH/$charm_auto" "$hook_auto"
+  else
+    # Initialize charms menu
+    find . -mindepth 1 -maxdepth 1 -type d | sort > $listing
+    charmsList=''
+    while read charm
+    do
+      charmsList="$charmsList$charm - "
+    done < $listing
+
+    # Charms menu
+    while true
+    do
+      $DIALOG --backtitle 'OSCIED Operations with JuJu > Charms Standalone' \
+              --menu 'Please select a charm' 0 0 0 \
+              $charmsList 2> $tmpfile
+
+      retval=$?
+      charm="$CHARMS_DEPLOY_PATH/$(cat $tmpfile)"
+      [ $retval -ne 0 -o ! "$charm" ] && break
+      cd "$charm" || xecho "Unable to find path $charm"
+
+      # Initialize hooks menu
+      find 'hooks' -mindepth 1 -maxdepth 1 -type f | sort > $listing
+      hooksList=''
+      while read hook
+      do
+        hooksList="$hooksList$hook - "
+      done < $listing
+
+      # Hooks menu
+      while true
+      do
+        name=$(basename $charm)
+        $DIALOG --backtitle "OSCIED Operations with JuJu > Charms Standalone > Charm $name" \
+                --menu 'Please select a hook' 0 0 0 \
+                $hooksList 2> $tmpfile
+
+        retval=$?
+        hook=$(cat $tmpfile)
+        [ $retval -ne 0 -o ! "$hook" ] && break
+        _standalone_execute_hook "$charm" "$hook"
+        [ $retval -eq 0 ] && pause
+      done
+
+      # Charms menu pause
+      [ $retval -eq 0 ] && pause
+    done
+  fi
+}
+
+unit_ssh()
+{
+  _check_juju
+
+  if [ $# -ne 0 ]; then
+    xecho "Usage: $(basename $0) unit_ssh"
+  fi
+  ok=$true
+
+  yesOrNo $true 'Update units listing'
+  [ $REPLY -eq $true ] && config
+
+  # Initialize remote menu
+  unitsList=$(cat "$SCENARIO_GEN_UNITS_FILE" | sort | sed 's:=: :g;s:\n: :g')
+
+  # Remote menu
+  while true
+  do
+    $DIALOG --backtitle 'OSCIED Operations with JuJu > Remote Access to Units' \
+            --menu 'Please select a unit' 0 0 0 \
+            $unitsList 2> $tmpfile
+
+    retval=$?
+    unit=$(cat $tmpfile)
+    [ $retval -ne 0 -o ! "$unit" ] && break
+    juju ssh "$unit"
+    [ $retval -eq 0 ] && pause
+  done
+}
+
+unit_add()
+{
+  _check_juju
+
+  if [ $# -ne 0 ]; then
+    xecho "Usage: $(basename $0) unit_add"
+  fi
+  ok=$true
+
+  yesOrNo $true 'Update units listing'
+  [ $REPLY -eq $true ] && config
+
+  # Initialize add unit menu
+  _get_services_dialog_listing
+  $DIALOG --backtitle 'OSCIED Operations with JuJu > Scale-up a Service' \
+          --menu 'Please select a service' 0 0 0 $REPLY 2> $tmpfile
+
+  retval=$?
+  service=$(cat $tmpfile)
+  if [ $retval -ne 0 -o ! "$service" ]; then
+    recho 'Operation aborted by user'
+  else
+    juju add-unit "$service"
+  fi
+}
+
+unit_remove()
+{
+  _check_juju
+
+  if [ $# -ne 0 ]; then
+    xecho "Usage: $(basename $0) unit_remove"
+  fi
+  ok=$true
+
+  yesOrNo $true 'Update units listing'
+  [ $REPLY -eq $true ] && config
+
+  # Initialize remove unit menu
+  _get_units_dialog_listing
+  $DIALOG --backtitle 'OSCIED Operations with JuJu > Scale-down a Service' \
+          --menu 'Please select an unit' 0 0 0 $REPLY 2> $tmpfile
+
+  retval=$?
+  unit=$(cat $tmpfile)
+  if [ $retval -ne 0 -o ! "$unit" ]; then
+    recho 'Operation aborted by user'
+  else
+    if juju remove-unit "$unit"; then
+      cat "$SCENARIO_GEN_UNITS_FILE" | grep -v "$1=.*" > $tmpfile
+      mv $tmpfile "$SCENARIO_GEN_UNITS_FILE"
+    fi
+  fi
+}
+
+destroy()
+{
+  _check_juju
+
+  if [ $# -ne 0 ]; then
+    xecho "Usage: $(basename $0) destroy"
+  fi
+  ok=$true
+
+  # Environments menu
+  while true
+  do
+    $DIALOG --backtitle 'OSCIED Menu > Destroy Environment' \
+            --menu 'Please select an environment' 0 0 0 \
+            'amazon' '-' 'local' '-' 'maas' '-' 2> $tmpfile
+
+    retval=$?
+    environment=$(cat $tmpfile)
+    [ $retval -ne 0 -o ! "$environment" ] && break
+    juju destroy-environment --environment "$environment"
+  done
 }
 
 main "$@"

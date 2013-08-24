@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 #**********************************************************************************************************************#
@@ -27,8 +27,8 @@
 if __name__ == '__main__':
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     from pprint import pprint
-    from oscied_lib.oscied_client import OrchestraAPIClient
-    from pyutils.py_unicode import configure_unicode
+    from library.oscied_lib.oscied_client import OrchestraAPIClient
+    from library.pyutils.py_unicode import configure_unicode
 
     configure_unicode()
 
