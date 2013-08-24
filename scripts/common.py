@@ -91,7 +91,6 @@ CONFIG_SCENARIOS_PATH = join(CONFIG_PATH, u'scenarios')
 HOME = os.environ[u'HOME']
 ID_RSA = join(HOME, u'.ssh', u'id_rsa')
 JUJU_PATH = join(HOME, u'.juju')
-JUJU_STORAGE_PATH = join(JUJU_PATH, u'storage/')
 JUJU_ENVS_FILE = join(JUJU_PATH, u'environments.yaml')
 
 BAD_AUTH = u'charlie@hacker.com:challenge_accepted'

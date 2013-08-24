@@ -24,16 +24,11 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import os, multiprocessing, setuptools.archive_util, shutil, time
+import os, multiprocessing, setuptools.archive_util, shutil
 from codecs import open
-from kitchen.text.converters import to_bytes
-from CharmHooks import DEFAULT_OS_ENV
-from CharmHooks_Storage import CharmHooks_Storage
-from CharmHooks_Subordinate import CharmHooks_Subordinate
-from CharmHooks_Website import CharmHooks_Website
-from PublisherConfig import PublisherConfig
+from oscied_config import PublisherLocalConfig
+from oscied_hook_base import CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Website, DEFAULT_OS_ENV
 from pyutils.py_filesystem import first_that_exist
-from pyutils.py_subprocess import screen_launch, screen_list, screen_kill
 
 
 class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Website):
@@ -44,7 +39,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(PublisherHooks, self).__init__(metadata, default_config, default_os_env)
-        self.local_config = PublisherConfig.read(local_config_filename, store_filename=True)
+        self.local_config = PublisherLocalConfig.read(local_config_filename, store_filename=True)
         self.local_config.update_publish_uri(self.public_address)
         self.debug(u'My __dict__ is {0}'.format(self.__dict__))
 
@@ -69,16 +64,17 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         self.cmd(u'make install')
         os.chdir(u'..')
         shutil.rmtree(mod_streaming)
-        self.info(u'Register Apache H.264 streaming module')
-        mods = (u'LoadModule h264_streaming_module /usr/lib/apache2/modules/mod_h264_streaming.so',
-                u'AddHandler h264-streaming.extensions .mp4')
-        lines = filter(lambda l: l not in mods, open(self.local_config.apache_config_file, u'r', u'utf-8'))
-        lines += u'\n'.join(mods) + u'\n'
-        open(self.local_config.apache_config_file, u'w', u'utf-8').write(u''.join(lines))
         self.info(u'Expose Apache 2 service')
         self.open_port(80, u'TCP')
 
     def hook_config_changed(self):
+        self.info(u'{0} Apache H.264 streaming module'.format('Enable' if self.config.mod_streaming else 'Disable'))
+        mods = (u'LoadModule h264_streaming_module /usr/lib/apache2/modules/mod_h264_streaming.so',
+                u'AddHandler h264-streaming.extensions .mp4')
+        lines = filter(lambda l: l not in mods, open(self.local_config.apache_config_file, u'r', u'utf-8'))
+        if self.config.mod_streaming:
+            lines += u'\n'.join(mods) + u'\n'
+        open(self.local_config.apache_config_file, u'w', u'utf-8').write(u''.join(lines))
         self.storage_remount()
         self.subordinate_register()
 
@@ -87,12 +83,13 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         self.hook_stop()
         self.storage_unregister()
         self.subordinate_unregister()
-        self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(PublisherHooks.PACKAGES)))
-        self.cmd(u'apt-get -y remove --purge apache2.2-common', fail=False)  # Fixes some problems
-        self.cmd(u'apt-get -y autoremove')
-        shutil.rmtree('/etc/apache2/',                ignore_errors=True)
+        if self.config.cleanup:
+            self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(PublisherHooks.PACKAGES)))
+            self.cmd(u'apt-get -y remove --purge apache2.2-common', fail=False)  # Fixes some problems
+            self.cmd(u'apt-get -y autoremove')
+            shutil.rmtree('/etc/apache2/',      ignore_errors=True)
+            shutil.rmtree(u'/var/log/apache2/', ignore_errors=True)
         shutil.rmtree(self.local_config.publish_path, ignore_errors=True)
-        shutil.rmtree(u'/var/log/apache2/',           ignore_errors=True)
         os.makedirs(self.local_config.publish_path)
         self.local_config.reset()
         self.local_config.update_publish_uri(self.public_address)
@@ -107,16 +104,10 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         else:
             self.save_local_config()  # Update local configuration file for publisher daemon
             self.cmd(u'service apache2 start')
-            if screen_list(u'Publisher', log=self.debug) == []:
-                screen_launch(u'Publisher', [u'celeryd', u'--config', u'celeryconfig', u'-Q', self.rabbit_queues])
-            time.sleep(5)
-            if screen_list(u'Publisher', log=self.debug) == []:
-                raise RuntimeError(to_bytes(u'Publisher is not ready'))
-            else:
-                self.remark(u'Publisher successfully started')
+            self.start_celeryd()
 
     def hook_stop(self):
-        screen_kill(u'Publisher', log=self.debug)
+        self.stop_celeryd()
         self.cmd(u'service apache2 stop', fail=False)
 
 # Main -----------------------------------------------------------------------------------------------------------------

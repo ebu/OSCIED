@@ -31,9 +31,11 @@ osciedLocalScenario()
   cp -f "$cfg" "$CONFIG_GEN_CONFIG_FILE"
 
   techo '1/5 Cleanup and bootstrap juju environment'
-
-  juju destroy-environment --environment 'local'
-  juju bootstrap --environment 'local'
+  yesOrNo $false 'do it now'
+  if [ $REPLY -eq $true ]; then
+    sudo juju destroy-environment -e 'local'
+    sudo juju bootstrap -e 'local' -v
+  fi
 
   techo '2/5 Deploy services on this computer'
 
@@ -42,14 +44,12 @@ osciedLocalScenario()
   if [ $REPLY -eq $true ]; then
     if [ -f "$cfg" ]; then
       mecho "Using user define Orchestra configuration : $cfg"
-      juju deploy --environment 'local' --config "$cfg" \
-        --repository=. local:$RELEASE/oscied-orchestra || xecho '1'
+      juju deploy -e 'local' --config "$cfg" --repository=. local:$RELEASE/oscied-orchestra || xecho '1'
     else
       mecho 'Using default Orchestra configuration'
-      juju deploy --environment 'local' \
-        --repository=. local:$RELEASE/oscied-orchestra || xecho '1'
+      juju deploy -e 'local' --repository=. local:$RELEASE/oscied-orchestra || xecho '1'
     fi
-    juju expose --environment 'local' oscied-orchestra || xecho '2'
+    juju expose -e 'local' oscied-orchestra || xecho '2'
   fi
 
   pecho 'Deploy Web UI (1 instance)'
@@ -57,14 +57,12 @@ osciedLocalScenario()
   if [ $REPLY -eq $true ]; then
     if [ -f "$cfg" ]; then
       mecho "Using user define Web UI configuration : $cfg"
-      juju deploy --environment 'local' --config "$cfg" \
-        --repository=. local:$RELEASE/oscied-webui || xecho '1'
+      juju deploy -e 'local' --config "$cfg" --repository=. local:$RELEASE/oscied-webui || xecho '1'
     else
       mecho 'Using default Web UI configuration'
-      juju deploy --environment 'local' \
-        --repository=. local:$RELEASE/oscied-webui || xecho '1'
+      juju deploy -e 'local' --repository=. local:$RELEASE/oscied-webui || xecho '1'
     fi
-    juju expose --environment 'local' oscied-webui || xecho '2'
+    juju expose -e 'local' oscied-webui || xecho '2'
   fi
 
   pecho 'Deploy Storage (1 instance)'
@@ -72,14 +70,12 @@ osciedLocalScenario()
   if [ $REPLY -eq $true ]; then
     if [ -f "$cfg" ]; then
       mecho "Using user define Storage configuration : $cfg"
-      juju deploy --environment 'local' --config "$cfg" \
-        --repository=. local:$RELEASE/oscied-storage || xecho '1'
+      juju deploy -e 'local' --config "$cfg" --repository=. local:$RELEASE/oscied-storage || xecho '1'
     else
       mecho 'Using default Storage configuration'
-      juju deploy --environment 'local' \
-        --repository=. local:$RELEASE/oscied-storage || xecho '1'
+      juju deploy -e 'local' --repository=. local:$RELEASE/oscied-storage || xecho '1'
     fi
-    juju expose --environment 'local' oscied-storage || xecho '2'
+    juju expose -e 'local' oscied-storage || xecho '2'
   fi
 
   pecho 'Deploy Transform (1 instance)'
@@ -87,12 +83,10 @@ osciedLocalScenario()
   if [ $REPLY -eq $true ]; then
     if [ -f "$cfg" ]; then
       mecho "Using user define Transform configuration : $cfg"
-      juju deploy --environment 'local' --config "$cfg" \
-        --repository=. local:$RELEASE/oscied-transform || xecho '1'
+      juju deploy -e 'local' --config "$cfg" --repository=. local:$RELEASE/oscied-transform || xecho '1'
     else
       mecho 'Using default Transform configuration'
-      juju deploy --environment 'local' \
-        --repository=. local:$RELEASE/oscied-transform || xecho '1'
+      juju deploy -e 'local' --repository=. local:$RELEASE/oscied-transform || xecho '1'
     fi
   fi
 
@@ -101,21 +95,19 @@ osciedLocalScenario()
   if [ $REPLY -eq $true ]; then
     if [ -f "$cfg" ]; then
       mecho "Using user define Publisher configuration : $cfg"
-      juju deploy --environment 'local' --config "$cfg" \
-        --repository=. local:$RELEASE/oscied-publisher || xecho '1'
+      juju deploy -e 'local' --config "$cfg" --repository=. local:$RELEASE/oscied-publisher || xecho '1'
     else
       mecho 'Using default Publisher configuration'
-      juju deploy --environment 'local' \
-        --repository=. local:$RELEASE/oscied-publisher || xecho '1'
+      juju deploy -e 'local' --repository=. local:$RELEASE/oscied-publisher || xecho '1'
     fi
-    juju expose --environment 'local' oscied-publisher || xecho '2'
+    juju expose -e 'local' oscied-publisher || xecho '2'
   fi
 
   pecho 'Deploy haproxy (1 instance)'
   yesOrNo $false 'deploy it now'
   if [ $REPLY -eq $true ]; then
-    juju deploy --environment 'local' cs:precise/haproxy || xecho '2'
-    juju expose --environment 'local' haproxy || xecho '3'
+    juju deploy -e 'local' cs:precise/haproxy || xecho '2'
+    juju expose -e 'local' haproxy || xecho '3'
   fi
 
   techo "3/5 Add relation between Storage and other services"
@@ -123,25 +115,25 @@ osciedLocalScenario()
   pecho 'Add-relation Storage <-> Transform'
   yesOrNo $true 'add it now'
   if [ $REPLY -eq $true ]; then
-    juju add-relation --environment 'local' oscied-storage oscied-transform
+    juju add-relation -e 'local' oscied-storage oscied-transform
   fi
 
   pecho 'Add-relation Storage <-> Publisher'
   yesOrNo $true 'add it now'
   if [ $REPLY -eq $true ]; then
-    juju add-relation --environment 'local' oscied-storage oscied-publisher
+    juju add-relation -e 'local' oscied-storage oscied-publisher
   fi
 
   pecho 'Add-relation Storage <-> Orchestra'
   yesOrNo $true 'add it now'
   if [ $REPLY -eq $true ]; then
-    juju add-relation --environment 'local' oscied-storage oscied-orchestra
+    juju add-relation -e 'local' oscied-storage oscied-orchestra
   fi
 
   pecho 'Add-relation Storage <-> Web UI'
   yesOrNo $true 'add it now'
   if [ $REPLY -eq $true ]; then
-    juju add-relation --environment 'local' oscied-storage oscied-webui
+    juju add-relation -e 'local' oscied-storage oscied-webui
   fi
 
   techo "4/5 Add relation between Orchestra and other services"
@@ -149,19 +141,19 @@ osciedLocalScenario()
   pecho 'Add-relation Orchestra <-> Transform'
   yesOrNo $true 'add it now'
   if [ $REPLY -eq $true ]; then
-    juju add-relation --environment 'local' oscied-orchestra:transform oscied-transform:transform
+    juju add-relation -e 'local' oscied-orchestra:transform oscied-transform:transform
   fi
 
   pecho 'Add-relation Orchestra <-> Publisher'
   yesOrNo $true 'add it now'
   if [ $REPLY -eq $true ]; then
-    juju add-relation --environment 'local' oscied-orchestra:publisher oscied-publisher:publisher
+    juju add-relation -e 'local' oscied-orchestra:publisher oscied-publisher:publisher
   fi
 
   pecho 'Add-relation Orchestra <-> Web UI'
   yesOrNo $true 'add it now'
   if [ $REPLY -eq $true ]; then
-    juju add-relation --environment 'local' oscied-orchestra:api oscied-webui:api
+    juju add-relation -e 'local' oscied-orchestra:api oscied-webui:api
   fi
 
   techo '5/5 Add relation between Web UI and HA Proxy'
@@ -169,7 +161,7 @@ osciedLocalScenario()
   pecho 'Add-relation haproxy <-> Web UI'
   yesOrNo $false 'add it now'
   if [ $REPLY -eq $true ]; then
-    juju unexpose --environment 'local' oscied-webui
-    juju add-relation --environment 'local' haproxy oscied-webui
+    juju unexpose -e 'local' oscied-webui
+    juju add-relation -e 'local' haproxy oscied-webui
   fi
 }

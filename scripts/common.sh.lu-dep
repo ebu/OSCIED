@@ -84,8 +84,9 @@ CONFIG_SCENARIOS_PATH="$CONFIG_PATH/scenarios"
 
 ID_RSA="$HOME/.ssh/id_rsa"
 ID_RSA_PUB="$HOME/.ssh/id_rsa.pub"
+JUJU_LOG="$BASE_PATH/juju-debug.log"
 JUJU_PATH="$HOME/.juju"
-JUJU_STORAGE_PATH="$JUJU_PATH/storage/"
+JUJU_STORAGE_PATH="$JUJU_PATH/local/"
 JUJU_ENVS_FILE="$JUJU_PATH/environments.yaml"
 
 BAD_AUTH='charlie@hacker.com:challenge_accepted'
@@ -104,8 +105,12 @@ get_unit_config()
   option=$3
 
   # Example : sS'storage_address' p29 S'ip-10-245-189-174.ec2.internal' p30
-  val=$(juju ssh $name/$number "cat /var/lib/juju/units/$name-*/charm/local_config.pkl" | tr '\n' ' ')
-  REPLY=$(expr match "$val" ".*'$option' p[0-9]* [^']*'\([^']*\)' p[0-9]*.*")
+  chmod1="sudo chmod +rx /var/lib/juju/agents/unit-$name-$number/"
+  chmod2="sudo chmod +rx /var/lib/juju/agents/unit-$name-$number/charm/"
+  chmod3="sudo chmod +rx /var/lib/juju/agents/unit-$name-$number/charm/local_config.pkl"
+  cat_local_config="cat /var/lib/juju/agents/unit-$name-$number/charm/local_config.pkl"
+  val=$(juju ssh $name/$number "$chmod1; $chmod2; $chmod3; $cat_local_config" | tr '\n' ' ')
+  REPLY=$(expr match "$val" ".*S'$option' p[0-9]\+ .'*\([^ ']*\)")
 }
 
 # Parse orchestra.yaml configuration file to get options value ---------------------------------------------------------
@@ -125,12 +130,12 @@ get_root_secret()
 get_node_secret()
 {
   if [ -f "$CONFIG_GEN_CONFIG_FILE" ]; then
-    line=$(cat "$CONFIG_GEN_CONFIG_FILE" | grep nodes_secret)
+    line=$(cat "$CONFIG_GEN_CONFIG_FILE" | grep node_secret)
     node=$(expr match "$line" '.*"\(.*\)".*')
   else
     node='abcd'
   fi
-  [ ! "$node" ] && xecho 'Unable to detect nodes secret !'
+  [ ! "$node" ] && xecho 'Unable to detect node secret !'
   REPLY="$node"
 }
 

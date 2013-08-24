@@ -1,12 +1,13 @@
 oscied-orchestra:
   verbose: "true"
+  cleanup: "true"
   root_secret: "5FrvHcm7oyF4WQFW"
-  nodes_secret: "bdZccPuG9fibjwCS"
+  node_secret: "bdZccPuG9fibjwCS"
   repositories_user: "oscied"
   repositories_pass: "41nVGq07GmSgK9Ud"
   oscied_repository: "https://github.com/ebu/OSCIED/charms"
   mongo_admin_password: "Iz85QVjdCJugEosz"
-  mongo_nodes_password: "M2qlif8rdtKtBYil"
+  mongo_node_password: "M2qlif8rdtKtBYil"
   rabbit_password: "OZy23iO0D4UpYS2k"
   email_server: ""
   email_tls: "true"
@@ -20,8 +21,10 @@ oscied-orchestra:
   storage_options: ""
 oscied-publisher:
   verbose: "true"
+  cleanup: "true"
   concurrency: 2
   rabbit_queues: "publisher_private"
+  mod_streaming: "false"
   max_upload_size: 4294967296
   max_execution_time: 180
   max_input_time: 600
@@ -35,10 +38,13 @@ oscied-publisher:
   storage_options: ""
 oscied-storage:
   verbose: "true"
+  cleanup: "true"
   allowed_ips: "*"
   replica_count: 1
+  bricks_root_path: "/mnt"
 oscied-transform:
   verbose: "true"
+  cleanup: "true"
   concurrency: 1
   rabbit_queues: "transform_private"
   mongo_connection: ""
@@ -51,6 +57,7 @@ oscied-transform:
   storage_options: ""
 oscied-webui:
   verbose: "false"
+  cleanup: "true"
   max_upload_size: 4294967296
   max_execution_time: 180
   max_input_time: 600

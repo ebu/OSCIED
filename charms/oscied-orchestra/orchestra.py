@@ -28,18 +28,14 @@
 
 import logging
 import sys
-from bson.objectid import ObjectId
-from flask import Flask, abort, request, Response
+from flask import Flask, abort, request
 from kitchen.text.converters import to_bytes
-from werkzeug.exceptions import HTTPException
+from pyutils.py_flask import check_id, get_request_json, json_response, map_exceptions
 from pyutils.py_logging import setup_logging
 from pyutils.py_serialization import object2json
-from pyutils.py_validation import valid_uuid
-from oscied_lib.Media import Media
 from oscied_lib.Orchestra import Orchestra
-from oscied_lib.OrchestraConfig import OrchestraConfig
-from oscied_lib.TransformProfile import TransformProfile
-from oscied_lib.User import User
+from oscied_lib.oscied_config import OrchestraLocalConfig
+from oscied_lib.oscied_models import Media, User, TransformProfile
 
 
 # Global variables -----------------------------------------------------------------------------------------------------
@@ -98,7 +94,7 @@ def requires_auth(request, allow_root=False, allow_node=False, allow_any=False, 
     username = auth.username
     password = auth.password
     root = (username == u'root' and password == orchestra.config.root_secret)
-    node = (username == u'node' and password == orchestra.config.nodes_secret)
+    node = (username == u'node' and password == orchestra.config.node_secret)
     user = None
     if not root and not node:
         user = orchestra.get_user({u'mail': username}, secret=password)
@@ -110,7 +106,7 @@ def requires_auth(request, allow_root=False, allow_node=False, allow_any=False, 
         return orchestra.root_user
     if node and allow_node:
         logging.info(u'Allowed authenticated worker/node')
-        return orchestra.nodes_user
+        return orchestra.node_user
     if user and allow_any:
         logging.info(u'Allowed authenticated user {0}'.format(user.name))
         return user
@@ -128,105 +124,43 @@ def requires_auth(request, allow_root=False, allow_node=False, allow_any=False, 
 
 # Utilities ------------------------------------------------------------------------------------------------------------
 
-
-def check_id(id):
-    if valid_uuid(id, objectid_allowed=False, none_allowed=False):
-        return id
-    elif valid_uuid(id, objectid_allowed=True, none_allowed=False):
-        return ObjectId(id)
-    raise ValueError(to_bytes(u'Wrong id format {0}'.format(id)))
-
-
-def get_request_json(request, required_keys=[]):
-    try:
-        data = request.json
-    except:
-        raise ValueError(to_bytes(u'Requires valid JSON content-type.'))
-    for key in required_keys:
-        if not key in data:
-            raise ValueError(to_bytes(u'Missing key "{0}" from JSON content.'.format(key)))
-    if not data:
-        raise ValueError(to_bytes(u'Requires JSON content-type.'))
-    return data
-
-
 @app.errorhandler(400)
 def error_400(value=None):
-    response = Response(response=object2json({u'status': 400, u'value': value}, False), status=400,
-                        mimetype=u'application/json')
-    response.status_code = 400
-    return response
+    return json_response(400, value=value, include_properties=False)
 
 
 @app.errorhandler(401)
 def error_401(value=None):
-    response = Response(response=object2json({u'status': 401, u'value': value}, False), status=401,
-                        mimetype=u'application/json')
-    response.status_code = 401
-    return response
+    return json_response(401, value=value, include_properties=False)
 
 
 @app.errorhandler(403)
 def error_403(value=None):
-    response = Response(response=object2json({u'status': 403, u'value': value}, False), status=403,
-                        mimetype=u'application/json')
-    response.status_code = 403
-    return response
+    return json_response(403, value=value, include_properties=False)
 
 
 @app.errorhandler(404)
 def error_404(value=None):
-    response = Response(response=object2json({u'status': 404, u'value': value}, False), status=404,
-                        mimetype=u'application/json')
-    response.status_code = 404
-    return response
+    return json_response(404, value=value, include_properties=False)
 
 
 @app.errorhandler(415)
 def error_415(value=None):
-    response = Response(response=object2json({u'status': 415, u'value': value}, False), status=415,
-                        mimetype=u'application/json')
-    response.status_code = 415
-    return response
+    return json_response(415, value=value, include_properties=False)
 
 
 @app.errorhandler(500)
 def error_500(value=None):
-    response = Response(response=object2json({u'status': 500, u'value': value}, False), status=500,
-                        mimetype=u'application/json')
-    response.status_code = 500
-    return response
+    return json_response(500, value=value, include_properties=False)
 
 
 @app.errorhandler(501)
 def error_501(value=None):
-    response = Response(response=object2json({u'status': 501, u'value': value}, False), status=501,
-                        mimetype=u'application/json')
-    response.status_code = 501
-    return response
+    return json_response(501, value=value, include_properties=False)
 
 
 def ok_200(value, include_properties):
-    response = Response(response=object2json({u'status': 200, u'value': value}, include_properties), status=200,
-                        mimetype=u'application/json')
-    response.status_code = 200
-    return response
-
-
-def map_exceptions(e):
-    if isinstance(e, HTTPException):
-        raise
-    if isinstance(e, TypeError):
-        abort(400, unicode(e))
-    elif isinstance(e, KeyError):
-        abort(400, u'Key {0} not found.'.format(e))
-    elif isinstance(e, IndexError):
-        abort(404, unicode(e))
-    elif isinstance(e, ValueError):
-        abort(415, unicode(e))
-    elif isinstance(e, NotImplementedError):
-        abort(501, unicode(e))
-    abort(500, '{0} {1} {2}'.format(e.__class__.__name__, repr(e), unicode(e)))
+    return json_response(200, value=value, include_properties=include_properties)
 
 
 # Index ----------------------------------------------------------------------------------------------------------------
@@ -501,7 +435,7 @@ def api_user_post():
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
         data = get_request_json(request)
-        user = User(None, data[u'first_name'], data[u'last_name'], data[u'mail'], data[u'secret'],
+        user = User(data[u'first_name'], data[u'last_name'], data[u'mail'], data[u'secret'],
                     data[u'admin_platform'])
         orchestra.save_user(user, hash_secret=True)
         delattr(user, u'secret')  # do not send back user's secret
@@ -894,7 +828,7 @@ def api_media_post():
     try:
         auth_user = requires_auth(request=request, allow_any=True)
         data = get_request_json(request)
-        media = Media(None, auth_user._id, None, data[u'uri'], None, data[u'filename'], data[u'metadata'], u'READY')
+        media = Media(auth_user._id, None, data[u'uri'], None, data[u'filename'], data[u'metadata'], u'READY')
         orchestra.save_media(media)
         return ok_200(media, True)
     except Exception as e:
@@ -1162,14 +1096,15 @@ def api_environment_count():
     .. warning:: TODO
     """
     try:
-        requires_auth(request=request, allow_root=True, allow_any=True)
-        return ok_200(orchestra.get_environments_count(), False)
+        requires_auth(request=request, allow_root=True, role=u'admin_platform')
+        (environments, default) = orchestra.get_environments()
+        return ok_200(len(environments), False)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route(u'/environment', methods=[u'GET'])
-def api_environment_get():
+@app.route(u'/environment/HEAD', methods=[u'GET'])
+def api_environment_get_head():
     """
     Return an array containing the environments serialized to JSON.
 
@@ -1178,8 +1113,25 @@ def api_environment_get():
     .. warning:: TODO
     """
     try:
-        requires_auth(request=request, allow_root=True, allow_any=True)
+        requires_auth(request=request, allow_root=True, role=u'admin_platform')
         (environments, default) = orchestra.get_environments()
+        return ok_200({u'environments': environments, u'default': default}, False)
+    except Exception as e:
+        map_exceptions(e)
+
+
+@app.route(u'/environment', methods=[u'GET'])
+def api_environment_get():
+    """
+    Return an array containing the environments (with status) serialized to JSON.
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, role=u'admin_platform')
+        (environments, default) = orchestra.get_environments(get_status=True)
         return ok_200({u'environments': environments, u'default': default}, False)
     except Exception as e:
         map_exceptions(e)
@@ -1197,8 +1149,41 @@ def api_environment_post():
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
         data = get_request_json(request)
+        raise NotImplementedError(to_bytes(u'This method is not implemented in current release.'))
         return ok_200(orchestra.add_environment(data[u'name'], data[u'type'], data[u'region'], data[u'access_key'],
                       data[u'secret_key'], data[u'control_bucket']), False)
+    except Exception as e:
+        map_exceptions(e)
+
+
+@app.route(u'/environment/name/<name>/HEAD', methods=[u'GET'])
+def api_environment_name_get_head(name):
+    u"""
+    Return an environment containing his status serialized to JSON.
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, role=u'admin_platform')
+        return ok_200(orchestra.get_environments(name), False)
+    except Exception as e:
+        map_exceptions(e)
+
+
+@app.route(u'/environment/name/<name>', methods=[u'GET'])
+def api_environment_name_get(name):
+    u"""
+    Return an environment serialized to JSON.
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, role=u'admin_platform')
+        return ok_200(orchestra.get_environment(name, get_status=True), False)
     except Exception as e:
         map_exceptions(e)
 
@@ -1385,7 +1370,7 @@ def api_transform_profile_post():
     :query title: New profile's title (required)
     :query description: New profile's description (required)
     :query encoder_name: New profile's encoder name (required)
-    :query encoder_string: New profile's encoder-specific string (required)
+    :query encoder_string: New profile's encoder-specific string (optional)
     :statuscode 200: OK
     :statuscode 400: Key ``key`` not found. *or* on type or value error
     :statuscode 400: Duplicate transform profile title ``profile``.
@@ -1396,8 +1381,7 @@ def api_transform_profile_post():
     try:
         requires_auth(request=request, allow_any=True)
         data = get_request_json(request)
-        profile = TransformProfile(None, data[u'title'], data[u'description'], data[u'encoder_name'],
-                                   data[u'encoder_string'])
+        profile = TransformProfile(data[u'title'], data[u'description'], data[u'encoder_name'], data[u'encoder_string'])
         orchestra.save_transform_profile(profile)
         return ok_200(profile, True)
     except Exception as e:
@@ -1569,7 +1553,7 @@ def api_transform_unit_delete(environment):
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
         data = get_request_json(request)
-        numbers = orchestra.remove_transform_units(environment, int(data[u'num_units']), True)
+        numbers = orchestra.destroy_transform_units(environment, int(data[u'num_units']), True)
         return ok_200(u'Removed {0} (requested {1}) transform units with number(s) {2} from environment "{3}"'.format(
                       len(numbers), data[u'num_units'], numbers, environment), False)
     except Exception as e:
@@ -1606,7 +1590,7 @@ def api_transform_unit_number_delete(environment, number):
     """
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        orchestra.remove_transform_unit(environment, number, True)
+        orchestra.destroy_transform_unit(environment, number, True)
         return ok_200(u'The transform unit {0} has been removed of environment {1}.'.format(number, environment), False)
     except Exception as e:
         map_exceptions(e)
@@ -1980,7 +1964,7 @@ def api_transform_task_id_get(id):
                 "duration": "00:02:44.88", "size": 54871886,
                 "title": "Project London - Official Trailer (2009)"
               },
-              "status": "PUBLISHED"
+              "status": "READY"
             },
             "media_out": {
               "_id": "52ea73ac-74f3-11e2-afdb-3085a9acc5ff",
@@ -2102,7 +2086,6 @@ def api_transform_task_id_delete(id):
 
 @app.route(u'/publish/queue', methods=[u'GET'])
 @app.route(u'/publisher/queue', methods=[u'GET'])
-@app.route(u'/unpublish/queue', methods=[u'GET'])
 def api_publish_queue():
     """
     Return an array containing the publish queues.
@@ -2279,7 +2262,6 @@ def api_publish_task_post():
         * Schedule tasks by specifying start time (...)
         * Handle the registration of tasks related to PENDING medias
         * Permit to publish a media on more than one (1) publication queue
-        * Permit to unpublish a media vbia a unpublish (broadcast) message
 
     **Example request**:
 
@@ -2457,7 +2439,7 @@ def api_publish_task_id_get(id):
                 "size": 54871886,
                 "title": "Project London - Official Trailer (2009)"
               },
-              "status": "PUBLISHED"
+              "status": "READY"
             },
             "user": { "name": "David Fischer", "...": "..." },
             "statistic": {
@@ -2540,9 +2522,7 @@ def api_publish_task_id_delete(id):
             raise IndexError(to_bytes(u'No publish task with id {0}.'.format(id)))
         if auth_user._id != task.user_id:
             abort(403, u'You are not allowed to revoke publish task with id {0}.'.format(id))
-        orchestra.revoke_publish_task(task=task, terminate=True, remove=False)
-        logging.info(u'here will be launched an unpublish task')
-        #orchestra.launch_unpublish_task(auth_user._id, task, '/unpublish/callback')
+        orchestra.revoke_publish_task(task=task, callback_url=u'/publish/revoke/callback', terminate=True, remove=False)
         return ok_200(u'The publish task "{0}" has been revoked. Corresponding media will be unpublished from here.'
                       .format(task._id), False)
     except Exception as e:
@@ -2668,29 +2648,66 @@ def api_publish_task_hook():
     except Exception as e:
         map_exceptions(e)
 
-# @app.route(u'/unpublish/callback', methods=[u'POST'])
-# def api_unpublish_task_hook_0():
 
-#     # This method will be ALWAYS called by publisher workers when they finish their work.
-#     # The orchestrator will update it's internal state (only workers/nodes can do that)
-#     if request.method == 'POST':
-#         requires_auth(request=request, allow_node=True)
-#         data = request.json
-#         if not data:
-#             abort(415, 'Requires json content-type')
-#         try:
-#             task_id = data['task_id']
-#             publish_task_id = data['publish_task_id']
-#             status = data['status']
-#             logging.debug('task ' + task_id + ', publish_task_id ' + publish_task_id + ', status ' + status)
-#             orchestra.unpublish_callback(task_id, publish_task_id, status)
-#         except (ValueError, TypeError) as error:
-#             abort(400, str(error))
-#         except KeyError as error:
-#             abort(400, 'Key ' + str(error) + ' not found')
-#         except IndexError as error:
-#             abort(404, str(error))
-#         return ok_200('Your work is much appreciated, thanks !', False)
+@app.route(u'/publish/revoke/callback', methods=[u'POST'])
+def api_revoke_publish_task_hook():
+    """
+    This method is called by publisher workers when they finish their work (revoke).
+
+    If task is successful, the orchestrator will update media's ``status`` and ``public_uris``
+    attribute.
+    Else, the orchestrator will append ``error_details`` to ``statistic`` attribute of task.
+
+    **Example request**:
+
+    .. sourcecode:: http
+
+        POST /publish/revoke/callback HTTP/1.1
+        Host: somewhere.com
+        Header: node:abcdef
+        Accept: application/json
+        Content-Type: application/json
+
+        {
+          "task_id": "1b96dcd6-7460-11e2-a06d-3085a9accb47",
+          "publish_uri": "http://<address>/medias/<user_id>/<media_id>/
+                          Project_London_trailer_2009.mp4",
+          "status": "SUCCESS"
+        }
+
+    **Example response**:
+
+    .. sourcecode:: http
+
+        HTTP/1.1 200 OK
+        Vary: Accept
+        Content-Type: application/json
+
+        {"status": 200, "value": "Your work is much appreciated, thanks !"}
+
+    :Allowed: Node
+    :query task_id: Task's id (required)
+    :query publish_uri: Revoked publication URI of the media (required)
+    :query status: Task's status (SUCCESS) or error's details (required)
+    :statuscode 200: OK
+    :statuscode 400: Key ``key`` not found. *or* on type or value error
+    :statuscode 401: Authenticate.
+    :statuscode 403: Authentication Failed.
+    :statuscode 404: No publish task with id ``id``.
+    :statuscode 404: Unable to find media with id ``id``.
+    :statuscode 415: Requires (valid) json content-type.
+    """
+    try:
+        requires_auth(request=request, allow_node=True)
+        data = get_request_json(request)
+        task_id = data[u'task_id']
+        publish_uri = data[u'publish_uri'] if u'publish_uri' in data else None
+        status = data[u'status']
+        logging.debug(u'task {0}, revoked publish_uri {1}, status {2}'.format(task_id, publish_uri, status))
+        orchestra.publish_revoke_callback(task_id, publish_uri, status)
+        return ok_200(u'Your work is much appreciated, thanks !', False)
+    except Exception as e:
+        map_exceptions(e)
 
 # Main -----------------------------------------------------------------------------------------------------------------
 
@@ -2700,7 +2717,7 @@ if __name__ == u'__main__':
     configure_unicode()
 
     try:
-        config = OrchestraConfig.read(u'local_config.pkl')
+        config = OrchestraLocalConfig.read(u'local_config.pkl')
         setup_logging(filename=u'orchestra.log', console=True, level=config.log_level)
         logging.info(u'OSCIED Orchestra by David Fischer 2013')
         logging.info(u'Configuration : {0}'.format(unicode(object2json(config, True))))

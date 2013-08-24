@@ -28,11 +28,9 @@ import os, shutil, socket, string
 from codecs import open
 from kitchen.text.converters import to_bytes
 from random import choice
-from CharmHooks import DEFAULT_OS_ENV
-from CharmHooks_Storage import CharmHooks_Storage
-from CharmHooks_Website import CharmHooks_Website
-from CharmConfig_Storage import MEDIAS_PATH, UPLOADS_PATH
-from WebuiConfig import WebuiConfig
+from oscied_config import WebuiLocalConfig
+from oscied_config_base import MEDIAS_PATH, UPLOADS_PATH
+from oscied_hook_base import CharmHooks_Storage, CharmHooks_Website, DEFAULT_OS_ENV
 from pyutils.py_filesystem import chown, first_that_exist, try_makedirs, try_symlink
 from pyutils.py_subprocess import rsync
 
@@ -47,7 +45,7 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(WebuiHooks, self).__init__(metadata, default_config, default_os_env)
-        self.local_config = WebuiConfig.read(local_config_filename, store_filename=True)
+        self.local_config = WebuiLocalConfig.read(local_config_filename, store_filename=True)
         self.debug(u'My __dict__ is {0}'.format(self.__dict__))
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -166,15 +164,16 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         self.info(u'Uninstall prerequisities, unregister service and load default configuration')
         self.hook_stop()
         self.storage_unregister()
-        self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(WebuiHooks.PACKAGES)))
-        self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(WebuiHooks.FIX_PACKAGES)), fail=False)
-        self.cmd(u'apt-get -y autoremove')
-        shutil.rmtree(u'/etc/apache2/',                ignore_errors=True)
+        if self.config.cleanup:
+            self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(WebuiHooks.PACKAGES)))
+            self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(WebuiHooks.FIX_PACKAGES)), fail=False)
+            self.cmd(u'apt-get -y autoremove')
+            shutil.rmtree(u'/etc/apache2/',     ignore_errors=True)
+            shutil.rmtree(u'/var/log/apache2/', ignore_errors=True)
+            shutil.rmtree(u'/etc/mysql/',       ignore_errors=True)
+            shutil.rmtree(u'/var/lib/mysql/',   ignore_errors=True)
+            shutil.rmtree(u'/var/log/mysql/',   ignore_errors=True)
         shutil.rmtree(self.local_config.www_root_path, ignore_errors=True)
-        shutil.rmtree(u'/var/log/apache2/',            ignore_errors=True)
-        shutil.rmtree(u'/etc/mysql/',                  ignore_errors=True)
-        shutil.rmtree(u'/var/lib/mysql/',              ignore_errors=True)
-        shutil.rmtree(u'/var/log/mysql/',              ignore_errors=True)
         os.makedirs(self.local_config.www_root_path)
         self.local_config.reset()
 

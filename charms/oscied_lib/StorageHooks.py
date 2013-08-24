@@ -24,10 +24,10 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import glob, re, shutil
+import os, re, shutil
 from kitchen.text.converters import to_bytes
-from CharmHooks import CharmHooks, DEFAULT_OS_ENV
-from StorageConfig import StorageConfig
+from oscied_config import StorageLocalConfig
+from oscied_hook_base import CharmHooks, DEFAULT_OS_ENV
 from pyutils.py_filesystem import first_that_exist
 
 
@@ -35,7 +35,7 @@ class StorageHooks(CharmHooks):
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(StorageHooks, self).__init__(metadata, default_config, default_os_env)
-        self.local_config = StorageConfig.read(local_config_filename, store_filename=True)
+        self.local_config = StorageLocalConfig.read(local_config_filename, store_filename=True)
         self.debug(u'My __dict__ is {0}'.format(self.__dict__))
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -50,7 +50,11 @@ class StorageHooks(CharmHooks):
 
     @property
     def brick(self):
-        return u'{0}:/exp{1}'.format(self.private_address, self.id)
+        return u'{0}:{1}/exp{2}'.format(self.private_address, self.bricks_path, self.id)
+
+    @property
+    def bricks_path(self):
+        return os.path.join(self.config.bricks_root_path, 'bricks')
 
     @property
     def volume(self):
@@ -114,7 +118,7 @@ class StorageHooks(CharmHooks):
         **Example output**::
 
             {'name': 'medias_volume_6', 'type': 'Distribute', 'status': 'Started',
-             'transport': 'tcp', 'bricks': ['domU-12-31-39-06-6C-E9.compute-1.internal:/exp6']}
+             'transport': 'tcp', 'bricks': ['domU-12-31-39-06-6C-E9.compute-1.internal:/mnt/bricks/exp6']}
         """
         stdout = self.volume_do(u'info', volume=volume, fail=False)[u'stdout']
         self.debug(u'Volume infos stdout: {0}'.format(repr(stdout)))
@@ -156,12 +160,13 @@ class StorageHooks(CharmHooks):
     def hook_uninstall(self):
         self.info(u'Uninstall prerequisites, remove files & bricks and load default configuration')
         self.hook_stop()
-        self.cmd(u'apt-get -y remove --purge glusterfs-server nfs-common')
-        self.cmd(u'apt-get -y autoremove')
-        shutil.rmtree(u'/etc/glusterd',  ignore_errors=True)
-        shutil.rmtree(u'/etc/glusterfs', ignore_errors=True)
-        for brick in glob.glob(u'/exp*'):
-            shutil.rmtree(brick, ignore_errors=True)
+        if self.config.cleanup:
+            self.cmd(u'apt-get -y remove --purge glusterfs-server nfs-common')
+            self.cmd(u'apt-get -y autoremove')
+            shutil.rmtree(u'/etc/glusterd',  ignore_errors=True)
+            shutil.rmtree(u'/etc/glusterfs', ignore_errors=True)
+        shutil.rmtree(self.bricks_path, ignore_errors=True)
+        os.makedirs(self.bricks_path)
         self.local_config.reset()
 
     def hook_start(self):
@@ -181,8 +186,6 @@ class StorageHooks(CharmHooks):
                 self.info(u'Add {0} to allowed clients IPs'.format(client_address))
                 self.local_config.allowed_ips.append(client_address)
                 self.hook_config_changed()
-        else:
-            self.relation_set(fstype=u'', mountpoint=u'', options=u'')
 
     def hook_storage_relation_departed(self):
         # Get configuration from the relation
@@ -221,7 +224,7 @@ class StorageHooks(CharmHooks):
         port, bricks = 24010, [self.brick]
         for peer in self.relation_list():
             self.open_port(port, u'TCP')  # Open required
-            bricks.append(u'{0:/exp{1}'.format(self.relation_get(u'private-address', peer), self.id))
+            bricks.append(u'{0}:/exp{1}'.format(self.relation_get(u'private-address', peer), self.id))
             port += 1
 
         if self.is_leader:

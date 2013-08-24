@@ -55,6 +55,7 @@
                case 'RETRY':    $class = 'progress progress-striped progress-warning';     break;
                case 'SUCCESS':  $class = 'progress progress-striped progress-success';     break;
                case 'FAILURE':  $class = 'progress progress-striped progress-danger';      break;
+               case 'REVOKING': $class = 'progress progress-striped progress-info active'; break;
                case 'REVOKED':  $class = 'progress progress-striped progress-info';        break;
                case 'UNKNOWN':  $class = 'progress progress-striped progress-danger';      break;
                default:         $class = 'progress progress-striped progres-info';         break;
@@ -73,6 +74,7 @@
                case 'RETRY':    $class = 'label label-warning';   break;
                case 'SUCCESS':  $class = 'label label-success';   break;
                case 'FAILURE':  $class = 'label label-important'; break;
+               case 'REVOKING': $class = 'label label-info';      break;
                case 'REVOKED':  $class = 'label label-inverse';   break;
                case 'UNKNOWN':  $class = 'label';                 break;
                default:         $class = 'label label-inverse';   break;
@@ -81,7 +83,7 @@
             <span class="<?= $class ?>"><?= $status ?></span>
          </td>
          <td>
-            <?php if (($status != 'SUCCESS') && ($status != 'FAILURE') && ($status != 'REVOKED') && ($task->user->_id == $this->user->id())): ?>
+            <?php if (($status != 'FAILURE') && ($status != 'REVOKING') && ($status != 'REVOKED') && ($task->user->_id == $this->user->id())): ?>
             <a class="revoke" title="<?= $task->_id ?>" href="<?= site_url('publisher/revoke/'.$task->_id) ?>"><button class="btn btn-mini btn-danger">Revoke</button></a>
             <?php endif; ?>
          </td>

@@ -24,14 +24,10 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import os, multiprocessing, setuptools.archive_util, shutil, time
-from kitchen.text.converters import to_bytes
-from CharmHooks import DEFAULT_OS_ENV
-from CharmHooks_Storage import CharmHooks_Storage
-from CharmHooks_Subordinate import CharmHooks_Subordinate
-from TransformConfig import TransformConfig
+import os, multiprocessing, setuptools.archive_util, shutil
+from oscied_config import TransformLocalConfig
+from oscied_hook_base import CharmHooks_Storage, CharmHooks_Subordinate, DEFAULT_OS_ENV
 from pyutils.py_filesystem import first_that_exist
-from pyutils.py_subprocess import screen_launch, screen_list, screen_kill
 
 
 class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
@@ -42,7 +38,7 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(TransformHooks, self).__init__(metadata, default_config, default_os_env)
-        self.local_config = TransformConfig.read(local_config_filename, store_filename=True)
+        self.local_config = TransformLocalConfig.read(local_config_filename, store_filename=True)
         self.debug(u'My __dict__ is {0}'.format(self.__dict__))
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -75,8 +71,9 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
         self.hook_stop()
         self.storage_unregister()
         self.subordinate_unregister()
-        self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(TransformHooks.PACKAGES)))
-        self.cmd(u'apt-get -y autoremove')
+        if self.config.cleanup:
+            self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(TransformHooks.PACKAGES)))
+            self.cmd(u'apt-get -y autoremove')
         self.local_config.reset()
 
     def hook_start(self):
@@ -88,16 +85,10 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
             self.remark(u'Do not start transform daemon : No RabbitMQ queues declared')
         else:
             self.save_local_config()  # Update local configuration file for transform daemon
-            if screen_list(u'Transform', log=self.debug) == []:
-                screen_launch(u'Transform', [u'celeryd', u'--config', u'celeryconfig', u'-Q', self.rabbit_queues])
-            time.sleep(5)
-            if screen_list(u'Transform', log=self.debug) == []:
-                raise RuntimeError(to_bytes(u'Transform is not ready'))
-            else:
-                self.remark(u'Transform successfully started')
+            self.start_celeryd()
 
     def hook_stop(self):
-        screen_kill(u'Transform', log=self.debug)
+        self.stop_celeryd()
 
 # Main -----------------------------------------------------------------------------------------------------------------
 

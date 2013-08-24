@@ -2,7 +2,13 @@ options:
   verbose:
     type: string
     default: "true"
-    description: Set verbose logging.  Can be set to true or false
+    description: Toogle verbose logging.
+  cleanup:
+    type: string
+    default: "true"
+    description: |
+        Toggle uninstall step of prerequisities by install hook.
+        Disable this if you planned to merge services into same unit, see ticket #87.
   concurrency:
     type: int
     default: 1
@@ -11,6 +17,10 @@ options:
     type: string
     default: "publisher_private"
     description: Worker connect to queues to receive tasks.  (e.g. "publisher_amazon" for amazon, "publisher_private,publisher_amazon" for both)
+  mod_streaming:
+    type: string
+    default: "true"
+    description: Toogle module H.264 streaming.  When enabled, the publication point cannot distribute MPEG-DASH content as the module conflict with MP4 files download.
   max_upload_size:
     type: int
     default: 4294967296

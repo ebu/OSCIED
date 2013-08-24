@@ -34,14 +34,14 @@ from copy import copy
 from mock import call
 from nose.tools import assert_equal
 from pyutils.py_mock import mock_cmd
-from oscied_lib.CharmHooks import DEFAULT_OS_ENV
-from oscied_lib.OrchestraConfig import OrchestraConfig
+from oscied_lib.oscied_config import OrchestraLocalConfig
+from oscied_lib.oscied_hook_base import DEFAULT_OS_ENV
 from oscied_lib.OrchestraHooks import OrchestraHooks
 
 CONFIG = {
-    u'verbose': True, u'root_secret': u'toto', u'nodes_secret': u'abcd', u'repositories_user': u'oscied',
+    u'verbose': True, u'root_secret': u'toto', u'node_secret': u'abcd', u'repositories_user': u'oscied',
     u'repositories_pass': u'', u'charms_repository': u'https://github.com/ebu/OSCIED/charms',
-    u'mongo_admin_password': u'Mongo_admin_1234', u'mongo_nodes_password': u'Mongo_user_1234',
+    u'mongo_admin_password': u'Mongo_admin_1234', u'mongo_node_password': u'Mongo_user_1234',
     u'rabbit_password': u'Alice_in_wonderland', u'storage_address': u'', u'storage_nat_address': u'',
     u'storage_fstype': u'', 'storage_mountpoint': u'', u'storage_options': u''
 }
@@ -56,17 +56,20 @@ class OrchestraHooks_tmp(OrchestraHooks):
 
     @property
     def rabbit_users(self):
-        return [u'nodes']
+        return [u'node']
 
     @property
     def rabbit_vhosts(self):
         return [u'celery']
 
 
+import pyutils.py_subprocess
+pyutils.py_subprocess.cmd = mock_cmd()
+
 class TestOrchestraHooks(object):
 
     def setUp(self):
-        OrchestraConfig().write(u'test.pkl')
+        OrchestraLocalConfig().write(u'test.pkl')
         self.hooks = OrchestraHooks_tmp(None, CONFIG, u'test.pkl', OS_ENV)
         shutil.copy(self.hooks.local_config.hosts_file, 'hosts')
         shutil.copy(u'mongodb.conf', u'mongodb_test.conf')
@@ -88,15 +91,26 @@ class TestOrchestraHooks(object):
     def test_config_changed(self):
         self.hooks.cmd = mock_cmd()
         self.hooks.hook_config_changed()
+        # Check calls of cmd done by rsync
+        assert_equal(len(pyutils.py_subprocess.cmd.call_args_list), 2)
+        assert_equal(pyutils.py_subprocess.cmd.call_args_list[0][0],
+                     ([u'rsync', u'-a', u'-r', u'../oscied-orchestra/ssh/', u'/home/david/.ssh/'],))
+        assert_equal(pyutils.py_subprocess.cmd.call_args_list[0][1]['fail'], True)
+        assert_equal(pyutils.py_subprocess.cmd.call_args_list[1][0],
+                     ([u'rsync', u'-a', u'-r', u'juju', u'/home/david/.juju/'],))
+        assert_equal(pyutils.py_subprocess.cmd.call_args_list[1][1]['fail'], True)
+        # Check calls of cmd done by OrchestraHooks
         assert_equal(self.hooks.cmd.call_args_list, [
+            call(u'service mongodb start',         fail=False),
+            call(u'service rabbitmq-server start', fail=False),
             call(u'mongo f.js'),
             call(u'mongo orchestra f.js'),
             call(u'mongo celery g.js'),
-            call(u'rabbitmqctl delete_user guest',                    fail=False),
-            call(u'rabbitmqctl delete_vhost /',                       fail=False),
-            call(u'rabbitmqctl add_user nodes "Alice_in_wonderland"', fail=False),
-            call(u'rabbitmqctl add_vhost celery',                     fail=False),
-            call(u'rabbitmqctl set_permissions -p celery nodes ".*" ".*" ".*"', fail=False)])
+            call(u'rabbitmqctl delete_user guest',                   fail=False),
+            call(u'rabbitmqctl delete_vhost /',                      fail=False),
+            call(u'rabbitmqctl add_user node "Alice_in_wonderland"', fail=False),
+            call(u'rabbitmqctl add_vhost celery',                    fail=False),
+            call(u'rabbitmqctl set_permissions -p celery node ".*" ".*" ".*"', fail=False)])
 
 if __name__ == u'__main__':
     import nose

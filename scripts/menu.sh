@@ -69,12 +69,6 @@ main()
               cleanup              'Cleanup configuration of charms (deploy path)'       \
               revup                "Increment all charm's revision (+1)"                 \
               api_init_setup       "${a}Initialize demo setup with Orchestra API"        \
-              api_launch_transform "${a}Launch a transformation task with Orchestra API" \
-              api_revoke_transform "${a}Revoke a transformation task with Orchestra API" \
-              api_launch_publish   "${a}Launch a publication task with Orchestra API"    \
-              api_revoke_publish   "${a}Revoke a publication task with Orchestra API"    \
-              api_test_all         "${a}Test the whole methods of Orchestra API"         \
-              api_get_all          "${a}Get listings of all things with Orchestra API"   \
               webui_test_common    'Test some functions of Web UI hooks'                 \
               rsync_orchestra      'Rsync local code to running Orchestra instance'      \
               rsync_publisher      'Rsync local code to running Publisher instance'      \
@@ -124,7 +118,8 @@ install()
     lu-importUtils . || xecho 'Unable to import utilities of logicielsUbuntu'
   fi
 
-  $udo "$CHARMS_PATH/setup.sh"
+  cd "$CHARMS_PATH" || xecho "Unable to find path $CHARMS_PATH"
+  $udo "./setup.sh" || xecho 'Unable to install OSCIED Library'
 
   pecho 'Install prerequisites'
   eval $install bzr rst2pdf texlive-latex-recommended texlive-latex-extra \
@@ -152,9 +147,8 @@ install()
   else bzr branch lp:juju 'juju-source'
   fi
 
-  addAptPpaRepo ppa:juju/pkgs juju || xecho 'Unable to add juju PPA repository'
-  eval $install --reinstall lxc apt-cacher-ng libzookeeper-java zookeeper juju juju-jitsu \
-    charm-tools || xecho 'Unable to install JuJu orchestrator'
+  addAptPpaRepo ppa:juju/stable juju || xecho 'Unable to add juju PPA repository'
+  eval $install --reinstall juju-core juju-local || xecho 'Unable to install JuJu orchestrator'
 
   #cat \
   # /var/lib/apt/lists/ppa.launchpad.net_juju_pkgs_ubuntu_dists_quantal_main_binary-amd64_Packages \
@@ -221,6 +215,8 @@ api_init_setup()
   ok=$true
 
   [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
+  [ "$STORAGE_PRIVATE_IP" -a "$STORAGE_MOUNTPOINT" -a "$STORAGE_BRICK" ] || \
+    xecho 'You must execute juju-menu.sh config first'
 
   pecho 'Flush database'
   yesOrNo $false "do you really want to flush orchestrator $ORCHESTRA_URL"
@@ -301,327 +297,6 @@ api_init_setup()
 
 }
 
-api_launch_transform()
-{
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) api_launch_transform"
-  fi
-  ok=$true
-
-  [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
-
-  pecho 'Gather required authorizations and IDs'
-  get_auth 'user1';     user1_auth=$REPLY
-  get_id   'media1';    media1_id=$REPLY
-  get_id   'tprofile2'; tprofile1_id=$REPLY
-
-  pecho 'Launch a transformation task'
-  json_ttask "$media1_id" "$tprofile1_id" "tabby2.mpg" 'transcoded media1' 'true' 'transform_private' 'high'
-  echo "$JSON"
-  test_api 200 POST $ORCHESTRA_URL/transform/task "$user1_auth" "$JSON"
-  save_id 'ttask1' "$ID"
-  get_id  'ttask1'
-  echo $REPLY
-}
-
-api_revoke_transform()
-{
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) api_revoke_transform"
-  fi
-  ok=$true
-
-  [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
-
-  pecho 'Gather required authorizations and IDs'
-  get_auth 'user1';  user1_auth=$REPLY
-  get_id   'ttask1'; ttask1_id=$REPLY
-
-  pecho 'Revoke a transform task'
-  test_api 200 DELETE $ORCHESTRA_URL/transform/task/id/$ttask1_id "$user1_auth" ''
-}
-
-api_launch_publish()
-{
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) api_launch_publish"
-  fi
-  ok=$true
-
-  [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
-
-  pecho 'Gather required authorizations and IDs'
-  get_auth 'user1';  user1_auth=$REPLY
-  get_id   'media1'; media1_id=$REPLY
-
-  pecho 'Launch a publication task'
-  json_ptask "$media1_id" 'true' 'publisher_private' 'high'
-  echo "$JSON"
-  test_api 200 POST $ORCHESTRA_URL/publish/task "$user1_auth" "$JSON"
-  save_id 'ptask1' "$ID"
-  get_id  'ptask1'
-  echo $REPLY
-}
-
-api_revoke_publish()
-{
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) api_revoke_pubish"
-  fi
-  ok=$true
-
-  [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
-
-  pecho 'Gather required authorizations and IDs'
-  get_auth 'user1'; user1_auth=$REPLY
-  get_id   'ptask1'; ptask1_id=$REPLY
-
-  pecho 'Revoke a publish task'
-  test_api 200 DELETE $ORCHESTRA_URL/publish/task/id/$ptask1_id "$user1_auth" ''
-}
-
-api_test_all()
-{
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) api_test_all"
-  fi
-  ok=$true
-
-  [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
-
-  cd "$CHARMS_PATH/oscied-orchestra/lib" || \
-    xecho "Unable to find path $CHARMS_PATH/oscied-orchestra/lib"
-
-  techo '1/4 Test source code'
-
-  recho 'FIXME Not Implemented'
-
-  techo '2/4 Initialize Orchestra database'
-
-  api_init_setup
-
-  techo '3/4 Gather required authorizations and IDs'
-
-  get_auth 'user1';     user1_auth=$REPLY
-  get_id   'user1';     user1_id=$REPLY
-  get_json 'user1';     user1_json=$REPLY
-  get_auth 'user2';     user2_auth=$REPLY
-  get_id   'user2';     user2_id=$REPLY
-  get_json 'user2';     user2_json=$REPLY
-  get_auth 'user3';     user3_auth=$REPLY
-  get_id   'user3';     user3_id=$REPLY
-  get_json 'user3';     user3_json=$REPLY
-  #get_id   'media1';    media1_id=$REPLY
-  #get_json 'media1';    media1_json=$REPLY
-  get_id   'tprofile1'; tprofile1_id=$REPLY
-  get_json 'tprofile1'; tprofile1_json=$REPLY
-
-  techo '4/4 Test Orchestra API'
-  api_test_main
-  api_test_user
-  #api_test_media
-  #api_test_tprofile
-  #api_test_ttask
-  mecho 'Unit test passed (Orchestrator API OK)'
-}
-
-api_test_main()
-{
-  pecho 'Test main API'
-  test_api 401 POST $ORCHESTRA_URL/flush ''            ''
-  test_api 401 POST $ORCHESTRA_URL/flush "$BAD_AUTH"   ''
-  test_api 403 POST $ORCHESTRA_URL/flush "$user2_auth" ''
-  test_api 200 GET  $ORCHESTRA_URL       ''            ''
-  test_api 200 GET  $ORCHESTRA_URL/index ''            ''
-  test_api 200 GET  $ORCHESTRA_URL       "$BAD_AUTH"   ''
-  test_api 200 GET  $ORCHESTRA_URL/index "$BAD_AUTH"   ''
-  test_api 200 GET  $ORCHESTRA_URL       "$ROOT_AUTH"  ''
-  test_api 200 GET  $ORCHESTRA_URL/index "$ROOT_AUTH"  ''
-  test_api 200 GET  $ORCHESTRA_URL       "$NODE_AUTH"  ''
-  test_api 200 GET  $ORCHESTRA_URL/index "$NODE_AUTH"  ''
-  test_api 200 GET  $ORCHESTRA_URL       "$user1_auth" ''
-  test_api 200 GET  $ORCHESTRA_URL/index "$user1_auth" ''
-  test_api 200 GET  $ORCHESTRA_URL       "$user2_auth" ''
-  test_api 200 GET  $ORCHESTRA_URL/index "$user2_auth" ''
-}
-
-api_test_user()
-{
-  pecho 'Test user API'
-  mecho 'We cannot double post an user'
-  test_api 400 POST $ORCHESTRA_URL/user "$ROOT_AUTH" "$user1_json"
-  mecho 'Anonymous can get nothing except one'
-  test_api 200 GET $ORCHESTRA_URL                   '' ''
-  test_api 200 GET $ORCHESTRA_URL/index             '' ''
-  test_api 401 GET $ORCHESTRA_URL/user/login        '' ''
-  test_api 401 GET $ORCHESTRA_URL/user/count        '' ''
-  test_api 401 GET $ORCHESTRA_URL/user              '' ''
-  test_api 401 GET $ORCHESTRA_URL/user/id/$user1_id '' ''
-  mecho 'Charlie can get nothing except one'
-  test_api 200 GET $ORCHESTRA_URL                   "$BAD_AUTH" ''
-  test_api 200 GET $ORCHESTRA_URL/index             "$BAD_AUTH" ''
-  test_api 401 GET $ORCHESTRA_URL/user/login        "$BAD_AUTH" ''
-  test_api 401 GET $ORCHESTRA_URL/user/count        "$BAD_AUTH" ''
-  test_api 401 GET $ORCHESTRA_URL/user              "$BAD_AUTH" ''
-  test_api 401 GET $ORCHESTRA_URL/user/id/$user1_id "$BAD_AUTH" ''
-  mecho 'Root can get a lot of things'
-  test_api 200 GET $ORCHESTRA_URL                   "$ROOT_AUTH" ''
-  test_api 200 GET $ORCHESTRA_URL/index             "$ROOT_AUTH" ''
-  test_api 403 GET $ORCHESTRA_URL/user/login        "$ROOT_AUTH" ''
-  test_api 200 GET $ORCHESTRA_URL/user/count        "$ROOT_AUTH" ''
-  test_api 200 GET $ORCHESTRA_URL/user              "$ROOT_AUTH" ''
-  test_api 200 GET $ORCHESTRA_URL/user/id/$user1_id "$ROOT_AUTH" ''
-  test_api 415 GET $ORCHESTRA_URL/user/id/salut     "$ROOT_AUTH" ''
-  mecho 'Node can get nothing except one'
-  test_api 200 GET $ORCHESTRA_URL                   "$NODE_AUTH" ''
-  test_api 200 GET $ORCHESTRA_URL/index             "$NODE_AUTH" ''
-  test_api 403 GET $ORCHESTRA_URL/user/login        "$NODE_AUTH" ''
-  test_api 403 GET $ORCHESTRA_URL/user/count        "$NODE_AUTH" ''
-  test_api 403 GET $ORCHESTRA_URL/user              "$NODE_AUTH" ''
-  test_api 403 GET $ORCHESTRA_URL/user/id/$user1_id "$NODE_AUTH" ''
-  test_api 415 GET $ORCHESTRA_URL/user/id/salut     "$NODE_AUTH" ''
-  mecho 'Admin can get a lot of things'
-  test_api 200 GET $ORCHESTRA_URL                   "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/index             "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/user/login        "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/user/count        "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/user              "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/user/id/$user1_id "$user1_auth" ''
-  test_api 415 GET $ORCHESTRA_URL/user/id/salut     "$user1_auth" ''
-  mecho 'Simple user can get lesser things'
-  test_api 200 GET $ORCHESTRA_URL                   "$user2_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/index             "$user2_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/user/login        "$user2_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/user/count        "$user2_auth" ''
-  test_api 403 GET $ORCHESTRA_URL/user              "$user2_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/user/id/$user1_id "$user2_auth" ''
-  test_api 415 GET $ORCHESTRA_URL/user/id/salut     "$user2_auth" ''
-  mecho 'Admin can modify users (and it should work as expected)'
-  test_api 200 PATCH $ORCHESTRA_URL/user/id/$user3_id "$user1_auth" \
-    '{"first_name":"the", "last_name":"test"}'
-  test_api 200 PATCH $ORCHESTRA_URL/user/id/$user3_id "$user1_auth" \
-    '{"mail":"t@t.com", "secret": "salutMe3"}'
-  test_api 200 GET   $ORCHESTRA_URL/user/login        't@t.com:salutMec3' ''
-  test_api 200 PATCH $ORCHESTRA_URL/user/id/$user3_id "$user1_auth"   "$user3_json"
-  test_api 200 GET   $ORCHESTRA_URL/user/login        "$user3_auth"   ''
-  mecho 'Admin can add/remove admin_platform role to users'
-  test_api 200 PATCH $ORCHESTRA_URL/user/id/$user2_id "$user1_auth" '{"admin_platform":true}'
-  test_api 200 GET   $ORCHESTRA_URL/user              "$user2_auth" ''
-  test_api 200 PATCH $ORCHESTRA_URL/user/id/$user2_id "$user1_auth" '{"admin_platform":false}'
-  test_api 403 GET   $ORCHESTRA_URL/user              "$user2_auth" ''
-  mecho 'Simple user cannot kill another, itself yes, but not 2x (Chuck Norris can)'
-  test_api 403 DELETE $ORCHESTRA_URL/user/id/$user1_id "$user3_auth" ''
-  test_api 200 DELETE $ORCHESTRA_URL/user/id/$user2_id "$user2_auth" ''
-  test_api 401 DELETE $ORCHESTRA_URL/user/id/$user2_id "$user2_auth" ''
-  test_api 401 GET    $ORCHESTRA_URL/user/login        "$user2_auth" ''
-  test_api 200 POST   $ORCHESTRA_URL/user              "$user1_auth" "$user2_json"
-  save_id 'user2' "$ID"
-  test_api 200 GET    $ORCHESTRA_URL/user/login        "$user2_auth" ''
-}
-
-api_test_media()
-{
-  pecho 'Test media API'
-  test_api 200 POST   $ORCHESTRA_URL/media               "$user1_auth" "$media1_json"; media1_id=$ID
-  test_api 400 POST   $ORCHESTRA_URL/media               "$user1_auth" "$media1_json"
-  test_api 200 GET    $ORCHESTRA_URL/media/count         "$user2_auth" ''
-  test_api 200 GET    $ORCHESTRA_URL/media               "$user2_auth" ''
-  test_api 403 PATCH  $ORCHESTRA_URL/media/id/$media1_id "$user2_auth" "$media1b_json"
-  test_api 200 PATCH  $ORCHESTRA_URL/media/id/$media1_id "$user1_auth" "$media1b_json"
-  test_api 200 GET    $ORCHESTRA_URL/media/id/$media1_id "$user2_auth" ''
-  test_api 403 DELETE $ORCHESTRA_URL/media/id/$media1_id "$user2_auth" ''
-  test_api 200 DELETE $ORCHESTRA_URL/media/id/$media1_id "$user1_auth" ''
-  test_api 200 POST   $ORCHESTRA_URL/media               "$user1_auth" "$media1_json"; media1_id=$ID
-}
-
-api_test_tprofile()
-{
-  pecho 'Test transform profile API'
-  mecho 'We cannot double post a profile'
-  test_api 400 POST $ORCHESTRA_URL/transform/profile "$user1_auth" "$tprofile1_json"
-  mecho 'Anonymous can get nothing'
-  test_api 401 GET $ORCHESTRA_URL/transform/profile/count            '' ''
-  test_api 401 GET $ORCHESTRA_URL/transform/profile                  '' ''
-  test_api 401 GET $ORCHESTRA_URL/transform/profile/id/$tprofile1_id '' ''
-  mecho 'Charlie can get nothing'
-  test_api 401 GET $ORCHESTRA_URL/transform/profile/count            "$BAD_AUTH" ''
-  test_api 401 GET $ORCHESTRA_URL/transform/profile                  "$BAD_AUTH" ''
-  test_api 401 GET $ORCHESTRA_URL/transform/profile/id/$tprofile1_id "$BAD_AUTH" ''
-  mecho 'Root can get nothing'
-  test_api 403 GET $ORCHESTRA_URL/transform/profile/count            "$ROOT_AUTH" ''
-  test_api 403 GET $ORCHESTRA_URL/transform/profile                  "$ROOT_AUTH" ''
-  test_api 403 GET $ORCHESTRA_URL/transform/profile/id/$tprofile1_id "$ROOT_AUTH" ''
-  test_api 415 GET $ORCHESTRA_URL/transform/profile/id/salut         "$ROOT_AUTH" ''
-  mecho 'Node can get nothing'
-  test_api 403 GET $ORCHESTRA_URL/transform/profile/count            "$NODE_AUTH" ''
-  test_api 403 GET $ORCHESTRA_URL/transform/profile                  "$NODE_AUTH" ''
-  test_api 403 GET $ORCHESTRA_URL/transform/profile/id/$tprofile1_id "$NODE_AUTH" ''
-  test_api 415 GET $ORCHESTRA_URL/transform/profile/id/salut         "$NODE_AUTH" ''
-  mecho 'Admin can get a lot of things'
-  test_api 200 GET $ORCHESTRA_URL/transform/profile/count            "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/transform/profile                  "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/transform/profile/id/$tprofile1_id "$user1_auth" ''
-  test_api 415 GET $ORCHESTRA_URL/transform/profile/id/salut         "$user1_auth" ''
-  mecho 'Simple user can a lot of things'
-  test_api 200 GET $ORCHESTRA_URL/transform/profile/count            "$user2_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/transform/profile                  "$user2_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/transform/profile/id/$tprofile1_id "$user2_auth" ''
-  test_api 415 GET $ORCHESTRA_URL/transform/profile/id/salut         "$user2_auth" ''
-}
-
-api_test_ttask()
-{
-  pecho 'Test transform task API'
-  #test_api 200 GET  $ORCHESTRA_URL/transform/task/count "$user2_auth" ''
-  #test_api 200 GET  $ORCHESTRA_URL/transform/task       "$user2_auth" ''
-  #test_api 404 POST $ORCHESTRA_URL/transform/task       "$user2_auth" "$ttask0_json"
-  #test_api 404 POST $ORCHESTRA_URL/transform/task       "$user2_auth" "$ttask0b_json"
-  #test_api 404 POST $ORCHESTRA_URL/transform/task       "$user2_auth" "$ttask1_json"
-  #test_api 200 POST $ORCHESTRA_URL/transform/task       "$user2_auth" "$ttask2_json"; ttask2_id=$ID
-  #echo $ttask2_id
-  #test_api 415 GET  $ORCHESTRA_URL/task/transform/1   "$admin" ''
-  #test_api 200 GET  $ORCHESTRA_URL/task/transform/$id "$admin" ''
-  #test_api 400 POST $ORCHESTRA_URL/transform/task     "$user2_auth"  "$tprofile1_json"
-
-  #while read post_task
-  #do
-  #  [ "$post_task" ] && test_api 0 POST $ORCHESTRA_URL/task/transform "$admin" "$post_task"
-  #done < "$ORCHESTRA_SCRIPTS_PATH/tests.tasks"
-
-  #test_api 501 PATCH  $ORCHESTRA_URL/task/transform/$id "$admin" ''
-  #test_api 200 DELETE $ORCHESTRA_URL/task/transform/$id "$admin" ''
-}
-
-api_get_all()
-{
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) api_get_all"
-  fi
-  ok=$true
-
-  [ "$ORCHESTRA_URL" ] || xecho 'No orchestrator found, this method is disabled'
-
-  get_auth 'user1'; user1_auth=$REPLY
-  test_api 200 GET $ORCHESTRA_URL                         '' ''
-  test_api 200 GET $ORCHESTRA_URL/user/count              "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/user                    "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/media/count             "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/media/HEAD              "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/media                   "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/transform/profile/count "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/transform/profile       "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/transform/queue         "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/transform/task/count    "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/transform/task/HEAD     "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/transform/task          "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/publish/queue           "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/publisher/queue         "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/unpublish/queue         "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/publish/task/count      "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/publish/task/HEAD       "$user1_auth" ''
-  test_api 200 GET $ORCHESTRA_URL/publish/task            "$user1_auth" ''
-}
-
 webui_test_common()
 {
   if [ $# -ne 0 ]; then
@@ -658,7 +333,7 @@ rsync_helper()
 
   get_unit_public_url $true "$1" "$2"
   host="ubuntu@$REPLY"
-  dest="/var/lib/juju/units/$1-$2/charm"
+  dest="/var/lib/juju/agents/unit-$1-$2/charm"
   ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
   rsync -avhL --progress --delete -e "ssh -i '$ID_RSA'" --exclude=.git --exclude=config.json \
     --exclude=celeryconfig.py --exclude=*.pyc --exclude=local_config.pkl --exclude=charms \

@@ -131,22 +131,23 @@ deploy()
   pecho 'Initialize JuJu orchestrator configuration'
   if [ ! -f $HOME/.ssh/id_rsa ]; then ssh-keygen -t rsa; fi # FIXME better trick
   ssh-add # Fix ERROR SSH forwarding error: Agent admitted failure to sign using the key.
-  mkdir -p "$JUJU_STORAGE_PATH" 2>/dev/null
+  mkdir -p "$JUJU_PATH" "$JUJU_STORAGE_PATH" 2>/dev/null
   if [ -f "$CONFIG_JUJU_ENVS_FILE" ]; then
     mecho "Using user defined environment : $CONFIG_JUJU_ENVS_FILE"
     cp "$CONFIG_JUJU_ENVS_FILE" "$JUJU_ENVS_FILE" || \
       xecho "Unable to copy juju's configuration file"
   else
     mecho 'Using default template to generate environment'
-    sed "s:RELEASE:$RELEASE:g;s:STORAGE_PATH:$JUJU_STORAGE_PATH:g" "$CONFIG_JUJU_TEMPL_FILE" > \
-      "$JUJU_ENVS_FILE" || xecho "Unable to generate juju's configuration file"
+    sed "s:RELEASE:$RELEASE:g" "$CONFIG_JUJU_TEMPL_FILE" > "$JUJU_ENVS_FILE" || \
+      xecho "Unable to generate juju's configuration file"
   fi
   $udo ufw disable # Fix master thesis ticket #80 - Juju stuck in pending when using LXC
 
   pecho "Copy JuJu environments file & SSH keys to Orchestra charm's deployment path"
   cp -f "$ID_RSA"         "$CHARMS_DEPLOY_PATH/oscied-orchestra/ssh/"
   cp -f "$ID_RSA_PUB"     "$CHARMS_DEPLOY_PATH/oscied-orchestra/ssh/"
-  cp -f "$JUJU_ENVS_FILE" "$CHARMS_DEPLOY_PATH/oscied-orchestra/"
+  cp -f "$JUJU_ENVS_FILE" "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/"
+  find "$JUJU_PATH" -type f -name '*.pem' -exec cp -f {} "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/" \;
 
   cd "$CONFIG_SCENARIOS_PATH" || xecho "Unable to find path $CONFIG_SCENARIOS_PATH"
 
@@ -331,7 +332,7 @@ log()
   fi
   ok=$true
 
-  screen -dmS juju-log juju debug-log
+  screen -dmS juju-log juju debug-log > "$JUJU_LOG"
 }
 
 config()
@@ -387,7 +388,8 @@ config()
         xecho 'Unable to detect storage mountpoint'
       else
         number=$(expr match "$REPLY" '.*_\([0-9]*\)')
-        brick="/exp$number"
+        # FIXME hardcoded brick directory !
+        brick="/mnt/bricks/exp$number"
         mecho "Updating common.sh with detected storage mountpoint = $REPLY and brick = $brick"
         sed -i -e "s#STORAGE_MOUNTPOINT=.*#STORAGE_MOUNTPOINT='$REPLY'#" \
                -e "s#STORAGE_BRICK=.*#STORAGE_BRICK='$brick'#" "$SCRIPTS_PATH/common.sh"

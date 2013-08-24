@@ -49,19 +49,13 @@ CELERY_MONGODB_BACKEND_SETTINGS = {{
 #                'routing_key': 'transform.new'}}
 
 #CELERY_ROUTES = (OrchestraRouter(), )
-CELERY_QUEUES = (
-    Queue('black_hole',        routing_key='blackhole'),
-    Queue('transform_private', routing_key='transform.private'),
-    Queue('transform_amazon',  routing_key='transform.amazon'),
-    Queue('publisher_private', routing_key='publisher.private'),
-    Queue('publisher_amazon',  routing_key='publisher.amazon'),
-)
+CELERY_QUEUES = (Queue('black_hole', routing_key='blackhole'),)
 CELERY_CREATE_MISSING_QUEUES = True
 CELERY_DEFAULT_QUEUE = 'black_hole'
 CELERY_DEFAULT_EXCHANGE = '/'
 CELERY_DEFAULT_EXCHANGE_TYPE = 'topic'
 
-CELERY_IMPORTS = ('oscied_lib.Transform', 'oscied_lib.Publisher',)
+CELERY_IMPORTS = ('oscied_lib.TransformWorker', 'oscied_lib.PublisherWorker',)
 CELERY_IGNORE_RESULT = False
 CELERY_SEND_EVENTS = True
 CELERY_TASK_SERIALIZER = 'json'

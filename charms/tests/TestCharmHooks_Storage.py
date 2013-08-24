@@ -36,9 +36,8 @@ from copy import copy
 from mock import call
 from nose.tools import assert_equal
 from pyutils.py_mock import mock_cmd, mock_side_effect
-from oscied_lib.CharmHooks import DEFAULT_OS_ENV
-from oscied_lib.TransformConfig import TransformConfig
-from oscied_lib.CharmHooks_Storage import CharmHooks_Storage
+from oscied_lib.oscied_config import TransformLocalConfig
+from oscied_lib.oscied_hook_base import CharmHooks_Storage, DEFAULT_OS_ENV
 
 CONFIG_DEFAULT = {
     u'storage_address': u'', u'storage_nat_address': u'', u'storage_fstype': u'', u'storage_mountpoint': u'',
@@ -73,7 +72,7 @@ class TestCharmHooks_Storage(object):
 
     def create_hooks(self, hooks_class, default_config):
         hooks = hooks_class(None, default_config, OS_ENV)
-        hooks.local_config = TransformConfig()
+        hooks.local_config = TransformLocalConfig()
         hooks.local_config.storage_mount_sleep_delay = 0.01
         shutil.copy(hooks.local_config.hosts_file, u'hosts')
         system_hosts = open(hooks.local_config.hosts_file, u'r', u'utf-8').readlines()

@@ -1,7 +1,9 @@
 oscied-publisher-demo:
   verbose: "true"
+  cleanup: "true"
   concurrency: 2
   rabbit_queues: "publisher_amazon"
+  mod_streaming: "false"
   max_upload_size: 4294967296
   max_execution_time: 180
   max_input_time: 600
@@ -15,6 +17,7 @@ oscied-publisher-demo:
   storage_options: ""
 oscied-transform-demo:
   verbose: "true"
+  cleanup: "true"
   concurrency: 1
   rabbit_queues: "transform_amazon"
   mongo_connection: "MONGO"
