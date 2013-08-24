@@ -101,7 +101,7 @@ main()
   fi
 }
 
-# Operations ---------------------------------------------------------------------------------------
+# Operations -----------------------------------------------------------------------------------------------------------
 
 install()
 {
@@ -134,10 +134,11 @@ install()
   $udo "./setup.sh"  || xecho 'Unable to install OSCIED Library'
 
   pecho 'Install prerequisites'
-  eval $install bzr rst2pdf texlive-latex-recommended texlive-latex-extra \
+  eval $install bzr default-jre imagemagick rst2pdf texlive-latex-recommended texlive-latex-extra \
     texlive-fonts-recommended || xecho 'Unable to install packages'
-  $udo pip install --upgrade coverage docutils nose pygments rednose sphinx sphinxcontrib-email \
-    sphinxcontrib-googlechart sphinxcontrib-httpdomain || xecho 'Unable to install python packages'
+  $udo pip install --upgrade sphinx sphinxcontrib-email sphinxcontrib-googlechart sphinxcontrib-httpdomain || \
+    xecho 'Unable to install sphinx python packages'
+  $udo easy_install rednose || xecho 'Unable to install rednose python package' # NEVER install it with pip ;-)
 
   pecho 'Download references'
   cd "$REFERENCES_PATH"|| xecho "Unable to find path $REFERENCES_PATH"
@@ -154,8 +155,8 @@ install()
   clonezilla='http://switch.dl.sourceforge.net/project/clonezilla'
   wget -N $clonezilla/clonezilla_live_stable/2.1.1-25/clonezilla-live-2.1.1-25-amd64.zip
 
-  if [ -d 'juju-source' ]; then cd 'juju-source' && bzr merge && cd ..
-  else bzr branch lp:juju 'juju-source'
+  if [ -d 'juju-core-source' ]; then cd 'juju-core-source' && bzr merge && cd ..
+  else bzr branch lp:juju-core 'juju-core-source'
   fi
 
   addAptPpaRepo ppa:juju/stable juju || xecho 'Unable to add juju PPA repository'
@@ -468,11 +469,6 @@ api_init_setup()
     count=$((count+1))
   done < "$SCENARIO_API_TPROFILES_FILE"
   IFS=$savedIFS
-
-  #pecho 'Add medias'
-  #$udo mkdir -p /mnt/storage/medias /mnt/storage/uploads
-  #$udo cp "$SCRIPTS_PATH/common.sh" /mnt/storage/uploads/tabby.mpg
-  #_test_api 200 POST $orchestra_url/media "$admin_auth" "$media1_json"; _save_id 'media1' "$ID"
 }
 
 browse_webui()
@@ -539,9 +535,8 @@ rsync_webui()
   dest='/var/www'
   ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
   rsync -avh --progress -e "ssh -i '$ID_RSA'" --exclude=.git --exclude=.htaccess \
-    --exclude=application/config/config.php --exclude=application/config/database.php \
-    --exclude=medias --exclude=uploads --exclude=orchestra_relation_ok --delete \
-    "$CHARMS_PATH/oscied-webui/www/" "$host:$dest/"
+    --exclude=application/config/config.php --exclude=application/config/database.php --exclude=medias \
+    --exclude=uploads --exclude=orchestra_relation_ok --delete "$CHARMS_PATH/oscied-webui/www/" "$host:$dest/"
   ssh -i "$ID_RSA" "$host" -n "sudo chown www-data:www-data $dest -R"
 }
 
