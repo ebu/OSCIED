@@ -287,12 +287,13 @@ class TransformProfile(OsciedDBModel):
 
 class PublishTask(OsciedDBTask):
 
-    def __init__(self, user_id=None, media_id=None, publish_uri=None, revoke_task_id=None, **kwargs):
+    def __init__(self, user_id=None, media_id=None, publish_uri=None, revoke_task_id=None, send_email=False, **kwargs):
         super(PublishTask, self).__init__(**kwargs)
         self.user_id = user_id
         self.media_id = media_id
         self.publish_uri = publish_uri
         self.revoke_task_id = revoke_task_id
+        self.send_email = send_email
 
     def is_valid(self, raise_exception):
         if not super(PublishTask, self).is_valid(raise_exception):
@@ -306,6 +307,7 @@ class PublishTask(OsciedDBTask):
         # FIXME check publish_uri
         if not valid_uuid(self.revoke_task_id, none_allowed=True):
             self._E(raise_exception, u'revoke_task_id is not a valid uuid string')
+		# FIXME check send_email
         return True
 
     def load_fields(self, user, media):
@@ -317,12 +319,13 @@ class PublishTask(OsciedDBTask):
 
 class TransformTask(OsciedDBTask):
 
-    def __init__(self, user_id=None, media_in_id=None, media_out_id=None, profile_id=None, **kwargs):
+    def __init__(self, user_id=None, media_in_id=None, media_out_id=None, profile_id=None, send_email=False, **kwargs):
         super(TransformTask, self).__init__(**kwargs)
         self.user_id = user_id
         self.media_in_id = media_in_id
         self.media_out_id = media_out_id
         self.profile_id = profile_id
+        self.send_email = send_email
 
     def is_valid(self, raise_exception):
         if not super(TransformTask, self).is_valid(raise_exception):
@@ -339,6 +342,7 @@ class TransformTask(OsciedDBTask):
         if hasattr(self, u'profile_id') and not valid_uuid(self.profile_id, none_allowed=False):
             self._E(raise_exception, u'profile_id is not a valid uuid string')
         # FIXME check profile if loaded
+		# FIXME check send_email
         return True
 
     def load_fields(self, user, media_in, media_out, profile):
