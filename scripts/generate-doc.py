@@ -30,9 +30,10 @@ import glob, re, shutil, os, sys
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from codecs import open
 from os.path import basename, dirname, join, splitext
-from oscied_lib.pyutils.py_filesystem import try_makedirs, try_remove
-from oscied_lib.pyutils.py_subprocess import cmd
-from oscied_lib.pyutils.py_unicode import configure_unicode
+from library.oscied_lib.pyutils.py_console import print_error
+from library.oscied_lib.pyutils.py_filesystem import try_makedirs, try_remove
+from library.oscied_lib.pyutils.py_subprocess import cmd
+from library.oscied_lib.pyutils.py_unicode import configure_unicode
 
 SCRIPTS_PATH = os.getcwd()
 BASE_PATH = dirname(SCRIPTS_PATH)

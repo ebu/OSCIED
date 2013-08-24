@@ -25,7 +25,7 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 from os.path import join
-from oscied_lib.pyutils.py_juju import DeploymentScenario
+from library.oscied_lib.pyutils.py_juju import DeploymentScenario
 
 description = u'Launch oscied (minimal setup) locally (LXC provider)'
 
