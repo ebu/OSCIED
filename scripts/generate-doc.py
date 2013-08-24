@@ -55,11 +55,6 @@ WIKI_BUILD_PATH = join(DOCS_PATH, u'wiki', u'build')
 WIKI_SOURCE_PATH = join(DOCS_PATH, u'wiki', u'source')
 
 
-def xprint(message):
-    print(u'[ERROR] {0}'.format(message), file=sys.stderr)
-    sys.exit(1)
-
-
 if __name__ == u'__main__':
     configure_unicode()
 
@@ -78,16 +73,16 @@ if __name__ == u'__main__':
     if not args.html and not args.pdf and not args.wiki:
         parser.print_help()
         print(u'')
-        xprint(u'At least one target must be enabled')
+        print_error(u'At least one target must be enabled')
 
     revision = cmd(u"git log --pretty=format:'%H' -n 1", fail=False)[u'stdout']
     if not revision:
-        xprint(u'Unable to detect local copy revision number !')
+        print_error(u'Unable to detect local copy revision number !')
 
     print(u'Generate images from textual UMLs')
     result = cmd([u'java', u'-jar', REPORT_TOOLS_PLANTUML_BINARY, DAVID_REPORT_UML_PATH, u'-failonerror'], fail=False)
     if result[u'returncode'] != 0:
-        xprint(u'Unable to generate images from UML diagrams, reason: {0}.'.format(result[u'stderr']))
+        print_error(u'Unable to generate images from UML diagrams, reason: {0}.'.format(result[u'stderr']))
 
     print(u'Append hooks UMLs images together')
     os.chdir(DAVID_REPORT_UML_PATH)
@@ -102,7 +97,7 @@ if __name__ == u'__main__':
         if results[0][u'returncode'] != 0:
             results[1] = cmd([u'convert', a, c, d, u'+append', e], fail=False)
             if results[1][u'returncode'] != 0:
-                xprint(u"Unable to append {0}'s hooks UMLs images, reasons: {1}, {2}.".format(name,
+                print_error(u"Unable to append {0}'s hooks UMLs images, reasons: {1}, {2}.".format(name,
                        results[0][u'stderr'], results[1][u'stderr']))
         (try_remove(f) for f in (a, b, c, d))
 
@@ -153,7 +148,7 @@ if __name__ == u'__main__':
         with open(u'build_html.log', u'w', u'utf-8') as log_file:
             log_file.write(u'Output:\n{0}\nError:\n{1}'.format(result[u'stdout'], result[u'stderr']))
         if result[u'returncode'] != 0:
-            xprint(u'Unable to generate HTML version of the report, see build_html.log')
+            print_error(u'Unable to generate HTML version of the report, see build_html.log')
 
     if args.pdf:
         print(HELP_PDF)
@@ -161,7 +156,7 @@ if __name__ == u'__main__':
         with open(u'build_pdf.log', u'w', u'utf-8') as log_file:
             log_file.write(u'Output:\n{0}\nError:\n{1}'.format(result[u'stdout'], result[u'stderr']))
         if result[u'returncode'] != 0:
-            xprint(u'Unable to generate PDF version of the report, see build_pdf.log')
+            print_error(u'Unable to generate PDF version of the report, see build_pdf.log')
         print(u'Move PDF into releases directory')
         for pdf_filename in glob.glob(join(DAVID_REPORT_BUILD_PATH, u'*.pdf')):
             os.move(pdf_filename, DAVID_REPORT_RELEASE_PATH)
