@@ -170,7 +170,7 @@ class OrchestraHooks(CharmHooks_Storage):
         self.local_config.email_password = self.config.email_password
         self.remark(u'Orchestrator successfully configured')
         self.storage_remount()
-b
+
     def hook_uninstall(self):
         self.info(u'Uninstall prerequisities, unregister service and load default configuration')
         self.hook_stop()

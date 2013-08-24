@@ -81,14 +81,14 @@ class Orchestra(object):
 
     def send_email(self, to_addresses, subject, text_plain, text_html=None):
         if not self.config.email_server:
-            logging.debug('E-mail delivery is disabled in configuration.')
+            logging.debug(u'E-mail delivery is disabled in configuration.')
             return {}
-        part1 = MIMEText(text_plain, 'plain')
-        part2 = MIMEText(text_html, 'html') if text_html else None
-        msg = part1 if not part2 else MIMEMultipart('alternative')
-        msg['Subject'] = subject
-        msg['From'] = self.config.email_address
-        msg['To'] = ', '.join(to_addresses) if isinstance(to_addresses, dict) else to_addresses
+        part1 = MIMEText(text_plain, u'plain')
+        part2 = MIMEText(text_html, u'html') if text_html else None
+        msg = part1 if not part2 else MIMEMultipart(u'alternative')
+        msg[u'Subject'] = subject
+        msg[u'From'] = self.config.email_address
+        msg[u'To'] = u', '.join(to_addresses) if isinstance(to_addresses, dict) else to_addresses
         if part2:
             msg.attach(part1)
             msg.attach(part2)
@@ -98,24 +98,37 @@ class Orchestra(object):
                 server.starttls()
             server.login(self.config.email_username, self.config.email_password)
             result = server.sendmail(self.config.email_address, to_addresses, msg.as_string())
-            logging.info('E-mail delivery %s, result %s' % (msg, result))
+            logging.info(u'E-mail delivery {0}, result {1}'.format(msg, result))
             return result
         finally:
             server.quit()
 
-    def send_mail_task(self, task, status):
-        if task.send_mail:
-            task.append_async_result()
+    def send_email_task(self, task, status, media=None, media_out=None):
+        if task.send_email:
+            user = self.get_user({u'_id': task.user_id}, {u'mail': 1})
+            if not user:
+				# FIXME maybe do not raise but put default value or return ?
+                raise IndexError(to_bytes(u'Unable to find user with id {0}.'.format(task.user_id)))
             if isinstance(task, TransformTask):
-                template, name = self.config.email_ttask_template, 'Transformation'
+				media_in = self.get_media({u'_id': task.media_in_id})
+				if not media_in:
+					# FIXME maybe do not raise but put default value or do nothing ?
+				    raise IndexError(to_bytes(u'Unable to find input media with id {0}.'.format(task.media_in_id)))
+				profile = self.get_transform_profile({u'_id': task.profile_id})
+				if not profile:
+					# FIXME maybe do not raise but put default value or do nothing ?
+				    raise IndexError(to_bytes(u'Unable to find profile with id {0}.'.format(task.profile_id)))
+		        task.load_fields(user, media_in, media_out, profile)
+                template, name = self.config.email_ttask_template, u'Transformation'
             elif isinstance(task, PublishTask):
-                template, name = self.config.email_ptask_template, 'Publication'
+				task.load_fields(user, media)
+                template, name = self.config.email_ptask_template, u'Publication'
             else:
                 return  # FIXME oups
-            with open(template) as template_file:
+            task.append_async_result()
+            with open(template, u'r', u'utf-8') as template_file:
                 text_plain = Template(template_file.read()).render(object2dict(task))
-            self.send_email(task.user.mail, 'OSCIED - %s task %s %s' % (name, task._id, status),
-                            text_plain)
+            self.send_email(task.user.mail, u'OSCIED - {0} task {1} {2}'.format(name, task._id, status), text_plain)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -569,53 +582,36 @@ class Orchestra(object):
         task = self.get_transform_task({u'_id': task_id})
         if not task:
             raise IndexError(to_bytes(u'No transformation task with id {0}.'.format(task_id)))
-        user = self.get_user({u'_id': task.user_id}, {u'mail': 1})
-        if not user:
-            raise IndexError(to_bytes(u'Unable to find user with id {0}.'.format(task.user_id)))
-        media_in = self.get_media({u'_id': task.media_in_id})
-        if not media_in:
-            raise IndexError(to_bytes(u'Unable to find input media with id {0}.'.format(task.media_in_id)))
         media_out = self.get_media({u'_id': task.media_out_id})
         if not media_out:
             raise IndexError(to_bytes(u'Unable to find output media with id {0}.'.format(task.media_out_id)))
-        profile = self.get_transform_profile({u'_id': task.profile_id})
-        if not profile:
-            raise IndexError(to_bytes(u'Unable to find profile with id {0}.'.format(task.profile_id)))
-        task.load_fields(user, media_in, media_out, profile)
         if status == states.SUCCESS:
             media_out.status = u'READY'
             self.save_media(media_out)
             logging.info(u'{0} Media {1} is now READY'.format(task_id, media_out.filename))
-            self.send_mail_task(task, u'SUCCESS')
+            self.send_email_task(task, u'SUCCESS', media_out=media_out)
         else:
             self.delete_media(media_out)
             task.add_statistic(u'error_details', status.replace(u'\n', u'\\n'), True)
             self._db.transform_tasks.save(task.__dict__)
             logging.info(u'{0} Error: {1}'.format(task_id, status))
             logging.info(u'{0} Media {1} is now deleted'.format(task_id, media_out.filename))
-            self.send_mail_task(task, u'ERROR')
+            self.send_email_task(task, u'ERROR', media_out=media_out)
 
     def publish_callback(self, task_id, publish_uri, status):
         task = self.get_publish_task({u'_id': task_id})
         if not task:
             raise IndexError(to_bytes(u'No publication task with id {0}.'.format(task_id)))
-        user = self.get_user({u'_id': task.user_id}, {u'mail': 1})
-        if not user:
-            raise IndexError(to_bytes(u'Unable to find user with id {0}.'.format(task.user_id)))
-        media = self.get_media({u'_id': task.media_id})
-        if not media:
-            raise IndexError(to_bytes(u'Unable to find media with id {0}.'.format(task.media_id)))
-        task.load_fields(user, media)
         if status == states.SUCCESS:
             media = self.update_publish_task_and_media(task, publish_uri=publish_uri, status=status)
             logging.info(u'{0} Media {1} is now PUBLISHED'.format(task_id, media.filename))
-            self.send_mail_task(task, u'SUCCESS')
+            self.send_email_task(task, u'SUCCESS', media=media)
         else:
             task.add_statistic(u'error_details', status.replace(u'\n', u'\\n'), True)
             self._db.publish_tasks.save(task.__dict__)
             logging.info(u'{0} Error: {1}'.format(task_id, status))
             logging.info(u'{0} Media {1} is not modified'.format(task_id, media.filename))
-            self.send_mail_task(task, u'ERROR')
+            self.send_email_task(task, u'ERROR', media=None)
 
     def publish_revoke_callback(self, task_id, publish_uri, status):
         task = self.get_publish_task({u'revoke_task_id': task_id})
