@@ -107,21 +107,20 @@ class Orchestra(object):
         if task.send_email:
             user = self.get_user({u'_id': task.user_id}, {u'mail': 1})
             if not user:
-				# FIXME maybe do not raise but put default value or return ?
                 raise IndexError(to_bytes(u'Unable to find user with id {0}.'.format(task.user_id)))
             if isinstance(task, TransformTask):
-				media_in = self.get_media({u'_id': task.media_in_id})
-				if not media_in:
-					# FIXME maybe do not raise but put default value or do nothing ?
-				    raise IndexError(to_bytes(u'Unable to find input media with id {0}.'.format(task.media_in_id)))
-				profile = self.get_transform_profile({u'_id': task.profile_id})
-				if not profile:
-					# FIXME maybe do not raise but put default value or do nothing ?
-				    raise IndexError(to_bytes(u'Unable to find profile with id {0}.'.format(task.profile_id)))
-		        task.load_fields(user, media_in, media_out, profile)
+                media_in = self.get_media({u'_id': task.media_in_id})
+                if not media_in:
+                    # FIXME maybe do not raise but put default value or return ?
+                    raise IndexError(to_bytes(u'Unable to find input media with id {0}.'.format(task.media_in_id)))
+                profile = self.get_transform_profile({u'_id': task.profile_id})
+                if not profile:
+                    # FIXME maybe do not raise but put default value or return ?
+                    raise IndexError(to_bytes(u'Unable to find profile with id {0}.'.format(task.profile_id))
+                task.load_fields(user, media_in, media_out, profile)
                 template, name = self.config.email_ttask_template, u'Transformation'
             elif isinstance(task, PublishTask):
-				task.load_fields(user, media)
+                task.load_fields(user, media)
                 template, name = self.config.email_ptask_template, u'Publication'
             else:
                 return  # FIXME oups

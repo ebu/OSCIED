@@ -307,7 +307,7 @@ class PublishTask(OsciedDBTask):
         # FIXME check publish_uri
         if not valid_uuid(self.revoke_task_id, none_allowed=True):
             self._E(raise_exception, u'revoke_task_id is not a valid uuid string')
-		# FIXME check send_email
+        # FIXME check send_email
         return True
 
     def load_fields(self, user, media):
@@ -342,7 +342,7 @@ class TransformTask(OsciedDBTask):
         if hasattr(self, u'profile_id') and not valid_uuid(self.profile_id, none_allowed=False):
             self._E(raise_exception, u'profile_id is not a valid uuid string')
         # FIXME check profile if loaded
-		# FIXME check send_email
+        # FIXME check send_email
         return True
 
     def load_fields(self, user, media_in, media_out, profile):
