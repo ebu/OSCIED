@@ -118,7 +118,7 @@ class Orchestra(object):
                 profile = self.get_transform_profile({u'_id': task.profile_id})
                 if not profile:
                     # FIXME maybe do not raise but put default value or return ?
-                    raise IndexError(to_bytes(u'Unable to find profile with id {0}.'.format(task.profile_id))
+                    raise IndexError(to_bytes(u'Unable to find profile with id {0}.'.format(task.profile_id)))
                 task.load_fields(user, media_in, media_out, profile)
                 template, name = self.config.email_ttask_template, u'Transformation'
             elif isinstance(task, PublishTask):

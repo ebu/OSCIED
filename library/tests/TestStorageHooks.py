@@ -53,7 +53,7 @@ class TestStorageHooks(object):
         os.remove(u'test.pkl')
 
     def test_class_properties(self):
-        assert_equal(self.hooks.brick, u'10.10.4.3:/mnt/somewhere/bricks/exp14')
+        assert_equal(self.hooks.brick, u'{0}:/mnt/somewhere/bricks/exp14'.format(self.hooks.private_address))
         assert_equal(self.hooks.bricks_path, u'/mnt/somewhere/bricks')
         assert_equal(self.hooks.volume, u'medias_volume_14')
 

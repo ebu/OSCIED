@@ -25,7 +25,7 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 import os, sys
-from os.path import abspath, dirname
+from os.path import abspath, dirname, expanduser
 sys.path.append(abspath(dirname(dirname(__file__))))
 
 import shutil
@@ -41,8 +41,10 @@ CONFIG = {
     u'verbose': True, u'root_secret': u'toto', u'node_secret': u'abcd', u'repositories_user': u'oscied',
     u'repositories_pass': u'', u'charms_repository': u'https://github.com/ebu/OSCIED/charms',
     u'mongo_admin_password': u'Mongo_admin_1234', u'mongo_node_password': u'Mongo_user_1234',
-    u'rabbit_password': u'Alice_in_wonderland', u'storage_address': u'', u'storage_nat_address': u'',
-    u'storage_fstype': u'', 'storage_mountpoint': u'', u'storage_options': u''
+    u'rabbit_password': u'Alice_in_wonderland', u'email_server': u'', u'email_tls': True,
+    u'email_address': u'someone@oscied.org', u'email_username': u'someone', u'email_password': u'',
+    u'storage_address': u'', u'storage_nat_address': u'', u'storage_fstype': u'', 'storage_mountpoint': u'',
+    u'storage_options': u''
 }
 
 OS_ENV, RETURNS = copy(DEFAULT_OS_ENV), []
@@ -93,10 +95,10 @@ class TestOrchestraHooks(object):
         # Check calls of cmd done by rsync
         assert_equal(len(oscied_lib.pyutils.py_subprocess.cmd.call_args_list), 2)
         assert_equal(oscied_lib.pyutils.py_subprocess.cmd.call_args_list[0][0],
-                     ([u'rsync', u'-a', u'-r', u'../../charms/oscied-orchestra/ssh/', u'/home/david/.ssh/'],))
+                     ([u'rsync', u'-a', u'-r', u'../../charms/oscied-orchestra/ssh/', expanduser(u'~/.ssh/')],))
         assert_equal(oscied_lib.pyutils.py_subprocess.cmd.call_args_list[0][1]['fail'], True)
         assert_equal(oscied_lib.pyutils.py_subprocess.cmd.call_args_list[1][0],
-                     ([u'rsync', u'-a', u'-r', u'juju', u'/home/david/.juju/'],))
+                     ([u'rsync', u'-a', u'-r', u'juju', expanduser(u'~/.juju/')],))
         assert_equal(oscied_lib.pyutils.py_subprocess.cmd.call_args_list[1][1]['fail'], True)
         # Check calls of cmd done by OrchestraHooks
         assert_equal(self.hooks.cmd.call_args_list, [
