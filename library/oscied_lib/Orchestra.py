@@ -45,6 +45,8 @@ from pyutils.py_serialization import object2dict, object2json
 from pyutils.py_validation import valid_uuid
 from pyutils.py_unicode import csv_reader
 
+# FIXME use mongodb uniqueness constraints (e.g. user mail, profile title)
+
 
 class Orchestra(object):
 
@@ -127,6 +129,7 @@ class Orchestra(object):
             task.append_async_result()
             with open(template, u'r', u'utf-8') as template_file:
                 text_plain = Template(template_file.read()).render(object2dict(task))
+                # FIXME YourFormatter().format(template_file.read(), task)
             self.send_email(task.user.mail, u'OSCIED - {0} task {1} {2}'.format(name, task._id, status), text_plain)
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -143,6 +146,7 @@ class Orchestra(object):
         entity = self._db.users.find_one(specs, fields)
         if not entity:
             return None
+        # FIXME from_dict instead of from_json !
         user = User.from_json(object2json(entity, False))
         return user if secret is None or user.verify_secret(secret) else None
 
@@ -161,6 +165,7 @@ class Orchestra(object):
     def get_users(self, specs=None, fields=None):
         users = []
         for entity in list(self._db.users.find(specs, fields)):
+            # FIXME from_dict instead of from_json !
             users.append(User.from_json(object2json(entity, False)))
         return users
 
@@ -193,6 +198,7 @@ class Orchestra(object):
         entity = self._db.medias.find_one(specs, fields)
         if not entity:
             return None
+        # FIXME from_dict instead of from_json !
         media = Media.from_json(object2json(entity, False))
         if load_fields:
             media.load_fields(self.get_user({u'_id': media.user_id}, {u'secret': 0}),
@@ -219,6 +225,7 @@ class Orchestra(object):
     def get_medias(self, specs=None, fields=None, load_fields=False):
         medias = []
         for entity in list(self._db.medias.find(specs, fields)):
+            # FIXME from_dict instead of from_json !
             media = Media.from_json(object2json(entity, False))
             if load_fields:
                 media.load_fields(self.get_user({u'_id': media.user_id}, {u'secret': 0}),
@@ -263,6 +270,7 @@ class Orchestra(object):
         entity = self._db.transform_profiles.find_one(specs, fields)
         if not entity:
             return None
+        # FIXME from_dict instead of from_json !
         return TransformProfile.from_json(object2json(entity, False))
 
     def delete_transform_profile(self, profile):
@@ -274,6 +282,7 @@ class Orchestra(object):
     def get_transform_profiles(self, specs=None, fields=None):
         profiles = []
         for entity in list(self._db.transform_profiles.find(specs, fields)):
+            # FIXME from_dict instead of from_json !
             profiles.append(TransformProfile.from_json(object2json(entity, False)))
         return profiles
 
@@ -398,6 +407,7 @@ class Orchestra(object):
         entity = self._db.transform_tasks.find_one(specs, fields)
         if not entity:
             return None
+        # FIXME from_dict instead of from_json !
         task = TransformTask.from_json(object2json(entity, False))
         if load_fields:
             task.load_fields(self.get_user({u'_id': task.user_id}, {u'secret': 0}),
@@ -436,6 +446,7 @@ class Orchestra(object):
     def get_transform_tasks(self, specs=None, fields=None, load_fields=False, append_result=True):
         tasks = []
         for entity in list(self._db.transform_tasks.find(specs, fields)):
+            # FIXME from_dict instead of from_json !
             task = TransformTask.from_json(object2json(entity, False))
             if load_fields:
                 task.load_fields(self.get_user({u'_id': task.user_id}, {u'secret': 0}),
@@ -498,6 +509,7 @@ class Orchestra(object):
         entity = self._db.publish_tasks.find_one(specs, fields)
         if not entity:
             return None
+        # FIXME from_dict instead of from_json !
         task = PublishTask.from_json(object2json(entity, False))
         if load_fields:
             task.load_fields(self.get_user({u'_id': task.user_id}, {u'secret': 0}),
@@ -558,6 +570,7 @@ class Orchestra(object):
     def get_publish_tasks(self, specs=None, fields=None, load_fields=False, append_result=True):
         tasks = []
         for entity in list(self._db.publish_tasks.find(specs, fields)):
+            # FIXME from_dict instead of from_json !
             task = PublishTask.from_json(object2json(entity, False))
             if load_fields:
                 task.load_fields(self.get_user({u'_id': task.user_id}, {u'secret': 0}),
