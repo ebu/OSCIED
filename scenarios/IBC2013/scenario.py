@@ -27,8 +27,7 @@
 import time
 from os.path import join, dirname
 from requests.exceptions import ConnectionError
-from library.oscied_lib.oscied_models import User
-from library.oscied_lib.oscied_client import OrchestraAPIClient
+from library.oscied_lib.oscied_api import OrchestraAPIClient, init_api
 from library.oscied_lib.pyutils.py_console import confirm, print_error
 from library.oscied_lib.pyutils.py_datetime import datetime_now
 from library.oscied_lib.pyutils.py_juju import DeploymentScenario
@@ -36,8 +35,9 @@ from library.oscied_lib.pyutils.py_unicode import configure_unicode
 
 description = u'Launch IBC 2013 demo setup (MaaS Cluster with 3 machines // Amazon)'
 
-CONFIG_AMAZON = join(dirname(__file__), u'config_amazon.yaml')
-CONFIG_MAAS = join(dirname(__file__), u'config_maas.yaml')
+SCENARIO_PATH = dirname(__file__)
+CONFIG_AMAZON = join(SCENARIO_PATH, u'config_amazon.yaml')
+CONFIG_MAAS = join(SCENARIO_PATH, u'config_maas.yaml')
 
 FAST = True
 POLLING_DELAY = 0.9 if FAST else 10
@@ -52,27 +52,24 @@ EVENTS_TIMETABLE = {
     55: (u'oscied-publisher', 1)
 }
 
+# FIXME update config passwords (generate)
+# FIXME create a deployment scenario oscied class ?
 class IBC2013(DeploymentScenario):
 
     @property
-    def root(self):
+    def root_amazon(self):
         return (u'root', self.root_secret)
-    
-    def get_parser(self, host='127.0.0.1', port=5000, root_secret=u'toto', **kwargs):
-        # FIXME update menu.sh -> mandatory parameters ...
-        # FIXME a toggle to disable argument parsing and use default (do not use positional params at all ?)
-        parser = super(IBC2013, self).get_parser(**kwargs)
-        parser.add_argument(u'host',        action=u'store', default=host)
-        parser.add_argument(u'port',        action=u'store', default=port)
-        parser.add_argument(u'root_secret', action=u'store', default=root_secret)
-        return parser
 
     def run(self):
         print(description)
         if confirm(u'Deploy on MAAS'):
             self.deploy_maas()
+        if confirm(u'Initialize orchestra on MAAS'):
+            self.init_api()
         if confirm(u'Deploy on Amazon'):
             self.deploy_amazon()
+        if confirm(u'Initialize orchestra on Amazon'):
+            self.init_api()
         if confirm(u'Start events loop'):
             self.events_loop()
 
@@ -107,6 +104,12 @@ class IBC2013(DeploymentScenario):
         self.add_relation(u'oscied-orchestra:publisher', u'oscied-publisher1:publisher')
         self.add_relation(u'oscied-orchestra:publisher', u'oscied-publisher2:publisher')
 
+    def get_client(self):
+        settings = self.get_service_config(u'oscied-orchestra')['settings']
+        self.root = (u'root', settings['root_secret']['value'])
+        host = self.get_units(u'oscied-orchestra').values()[0]['public-address']
+        return OrchestraAPIClient(host, 5000, self.root)
+
     def deploy_amazon(self):
         # FIXME use --constraints "arch=amd64 cpu-cores=2 mem=1G"
         self.config = CONFIG_AMAZON
@@ -126,6 +129,10 @@ class IBC2013(DeploymentScenario):
             if self.add_relation(u'haproxy', u'oscied-webui'):
                 self.unexpose_service(u'oscied-webui')
 
+    def init_api(self):
+        client = self.get_client()
+        init_api(client, api_init_csv_directory=SCENARIO_PATH, flush=True)
+
     def events_loop(self):
         client = OrchestraAPIClient(self.host, self.port, self.root)
         try:
@@ -136,8 +143,8 @@ class IBC2013(DeploymentScenario):
         # print(u'Flush the database')
         # print(client.flush())
         print(u'Register an administrator')
-        admin = User(first_name=u'Admin', last_name=u'Demo', mail=u'admin.demo@oscied.org',
-                     secret='big_secret_to_sav3', admin_platform=True)
+        #admin = User(first_name=u'Admin', last_name=u'Demo', mail=u'admin.demo@oscied.org',
+        #             secret='big_secret_to_sav3', admin_platform=True)
         #admin = client.login_or_add(admin, self.root) # FIXME enable that in production !!!
 
         old_index = None
@@ -161,6 +168,5 @@ class IBC2013(DeploymentScenario):
         print(u'Handle scheduled event for minute {0} = {1}.'.format(index, event))
 
 if __name__ == u'__main__':
-    from library.oscied_lib.pyutils.py_unicode import configure_unicode
     configure_unicode()
     IBC2013().main()

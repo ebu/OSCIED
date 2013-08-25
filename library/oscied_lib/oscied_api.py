@@ -35,20 +35,23 @@ from email.mime.text import MIMEText
 from jinja2 import Template
 from kitchen.text.converters import to_bytes
 from random import randint
+from requests import get, patch, post, delete
 import PublisherWorker, TransformWorker
+from oscied_config_test import ORCHESTRA_CONFIG_TEST
 from oscied_models import Media, User, TransformProfile, PublishTask, TransformTask, ENCODERS_NAMES
 from oscied_util import Callback, Storage
 import pyutils.py_juju as juju
 from pyutils.pyutils import UUID_ZERO
 from pyutils.py_datetime import datetime_now
+from pyutils.py_flask import map_exceptions
 from pyutils.py_serialization import object2dict, object2json
-from pyutils.py_validation import valid_uuid
 from pyutils.py_unicode import csv_reader
+from pyutils.py_validation import valid_uuid
 
 # FIXME use mongodb uniqueness constraints (e.g. user mail, profile title)
 
 
-class Orchestra(object):
+class OrchestraAPICore(object):
 
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Constructor >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -639,42 +642,224 @@ class Orchestra(object):
             logging.info(u'{0} Media {1} is not modified'.format(task_id, media.filename))
 
 
-def get_test_orchestra(api_init_csv_directory):
-    from oscied_config_test import ORCHESTRA_CONFIG_TEST
-    orchestra = Orchestra(ORCHESTRA_CONFIG_TEST)
-    reader = csv_reader(os.path.join(api_init_csv_directory, u'users.csv'))
+# ----------------------------------------------------------------------------------------------------------------------
+
+class OsciedCRUDMapper(object):
+
+    def __init__(self, api_client, method='', cls=None, id_prefix='id', environment=False):
+        self.api_client = api_client
+        self.method = method
+        self.cls = cls
+        self.id_prefix = id_prefix
+        self.environment = environment
+
+    def get_url(self, index=None, extra=None):
+        environment = u'environment/{0}'.format(self.api_client.environment) if self.environment else u''
+        index = u'{0}/{1}'.format(self.id_prefix, index) if index else None
+        return u'/'.join(filter(None, [self.api_client.api_url, self.method, environment, index, extra]))
+
+    def __len__(self):
+        return self.api_client.do_request(get, self.get_url(extra='count'))
+
+    def __getitem__(self, index):
+        response_dict = self.api_client.do_request(get, self.get_url(index))
+        return response_dict if self.cls is None else self.cls(**response_dict)
+
+    def __setitem__(self, index, value):
+        return self.api_client.do_request(patch, self.get_url(index), data=object2json(value, include_properties=True))
+
+    def __delitem__(self, index):
+        return self.api_client.do_request(delete, self.get_url(index))
+
+    def __contains__(self, value):
+        if hasattr(value, '_id'):
+            value = value._id
+        try:
+            return self.api_client.do_request(get, self.get_url(value))
+        except:
+            return False
+        return True
+
+    def add(self, *args, **kwargs):
+        if not(bool(args) ^ bool(kwargs)):
+            raise ValueError(to_bytes(u'You must set args OR kwargs.'))
+        if args and len(args) != 1:
+            raise ValueError(to_bytes(u'args should contain only 1 value.'))
+        value = args[0] if args else kwargs
+        response = self.api_client.do_request(post, self.get_url(), data=object2json(value, include_properties=False))
+        instance = self.cls(**response) if self.cls else response
+        # Recover user's secret
+        if isinstance(instance, User):
+            instance.secret = value.secret if args else kwargs['secret']
+        return instance
+
+    def list(self, head=False):
+        values = []
+        response_dict = self.api_client.do_request(get, self.get_url(extra=('HEAD' if head else None)))
+        if self.cls is None:
+            return response_dict
+        for value_dict in response_dict:
+            values.append(self.cls(**value_dict))
+        return values
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+class OrchestraAPIClient(object):
+
+    def __init__(self, hostname, port=5000, auth=None, environment='default', timeout=10.0):
+        self.api_url = u'{0}:{1}'.format(hostname, port)
+        self.auth = auth
+        self.environment = environment
+        self.timeout = timeout
+        self.users = OsciedCRUDMapper(self, 'user', User)
+        self.medias = OsciedCRUDMapper(self, 'media', Media)
+        self.environments = OsciedCRUDMapper(self, 'environment', None, 'name')
+        self.transform_profiles = OsciedCRUDMapper(self, 'transform/profile', TransformProfile)
+        self.transform_units = OsciedCRUDMapper(self, 'transform/unit', None, 'number', True)
+        self.transform_tasks = OsciedCRUDMapper(self, 'transform/task', TransformTask)
+        # FIXME api_transform_unit_number_get, api_transform_unit_number_delete ...
+
+    @property
+    def about(self):
+        return self.do_request(get, self.api_url)
+
+    def flush(self):
+        return self.do_request(post, u'{0}/flush'.format(self.api_url))
+
+    def login(self, mail, secret, update_auth=True):
+        user = User(**self.do_request(get, u'{0}/user/login'.format(self.api_url), (mail, secret)))
+        if update_auth:
+            # Recover user's secret
+            user.secret = secret
+            self.auth = user
+        return user
+
+    def login_or_add(self, user, add_auth):
+        try:
+            return self.login(user.mail, user.secret)
+        except:
+            self.auth = add_auth
+            self.auth = self.users.add(user)
+            return self.auth
+
+    @property
+    def encoders(self):
+        return self.do_request(get, u'{0}/transform/profile/encoder'.format(self.api_url))
+
+    @property
+    def transform_queues(self):
+        return self.do_request(get, u'{0}/transform/queue'.format(self.api_url))
+
+    @property
+    def publisher_queues(self):
+        return self.do_request(get, u'{0}/publisher/queue'.format(self.api_url))
+
+    def do_request(self, verb, resource, auth=None, data=None):
+        u"""Execute a method of the API."""
+        headers = {u'Content-type': u'application/json', u'Accept': u'application/json'}
+        auth = auth or self.auth
+        auth = (auth.mail, auth.secret) if isinstance(auth, User) else auth
+        url = u'http://{0}'.format(resource)
+        return map_exceptions(verb(url, auth=auth, data=data, headers=headers, timeout=self.timeout).json())
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+def init_api(api_core_or_client, api_init_csv_directory, flush=False):
+
+    is_core = isinstance(api_core_or_client, OrchestraAPICore)
+    api_core = api_core_or_client if is_core else None
+    api_client = api_core_or_client if not is_core else None
+
+    if flush:
+        if is_core:
+            api_core.flush_db()
+        else:
+            api_client.flush()
+
+    users, reader = [], csv_reader(os.path.join(api_init_csv_directory, u'users.csv'))
     for first_name, last_name, email, secret, admin_platform in reader:
         user = User(first_name, last_name, email, secret, admin_platform)
+        users.append(user)
         print(u'Adding user {0}'.format(user.name))
-        orchestra.save_user(user, hash_secret=True)
-    users = orchestra.get_users()
+        if is_core:
+            api_core.save_user(user, hash_secret=True)
+        else:
+            api_client.users.add(user)
+    users = api_core.get_users() if is_core else users# api_client.users.list()
+
     i, reader = 0, csv_reader(os.path.join(api_init_csv_directory, u'medias.csv'))
     for uri, filename, title in reader:
-        media = Media(users[i]._id, None, uri, None, filename, {u'title': title}, u'READY')
-        print(u'Adding media {0}'.format(media.metadata[u'title']))
-        orchestra.save_media(media)
+        user = users[i]
+        media = Media(user._id, None, uri, None, filename, {u'title': title}, u'READY')
+        print(u'Adding media {0} as user {1}'.format(media.metadata[u'title'], user.name))
+        if is_core:
+            api_core.save_media(media)
+        else:
+            api_client.auth = user
+            api_client.medias.add(media)
         i = (i + 1) % len(users)
-    reader = csv_reader(os.path.join(api_init_csv_directory, u'tprofiles.csv'))
+
+    i, reader = 0, csv_reader(os.path.join(api_init_csv_directory, u'tprofiles.csv'))
     for title, description, encoder_name, encoder_string in reader:
+        user = users[i]
         profile = TransformProfile(title, description, encoder_name, encoder_string)
-        print(u'Adding transformation profile {0}'.format(profile.title))
-        orchestra.save_transform_profile(profile)
+        print(u'Adding transformation profile {0} as user {1}'.format(profile.title, user.name))
+        if is_core:
+            api_core.save_transform_profile(profile)
+        else:
+            api_client.auth = user
+            api_client.transform_profiles.add(profile)
+        i = (i + 1) % len(users)
+
+    if not is_core:
+        return
+
     reader = csv_reader(os.path.join(api_init_csv_directory, u'ttasks.csv'))
-    for user_email, in_filename, profile_title, out_filename, out_title, queue in reader:
-        user = orchestra.get_user({u'mail': user_email})
+    for user_email, in_filename, profile_title, out_filename, out_title, send_email, queue in reader:
+        user = api_core.get_user({u'mail': user_email})
         if not user:
             raise IndexError(to_bytes(u'No user with e-mail address {0}.'.format(user_email)))
-        media_in = orchestra.get_media({u'filename': in_filename})
+        media_in = api_core.get_media({u'filename': in_filename})
         if not media_in:
             raise IndexError(to_bytes(u'No media with filename {0}.'.format(in_filename)))
-        profile = orchestra.get_transform_profile({u'title': profile_title})
+        profile = api_core.get_transform_profile({u'title': profile_title})
         if not profile:
             raise IndexError(to_bytes(u'No transformation profile with title {0}.'.format(profile_title)))
-        print(u'Launching transformation task {0} with profile {1}'.format(media_in.metadata[u'title'], profile.title))
+        print(u'Launching transformation task {0} with profile {1} as user {2}.'.format(media_in.metadata[u'title'],
+              profile.title, user.name))
         metadata = {u'title': out_title}
-        orchestra.launch_transform_task(user._id, media_in._id, profile._id, out_filename, metadata, queue,
-                                        u'/transform/callback')
-    return orchestra
+        api_core.launch_transform_task(user._id, media_in._id, profile._id, out_filename, metadata, send_email, queue,
+                                       u'/transform/callback')
+        # if isinstance(configuration, string_types):
+        #     self.debug(u'Load configuration from file {0}'.format(configuration))
+        #     with open(configuration, u'r', u'utf-8') as f:
+        #         configuration = yaml.load(f)
+        # for user_dict in configuration['users']:
+        #     user = User(**user_dict)
+        #     print(u'Adding user {0}'.format(user.name))
+        #     user.is_valid(True)
+        #     self.users.add(user)
+        # users = self.users.list()
+        # for media_dict in configuration['medias']:
+        #     media = Media(**media_dict)
+        #     # FIXME faster
+        #     for user in users:
+        #         if user.mail == media['user_mail']:
+        #             media.user_id = user._id
+        #             break
+        #     else:
+        #         raise ValueError(to_bytes(u'Unable to find user with mail {0}.'.format(media['user_mail'])))
+        #     print(u'Adding media {0}'.format(media.metadata[u'title']))
+        #     media.is_valid(True)
+        #     self.medias.add(media)
+        # for profile_dict in configuration['profiles']:
+        #     profile = TransformProfile(**profile_dict)
+        #     print(u'Adding transformation profile {0}'.format(profile.title))
+        #     profile.is_valid(True)
+        #     self.transform_profiles.add(profile)
+        # for ...
 
 
 # Main -----------------------------------------------------------------------------------------------------------------
@@ -682,7 +867,8 @@ def get_test_orchestra(api_init_csv_directory):
 if __name__ == u'__main__':
     from pyutils.py_unicode import configure_unicode
     configure_unicode()
-    orchestra = get_test_orchestra(u'../../scenarios/current')
+    orchestra = OrchestraAPICore(ORCHESTRA_CONFIG_TEST)
+    init_api(orchestra, u'../../scenarios/current')
     print(u'There are {0} registered users.'.format(len(orchestra.get_users())))
     print(u'There are {0} available media assets.'.format(len(orchestra.get_medias())))
     print(u'There are {0} available transformation profiles.'.format(len(orchestra.get_transform_profiles())))

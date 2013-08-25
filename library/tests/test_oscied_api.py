@@ -32,7 +32,7 @@ sys.path.append(abspath(dirname(dirname(__file__))))
 from mock import call
 from nose.tools import assert_equal, assert_raises
 from oscied_lib.pyutils.py_unittest import mock_cmd
-from oscied_lib.oscied_client import OsciedCRUDMapper, OrchestraAPIClient
+from oscied_lib.oscied_api import OsciedCRUDMapper, OrchestraAPIClient
 from oscied_lib.oscied_models import User
 
 

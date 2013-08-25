@@ -24,11 +24,11 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from library.oscied_lib.pyutils.py_juju import DeploymentScenario
+from library.oscied_lib.pyutils.py_juju import OsciedDeploymentScenario
 
 description = u'Launch oscied (nano setup) on Amazon'
 
-class Amazon(DeploymentScenario):
+class Amazon(OsciedDeploymentScenario):
 
     def run(self):
         print(description)
