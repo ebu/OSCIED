@@ -775,14 +775,14 @@ class OrchestraAPICore(object):
             media_out.status = u'READY'
             self.save_media(media_out)
             logging.info(u'{0} Media {1} is now READY'.format(task_id, media_out.filename))
-            self.send_email_task(task, u'SUCCESS', media_out=media_out)
+            #self.send_email_task(task, u'SUCCESS', media_out=media_out)
         else:
             self.delete_media(media_out)
             task.add_statistic(u'error_details', status.replace(u'\n', u'\\n'), True)
             self._db.transform_tasks.save(task.__dict__)
             logging.info(u'{0} Error: {1}'.format(task_id, status))
             logging.info(u'{0} Media {1} is now deleted'.format(task_id, media_out.filename))
-            self.send_email_task(task, u'ERROR', media_out=media_out)
+            #self.send_email_task(task, u'ERROR', media_out=media_out)
 
     def publish_callback(self, task_id, publish_uri, status):
         task = self.get_publish_task({u'_id': task_id})
@@ -791,13 +791,13 @@ class OrchestraAPICore(object):
         if status == states.SUCCESS:
             media = self.update_publish_task_and_media(task, publish_uri=publish_uri, status=status)
             logging.info(u'{0} Media {1} is now PUBLISHED'.format(task_id, media.filename))
-            self.send_email_task(task, u'SUCCESS', media=media)
+            #self.send_email_task(task, u'SUCCESS', media=media)
         else:
             task.add_statistic(u'error_details', status.replace(u'\n', u'\\n'), True)
             self._db.publish_tasks.save(task.__dict__)
             logging.info(u'{0} Error: {1}'.format(task_id, status))
             logging.info(u'{0} Media {1} is not modified'.format(task_id, media.filename))
-            self.send_email_task(task, u'ERROR', media=None)
+            #self.send_email_task(task, u'ERROR', media=None)
 
     def publish_revoke_callback(self, task_id, publish_uri, status):
         task = self.get_publish_task({u'revoke_task_id': task_id})
