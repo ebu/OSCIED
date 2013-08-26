@@ -111,23 +111,24 @@ class StorageHooks(CharmHooks):
             raise ValueError(to_bytes(u'Volume {0} auth.allow={1} (expected {2})'.format(volume, ips, auth_allow)))
         self.info(self.volume_infos(volume=volume))
 
-    def volume_infos(self, volume=None):
+    def volume_infos(self, volume=None, max_retry=5, retry_delay=1.0):
         u"""
-        Returns a dictionary containing informations about a volume.
+        Return a dictionary containing informations about a volume.
 
         **Example output**::
 
             {'name': 'medias_volume_6', 'type': 'Distribute', 'status': 'Started',
              'transport': 'tcp', 'bricks': ['domU-12-31-39-06-6C-E9.compute-1.internal:/mnt/bricks/exp6']}
         """
-        stdout = self.volume_do(u'info', volume=volume, fail=False)[u'stdout']
-        self.debug(u'Volume infos stdout: {0}'.format(repr(stdout)))
-        match = self.local_config.volume_infos_regex.match(stdout)
-        if match:
-            infos = match.groupdict()
-            infos[u'bricks'] = re.findall(u'Brick[0-9]+:\s*(\S*)', stdout)
-            infos[u'auth_allow'] = u','.join(filter(None, re.findall(u'auth.allow:\s*(\S*)', stdout)))
-            return infos
+        for i in range(max_retry):
+            stdout = self.volume_do(u'info', volume=volume, fail=False)[u'stdout']
+            self.debug(u'({0} of {1}) Volume infos stdout: {2}'.format(i, max_retry, repr(stdout)))
+            match = self.local_config.volume_infos_regex.match(stdout)
+            if match:
+                infos = match.groupdict()
+                infos[u'bricks'] = re.findall(u'Brick[0-9]+:\s*(\S*)', stdout)
+                infos[u'auth_allow'] = u','.join(filter(None, re.findall(u'auth.allow:\s*(\S*)', stdout)))
+                return infos
         return None
 
     # ------------------------------------------------------------------------------------------------------------------
