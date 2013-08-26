@@ -12,35 +12,49 @@ options:
   concurrency:
     type: int
     default: 1
-    description: Amount of tasks the worker can handle simultaneously.  Default value is conservative
+    description: |
+        Amount of tasks the worker can handle simultaneously.
+        Default value is conservative.
   rabbit_queues:
     type: string
     default: "publisher_private"
-    description: Worker connect to queues to receive tasks.  (e.g. "publisher_amazon" for amazon, "publisher_private,publisher_amazon" for both)
+    description: |
+        Worker connect to queues to receive tasks.
+        For example "publisher_amazon" for amazon, "publisher_private,publisher_amazon" for both.
   mod_streaming:
     type: string
     default: "true"
-    description: Toogle module H.264 streaming.  When enabled, the publication point cannot distribute MPEG-DASH content as the module conflict with MP4 files download.
+    description: |
+        Toogle module H.264 streaming.
+        When enabled, the publication point cannot distribute MPEG-DASH content as the module conflict with MP4 files download.
   max_upload_size:
     type: int
     default: 4294967296
-    description: Maximum size for file uploads.  Default value means 4GB
+    description: |
+        Maximum size for file uploads.
+        Default value means 4GB.
   max_execution_time:
     type: int
     default: 180
-    description: Maximum time for php scripts.  Default value means 3 minutes
+    description: |
+        Maximum time for php scripts.
+        Default value means 3 minutes.
   max_input_time:
     type: int
     default: 600
-    description: Maximum time for http post.  Default value means 10 minutes
+    description: |
+        Maximum time for http post.
+        Default value means 10 minutes.
   mongo_connection:
     type: string
     default: ""
-    description: Orchestrator database connection.  The 'connection' options override and disable transform relation.
+    description: |
+        Orchestrator database connection.
+        The 'connection' options override and disable transform relation.
   rabbit_connection:
     type: string
     default: ""
-    description: Orchestrator message broker connection
+    description: Orchestrator message broker connection.
   api_nat_socket:
     type: string
     default: ""
@@ -48,7 +62,9 @@ options:
   storage_address:
     type: string
     default: ""
-    description: Shared storage hostname / IP address (see interface mount of nfs charm).  The 'storage' options override and disable storage relation.
+    description: |
+        Shared storage hostname / IP address (see interface mount of nfs charm).
+        The 'storage' options override and disable storage relation.
   storage_nat_address:
     type: string
     default: ""
@@ -56,12 +72,12 @@ options:
   storage_fstype:
     type: string
     default: ""
-    description: Shared storage filesystem type (e.g. nfs)
+    description: Shared storage filesystem type (e.g. nfs).
   storage_mountpoint:
     type: string
     default: ""
-    description: Shared storage mountpoint (e.g. for nfs - /srv/data)
+    description: Shared storage mountpoint (e.g. for nfs - /srv/data).
   storage_options:
     type: string
     default: ""
-    description: Shared storage options (e.g. for nfs - rw,sync,no_subtree_check)
+    description: Shared storage options (e.g. for nfs - rw,sync,no_subtree_check).

@@ -12,11 +12,15 @@ options:
   root_secret:
     type: string
     default: "toto"
-    description: Secret key used by API clients to manage users.  Please change it in production.
+    description: |
+        Secret key used by API clients to manage users.
+        Please change it in production.
   node_secret:
     type: string
     default: "abcd"
-    description: Secret key used by workers/nodes to callback API when they finish their task.  Please change it in production.
+    description: |
+        Secret key used by workers/nodes to callback API when they finish their task.
+        Please change it in production.
   repositories_user:
     type: string
     default: "oscied"
@@ -40,11 +44,15 @@ options:
   rabbit_password:
     type: string
     default: "Alice_in_wonderland"
-    description: Messaging queue user's password.  This secret is then forwared by the coordinator to managed units (transform, publish).
+    description: |
+        Messaging queue user's password.
+        This secret is then forwared by the coordinator to managed units (transform, publish).
   email_server:
     type: string
     default: ""
-    description: SMTP mailing server address.  Please set to enable mailing functionnalitiy.
+    description: |
+        SMTP mailing server address.
+        Please set to enable mailing functionnalitiy.
   email_tls:
     type: string
     default: "true"
@@ -64,7 +72,9 @@ options:
   storage_address:
     type: string
     default: ""
-    description: Shared storage hostname / IP address (see interface mount of nfs charm).  The 'storage' options override and disable storage relation.
+    description: |
+        Shared storage hostname / IP address (see interface mount of nfs charm).
+        The 'storage' options override and disable storage relation.
   storage_nat_address:
     type: string
     default: ""
@@ -72,12 +82,12 @@ options:
   storage_fstype:
     type: string
     default: ""
-    description: Shared storage filesystem type (e.g. nfs)
+    description: Shared storage filesystem type (e.g. nfs).
   storage_mountpoint:
     type: string
     default: ""
-    description: Shared storage mountpoint (e.g. for nfs - /srv/data)
+    description: Shared storage mountpoint (e.g. for nfs - /srv/data).
   storage_options:
     type: string
     default: ""
-    description: Shared storage options (e.g. for nfs - rw,sync,no_subtree_check)
+    description: Shared storage options (e.g. for nfs - rw,sync,no_subtree_check).

@@ -12,19 +12,25 @@ options:
   concurrency:
     type: int
     default: 1
-    description: Amount of tasks the worker can handle simultaneously.  Default value is conservative
+    description: |
+        Amount of tasks the worker can handle simultaneously.
+        Default value is conservative.
   rabbit_queues:
     type: string
     default: "transform_private"
-    description: Worker connect to queues to receive tasks.  (e.g. "transform_amazon" for amazon, "transform_private,transform_amazon" for both)
+    description: |
+        Worker connect to queues to receive tasks.
+        For example "transform_amazon" for amazon, "transform_private,transform_amazon" for both.
   mongo_connection:
     type: string
     default: ""
-    description: Orchestrator database connection.  The 'connection' options override and disable transform relation.
+    description: |
+        Orchestrator database connection.
+        The 'connection' options override and disable transform relation.
   rabbit_connection:
     type: string
     default: ""
-    description: Orchestrator message broker connection
+    description: Orchestrator message broker connection.
   api_nat_socket:
     type: string
     default: ""
@@ -32,7 +38,9 @@ options:
   storage_address:
     type: string
     default: ""
-    description: Shared storage hostname / IP address (see interface mount of nfs charm).  The 'storage' options override and disable storage relation.
+    description: |
+        Shared storage hostname / IP address (see interface mount of nfs charm).
+        The 'storage' options override and disable storage relation.
   storage_nat_address:
     type: string
     default: ""
@@ -40,11 +48,11 @@ options:
   storage_fstype:
     type: string
     default: ""
-    description: Shared storage filesystem type (e.g. nfs)
+    description: Shared storage filesystem type (e.g. nfs).
   storage_mountpoint:
     type: string
     default: ""
-    description: Shared storage mountpoint (e.g. for nfs - /srv/data)
+    description: Shared storage mountpoint (e.g. for nfs - /srv/data).
   storage_options:
     type: string
     default: ""
