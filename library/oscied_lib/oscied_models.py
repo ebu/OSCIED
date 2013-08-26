@@ -38,10 +38,8 @@ ENCODERS_NAMES = (u'copy', u'ffmpeg', u'dashcast')
 
 class OsciedDBModel(JsoneableObject):
 
-    def __init__(self, _id=None, **kwargs):
-        if not _id:
-            _id = unicode(uuid.uuid4())
-        self._id = _id
+    def __init__(self, _id=None):
+        self._id = _id or unicode(uuid.uuid4())
 
     def is_valid(self, raise_exception):
         if not valid_uuid(self._id, none_allowed=False):
@@ -52,14 +50,13 @@ class OsciedDBModel(JsoneableObject):
         if raise_exception:
             raise TypeError(to_bytes(u'{0} : {1}'.format(self.__class__.__name__, message)))
         return False
-    # FIXME add load_fields(self, **kwargs):
 
 
 class OsciedDBTask(OsciedDBModel):
 
-    def __init__(self, _id=None, statistic={}, status=u'UNKNOWN', **kwargs):
-        super(OsciedDBTask, self).__init__(_id, **kwargs)
-        self.statistic = statistic
+    def __init__(self, _id=None, statistic=None, status=u'UNKNOWN'):
+        super(OsciedDBTask, self).__init__(_id)
+        self.statistic = statistic or {}
         self.status = status
 
     def is_valid(self, raise_exception):
@@ -105,8 +102,8 @@ class Media(OsciedDBModel):
     STATUS = (u'PENDING', u'READY', u'DELETED')
 
     def __init__(self, user_id=None, parent_id=None, uri=None, public_uris=None, filename=None, metadata={},
-                 status=u'PENDING', **kwargs):
-        super(Media, self).__init__(**kwargs)
+                 status=u'PENDING', _id=None):
+        super(Media, self).__init__(_id)
         self.user_id = user_id
         self.parent_id = parent_id
         self.uri = uri
@@ -115,7 +112,7 @@ class Media(OsciedDBModel):
             self.filename = unicode(filename).replace(u' ', u'_')
         except:
             self.filename = None
-        self.metadata = metadata
+        self.metadata = metadata or {}
         self.status = status
 
     @property
@@ -171,13 +168,13 @@ class Media(OsciedDBModel):
 
 class User(OsciedDBModel):
 
-    def __init__(self, first_name=None, last_name=None, mail=None, secret=None, admin_platform=False, **kwargs):
-        super(User, self).__init__(**kwargs)
+    def __init__(self, first_name=None, last_name=None, mail=None, secret=None, admin_platform=False, _id=None):
+        super(User, self).__init__(_id)
         self.first_name = first_name
         self.last_name = last_name
         self.mail = mail
         self.secret = secret
-        self.admin_platform = True if unicode(admin_platform).lower() == u'true' else False
+        self.admin_platform = (unicode(admin_platform).lower() == u'true')
 
     @property
     def name(self):
@@ -251,8 +248,8 @@ class User(OsciedDBModel):
 
 class TransformProfile(OsciedDBModel):
 
-    def __init__(self, title=None, description=None, encoder_name=None, encoder_string=None, **kwargs):
-        super(TransformProfile, self).__init__(**kwargs)
+    def __init__(self, title=None, description=None, encoder_name=None, encoder_string=None, _id=None):
+        super(TransformProfile, self).__init__(_id)
         self.title = title
         self.description = description
         self.encoder_name = encoder_name
@@ -287,8 +284,9 @@ class TransformProfile(OsciedDBModel):
 
 class PublishTask(OsciedDBTask):
 
-    def __init__(self, user_id=None, media_id=None, publish_uri=None, revoke_task_id=None, send_email=False, **kwargs):
-        super(PublishTask, self).__init__(**kwargs)
+    def __init__(self, user_id=None, media_id=None, publish_uri=None, revoke_task_id=None, send_email=False, _id=None,
+                 statistic=None, status=u'UNKNOWN'):
+        super(PublishTask, self).__init__(_id, statistic, status)
         self.user_id = user_id
         self.media_id = media_id
         self.publish_uri = publish_uri
@@ -319,8 +317,9 @@ class PublishTask(OsciedDBTask):
 
 class TransformTask(OsciedDBTask):
 
-    def __init__(self, user_id=None, media_in_id=None, media_out_id=None, profile_id=None, send_email=False, **kwargs):
-        super(TransformTask, self).__init__(**kwargs)
+    def __init__(self, user_id=None, media_in_id=None, media_out_id=None, profile_id=None, send_email=False, _id=None,
+                 statistic=None, status=u'UNKNOWN'):
+        super(TransformTask, self).__init__(_id, statistic, status)
         self.user_id = user_id
         self.media_in_id = media_in_id
         self.media_out_id = media_out_id

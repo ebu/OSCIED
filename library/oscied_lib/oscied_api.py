@@ -24,7 +24,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import logging, mongomock, os, pymongo, smtplib, uuid
+import logging, mongomock, os, pymongo, re, smtplib, uuid
 from celery import states
 #from celery import current_app
 #from celery.task.control import inspect
@@ -44,12 +44,192 @@ import pyutils.py_juju as juju
 from pyutils.pyutils import UUID_ZERO
 from pyutils.py_datetime import datetime_now
 from pyutils.py_flask import map_exceptions
-from pyutils.py_serialization import object2dict, object2json
+from pyutils.py_juju import get_unit_path, juju_do
+from pyutils.py_serialization import dict2object, object2dict, object2json
 from pyutils.py_unicode import csv_reader
+from pyutils.py_subprocess import rsync, ssh
 from pyutils.py_validation import valid_uuid
 
 # FIXME use mongodb uniqueness constraints (e.g. user mail, profile title)
 
+class OsciedCRUDMapper(object):
+
+    def __init__(self, api_client, method=u'', cls=None, id_prefix=u'id', environment=False):
+        self.api_client = api_client
+        self.method = method
+        self.cls = cls
+        self.id_prefix = id_prefix
+        self.environment = environment
+
+    def get_url(self, index=None, extra=None):
+        environment = u'environment/{0}'.format(self.api_client.environment) if self.environment else u''
+        index = u'{0}/{1}'.format(self.id_prefix, index) if index else None
+        return u'/'.join(filter(None, [self.api_client.api_url, self.method, environment, index, extra]))
+
+    def __len__(self):
+        return self.api_client.do_request(get, self.get_url(extra=u'count'))
+
+    def __getitem__(self, index):
+        response_dict = self.api_client.do_request(get, self.get_url(index))
+        return response_dict if self.cls is None else dict2object(self.cls, response_dict, inspect_constructor=True)
+
+    def __setitem__(self, index, value):
+        return self.api_client.do_request(patch, self.get_url(index), data=object2json(value, include_properties=True))
+
+    def __delitem__(self, index):
+        return self.api_client.do_request(delete, self.get_url(index))
+
+    def __contains__(self, value):
+        if hasattr(value, '_id'):
+            value = value._id
+        try:
+            return self.api_client.do_request(get, self.get_url(value))
+        except:
+            return False
+        return True
+
+    def add(self, *args, **kwargs):
+        if not(bool(args) ^ bool(kwargs)):
+            raise ValueError(to_bytes(u'You must set args OR kwargs.'))
+        if args and len(args) != 1:
+            raise ValueError(to_bytes(u'args should contain only 1 value.'))
+        value = args[0] if args else kwargs
+        response = self.api_client.do_request(post, self.get_url(), data=object2json(value, include_properties=False))
+        instance = dict2object(self.cls, response, inspect_constructor=True) if self.cls else response
+        # Recover user's secret
+        if isinstance(instance, User):
+            instance.secret = value.secret if args else kwargs[u'secret']
+        return instance
+
+    def list(self, head=False):
+        values = []
+        response_dict = self.api_client.do_request(get, self.get_url(extra=(u'HEAD' if head else None)))
+        if self.cls is None:
+            return response_dict
+        for value_dict in response_dict:
+            values.append(dict2object(self.cls, value_dict, inspect_constructor=True))
+        return values
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+
+class OrchestraAPIClient(object):
+
+    def __init__(self, hostname, port=5000, api_unit=u'oscied-orchestra/0', api_local_config=u'local_config.pkl',
+                 auth=None, id_rsa='~/.ssh/id_rsa', environment='default', timeout=10.0):
+        self.api_url = u'{0}:{1}'.format(hostname, port)
+        self.api_unit = api_unit
+        self.api_local_config = api_local_config
+        self.auth = auth
+        self.id_rsa = os.path.abspath(os.path.expanduser(id_rsa))
+        self.environment = environment
+        self.timeout = timeout
+        self.storage_path = self.storage_address = self.storage_mountpoint = None
+        self.users = OsciedCRUDMapper(self, 'user', User)
+        self.medias = OsciedCRUDMapper(self, 'media', Media)
+        self.environments = OsciedCRUDMapper(self, 'environment', None, 'name')
+        self.transform_profiles = OsciedCRUDMapper(self, 'transform/profile', TransformProfile)
+        self.transform_units = OsciedCRUDMapper(self, 'transform/unit', None, 'number', True)
+        self.transform_tasks = OsciedCRUDMapper(self, 'transform/task', TransformTask)
+        # FIXME api_transform_unit_number_get, api_transform_unit_number_delete ...
+
+    # Miscellaneous methods of the API ---------------------------------------------------------------------------------
+
+    @property
+    def about(self):
+        return self.do_request(get, self.api_url)
+
+    def flush(self):
+        return self.do_request(post, u'{0}/flush'.format(self.api_url))
+
+    def login(self, mail, secret, update_auth=True):
+        user_dict = self.do_request(get, u'{0}/user/login'.format(self.api_url), (mail, secret))
+        user = dict2object(User, user_dict, inspect_constructor=True)
+        if update_auth:
+            # Recover user's secret
+            user.secret = secret
+            self.auth = user
+        return user
+
+    def login_or_add(self, user, add_auth):
+        try:
+            return self.login(user.mail, user.secret)
+        except:
+            self.auth = add_auth
+            self.auth = self.users.add(user)
+            return self.auth
+
+    @property
+    def encoders(self):
+        return self.do_request(get, u'{0}/transform/profile/encoder'.format(self.api_url))
+
+    @property
+    def transform_queues(self):
+        return self.do_request(get, u'{0}/transform/queue'.format(self.api_url))
+
+    @property
+    def publisher_queues(self):
+        return self.do_request(get, u'{0}/publisher/queue'.format(self.api_url))
+
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def do_request(self, verb, resource, auth=None, data=None):
+        u"""Execute a method of the API."""
+        headers = {u'Content-type': u'application/json', u'Accept': u'application/json'}
+        auth = auth or self.auth
+        auth = (auth.mail, auth.secret) if isinstance(auth, User) else auth
+        url = u'http://{0}'.format(resource)
+        return map_exceptions(verb(url, auth=auth, data=data, headers=headers, timeout=self.timeout).json())
+
+    # More complex methods not directly related to the API -------------------------------------------------------------
+
+    def get_unit_local_config(self, service, number, local_config=u'local_config.pkl', option=None):
+        u"""Parse local_config.pkl of a actually running charm instance !"""
+        # Example : sS'storage_address' p29 S'ip-10-245-189-174.ec2.internal' p30
+        # FIXME use test vector (OSCIED note on lastpass) to unit-test get_unit_local_config
+        value = juju_do(u'ssh', environment=self.environment, options=[
+            u'{0}/{1}'.format(service, number), u'sudo cat {0}'.format(get_unit_path(service, number, local_config))])
+        if not option:
+            return value
+        try:
+            return re.findall(ur".*S'{0}' p[0-9]+ .'*([^ ']*)".format(option), value, re.DOTALL | re.MULTILINE)[0]
+        except:
+            return None
+        # from tempfile import NamedTemporaryFile
+        # f = NamedTemporaryFile(delete=False)
+        # try:
+        #     f.write(value)
+        #     import pickle
+        #     f.seek(0)
+        #     p = pickle.load(f)
+        #     f.close()
+        # finally:
+        #     os.remove(f.name)
+
+    def upload_media(self, filename):
+        u"""Upload a media by rsync-ing the local file to the shared storage mount point of the orchestrator !"""
+        # FIXME detect name based on hostname ?
+        os.chmod(self.id_rsa, 0600)
+        service, number = self.api_unit.split(u'/')
+        host = u'ubuntu@{0}'.format(self.api_url.split(u':')[0])
+
+        cfg, get = self.api_local_config, self.get_unit_local_config
+        p = self.storage_path       = self.storage_path       or get(service, number, cfg, option=u'storage_path')
+        a = self.storage_address    = self.storage_address    or get(service, number, cfg, option=u'storage_address')
+        m = self.storage_mountpoint = self.storage_mountpoint or get(service, number, cfg, option=u'storage_mountpoint')
+        bkp_path = os.path.join(p, u'uploads_bkp/')
+        dst_path = os.path.join(p, u'uploads/')
+
+        print(rsync(filename, u'{0}:{1}'.format(host, bkp_path), makedest=True, archive=True, progress=True,
+              rsync_path=u'sudo rsync', extra='ssh -i {0}'.format(self.id_rsa))['stdout'])
+        sync_bkp_to_upload = u'sudo rsync -ah --progress {0} {1}'.format(bkp_path, dst_path)
+        print(ssh(host, id=self.id_rsa, remote_cmd=sync_bkp_to_upload)['stdout'])
+        ssh(host, id=self.id_rsa, remote_cmd=u'sudo chown www-data:www-data {0} -R'.format(dst_path))
+
+        return u'{0}://{1}/{2}/uploads/{3}'.format(u'glusterfs', a, m, os.path.basename(filename))
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 
 class OrchestraAPICore(object):
 
@@ -131,7 +311,7 @@ class OrchestraAPICore(object):
                 return  # FIXME oups
             task.append_async_result()
             with open(template, u'r', u'utf-8') as template_file:
-                text_plain = Template(template_file.read()).render(object2dict(task))
+                text_plain = Template(template_file.read()).render(object2dict(task, include_properties=True))
                 # FIXME YourFormatter().format(template_file.read(), task)
             self.send_email(task.user.mail, u'OSCIED - {0} task {1} {2}'.format(name, task._id, status), text_plain)
 
@@ -149,8 +329,7 @@ class OrchestraAPICore(object):
         entity = self._db.users.find_one(specs, fields)
         if not entity:
             return None
-        # FIXME from_dict instead of from_json !
-        user = User.from_json(object2json(entity, False))
+        user = dict2object(User, entity, inspect_constructor=True)
         return user if secret is None or user.verify_secret(secret) else None
 
     def delete_user(self, user):
@@ -159,7 +338,7 @@ class OrchestraAPICore(object):
         # if not entity:
         #     raise IndexError(to_bytes(u'No user with id {0}.'.format(id)))
         # self._db.users.remove({'_id': entity._id})
-        # return User.from_json(object2json(entity, False))
+        # return dict2object(User, entity, inspect_constructor=True)
         if valid_uuid(user, none_allowed=False):
             user = self.get_user({u'_id': user}, {u'secret': 0})
         user.is_valid(True)
@@ -168,8 +347,7 @@ class OrchestraAPICore(object):
     def get_users(self, specs=None, fields=None):
         users = []
         for entity in list(self._db.users.find(specs, fields)):
-            # FIXME from_dict instead of from_json !
-            users.append(User.from_json(object2json(entity, False)))
+            users.append(dict2object(User, entity, inspect_constructor=True))
         return users
 
     def get_users_count(self, specs=None):
@@ -201,8 +379,7 @@ class OrchestraAPICore(object):
         entity = self._db.medias.find_one(specs, fields)
         if not entity:
             return None
-        # FIXME from_dict instead of from_json !
-        media = Media.from_json(object2json(entity, False))
+        media = dict2object(Media, entity, inspect_constructor=True)
         if load_fields:
             media.load_fields(self.get_user({u'_id': media.user_id}, {u'secret': 0}),
                               self.get_media({u'_id': media.parent_id}))
@@ -228,8 +405,7 @@ class OrchestraAPICore(object):
     def get_medias(self, specs=None, fields=None, load_fields=False):
         medias = []
         for entity in list(self._db.medias.find(specs, fields)):
-            # FIXME from_dict instead of from_json !
-            media = Media.from_json(object2json(entity, False))
+            media = dict2object(Media, entity, inspect_constructor=True)
             if load_fields:
                 media.load_fields(self.get_user({u'_id': media.user_id}, {u'secret': 0}),
                                   self.get_media({u'_id': media.parent_id}))
@@ -242,20 +418,21 @@ class OrchestraAPICore(object):
     # ------------------------------------------------------------------------------------------------------------------
 
     def add_environment(self, name, type, region, access_key, secret_key, control_bucket):
-        return juju.add_environment(self.config.juju_config_file, name, type, region, access_key, secret_key,
-                                    control_bucket, self.config.charms_release)
+        return juju.add_environment(name, type, region, access_key, secret_key, control_bucket,
+                                    self.config.charms_release, environments=self.config.juju_config_file)
 
     def delete_environment(self, name, remove=False):
         u"""
         .. warning:: TODO test & debug of environment methods, especially delete !
         """
-        return juju.destroy_environment(self.config.juju_config_file, name, remove)
+        return juju.destroy_environment(name, remove_default=False, remove=remove,
+                                        environments=self.config.juju_config_file)
 
     def get_environment(self, name, get_status=False):
-        return juju.get_environment(self.config.juju_config_file, name, get_status)
+        return juju.get_environment(name, get_status=get_status, environments=self.config.juju_config_file)
 
     def get_environments(self, get_status=False):
-        return juju.get_environments(self.config.juju_config_file, get_status)
+        return juju.get_environments(get_status=get_status, environments=self.config.juju_config_file)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -273,8 +450,7 @@ class OrchestraAPICore(object):
         entity = self._db.transform_profiles.find_one(specs, fields)
         if not entity:
             return None
-        # FIXME from_dict instead of from_json !
-        return TransformProfile.from_json(object2json(entity, False))
+        return dict2object(TransformProfile, entity, inspect_constructor=True)
 
     def delete_transform_profile(self, profile):
         if valid_uuid(profile, none_allowed=False):
@@ -285,8 +461,7 @@ class OrchestraAPICore(object):
     def get_transform_profiles(self, specs=None, fields=None):
         profiles = []
         for entity in list(self._db.transform_profiles.find(specs, fields)):
-            # FIXME from_dict instead of from_json !
-            profiles.append(TransformProfile.from_json(object2json(entity, False)))
+            profiles.append(dict2object(TransformProfile, entity, inspect_constructor=True))
         return profiles
 
     def get_transform_profiles_count(self, specs=None):
@@ -410,8 +585,7 @@ class OrchestraAPICore(object):
         entity = self._db.transform_tasks.find_one(specs, fields)
         if not entity:
             return None
-        # FIXME from_dict instead of from_json !
-        task = TransformTask.from_json(object2json(entity, False))
+        task = dict2object(TransformTask, entity, inspect_constructor=True)
         if load_fields:
             task.load_fields(self.get_user({u'_id': task.user_id}, {u'secret': 0}),
                              self.get_media({u'_id': task.media_in_id}),
@@ -449,8 +623,7 @@ class OrchestraAPICore(object):
     def get_transform_tasks(self, specs=None, fields=None, load_fields=False, append_result=True):
         tasks = []
         for entity in list(self._db.transform_tasks.find(specs, fields)):
-            # FIXME from_dict instead of from_json !
-            task = TransformTask.from_json(object2json(entity, False))
+            task = dict2object(TransformTask, entity, inspect_constructor=True)
             if load_fields:
                 task.load_fields(self.get_user({u'_id': task.user_id}, {u'secret': 0}),
                                  self.get_media({u'_id': task.media_in_id}),
@@ -512,8 +685,7 @@ class OrchestraAPICore(object):
         entity = self._db.publish_tasks.find_one(specs, fields)
         if not entity:
             return None
-        # FIXME from_dict instead of from_json !
-        task = PublishTask.from_json(object2json(entity, False))
+        task = dict2object(PublishTask, entity, inspect_constructor=True)
         if load_fields:
             task.load_fields(self.get_user({u'_id': task.user_id}, {u'secret': 0}),
                              self.get_media({u'_id': task.media_id}))
@@ -573,8 +745,7 @@ class OrchestraAPICore(object):
     def get_publish_tasks(self, specs=None, fields=None, load_fields=False, append_result=True):
         tasks = []
         for entity in list(self._db.publish_tasks.find(specs, fields)):
-            # FIXME from_dict instead of from_json !
-            task = PublishTask.from_json(object2json(entity, False))
+            task = dict2object(PublishTask, entity, inspect_constructor=True)
             if load_fields:
                 task.load_fields(self.get_user({u'_id': task.user_id}, {u'secret': 0}),
                                  self.get_media({u'_id': task.media_id}))
@@ -644,137 +815,15 @@ class OrchestraAPICore(object):
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-class OsciedCRUDMapper(object):
-
-    def __init__(self, api_client, method='', cls=None, id_prefix='id', environment=False):
-        self.api_client = api_client
-        self.method = method
-        self.cls = cls
-        self.id_prefix = id_prefix
-        self.environment = environment
-
-    def get_url(self, index=None, extra=None):
-        environment = u'environment/{0}'.format(self.api_client.environment) if self.environment else u''
-        index = u'{0}/{1}'.format(self.id_prefix, index) if index else None
-        return u'/'.join(filter(None, [self.api_client.api_url, self.method, environment, index, extra]))
-
-    def __len__(self):
-        return self.api_client.do_request(get, self.get_url(extra='count'))
-
-    def __getitem__(self, index):
-        response_dict = self.api_client.do_request(get, self.get_url(index))
-        return response_dict if self.cls is None else self.cls(**response_dict)
-
-    def __setitem__(self, index, value):
-        return self.api_client.do_request(patch, self.get_url(index), data=object2json(value, include_properties=True))
-
-    def __delitem__(self, index):
-        return self.api_client.do_request(delete, self.get_url(index))
-
-    def __contains__(self, value):
-        if hasattr(value, '_id'):
-            value = value._id
-        try:
-            return self.api_client.do_request(get, self.get_url(value))
-        except:
-            return False
-        return True
-
-    def add(self, *args, **kwargs):
-        if not(bool(args) ^ bool(kwargs)):
-            raise ValueError(to_bytes(u'You must set args OR kwargs.'))
-        if args and len(args) != 1:
-            raise ValueError(to_bytes(u'args should contain only 1 value.'))
-        value = args[0] if args else kwargs
-        response = self.api_client.do_request(post, self.get_url(), data=object2json(value, include_properties=False))
-        instance = self.cls(**response) if self.cls else response
-        # Recover user's secret
-        if isinstance(instance, User):
-            instance.secret = value.secret if args else kwargs['secret']
-        return instance
-
-    def list(self, head=False):
-        values = []
-        response_dict = self.api_client.do_request(get, self.get_url(extra=('HEAD' if head else None)))
-        if self.cls is None:
-            return response_dict
-        for value_dict in response_dict:
-            values.append(self.cls(**value_dict))
-        return values
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-
-class OrchestraAPIClient(object):
-
-    def __init__(self, hostname, port=5000, auth=None, environment='default', timeout=10.0):
-        self.api_url = u'{0}:{1}'.format(hostname, port)
-        self.auth = auth
-        self.environment = environment
-        self.timeout = timeout
-        self.users = OsciedCRUDMapper(self, 'user', User)
-        self.medias = OsciedCRUDMapper(self, 'media', Media)
-        self.environments = OsciedCRUDMapper(self, 'environment', None, 'name')
-        self.transform_profiles = OsciedCRUDMapper(self, 'transform/profile', TransformProfile)
-        self.transform_units = OsciedCRUDMapper(self, 'transform/unit', None, 'number', True)
-        self.transform_tasks = OsciedCRUDMapper(self, 'transform/task', TransformTask)
-        # FIXME api_transform_unit_number_get, api_transform_unit_number_delete ...
-
-    @property
-    def about(self):
-        return self.do_request(get, self.api_url)
-
-    def flush(self):
-        return self.do_request(post, u'{0}/flush'.format(self.api_url))
-
-    def login(self, mail, secret, update_auth=True):
-        user = User(**self.do_request(get, u'{0}/user/login'.format(self.api_url), (mail, secret)))
-        if update_auth:
-            # Recover user's secret
-            user.secret = secret
-            self.auth = user
-        return user
-
-    def login_or_add(self, user, add_auth):
-        try:
-            return self.login(user.mail, user.secret)
-        except:
-            self.auth = add_auth
-            self.auth = self.users.add(user)
-            return self.auth
-
-    @property
-    def encoders(self):
-        return self.do_request(get, u'{0}/transform/profile/encoder'.format(self.api_url))
-
-    @property
-    def transform_queues(self):
-        return self.do_request(get, u'{0}/transform/queue'.format(self.api_url))
-
-    @property
-    def publisher_queues(self):
-        return self.do_request(get, u'{0}/publisher/queue'.format(self.api_url))
-
-    def do_request(self, verb, resource, auth=None, data=None):
-        u"""Execute a method of the API."""
-        headers = {u'Content-type': u'application/json', u'Accept': u'application/json'}
-        auth = auth or self.auth
-        auth = (auth.mail, auth.secret) if isinstance(auth, User) else auth
-        url = u'http://{0}'.format(resource)
-        return map_exceptions(verb(url, auth=auth, data=data, headers=headers, timeout=self.timeout).json())
-
-
-# ----------------------------------------------------------------------------------------------------------------------
-
 def init_api(api_core_or_client, api_init_csv_directory, flush=False):
 
     is_core = isinstance(api_core_or_client, OrchestraAPICore)
-    api_core = api_core_or_client if is_core else None
+    orchestra = api_core_or_client if is_core else None
     api_client = api_core_or_client if not is_core else None
 
     if flush:
         if is_core:
-            api_core.flush_db()
+            orchestra.flush_db()
         else:
             api_client.flush()
 
@@ -784,20 +833,26 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False):
         users.append(user)
         print(u'Adding user {0}'.format(user.name))
         if is_core:
-            api_core.save_user(user, hash_secret=True)
+            orchestra.save_user(user, hash_secret=True)
         else:
             api_client.users.add(user)
-    users = api_core.get_users() if is_core else users# api_client.users.list()
+    users = orchestra.get_users() if is_core else users# api_client.users.list()
 
     i, reader = 0, csv_reader(os.path.join(api_init_csv_directory, u'medias.csv'))
-    for uri, filename, title in reader:
+    for local_filename, filename, title in reader:
         user = users[i]
-        media = Media(user._id, None, uri, None, filename, {u'title': title}, u'READY')
+        print(os.getcwd())
+        media = Media(user_id=user._id, filename=filename, metadata={u'title': title})
+        if not os.path.exists(local_filename):
+            print(u'Skip media {0}, file "{1}" Not found.'.format(media.metadata[u'title'], local_filename))
+            continue
         print(u'Adding media {0} as user {1}'.format(media.metadata[u'title'], user.name))
         if is_core:
-            api_core.save_media(media)
+            #orchestra.config. bla bla -> get media.uri
+            orchestra.save_media(media)
         else:
             api_client.auth = user
+            media.uri = api_client.upload_media(local_filename)
             api_client.medias.add(media)
         i = (i + 1) % len(users)
 
@@ -807,7 +862,7 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False):
         profile = TransformProfile(title, description, encoder_name, encoder_string)
         print(u'Adding transformation profile {0} as user {1}'.format(profile.title, user.name))
         if is_core:
-            api_core.save_transform_profile(profile)
+            orchestra.save_transform_profile(profile)
         else:
             api_client.auth = user
             api_client.transform_profiles.add(profile)
@@ -818,48 +873,20 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False):
 
     reader = csv_reader(os.path.join(api_init_csv_directory, u'ttasks.csv'))
     for user_email, in_filename, profile_title, out_filename, out_title, send_email, queue in reader:
-        user = api_core.get_user({u'mail': user_email})
+        user = orchestra.get_user({u'mail': user_email})
         if not user:
             raise IndexError(to_bytes(u'No user with e-mail address {0}.'.format(user_email)))
-        media_in = api_core.get_media({u'filename': in_filename})
+        media_in = orchestra.get_media({u'filename': in_filename})
         if not media_in:
             raise IndexError(to_bytes(u'No media with filename {0}.'.format(in_filename)))
-        profile = api_core.get_transform_profile({u'title': profile_title})
+        profile = orchestra.get_transform_profile({u'title': profile_title})
         if not profile:
             raise IndexError(to_bytes(u'No transformation profile with title {0}.'.format(profile_title)))
         print(u'Launching transformation task {0} with profile {1} as user {2}.'.format(media_in.metadata[u'title'],
               profile.title, user.name))
         metadata = {u'title': out_title}
-        api_core.launch_transform_task(user._id, media_in._id, profile._id, out_filename, metadata, send_email, queue,
-                                       u'/transform/callback')
-        # if isinstance(configuration, string_types):
-        #     self.debug(u'Load configuration from file {0}'.format(configuration))
-        #     with open(configuration, u'r', u'utf-8') as f:
-        #         configuration = yaml.load(f)
-        # for user_dict in configuration['users']:
-        #     user = User(**user_dict)
-        #     print(u'Adding user {0}'.format(user.name))
-        #     user.is_valid(True)
-        #     self.users.add(user)
-        # users = self.users.list()
-        # for media_dict in configuration['medias']:
-        #     media = Media(**media_dict)
-        #     # FIXME faster
-        #     for user in users:
-        #         if user.mail == media['user_mail']:
-        #             media.user_id = user._id
-        #             break
-        #     else:
-        #         raise ValueError(to_bytes(u'Unable to find user with mail {0}.'.format(media['user_mail'])))
-        #     print(u'Adding media {0}'.format(media.metadata[u'title']))
-        #     media.is_valid(True)
-        #     self.medias.add(media)
-        # for profile_dict in configuration['profiles']:
-        #     profile = TransformProfile(**profile_dict)
-        #     print(u'Adding transformation profile {0}'.format(profile.title))
-        #     profile.is_valid(True)
-        #     self.transform_profiles.add(profile)
-        # for ...
+        orchestra.launch_transform_task(user._id, media_in._id, profile._id, out_filename, metadata, send_email, queue,
+                                        u'/transform/callback')
 
 
 # Main -----------------------------------------------------------------------------------------------------------------

@@ -95,10 +95,10 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
 
 class PublisherLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinate):
 
-    def __init__(self, proxy_ips=[], apache_config_file=u'/etc/apache2/apache2.conf', publish_uri=u'',
+    def __init__(self, proxy_ips=None, apache_config_file=u'/etc/apache2/apache2.conf', publish_uri=u'',
                  publish_path=u'/var/www', **kwargs):
         super(PublisherLocalConfig, self).__init__(**kwargs)
-        self.proxy_ips = proxy_ips
+        self.proxy_ips = proxy_ips or []
         self.apache_config_file = apache_config_file
         self.publish_uri = publish_uri
         self.publish_path = publish_path
@@ -134,9 +134,9 @@ class PublisherLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinat
 
 class StorageLocalConfig(CharmLocalConfig):
 
-    def __init__(self, allowed_ips=[], volume_flag=False, **kwargs):
+    def __init__(self, allowed_ips=None, volume_flag=False, **kwargs):
         super(StorageLocalConfig, self).__init__(**kwargs)
-        self.allowed_ips = allowed_ips
+        self.allowed_ips = allowed_ips or []
         self.volume_flag = volume_flag
         self.volume_infos_regex = re.compile(
             r".*Volume Name:\s*(?P<name>\S+)\s+.*Type:\s*(?P<type>\S+)\s+.*"
@@ -151,9 +151,9 @@ class TransformLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinat
 
 class WebuiLocalConfig(CharmLocalConfig_Storage):
 
-    def __init__(self, api_url=u'', encryption_key=u'', proxy_ips=[], sites_enabled_path=u'/etc/apache2/sites-enabled',
-                 site_database_file=u'webui-db.sql', site_template_file=u'templates/000-default',
-                 htaccess_template_file=u'templates/htaccess.template',
+    def __init__(self, api_url=u'', encryption_key=u'', proxy_ips=None,
+                 sites_enabled_path=u'/etc/apache2/sites-enabled', site_database_file=u'webui-db.sql',
+                 site_template_file=u'templates/000-default', htaccess_template_file=u'templates/htaccess.template',
                  general_template_file=u'templates/config.php.template',
                  database_template_file=u'templates/database.php.template', htaccess_config_file=u'/var/www/.htaccess',
                  general_config_file=u'/var/www/application/config/config.php',
@@ -162,7 +162,7 @@ class WebuiLocalConfig(CharmLocalConfig_Storage):
         super(WebuiLocalConfig, self).__init__(**kwargs)
         self.api_url = api_url
         self.encryption_key = encryption_key
-        self.proxy_ips = proxy_ips
+        self.proxy_ips = proxy_ips or []
         self.sites_enabled_path = sites_enabled_path
         self.site_database_file = site_database_file
         self.site_template_file = site_template_file

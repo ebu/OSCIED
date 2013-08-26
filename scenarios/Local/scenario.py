@@ -24,17 +24,22 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from os.path import join
-from library.oscied_lib.pyutils.py_juju import DeploymentScenario
+from os.path import dirname, join
+from library.oscied_lib.oscied_juju import OsciedDeploymentScenario
+from library.oscied_lib.pyutils.py_console import confirm
+from library.oscied_lib.pyutils.py_unicode import configure_unicode
 
 description = u'Launch oscied (minimal setup) locally (LXC provider)'
 
-class Local(DeploymentScenario):
+SCENARIO_PATH = dirname(__file__)
+CONFIG = join(SCENARIO_PATH, u'config.yaml')
+
+
+class Local(OsciedDeploymentScenario):
 
     def run(self):
         print(description)
         self.bootstrap(u'local', wait_started=True)
-        self.launch_log(u'local')
         self.deploy(u'oscied-transform', u'oscied-transform', local=True)
         self.deploy(u'oscied-publisher', u'oscied-publisher', local=True, expose=True)
         self.deploy(u'oscied-orchestra', u'oscied-orchestra', local=True, expose=True)
@@ -51,5 +56,9 @@ class Local(DeploymentScenario):
             if self.add_relation(u'haproxy', u'oscied-webui'):
                 self.unexpose_service(u'oscied-webui')
 
+        if confirm(u'Initialize orchestra'):
+            self.init_api(SCENARIO_PATH, flush=True)
+
 if __name__ == u'__main__':
-    Local().main(config=join(dirname(__file__), u'config.yaml'))
+    configure_unicode()
+    Local().main(environment=u'local', config=CONFIG)

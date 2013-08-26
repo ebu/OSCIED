@@ -24,9 +24,16 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from library.oscied_lib.pyutils.py_juju import OsciedDeploymentScenario
+from os.path import dirname, join
+from library.oscied_lib.oscied_juju import OsciedDeploymentScenario
+from library.oscied_lib.pyutils.py_console import confirm
+from library.oscied_lib.pyutils.py_unicode import configure_unicode
 
 description = u'Launch oscied (nano setup) on Amazon'
+
+SCENARIO_PATH = dirname(__file__)
+CONFIG = join(SCENARIO_PATH, u'config.yaml')
+
 
 class Amazon(OsciedDeploymentScenario):
 
@@ -49,5 +56,9 @@ class Amazon(OsciedDeploymentScenario):
             if self.add_relation(u'haproxy', u'oscied-webui'):
                 self.unexpose_service(u'oscied-webui')
 
+        if confirm(u'Initialize orchestra'):
+            self.init_api(SCENARIO_PATH, flush=True)
+
 if __name__ == u'__main__':
-    Amazon().main()
+    configure_unicode()
+    Amazon().main(environment=u'amazon', config=CONFIG)
