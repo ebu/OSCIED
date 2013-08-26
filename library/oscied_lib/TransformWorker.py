@@ -69,7 +69,7 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
             u'percent': int(100 * ratio)})
 
     def transform_callback(status):
-        data_json = object2json({u'task_id': request.id, u'status': status}, False)
+        data_json = object2json({u'task_id': request.id, u'status': status}, include_properties=False)
         if callback is None:
             print(u'{0} [ERROR] Unable to callback orchestrator: {1}'.format(request.id, data_json))
         else:
@@ -90,19 +90,19 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
 
         # Read current configuration to translate files uri to local paths
         config = TransformLocalConfig.read(u'local_config.pkl')
-        print(object2json(config, True))
+        print(object2json(config, include_properties=True))
 
         # Load and check task parameters
-        callback = Callback.from_json(callback_json)
+        callback = Callback.from_json(callback_json, inspect_constructor=True)
         callback.is_valid(True)
 
         # Update callback socket according to configuration
         if config.api_nat_socket and len(config.api_nat_socket) > 0:
             callback.replace_netloc(config.api_nat_socket)
 
-        media_in = Media.from_json(media_in_json)
-        media_out = Media.from_json(media_out_json)
-        profile = TransformProfile.from_json(profile_json)
+        media_in = Media.from_json(media_in_json, inspect_constructor=True)
+        media_out = Media.from_json(media_out_json, inspect_constructor=True)
+        profile = TransformProfile.from_json(profile_json, inspect_constructor=True)
         media_in.is_valid(True)
         media_out.is_valid(True)
         profile.is_valid(True)

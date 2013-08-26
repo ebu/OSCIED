@@ -50,7 +50,7 @@ def publish_task(media_json, callback_json):
         data = {u'task_id': request.id, u'status': status}
         if publish_uri:
             data[u'publish_uri'] = publish_uri
-        data_json = object2json(data, False)
+        data_json = object2json(data, include_properties=False)
         if callback is None:
             print(u'{0} [ERROR] Unable to callback orchestrator: {1}'.format(request.id, data_json))
         else:
@@ -72,17 +72,17 @@ def publish_task(media_json, callback_json):
 
         # Read current configuration to translate files uri to local paths
         config = PublisherLocalConfig.read(u'local_config.pkl')
-        print(object2json(config, True))
+        print(object2json(config, include_properties=True))
 
         # Load and check task parameters
-        callback = Callback.from_json(callback_json)
+        callback = Callback.from_json(callback_json, inspect_constructor=True)
         callback.is_valid(True)
 
         # Update callback socket according to configuration
         if config.api_nat_socket and len(config.api_nat_socket) > 0:
             callback.replace_netloc(config.api_nat_socket)
 
-        media = Media.from_json(media_json)
+        media = Media.from_json(media_json, inspect_constructor=True)
         media.is_valid(True)
 
         # Verify that media file can be accessed
@@ -141,7 +141,7 @@ def revoke_publish_task(publish_uri, callback_json):
         print(object2json(config, True))
 
         # Load and check task parameters
-        callback = Callback.from_json(callback_json)
+        callback = Callback.from_json(callback_json, inspect_constructor=True)
         callback.is_valid(True)
 
         # Update callback socket according to configuration
