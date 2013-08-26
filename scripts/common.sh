@@ -47,14 +47,7 @@ REFERENCES_PATH="$DOCS_PATH/references"
 
 # Symbolic link to current configuration's path
 SCENARIO_CURRENT_PATH="$SCENARIOS_PATH/current"
-
-# Generated configuration
-SCENARIO_GEN_PATH="$SCENARIO_CURRENT_PATH/generated"
-SCENARIO_GEN_AUTHS_FILE="$SCENARIO_GEN_PATH/auths.list"
-SCENARIO_GEN_IDS_FILE="$SCENARIO_GEN_PATH/ids.list"
-SCENARIO_GEN_JSON_FILE="$SCENARIO_GEN_PATH/json.list"
-SCENARIO_GEN_UNITS_FILE="$SCENARIO_GEN_PATH/units.list"
-SCENARIO_GEN_STORAGE_FILE="$SCENARIO_GEN_PATH/storage.inc"
+SCENARIO_GEN_UNITS_FILE="$SCENARIO_CURRENT_PATH/units.list"
 
 # Orchestra related configuration (e.g. initial setup)
 SCENARIO_API_USERS_FILE="$SCENARIO_CURRENT_PATH/users.csv"
@@ -65,11 +58,11 @@ SCENARIO_API_TPROFILES_FILE="$SCENARIO_CURRENT_PATH/tprofiles.csv"
 SCENARIO_JUJU_ID_RSA="$SCENARIO_CURRENT_PATH/id_rsa"
 SCENARIO_JUJU_ID_RSA_PUB="$SCENARIO_CURRENT_PATH/id_rsa.pub"
 SCENARIO_JUJU_ENVS_FILE="$SCENARIO_CURRENT_PATH/environments.yaml"
+SCENARIO_JUJU_LOG_FILE="$SCENARIO_CURRENT_PATH/juju-debug.log"
 
 # System configuration (e.g. certificates + juju configuration)
 ID_RSA="$HOME/.ssh/id_rsa"
 ID_RSA_PUB="$HOME/.ssh/id_rsa.pub"
-JUJU_LOG="$BASE_PATH/juju-debug.log"
 JUJU_PATH="$HOME/.juju"
 JUJU_STORAGE_PATH="$JUJU_PATH/local/"
 JUJU_ENVS_FILE="$JUJU_PATH/environments.yaml"
@@ -113,7 +106,7 @@ _check_juju()
 _deploy_helper()
 {
   if [ $# -ne 1 ]; then
-    xecho "Usage: $(basename $0).overwrite_helper scenario"
+    xecho "Usage: $(basename $0).deploy_helper scenario"
   fi
   scenario=$1
 
@@ -167,11 +160,12 @@ _deploy_helper()
   cp -f "$ID_RSA"         "$CHARMS_DEPLOY_PATH/oscied-orchestra/ssh/"
   cp -f "$ID_RSA_PUB"     "$CHARMS_DEPLOY_PATH/oscied-orchestra/ssh/"
   cp -f "$JUJU_ENVS_FILE" "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/"
-  find "$JUJU_PATH" -mindepth 1 -maxdepth 1 -type f -name '*.pem' -exec cp -f {} \
-    "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/" \;
+  find "$JUJU_PATH" -mindepth 1 -maxdepth 1 -type f -name '*.pem' \
+    -exec sudo chown $USER:$USER {} \; \
+    -exec cp -f {} "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/" \;
 
   pecho "Execute script of scenario $scenario"
-  $udo python "$scenario/scenario.py" "$(dirname "$CHARMS_DEPLOY_PATH")" -r "$RELEASE"
+  python "$scenario/scenario.py" -m "$(dirname "$CHARMS_DEPLOY_PATH")" -r "$RELEASE"
 }
 
 _overwrite_helper()
@@ -198,7 +192,7 @@ _rsync_helper()
   host="ubuntu@$REPLY"
   dest="/var/lib/juju/agents/unit-$1-$2/charm"
   ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
-  rsync -avhL --progress --delete -e "ssh -i '$ID_RSA'" --exclude=.git --exclude=config.json \
+  rsync --rsync-path='sudo rsync' -avhL --progress --delete -e "ssh -i '$ID_RSA'" --exclude=.git --exclude=config.json \
     --exclude=celeryconfig.py --exclude=*.pyc --exclude=local_config.pkl --exclude=charms \
     --exclude=ssh --exclude=environments.yaml --exclude=*.log "$CHARMS_PATH/$1/" "$host:$dest/"
   ssh -i "$ID_RSA" "$host" -n "sudo chown root:root $dest -R"
@@ -226,26 +220,6 @@ _standalone_execute_hook()
   cd "$1"  || xecho "Unable to find path $1"
   $udo $2  || xecho 'Hook is unsucessful'
   recho 'Hook successful'
-}
-
-# Parse local_config.pkl of a actually running charm instance ! --------------------------------------------------------
-
-_get_unit_config()
-{
-  if [ $# -ne 3 ]; then
-    xecho "Usage: $(basename $0).get_config_unit name number option"
-  fi
-  name=$1
-  number=$2
-  option=$3
-
-  # Example : sS'storage_address' p29 S'ip-10-245-189-174.ec2.internal' p30
-  chmod1="sudo chmod +rx /var/lib/juju/agents/unit-$name-$number/"
-  chmod2="sudo chmod +rx /var/lib/juju/agents/unit-$name-$number/charm/"
-  chmod3="sudo chmod +rx /var/lib/juju/agents/unit-$name-$number/charm/local_config.pkl"
-  cat_local_config="/var/lib/juju/agents/unit-$name-$number/charm/local_config.pkl"
-  val=$(juju ssh $name/$number "$chmod1; $chmod2; $chmod3; tr '\n' ' ' < $cat_local_config")
-  REPLY=$(expr match "$val" ".*S'$option' p[0-9]\+ .'*\([^ ']*\)")
 }
 
 # Parse charm's units URLs listing file to get specific URLs -----------------------------------------------------------
@@ -278,181 +252,6 @@ _get_unit_public_url()
   fi
   [ ! "$url" -a $fail -eq $true ] && xecho "Unable to detect unit $1 public URL !"
   REPLY="$url"
-}
-
-_get_orchestra_url()
-{
-  if [ $# -eq 0 ]; then
-    _get_unit_public_url $false 'oscied-orchestra'
-  elif [ $# -eq 1 ]; then
-    _get_unit_public_url $false 'oscied-orchestra' "$1"
-  else
-    xecho "Usage: $(basename $0).get_orchestra_url (number)"
-  fi
-  [ "$REPLY" ] && REPLY="http://$REPLY:5000"
-}
-
-_get_storage_uploads_url()
-{
-  REPLY="glusterfs://$STORAGE_PRIVATE_IP/$STORAGE_MOUNTPOINT/uploads"
-
-}
-
-_get_storage_medias_url()
-{
-  REPLY="glusterfs://$STORAGE_PRIVATE_IP/$STORAGE_MOUNTPOINT/medias"
-}
-
-_storage_upload_media()
-{
-  if [ $# -ne 1 ]; then
-    xecho "Usage: $(basename $0).storage_upload_media filename"
-  fi
-
-  _get_unit_public_url $true 'oscied-storage'
-  host="ubuntu@$REPLY"
-  bkp_path='/home/ubuntu/uploads'
-  dst_path="$STORAGE_BRICK/uploads"
-  chmod 600 "$ID_RSA" || xecho 'Unable to find id_rsa certificate'
-  rsync -ah --progress --rsync-path='sudo rsync' -e "ssh -i '$ID_RSA'" "$1" "$host:$bkp_path/" || \
-    xecho "Unable to copy media file to $bkp_path path in storage"
-  ssh -i "$ID_RSA" "$host" -n "sudo rsync -ah --progress $bkp_path/ $dst_path/" || \
-    xecho "Unable to synchronize ($dst_path->$dst_path) paths in storage"
-  ssh -i "$ID_RSA" "$host" -n "sudo chown www-data:www-data $dst_path/ -R" || \
-    xecho "Unable to set owner www-data for $dst_path path in storage"
-  _get_storage_uploads_url
-  REPLY="$REPLY/$(basename $1)"
-}
-
-# Save and get configuration from corresponding generated files --------------------------------------------------------
-
-_save_auth()
-{
-  cat "$SCENARIO_GEN_AUTHS_FILE" 2>/dev/null | grep -v "^$1=" > /tmp/$$
-  echo "$1=$2" >> /tmp/$$
-  mv /tmp/$$ "$SCENARIO_GEN_AUTHS_FILE"
-}
-
-_get_auth()
-{
-  REPLY=$(cat "$SCENARIO_GEN_AUTHS_FILE" 2>/dev/null | grep "^$1=" | cut -d '=' -f2)
-  [ ! "$REPLY" ] && xecho "Unable to detect $1 authentication"
-}
-
-_save_id()
-{
-  cat "$SCENARIO_GEN_IDS_FILE" 2>/dev/null | grep -v "^$1=" > /tmp/$$
-  echo "$1=$2" >> /tmp/$$
-  mv /tmp/$$ "$SCENARIO_GEN_IDS_FILE"
-}
-
-_get_id()
-{
-  REPLY=$(cat "$SCENARIO_GEN_IDS_FILE" 2>/dev/null | grep "^$1=" | cut -d '=' -f2)
-  [ ! "$REPLY" ] && xecho "Unable to detect $1 ID"
-}
-
-_save_json()
-{
-  cat "$SCENARIO_GEN_JSON_FILE" 2>/dev/null | grep -v "^$1=" > /tmp/$$
-  echo "$1=$2" >> /tmp/$$
-  mv /tmp/$$ "$SCENARIO_GEN_JSON_FILE"
-}
-
-_get_json()
-{
-  REPLY=$(cat "$SCENARIO_GEN_JSON_FILE" 2>/dev/null | grep "^$1=" | cut -d '=' -f2)
-  [ ! "$REPLY" ] && xecho "Unable to detect $1 json"
-}
-
-# Generate valid json strings of Orchestra API's objects ---------------------------------------------------------------
-
-_json_user()
-{
-  if [ $# -ne 5 ]; then
-    xecho "Usage: $(basename $0).json_user fname lname mail secret aplaftorm"
-  fi
-
-  a='admin_platform'
-  JSON="{\"first_name\":\"$1\",\"last_name\":\"$2\",\"mail\":\"$3\",\"secret\":\"$4\",\"$a\":$5}"
-}
-
-_json_media()
-{
-  if [ $# -ne 3 ]; then
-    xecho "Usage: $(basename $0).json_media uri vfilename title"
-  fi
-
-  JSON="{\"uri\":\"$1\",\"filename\":\"$2\",\"metadata\":{\"title\":\"$3\"}}"
-}
-
-_json_tprofile()
-{
-  if [ $# -ne 4 ]; then
-    xecho "Usage: $(basename $0).json_tprofile title description encoder_name encoder_string"
-  fi
-
-  JSON="{\"title\":\"$1\",\"description\":\"$2\",\"encoder_name\":\"$3\",\"encoder_string\":\"$4\"}"
-}
-
-_json_ttask()
-{
-  d='metadata'
-  m='media_in_id'
-  p='profile_id'
-  s='send_email'
-  q='queue'
-  t='title'
-  v='filename'
-  y='priority'
-  if [ $# -ne 7 ]; then
-    xecho "Usage: $(basename $0).json_ttask $m $p $v $t $s $q $y"
-  fi
-
-  JSON="{\"$m\":\"$1\",\"$p\":\"$2\",\"$v\":\"$3\",\"$d\":{\"$t\":\"$4\"},\"$s\":\"$5\",\"$q\":\"$6\",\"$y\":\"$7\"}"
-}
-
-_json_ptask()
-{
-  if [ $# -ne 4 ]; then
-    xecho "Usage: $(basename $0).json_ttask media_id send_email queue priority"
-  fi
-
-  JSON="{\"media_id\":\"$1\",\"send_email\":\"$2\",\"queue\":\"$3\",\"priority\":\"$4\"}"
-}
-
-# Used to call / test Orchestra REST API -------------------------------------------------------------------------------
-
-_test_api()
-{
-  if [ $# -ne 5 ]; then
-    xecho "Usage: $(basename $0).test_api code method call user data"
-  fi
-
-  code=$1; m=$2; c=$3; u=$4; d=$5
-  aa='Accept: application/json'
-  ct='Content-type: application/json'
-  if [ "$u" -a "$d" ]; then
-    mecho "\nTest $code : $m $c auth: $u data: $d"
-    result=$(curl -H "$aa" -H "$ct" -u "$u" -d "$d" -X "$m" "$c" --write-out %{http_code})
-  elif [ "$u" ]; then
-    mecho "\nTest $code : $m $c auth: $u"
-    result=$(curl -H "$aa" -H "$ct" -u "$u" -X "$m" "$c" --write-out %{http_code})
-  elif [ "$d" ]; then
-    mecho "\nTest $code : $m $c data: $d"
-    result=$(curl -H "$aa" -H "$ct" -d "$d" -X "$m" "$c" --write-out %{http_code})
-  else
-    mecho "\nTest $code : $m $c"
-    result=$(curl -H "$aa" -H "$ct" -X "$m" "$c" --write-out %{http_code})
-  fi
-  echo $result
-  if ! echo "$result" | grep -q "$code\$"; then
-    xecho "Test $m $c failed with code : $result"
-  fi
-  echo
-  anum='0-9a-zA-Z'
-  regex=".*\"\([$anum]\{8\}-[$anum]\{4\}-[$anum]\{4\}-[$anum]\{4\}-[$anum]\{12\}\)\".*"
-  ID=$(expr match "$result" "$regex")
 }
 
 osciedCommonImported()

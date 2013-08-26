@@ -73,8 +73,7 @@ main()
               config           "${b}Update units public URL listing file"       \
               status           "${b}Display juju status"                        \
               log              "${b}Launch juju debug log in a screen"          \
-              api_init_setup   "${a}Initialize demo setup with Orchestra API"   \
-              browse_webui     'Launch a browser to browse the Web UI'          \
+              browse_webui     "${a}Launch a browser to browse the Web UI"      \
               rsync_orchestra  'Rsync local code to running Orchestra instance' \
               rsync_publisher  'Rsync local code to running Publisher instance' \
               rsync_storage    'Rsync local code to running Storage instance'   \
@@ -269,7 +268,6 @@ config()
   content=''
   count=1
   last_name=''
-  orchestra=''
   juju status 2>/dev/null > $tmpfile
   while read line
   do
@@ -283,45 +281,13 @@ config()
       last_name=''
     fi
     count=$((count+1))
-
-    if echo $name | grep -q 'oscied-orchestra'; then
-      orchestra=$name
-    fi
   done < $tmpfile
 
   if [ "$content" ]; then
-    mkdir -p "$SCENARIO_GEN_PATH" 2>/dev/null
     echo $e_ "$content" > "$SCENARIO_GEN_UNITS_FILE"
     recho "Charms's units public URLs listing file updated"
   else
     xecho "Unable to detect charms's units public URLs"
-  fi
-
-  if [ "$orchestra" ]; then
-    pecho "Auto-detect storage internal IP address by parsing $orchestra unit configuration"
-    number=$(expr match "$orchestra" '.*/\([0-9]*\)')
-    content=''
-    _get_unit_config 'oscied-orchestra' "$number" 'storage_address'
-    if [ ! "$REPLY" ]; then
-      xecho 'Unable to detect storage internal IP address'
-    else
-      mecho "Updating storage.inc with detected storage internal IP = $REPLY"
-      content="${content}STORAGE_PRIVATE_IP='$REPLY'\n"
-    fi
-    _get_unit_config 'oscied-orchestra' "$number" 'storage_mountpoint'
-    if [ ! "$REPLY" ]; then
-      xecho 'Unable to detect storage mountpoint'
-    else
-      number=$(expr match "$REPLY" '.*_\([0-9]*\)')
-      # FIXME hard-coded brick directory !
-      brick="/mnt/bricks/exp$number"
-      mecho "Updating storage.inc with detected storage mountpoint = $REPLY and brick = $brick"
-      content="${content}STORAGE_MOUNTPOINT='$REPLY'\nSTORAGE_BRICK='$brick'"
-    fi
-    echo $e_ "$content" > "$SCENARIO_GEN_STORAGE_FILE"
-    _reload_config
-  else
-    recho 'Unable to detect orchestrator unit name'
   fi
 }
 
@@ -349,126 +315,7 @@ log()
   fi
   ok=$true
 
-  screen -dmS juju-log juju debug-log > "$JUJU_LOG"
-}
-
-api_init_setup()
-{
-  _check_config
-
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) api_init_setup"
-  fi
-  ok=$true
-
-  _get_orchestra_url
-  orchestra_url=$REPLY
-
-  # Detect root secret
-  find "$SCENARIO_CURRENT_PATH" -follow -type f -name "config*.yaml" | sort > $tmpfile
-  config_files=''
-  while read yaml
-  do
-    config_file=$(basename "$yaml")
-    config_files="$config_files$config_file - "
-  done < $tmpfile
-  if [ ! "$config_files" ]; then
-    xecho 'Unable to detect configuration files of current scenario !'
-  fi
-  # Config menu
-  while true
-  do
-    $DIALOG --backtitle 'OSCIED Main Menu > API Initial Setup' \
-            --menu 'Please select a source configuration file to detect root secret' 0 0 0 \
-            $config_files 2> $tmpfile
-
-    retval=$?
-    config_file="$SCENARIO_CURRENT_PATH/$(cat $tmpfile)"
-    root_secret=$(expr match "$(grep 'root_secret' "$config_file")" '.*"\(.*\)".*')
-
-    # Config menu exit door
-    [ $retval -eq 0 ] && break
-    [ $retval -ne 0 ] && { recho 'Operation aborted by user'; pause; return; }
-  done
-
-  if [ "$root_secret" ]; then
-    root_auth="root:$root_secret"
-  else
-    xecho 'Unable to detect root secret !'
-  fi
-
-  pecho 'Flush database'
-  yesOrNo $false "do you really want to flush orchestrator $orchestra_url"
-  if [ $REPLY -eq $false ]; then
-    recho 'operation aborted by user'
-    exit 0
-  fi
-  _test_api 200 POST $orchestra_url/flush "$root_auth" ''
-
-  pecho 'Add users'
-  count=1
-  savedIFS=$IFS
-  IFS=';'
-  while read fname lname mail secret aplatform
-  do
-    if [ ! "$fname" -o ! "$lname" -o ! "$mail" -o ! "$secret" -o ! "$aplatform" ]; then
-      xecho "Line $count : Bad line format !"
-    fi
-    _json_user "$fname" "$lname" "$mail" "$secret" "$aplatform"
-    echo "$JSON"
-    _test_api 200 POST $orchestra_url/user "$root_auth" "$JSON"
-    _save_auth "user$count" "$mail:$secret"
-    _save_json "user$count" "$JSON"
-    _save_id   "user$count" "$ID"
-    count=$((count+1))
-  done < "$SCENARIO_API_USERS_FILE"
-  IFS=$savedIFS
-
-  _get_auth 'user1'
-  user1_auth=$REPLY
-
-  pecho 'Add medias'
-  count=1
-  savedIFS=$IFS
-  IFS=';'
-  while read uri vfilename title
-  do
-    if [ ! "$uri" -o ! "$vfilename" -o ! "$title" ]; then
-      xecho "Line $count : Bad line format !"
-    fi
-    media="$MEDIAS_PATH/$uri"
-    if [ ! -f "$media" ]; then
-      recho "[WARNING] Unable to find media file $media"
-      continue
-    fi
-    mecho "Uploading media $uri to uploads into shared storage unit ..."
-    _storage_upload_media "$media" || xecho "Unable to upload media"
-    _json_media "$REPLY" "$vfilename" "$title"
-    echo "$JSON"
-    _test_api 200 POST $orchestra_url/media "$user1_auth" "$JSON"
-    _save_json "media$count" "$JSON"
-    _save_id   "media$count" "$ID"
-    count=$((count+1))
-  done < "$SCENARIO_API_MEDIAS_FILE"
-  IFS=$savedIFS
-
-  pecho 'Add transform profiles'
-  count=1
-  savedIFS=$IFS
-  IFS=';'
-  while read title description encoder_name encoder_string
-  do
-    if [ ! "$title" -o ! "$description" -o ! "encoder_name" -o ! "$encoder_string" ]; then
-      xecho "Line $count : Bad line format !"
-    fi
-    _json_tprofile "$title" "$description" "$encoder_name" "$encoder_string"
-    echo "$JSON"
-    _test_api 200 POST $orchestra_url/transform/profile "$user1_auth" "$JSON"
-    _save_json "tprofile$count" "$JSON"
-    _save_id   "tprofile$count" "$ID"
-    count=$((count+1))
-  done < "$SCENARIO_API_TPROFILES_FILE"
-  IFS=$savedIFS
+  screen -dmS juju-log juju debug-log > "$SCENARIO_JUJU_LOG_FILE"
 }
 
 browse_webui()
