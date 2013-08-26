@@ -28,7 +28,7 @@ if __name__ == '__main__':
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     from pprint import pprint
     from library.oscied_lib.oscied_api import OrchestraAPIClient
-    from library.pyutils.py_unicode import configure_unicode
+    from library.oscied_lib.pyutils.py_unicode import configure_unicode
 
     configure_unicode()
 
@@ -51,11 +51,11 @@ if __name__ == '__main__':
     print(u'Our user:\n\t{0}'.format(client.users[client.auth._id].name))
     print(u'\nThere are {0} available media assets:'.format(len(client.medias)))
     for media in client.medias.list(head=True):
-        print(u'\t{0} by user with id {1}'.format(media.metadata['title'], media.user_id))
+        print(u'\t{0} by user with id {1}'.format(media.metadata[u'title'], media.user_id))
     print(u'\nThere are {0} available environments:'.format(len(client.environments)))
-    for environment in client.environments.list(head=True)['environments']:
+    for environment in client.environments.list(head=True)[u'environments']:
         print(u'\t{0}'.format(environment))
-    print(u'\nStatus of default environment:\n\t{0}'.format(client.environments['default']))
+    print(u'\nStatus of default environment:\n\t{0}'.format(client.environments[u'default']))
     print(u'\nThere are {0} available encoders:'.format(len(client.encoders)))
     for encoder in client.encoders:
         print(u'\t{0}'.format(encoder))
