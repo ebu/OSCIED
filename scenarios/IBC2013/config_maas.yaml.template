@@ -1,14 +1,14 @@
 oscied-orchestra:
-  verbose: "true"
-  cleanup: "true"
-  root_secret: "5FrvHcm7oyF4WQFW"
-  node_secret: "bdZccPuG9fibjwCS"
+  verbose: "false"
+  cleanup: "false"
+  root_secret: ""
+  node_secret: ""
   repositories_user: "oscied"
-  repositories_pass: "41nVGq07GmSgK9Ud"
+  repositories_pass: ""
   oscied_repository: "https://github.com/ebu/OSCIED/charms"
-  mongo_admin_password: "Iz85QVjdCJugEosz"
-  mongo_node_password: "M2qlif8rdtKtBYil"
-  rabbit_password: "OZy23iO0D4UpYS2k"
+  mongo_admin_password: ""
+  mongo_node_password: ""
+  rabbit_password: ""
   email_server: ""
   email_tls: "true"
   email_address: "someone@oscied.org"
@@ -20,7 +20,7 @@ oscied-orchestra:
   storage_mountpoint: ""
   storage_options: ""
 oscied-publisher:
-  verbose: "true"
+  verbose: "false"
   cleanup: "false"
   concurrency: 2
   rabbit_queues: "publisher_private"
@@ -37,15 +37,15 @@ oscied-publisher:
   storage_mountpoint: ""
   storage_options: ""
 oscied-storage:
-  verbose: "true"
-  cleanup: "true"
+  verbose: "false"
+  cleanup: "false"
   allowed_ips: "*"
   replica_count: 1
   bricks_root_path: "/mnt"
 oscied-transform:
-  verbose: "true"
+  verbose: "false"
   cleanup: "false"
-  concurrency: 1
+  concurrency: 6
   rabbit_queues: "transform_private"
   mongo_connection: ""
   rabbit_connection: ""
@@ -57,12 +57,12 @@ oscied-transform:
   storage_options: ""
 oscied-webui:
   verbose: "false"
-  cleanup: "true"
+  cleanup: "false"
   max_upload_size: 4294967296
   max_execution_time: 180
   max_input_time: 600
-  mysql_root_password: "OKDvS0B3DCZIJKcX"
-  mysql_user_password: "HydI1iM6Dfh3vuls"
+  mysql_root_password: ""
+  mysql_user_password: ""
   api_url: ""
   storage_address: ""
   storage_nat_address: ""
