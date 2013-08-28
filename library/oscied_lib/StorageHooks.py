@@ -48,9 +48,9 @@ class StorageHooks(CharmHooks):
             allowed_ips = [self.config.allowed_ips]
         return u','.join(sorted(list(filter(None, self.local_config.allowed_ips + allowed_ips))))
 
-    @property
-    def brick(self):
-        return u'{0}:{1}/exp{2}'.format(self.private_address, self.bricks_path, self.id)
+    def brick(self, address=None):
+        address = address or self.private_address
+        return u'{0}:{1}/exp{2}'.format(address, self.bricks_path, self.id)
 
     @property
     def bricks_path(self):
@@ -71,7 +71,7 @@ class StorageHooks(CharmHooks):
 
     def volume_create_or_expand(self, volume=None, bricks=None, replica=None):
         volume = volume or self.volume
-        bricks = bricks or [self.brick]
+        bricks = bricks or [self.brick()]
         replica = replica or self.config.replica_count
         extra = (u' ' if replica == 1 else u' replica {0} transport tcp '.format(replica)) + u' '.join(bricks)
         if len(bricks) < replica:
@@ -222,10 +222,10 @@ class StorageHooks(CharmHooks):
 
         # FIXME close previously opened ports if some bricks leaved ...
         self.info(u'Open required ports')
-        port, bricks = 24010, [self.brick]
+        port, bricks = 24010, [self.brick()]
         for peer in self.relation_list():
             self.open_port(port, u'TCP')  # Open required
-            bricks.append(u'{0}:/exp{1}'.format(self.relation_get(u'private-address', peer), self.id))
+            bricks.append(self.brick(self.relation_get(u'private-address', peer)))
             port += 1
 
         if self.is_leader:
