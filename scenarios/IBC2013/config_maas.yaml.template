@@ -1,5 +1,5 @@
 oscied-orchestra:
-  verbose: "false"
+  verbose: "true"
   cleanup: "false"
   root_secret: ""
   node_secret: ""
@@ -25,9 +25,9 @@ oscied-publisher:
   concurrency: 2
   rabbit_queues: "publisher_private"
   mod_streaming: "false"
-  max_upload_size: 4294967296
-  max_execution_time: 180
-  max_input_time: 600
+  max_upload_size: 17179869184
+  max_execution_time: 600
+  max_input_time: 3600
   mongo_connection: ""
   rabbit_connection: ""
   api_nat_socket: ""
@@ -40,7 +40,7 @@ oscied-storage:
   verbose: "false"
   cleanup: "false"
   allowed_ips: "*"
-  replica_count: 1
+  replica_count: 2
   bricks_root_path: "/mnt"
 oscied-transform:
   verbose: "false"
@@ -58,9 +58,9 @@ oscied-transform:
 oscied-webui:
   verbose: "false"
   cleanup: "false"
-  max_upload_size: 4294967296
-  max_execution_time: 180
-  max_input_time: 600
+  max_upload_size: 17179869184
+  max_execution_time: 600
+  max_input_time: 3600
   mysql_root_password: ""
   mysql_user_password: ""
   api_url: ""
