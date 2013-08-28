@@ -59,45 +59,55 @@ class IBC2013(OsciedDeploymentScenario):
         if confirm(u'Deploy on MAAS'):
             self.deploy_maas()
         if confirm(u'Initialize orchestra on MAAS'):
-            self.init_api(SCENARIO_PATH, flush=True)
+            self.environment = 'maas'
+            client = self.get_client()
+            self.init_api(client, SCENARIO_PATH, flush=True)
         if confirm(u'Deploy on Amazon'):
             self.deploy_amazon()
         if confirm(u'Initialize orchestra on Amazon'):
-            self.init_api(SCENARIO_PATH, flush=True)
+            self.environment = 'amazon'
+            client = self.get_client()
+            self.init_api(client, SCENARIO_PATH, flush=True)
         if confirm(u'Start events loop'):
             self.events_loop()
 
     def deploy_maas(self):
         self.config = CONFIG_MAAS
-        self.bootstrap(u'maas', wait_started=True)
-        self.deploy(u'oscied-storage',   u'oscied-storage',    local=True, num_units=2, expose=True)
-        self.deploy(u'oscied-orchestra', u'oscied-orchestra',  local=True, to=0, expose=True)
-        self.deploy(u'oscied-webui',     u'oscied-webui',      local=True, to=0, expose=True)
-        self.deploy(u'oscied-transform', u'oscied-transform1', local=True, to=1)
-        self.deploy(u'oscied-transform', u'oscied-transform2', local=True, to=2)
-        self.deploy(u'oscied-publisher', u'oscied-publisher1', local=True, to=1, expose=True)
-        self.deploy(u'oscied-publisher', u'oscied-publisher2', local=True, to=2, expose=True)
+        self.release = 'precise'
+        self.bootstrap(u'maas', wait_started=True, timeout=1200, polling_delay=30)
+        self.deploy(u'oscied-storage',   u'oscied-storage',   local=True, num_units=4, expose=True) # 1,2,3
+        #WAIT
+        self.deploy(u'oscied-orchestra', u'oscied-orchestra', local=True, to=1, expose=True)
+        #WAIT
+        self.deploy(u'oscied-webui',     u'oscied-webui',     local=True, to=1, expose=True)
+        self.deploy(u'oscied-publisher', u'oscied-publisher', local=True, to=2, expose=True)
+        self.deploy(u'oscied-publisher', u'oscied-publisher', local=True, to=3, expose=True) #3=5
+        #WAIT
+        self.deploy(u'oscied-transform', u'oscied-transform', local=True, to=1)
+        self.deploy(u'oscied-transform', u'oscied-transform', local=True, to=2)
+        self.deploy(u'oscied-transform', u'oscied-transform', local=True, to=3) #3=5
+        #WAIT -> Makes juju crazy (/var/log/juju/all-machines.log -> growing to GB)
+        self.deploy(u'oscied-storage',   u'oscied-storage',   local=True, to=0, expose=True)
+        #WAIT -> Makes juju crazy (/var/log/juju/all-machines.log -> growing to GB)
+        self.deploy(u'oscied-transform', u'oscied-transform', local=True, to=0, expose=True)
 
         if confirm(u'Disconnect all services [DEBUG PURPOSE ONLY] (with juju remove-relation)'):
-            for peer in (u'orchestra', u'webui', u'transform1', u'transform2', u'publisher1', u'publisher2'):
+            for peer in (u'orchestra', u'webui', u'transform', u'publisher'):
                 self.remove_relation(u'oscied-storage', u'oscied-{0}'.format(peer))
             self.remove_relation(u'oscied-orchestra:api', u'oscied-webui:api')
-            self.remove_relation(u'oscied-orchestra:transform', u'oscied-transform1:transform')
-            self.remove_relation(u'oscied-orchestra:transform', u'oscied-transform2:transform')
-            self.remove_relation(u'oscied-orchestra:publisher', u'oscied-publisher1:publisher')
-            self.remove_relation(u'oscied-orchestra:publisher', u'oscied-publisher2:publisher')
+            self.remove_relation(u'oscied-orchestra:transform', u'oscied-transform:transform')
+            self.remove_relation(u'oscied-orchestra:publisher', u'oscied-publisher:publisher')
 
-        for peer in (u'orchestra', u'webui', u'transform1', u'transform2', u'publisher1', u'publisher2'):
+        for peer in (u'orchestra', u'webui', u'transform', u'publisher'):
             self.add_relation(u'oscied-storage', u'oscied-{0}'.format(peer))
         self.add_relation(u'oscied-orchestra:api', u'oscied-webui:api')
-        self.add_relation(u'oscied-orchestra:transform', u'oscied-transform1:transform')
-        self.add_relation(u'oscied-orchestra:transform', u'oscied-transform2:transform')
-        self.add_relation(u'oscied-orchestra:publisher', u'oscied-publisher1:publisher')
-        self.add_relation(u'oscied-orchestra:publisher', u'oscied-publisher2:publisher')
+        self.add_relation(u'oscied-orchestra:transform', u'oscied-transform:transform')
+        self.add_relation(u'oscied-orchestra:publisher', u'oscied-publisher:publisher')
 
     def deploy_amazon(self):
         # FIXME use --constraints "arch=amd64 cpu-cores=2 mem=1G"
         self.config = CONFIG_AMAZON
+        self.release = 'raring'
         self.bootstrap(u'amazon', wait_started=True)
         self.deploy(u'oscied-orchestra', u'oscied-orchestra', local=True, expose=True)
         self.deploy(u'oscied-storage',   u'oscied-storage',   local=True)
