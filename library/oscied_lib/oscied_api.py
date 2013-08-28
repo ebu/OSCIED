@@ -228,6 +228,19 @@ class OrchestraAPIClient(object):
 
         return u'{0}://{1}/{2}/uploads/{3}'.format(u'glusterfs', a, m, os.path.basename(filename))
 
+    def remove_medias(self):
+        u"""Remove all medias from the shared storage mount point of the orchestrator !"""
+        # FIXME detect name based on hostname ?
+        os.chmod(self.id_rsa, 0600)
+        service, number = self.api_unit.split(u'/')
+        host = u'ubuntu@{0}'.format(self.api_url.split(u':')[0])
+
+        cfg, get = self.api_local_config, self.get_unit_local_config
+        p = self.storage_path = self.storage_path or get(service, number, cfg, option=u'storage_path')
+        medias_path = os.path.join(p, u'medias/*')
+
+        ssh(host, id=self.id_rsa, remote_cmd=u'sudo rm -rf {0}'.format(medias_path))
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -824,8 +837,10 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False):
     if flush:
         if is_core:
             orchestra.flush_db()
+            # FIXME remove media files
         else:
             api_client.flush()
+            api_client.remove_medias()
 
     users, reader = [], csv_reader(os.path.join(api_init_csv_directory, u'users.csv'))
     for first_name, last_name, email, secret, admin_platform in reader:
