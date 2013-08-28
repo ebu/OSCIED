@@ -70,28 +70,6 @@ JUJU_ENVS_FILE="$JUJU_PATH/environments.yaml"
 
 # Utilities ============================================================================================================
 
-_reload_config()
-{
-  STORAGE_PRIVATE_IP=''
-  STORAGE_MOUNTPOINT=''
-  STORAGE_BRICK=''  
-  if [ -f "$SCENARIO_GEN_STORAGE_FILE" ]; then
-    . "$SCENARIO_GEN_STORAGE_FILE"
-  fi
-}
-
-_check_config()
-{
-  _reload_config
-  if [ "$STORAGE_PRIVATE_IP" -a "$STORAGE_MOUNTPOINT" -a "$STORAGE_BRICK" ]; then
-    echo ''
-  elif [ $# -gt 0 ]; then
-    echo '[DISABLED] '
-  else
-    xecho 'You must execute menu.sh config first'
-  fi
-}
-
 _check_juju()
 {
   if which juju > /dev/null; then

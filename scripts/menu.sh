@@ -62,27 +62,25 @@ main()
     # Initialize main menu
     while true
     do
-      a=$(_check_config 'non mais allô quoi !')
-      b=$(_check_juju 'non mais allô quoi !')
+      a=$(_check_juju 'non mais allô quoi !')
       $DIALOG --backtitle 'OSCIED Menu' \
               --menu 'Please select an operation' 0 0 0 \
               install          'Download / update documents and tools'          \
               cleanup          'Cleanup *.pyc compiled python, deploy path'     \
-              deploy           "${b}Launch a deployment scenario"               \
-              config           "${b}Update units public URL listing file"       \
-              status           "${b}Display juju status"                        \
-              log              "${b}Launch juju debug log in a screen"          \
-              browse_webui     "${a}Launch a browser to browse the Web UI"      \
+              deploy           "${a}Launch a deployment scenario"               \
+              config           "${a}Update units public URL listing file"       \
+              status           "${a}Display juju status"                        \
+              log              "${a}Launch juju debug log in a screen"          \
+              browse_webui     "Launch a browser to browse the Web UI"          \
               rsync_orchestra  'Rsync local code to running Orchestra instance' \
               rsync_publisher  'Rsync local code to running Publisher instance' \
               rsync_storage    'Rsync local code to running Storage instance'   \
               rsync_transform  'Rsync local code to running Transform instance' \
               rsync_webui      'Rsync local code to running Web UI instance'    \
-              standalone       'Play with a charm locally (yes, really)'        \
-              unit_ssh         "${b}Access to units with secure shell"          \
-              unit_add         "${b}Add a new unit to a running service"        \
-              unit_remove      "${b}Remove an unit from a running service"      \
-              destroy          "${b}Destroy a deployed environment" 2> $tmpfile
+              unit_ssh         "${a}Access to units with secure shell"          \
+              unit_add         "${a}Add a new unit to a running service"        \
+              unit_remove      "${a}Remove an unit from a running service"      \
+              destroy          "${a}Destroy a deployed environment" 2> $tmpfile
 
       retval=$?
       operation=$(cat $tmpfile)
@@ -395,75 +393,6 @@ rsync_webui()
     --exclude=application/config/config.php --exclude=application/config/database.php --exclude=medias \
     --exclude=uploads --exclude=orchestra_relation_ok --delete "$CHARMS_PATH/oscied-webui/www/" "$host:$dest/"
   ssh -i "$ID_RSA" "$host" -n "sudo chown www-data:www-data $dest -R"
-}
-
-standalone()
-{
-  if [ $# -eq 2 ]; then
-    charm_auto=$1
-    hook_auto=$2
-  elif [ $# -eq 0 ]; then
-    charm_auto=''
-    hook_auto=''
-  else
-    xecho "Usage: $(basename $0) standalone [charm hook]"
-  fi
-  ok=$true
-
-  cd "$CHARMS_DEPLOY_PATH" || xecho "Unable to find path $CHARMS_DEPLOY_PATH"
-
-  if [ "$charm_auto" -a "$hook_auto" ]; then
-    techo 'OSCIED Operations with JuJu > Charms Standalone [AUTO]'
-    mecho "Charm is $charm_auto, hook is $hook_auto"
-    _standalone_execute_hook "$CHARMS_DEPLOY_PATH/$charm_auto" "$hook_auto"
-  else
-    # Initialize charms menu
-    find . -mindepth 1 -maxdepth 1 -type d | sort > $listing
-    charmsList=''
-    while read charm
-    do
-      charmsList="$charmsList$charm - "
-    done < $listing
-
-    # Charms menu
-    while true
-    do
-      $DIALOG --backtitle 'OSCIED Operations with JuJu > Charms Standalone' \
-              --menu 'Please select a charm' 0 0 0 \
-              $charmsList 2> $tmpfile
-
-      retval=$?
-      charm="$CHARMS_DEPLOY_PATH/$(cat $tmpfile)"
-      [ $retval -ne 0 -o ! "$charm" ] && break
-      cd "$charm" || xecho "Unable to find path $charm"
-
-      # Initialize hooks menu
-      find 'hooks' -mindepth 1 -maxdepth 1 -type f | sort > $listing
-      hooksList=''
-      while read hook
-      do
-        hooksList="$hooksList$hook - "
-      done < $listing
-
-      # Hooks menu
-      while true
-      do
-        name=$(basename $charm)
-        $DIALOG --backtitle "OSCIED Operations with JuJu > Charms Standalone > Charm $name" \
-                --menu 'Please select a hook' 0 0 0 \
-                $hooksList 2> $tmpfile
-
-        retval=$?
-        hook=$(cat $tmpfile)
-        [ $retval -ne 0 -o ! "$hook" ] && break
-        _standalone_execute_hook "$charm" "$hook"
-        [ $retval -eq 0 ] && pause
-      done
-
-      # Charms menu pause
-      [ $retval -eq 0 ] && pause
-    done
-  fi
 }
 
 unit_ssh()
