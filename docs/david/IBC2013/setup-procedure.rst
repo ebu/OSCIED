@@ -1146,3 +1146,74 @@ If juju fails : JUJU_ENV_UUID key error
 
 TODO https://bugs.launchpad.net/juju/+bug/1212146
 
+If juju bootstrap fails : 400 BAD REQUEST
+-----------------------------------------
+
+-> https://bugs.launchpad.net/maas/+bug/1204507
+
+The problem:
+
+david@TECW7W02-Ubuntu:~/OSCIED/scripts$ juju bootstrap -e maas -v
+2013-08-27 08:45:18 ERROR juju supercommand.go:235 command failed: cannot create bootstrap state file: gomaasapi: got error back from server: 400 BAD REQUEST
+
+The solution:
+
+May enable 'proposed' packages, please read instructions (the link).
+
+If juju bootstrap fails : no tools available
+--------------------------------------------
+
+-> http://askubuntu.com/questions/285395/how-can-i-copy-juju-tools-for-use-in-my-deployment
+
+The problem:
+
+david@TECW7W02-Ubuntu:~/OSCIED/scripts$ juju bootstrap -e maas2 -v
+2013-08-27 09:53:45 INFO juju tools.go:26 environs: reading tools with major version 1
+2013-08-27 09:53:45 INFO juju tools.go:30 environs: falling back to public bucket
+2013-08-27 09:53:45 ERROR juju supercommand.go:235 command failed: no tools available
+error: no tools available
+
+The solution:
+
+david@TECW7W02-Ubuntu:~/OSCIED/scripts$ sudo juju destroy-environment -e maas2
+david@TECW7W02-Ubuntu:~/OSCIED/scripts$ juju sync-tools --all -e maas2
+listing the source bucket
+found 14 tools
+listing target bucket
+found 0 tools in target; 14 tools to be copied
+copying tools/juju-1.10.0-precise-amd64.tgz^[[A^[[A, download 2205kB, uploading
+copying tools/juju-1.10.0-precise-i386.tgz, download 2306kB, uploading
+copying tools/juju-1.10.0-quantal-amd64.tgz, download 2209kB, uploading
+copying tools/juju-1.10.0-quantal-i386.tgz, download 2311kB, uploading
+copying tools/juju-1.10.0-raring-amd64.tgz, download 2208kB, uploading
+copying tools/juju-1.10.0-raring-i386.tgz, download 2312kB, uploading
+copying tools/juju-1.12.0-precise-amd64.tgz, download 4023kB, uploading
+copying tools/juju-1.12.0-precise-i386.tgz, download 3911kB, uploading
+copying tools/juju-1.12.0-quantal-amd64.tgz, download 4023kB, uploading
+copying tools/juju-1.12.0-quantal-i386.tgz, download 3911kB, uploading
+copying tools/juju-1.12.0-raring-amd64.tgz, download 4023kB, uploading
+copying tools/juju-1.12.0-raring-i386.tgz, download 3911kB, uploading
+copying tools/juju-1.12.0-saucy-amd64.tgz, download 4023kB, uploading
+copying tools/juju-1.12.0-saucy-i386.tgz, download 3911kB, uploading
+copied 14 tools
+david@TECW7W02-Ubuntu:~/OSCIED/scripts$ juju bootstrap -e maas2 -v
+2013-08-27 09:58:27 INFO juju tools.go:26 environs: reading tools with major version 1
+2013-08-27 09:58:37 INFO juju tools.go:53 environs: filtering tools by series: precise
+2013-08-27 09:58:37 INFO juju tools.go:66 environs: filtering tools by released version
+2013-08-27 09:58:37 INFO juju tools.go:76 environs: picked newest version: 1.12.0
+2013-08-27 09:58:38 WARNING juju.environs.maas environ.go:240 picked arbitrary tools "1.12.0-precise-amd64"
+2013-08-27 09:58:38 INFO juju supercommand.go:237 command finished
+
+If juju destroy-environment fails : 409 CONFLICT
+------------------------------------------------
+
+-> http://askubuntu.com/questions/176468/juju-bootstrap-gives-me-a-409-conflict-error
+
+The problem:
+
+david@TECW7W02-Ubuntu:~/OSCIED/scripts$ sudo juju destroy-environment -e maas2
+error: gomaasapi: got error back from server: 409 CONFLICT
+
+The solution:
+
+Be patient, please read instructions (the link).
