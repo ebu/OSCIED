@@ -67,6 +67,7 @@ main()
       $DIALOG --backtitle 'OSCIED Menu' \
               --menu 'Please select an operation' 0 0 0 \
               install          'Download / update documents and tools'          \
+              cleanup          'Cleanup *.pyc compiled python, deploy path'     \
               deploy           "${b}Launch a deployment scenario"               \
               config           "${b}Update units public URL listing file"       \
               status           "${b}Display juju status"                        \
@@ -186,6 +187,16 @@ install()
 
   pecho 'Fixes #7 - https://github.com/ebu/OSCIED/issues/7'
   $udo sed -i 's:#!/usr/bin/python3.*:#!/usr/bin/python3 -Es:' /usr/bin/lxc-ls
+}
+
+cleanup()
+{
+  rm -rf "$CHARMS_DEPLOY_PATH"
+  find "$LIBRARY_PATH" -type d -name 'build'      -exec $udo rm -rf {} 2>/dev/null \;
+  find "$LIBRARY_PATH" -type d -name 'dist'       -exec $udo rm -rf {} 2>/dev/null \;
+  find "$LIBRARY_PATH" -type d -name "*.egg-info" -exec $udo rm -rf {} 2>/dev/null \;
+  find "$LIBRARY_PATH" -type f -name "*.egg"      -exec $udo rm -rf {} 2>/dev/null \;
+  find "$BASE_PATH"    -type f -name "*.pyc"      -exec rm -f {} \;
 }
 
 deploy()
