@@ -36,8 +36,7 @@ class OsciedDeploymentScenario(DeploymentScenario):
         settings = self.get_service_config(service)['settings']
         self.root = (u'root', settings['root_secret']['value'])
         hostname = self.get_unit(service, number)['public-address']
-        return OrchestraAPIClient(hostname, api_unit=api_unit, auth=self.root, **kwargs)
+        return OrchestraAPIClient(hostname, api_unit=api_unit, auth=self.root, environment=self.environment, **kwargs)
 
-    def init_api(self, api_init_csv_directory, api_unit=u'oscied-orchestra/0', flush=False, **kwargs):
-        client = self.get_client(api_unit, **kwargs)
+    def init_api(self, client, api_init_csv_directory, flush=False, **kwargs):
         init_api(client, api_init_csv_directory, flush=flush)
