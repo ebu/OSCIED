@@ -182,20 +182,42 @@ _overwrite_helper()
 
 _rsync_helper()
 {
-  if [ $# -ne 2 ]; then
-    xecho "Usage: $(basename $0).rsync_publisher charm id"
+  if [ $# -ne 1 ]; then
+    xecho "Usage: $(basename $0).rsync_publisher charm"
   fi
 
   chmod 600 "$ID_RSA" || xecho 'Unable to find id_rsa certificate'
 
-  _get_unit_public_url $true "$1" "$2"
-  host="ubuntu@$REPLY"
-  dest="/var/lib/juju/agents/unit-$1-$2/charm"
-  ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
-  rsync --rsync-path='sudo rsync' -avhL --progress --delete -e "ssh -i '$ID_RSA'" --exclude=.git --exclude=config.json \
-    --exclude=celeryconfig.py --exclude=*.pyc --exclude=local_config.pkl --exclude=charms \
-    --exclude=ssh --exclude=environments.yaml --exclude=*.log "$CHARMS_PATH/$1/" "$host:$dest/"
-  ssh -i "$ID_RSA" "$host" -n "sudo chown root:root $dest -R"
+  yesOrNo $true 'Update units listing'
+  [ $REPLY -eq $true ] && config
+
+  # Initialize rsync menu
+  unitsList=$(cat "$SCENARIO_GEN_UNITS_FILE" | grep "$1" | sort | sed 's:=: :g;s:\n: :g')
+
+  # Rsync menu
+  while true
+  do
+    $DIALOG --backtitle 'OSCIED Operations with JuJu > Rsync source-code to a Unit' \
+            --menu 'Please select a unit' 0 0 0 \
+            $unitsList 2> $tmpfile
+
+    retval=$?
+    unit=$(cat $tmpfile)
+    [ $retval -ne 0 -o ! "$unit" ] && break
+    number=$(echo $unit | cut -d'/' -f2)
+    [ ! "$number" ] && xecho 'Unable to detect unit number'
+    _get_unit_public_url $true "$1" "$number"
+    host="ubuntu@$REPLY"
+    dest="/var/lib/juju/agents/unit-$1-$number/charm"
+    ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
+    rsync --rsync-path='sudo rsync' -avhL --progress --delete -e "ssh -i '$ID_RSA'" --exclude=.git --exclude=config.json \
+      --exclude=celeryconfig.py --exclude=*.pyc --exclude=local_config.pkl --exclude=charms \
+      --exclude=ssh --exclude=environments.yaml --exclude=*.log "$CHARMS_PATH/$1/" "$host:$dest/"
+    ssh -i "$ID_RSA" "$host" -n "sudo chown root:root $dest -R"
+    juju ssh "$unit"
+    [ $retval -eq 0 ] && pause
+  done
+  REPLY=$number
 }
 
 _standalone_execute_hook()

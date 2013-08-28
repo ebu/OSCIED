@@ -25,8 +25,6 @@
 
 . ./common.sh
 
-RSYNC_UNIT_ID='0'  # FIXME temporary hack to avoid coding 10's lines of code
-
 main()
 {
   if [ $# -gt 0 ]; then
@@ -331,7 +329,7 @@ rsync_orchestra()
   fi
   ok=$true
 
-  _rsync_helper 'oscied-orchestra' "$RSYNC_UNIT_ID"
+  _rsync_helper 'oscied-orchestra'
 }
 
 rsync_publisher()
@@ -341,7 +339,7 @@ rsync_publisher()
   fi
   ok=$true
 
-  _rsync_helper 'oscied-publisher' "$RSYNC_UNIT_ID"
+  _rsync_helper 'oscied-publisher'
 }
 
 rsync_storage()
@@ -353,7 +351,7 @@ rsync_storage()
 
   chmod 600 "$ID_RSA" || xecho 'Unable to find id_rsa certificate'
 
-  _rsync_helper 'oscied-storage' "$RSYNC_UNIT_ID"
+  _rsync_helper 'oscied-storage'
 }
 
 rsync_transform()
@@ -363,7 +361,7 @@ rsync_transform()
   fi
   ok=$true
 
-  _rsync_helper 'oscied-transform' "$RSYNC_UNIT_ID"
+  _rsync_helper 'oscied-transform'
 }
 
 rsync_webui()
@@ -375,9 +373,10 @@ rsync_webui()
 
   chmod 600 "$ID_RSA" || xecho 'Unable to find id_rsa certificate'
 
-  _rsync_helper 'oscied-webui' "$RSYNC_UNIT_ID"
+  _rsync_helper 'oscied-webui'
+  [ ! "$REPLY" ] && return
 
-  _get_unit_public_url $true 'oscied-webui' "$RSYNC_UNIT_ID"
+  _get_unit_public_url $true 'oscied-webui' "$REPLY"
   host="ubuntu@$REPLY"
   dest='/var/www'
   ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
