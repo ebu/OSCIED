@@ -81,3 +81,9 @@ options:
     type: string
     default: ""
     description: Shared storage options (e.g. for nfs - rw,sync,no_subtree_check).
+  www_root_path:
+    type: string
+    default: '/mnt'
+    description: |
+        Set the root path where the published medias are (/mnt -> /mnt/www/medias/).
+        This option is useful to allow you using the attached EBS storage (or whatsoever).

@@ -95,13 +95,17 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
 
 class PublisherLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinate):
 
-    def __init__(self, proxy_ips=None, apache_config_file=u'/etc/apache2/apache2.conf', publish_uri=u'',
-                 publish_path=u'/var/www', **kwargs):
+    def __init__(self, proxy_ips=None, apache_config_file=u'/etc/apache2/apache2.conf', www_root_path=u'/mnt',
+                 publish_uri=u'', **kwargs):
         super(PublisherLocalConfig, self).__init__(**kwargs)
         self.proxy_ips = proxy_ips or []
         self.apache_config_file = apache_config_file
+        self.www_root_path = www_root_path
         self.publish_uri = publish_uri
-        self.publish_path = publish_path
+
+    @property
+    def publish_path(self):
+        return join(self.www_root_path, 'www')
 
     def publish_point(self, media):
         common = join(MEDIAS_PATH, media.user_id, media._id, media.filename)

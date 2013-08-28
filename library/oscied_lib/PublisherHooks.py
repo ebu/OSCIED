@@ -28,7 +28,7 @@ import os, multiprocessing, setuptools.archive_util, shutil
 from codecs import open
 from oscied_config import PublisherLocalConfig
 from oscied_hook_base import CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Website, DEFAULT_OS_ENV
-from pyutils.py_filesystem import first_that_exist
+from pyutils.py_filesystem import chown, first_that_exist
 
 
 class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Website):
@@ -66,8 +66,10 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         shutil.rmtree(mod_streaming)
         self.info(u'Expose Apache 2 service')
         self.open_port(80, u'TCP')
+        raise NotImplementedError(u'To check something')
 
     def hook_config_changed(self):
+        self.info(u'Configure Apache 2')
         self.info(u'{0} Apache H.264 streaming module'.format('Enable' if self.config.mod_streaming else 'Disable'))
         mods = (u'LoadModule h264_streaming_module /usr/lib/apache2/modules/mod_h264_streaming.so',
                 u'AddHandler h264-streaming.extensions .mp4')
@@ -75,6 +77,10 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         if self.config.mod_streaming:
             lines += u'\n'.join(mods) + u'\n'
         open(self.local_config.apache_config_file, u'w', u'utf-8').write(u''.join(lines))
+        #
+        # FIXME use template and put self.publish_path into it
+        shutil.copy(self.local_config.site_template_file, self.local_config.sites_enabled_path)
+        self.local_config.www_root_path = self.www_root_path
         self.storage_remount()
         self.subordinate_register()
 
@@ -89,8 +95,9 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
             self.cmd(u'apt-get -y autoremove')
             shutil.rmtree('/etc/apache2/',      ignore_errors=True)
             shutil.rmtree(u'/var/log/apache2/', ignore_errors=True)
-        shutil.rmtree(self.local_config.publish_path, ignore_errors=True)
-        os.makedirs(self.local_config.publish_path)
+        shutil.rmtree(self.publish_path, ignore_errors=True)
+        os.makedirs(self.publish_path)
+        chown(self.publish_path, u'www-data', u'www-data', recursive=True)
         self.local_config.reset()
         self.local_config.update_publish_uri(self.public_address)
 
