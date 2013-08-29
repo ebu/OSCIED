@@ -1,44 +1,25 @@
 #!/usr/bin/env bash
 
-get_gpac()
+get_from_git()
 {
-  rm -rf gpac* 2>/dev/null
-  svn export http://svn.code.sf.net/p/gpac/code/trunk/gpac/ || exit 1
-  tar -cjf gpac.tar.bz2 -C gpac .
-  rm -rf gpac
+  rm -rf ${1}* 2>/dev/null
+  git clone --depth 0 $2 $1 || exit $3
+  rm -rf $1/.git
+  tar -cjf ${1}.tar.bz2 -C $1 .
+  rm -rf $1
 }
 
-get_openSVCDecoder()
+get_from_svn()
 {
-  rm -rf openSVCDecoder* 2>/dev/null
-  svn export svn://svn.code.sf.net/p/opensvcdecoder/code/ openSVCDecoder || exit 2
-  tar -cjf openSVCDecoder.tar.bz2 -C openSVCDecoder .
-  rm -rf openSVCDecoder
+  rm -rf ${1}* 2>/dev/null
+  svn export $2 $1 || exit $3
+  tar -cjf ${1}.tar.bz2 -C $1 .
+  rm -rf $1
 }
 
-get_openHEVC()
-{
-  rm -rf openHEVC* 2>/dev/null
-  git clone --depth 0 git://github.com/OpenHEVC/openHEVC.git || exit 3
-  rm -rf openHEVC/.git
-  tar -cjf openHEVC.tar.bz2 -C openHEVC .
-  rm -rf openHEVC
-}
+get_from_svn 'gpac'           'http://svn.code.sf.net/p/gpac/code/trunk/gpac/' 1
+get_from_git 'ffmpeg'         'git://source.ffmpeg.org/ffmpeg.git'             2
+get_from_svn 'openSVCDecoder' 'svn://svn.code.sf.net/p/opensvcdecoder/code/'   3
+get_from_git 'openHEVC'       'git://github.com/OpenHEVC/openHEVC.git'         4
+get_from_git 'x264'           'git://git.videolan.org/x264.git'                5
 
-get_x264()
-{
-  rm -rf x264* 2>/dev/null
-  git clone --depth 0 git://git.videolan.org/x264.git || exit 4
-  rm -rf x264/.git
-  tar -cjf x264.tar.bz2 -C x264 .
-  rm -rf x264
-  #git init
-  #git remote add origin git://git.videolan.org/x264.git
-  #git fetch origin 9e941d1fabb2de4b15f169057a07dc395307d2ce
-  #git reset --hard FETCH_HEAD
-}
-
-get_gpac
-get_openSVCDecoder
-get_openHEVC
-get_x264
