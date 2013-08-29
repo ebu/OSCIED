@@ -27,14 +27,15 @@
 import os, multiprocessing, setuptools.archive_util, shutil
 from oscied_config import TransformLocalConfig
 from oscied_hook_base import CharmHooks_Storage, CharmHooks_Subordinate, DEFAULT_OS_ENV
-from pyutils.py_filesystem import first_that_exist
+from pyutils.py_filesystem import first_that_exist, try_makedirs
 
 
 class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
 
     PACKAGES = tuple(set(CharmHooks_Storage.PACKAGES + CharmHooks_Subordinate.PACKAGES +
-                     (u'ffmpeg', u'ntp', u'x264', u'libavcodec-dev', u'libavformat-dev', u'libavutil-dev',
-                      u'libswscale-dev', u'libavdevice-dev', u'libavcodec-extra-53', u'zlib1g-dev')))
+                     (u'cmake',  u'ntp')))
+    # u'libavcodec-dev', u'libavformat-dev', u'libavutil-dev',
+    # u'libswscale-dev', u'libavdevice-dev', u'libavcodec-extra-53', u'zlib1g-dev'
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(TransformHooks, self).__init__(metadata, default_config, default_os_env)
@@ -50,8 +51,20 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
         self.cmd(u'apt-get -y update', fail=False)
         self.cmd(u'apt-get -y upgrade')
         self.cmd(u'apt-get -y install {0}'.format(u' '.join(TransformHooks.PACKAGES)))
+        self.cmd(u'apt-get -y build-dep gpac x264')
         self.info(u'Restart network time protocol service')
         self.cmd(u'service ntp restart')
+        # FIXME Compile and install openSVCDecoder
+        self.info(u'Compile and install openHEVC')
+        shutil.rmtree(u'openHEVC', ignore_errors=True)
+        setuptools.archive_util.unpack_archive(u'openHEVC.tar.bz2', u'openHEVC')
+        os.chdir(u'openHEVC')
+        try_makedirs(u'build')
+        os.chdir(u'build')
+        self.cmd(u'cmake -DCMAKE_BUILD_TYPE=RELEASE ..')
+        self.cmd(u'make -j{0}'.format(multiprocessing.cpu_count()))
+        self.cmd(u'make install')
+        os.chdir(u'..')
         self.info(u'Compile and install GPAC/DashCast')
         shutil.rmtree(u'gpac', ignore_errors=True)
         setuptools.archive_util.unpack_archive(u'gpac.tar.bz2', u'gpac')
@@ -61,6 +74,17 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
         self.cmd(u'make install')
         os.chdir(u'..')
         shutil.rmtree(u'gpac')
+        self.info(u'Compile and install x264')
+        shutil.rmtree(u'x264', ignore_errors=True)
+        setuptools.archive_util.unpack_archive(u'x264.tar.bz2', u'x264')
+        os.chdir(u'x264')
+        self.cmd(u'./configure --enable-shared')
+        self.cmd(u'make -j{0}'.format(multiprocessing.cpu_count()))
+        self.cmd(u'make install')
+        os.chdir(u'..')
+        shutil.rmtree(u'x264')
+        # FIXME Compile and install ffmpeg
+        # http://ffmpeg.org/trac/ffmpeg/wiki/UbuntuCompilationGuide
 
     def hook_config_changed(self):
         self.storage_remount()
