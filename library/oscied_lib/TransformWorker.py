@@ -218,7 +218,8 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
             while True:
                 # Wait for data to become available
                 select.select([dashcast.stdout.fileno()], [], [])
-                match = DASHCAST_REGEX.match(read_async(dashcast.stdout))
+                stdout, stderr = read_async(dashcast.stdout), read_async(dashcast.stderr)
+                match = DASHCAST_REGEX.match(stdout)
                 if match:
                     stats = match.groupdict()
                     media_out_frames = int(stats[u'frame'])
@@ -245,8 +246,12 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
                                   u'encoding_frame': media_out_frames})
                 returncode = dashcast.poll()
                 if returncode is not None:
-                    encoder_out = read_async(dashcast.stderr)
+                    encoder_out = u'stdout: {0}\nstderr: {1}'.format(stdout, stderr)
                     break
+                elif 'Press q or Q to exit' in stdout:
+                    encoder_out = u'stdout: {0}\nstderr: {1}'.format(stdout, stderr)
+                    raise OSError(to_bytes(u'DashCast is asking to exit, encoding probably failed.'))
+
 
             # DashCast output sanity check
             if not os.path.exists(media_out_path):
