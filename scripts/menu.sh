@@ -190,7 +190,7 @@ _rsync_helper()
       --exclude=ssh --exclude=environments.yaml --exclude=*.log "$CHARMS_PATH/$1/" "$host:$dest/"
     ssh -i "$ID_RSA" "$host" -n "sudo chown root:root $dest -R"
 
-    if [ "$1" == 'oscied-webui' ]; then
+    if [ "$1" = 'oscied-webui' ]; then
       dest='/var/www'
       ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
       rsync -avh --progress -e "ssh -i '$ID_RSA'" --exclude=.git --exclude=.htaccess \
