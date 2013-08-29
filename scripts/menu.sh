@@ -23,7 +23,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-. ./common.sh
+. ./logicielsUbuntuUtils.inc
 
 # Constants ============================================================================================================
 
@@ -356,20 +356,6 @@ install()
   pecho 'Update submodules'
   cd "$BASE_PATH" || xecho "Unable to find path $BASE_PATH"
   git submodule update --init && git submodule status
-
-  pecho 'Import logicielsUbuntu'
-  if ! which lu-importUtils > /dev/null; then
-    cd "$TOOLS_PATH/logicielsUbuntu" || xecho "Unable to find path $TOOLS_PATH/logicielsUbuntu"
-    sh ./logicielsUbuntuExports || xecho 'Unable to export logicielsUbuntu'
-    recho 'Please restart this script once from a new terminal'
-    recho 'or after having executed the following:'
-    cecho 'source ~/.bashrc'
-    pause
-    exit 0
-  else
-    cd "$SCRIPTS_PATH" || xecho "Unable to find path $SCRIPTS_PATH"
-    lu-importUtils .   || xecho 'Unable to import utilities of logicielsUbuntu'
-  fi
 
   cd "$LIBRARY_PATH" || xecho "Unable to find path $LIBRARY_PATH"
   $udo "./setup.sh"  || xecho 'Unable to install OSCIED Library'
