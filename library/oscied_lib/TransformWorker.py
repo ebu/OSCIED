@@ -89,16 +89,16 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
         print(u'{0} Transformation task started'.format(request.id))
 
         # Read current configuration to translate files uri to local paths
-        config = TransformLocalConfig.read(u'local_config.pkl')
-        print(object2json(config, include_properties=True))
+        local_config = TransformLocalConfig.read(u'local_config.pkl')
+        print(object2json(local_config, include_properties=True))
 
         # Load and check task parameters
         callback = Callback.from_json(callback_json, inspect_constructor=True)
         callback.is_valid(True)
 
         # Update callback socket according to configuration
-        if config.api_nat_socket and len(config.api_nat_socket) > 0:
-            callback.replace_netloc(config.api_nat_socket)
+        if local_config.api_nat_socket and len(local_config.api_nat_socket) > 0:
+            callback.replace_netloc(local_config.api_nat_socket)
 
         media_in = Media.from_json(media_in_json, inspect_constructor=True)
         media_out = Media.from_json(media_out_json, inspect_constructor=True)
@@ -108,11 +108,11 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
         profile.is_valid(True)
 
         # Verify that media file can be accessed and create output path
-        media_in_path = config.storage_medias_path(media_in, generate=False)
+        media_in_path = local_config.storage_medias_path(media_in, generate=False)
         if not media_in_path:
             raise NotImplementedError(to_bytes(u'Input media will not be readed from shared storage : {0}'.format(
                                       media_in.uri)))
-        media_out_path = config.storage_medias_path(media_out, generate=True)
+        media_out_path = local_config.storage_medias_path(media_out, generate=True)
         if not media_out_path:
             raise NotImplementedError(to_bytes(u'Output media will not be written to shared storage : {0}'.format(
                                       media_out.uri)))

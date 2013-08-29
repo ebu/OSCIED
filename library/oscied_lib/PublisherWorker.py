@@ -71,25 +71,25 @@ def publish_task(media_json, callback_json):
         print(u'{0} Publication task started'.format(request.id))
 
         # Read current configuration to translate files uri to local paths
-        config = PublisherLocalConfig.read(u'local_config.pkl')
-        print(object2json(config, include_properties=True))
+        local_config = PublisherLocalConfig.read(u'local_config.pkl')
+        print(object2json(local_config, include_properties=True))
 
         # Load and check task parameters
         callback = Callback.from_json(callback_json, inspect_constructor=True)
         callback.is_valid(True)
 
         # Update callback socket according to configuration
-        if config.api_nat_socket and len(config.api_nat_socket) > 0:
-            callback.replace_netloc(config.api_nat_socket)
+        if local_config.api_nat_socket and len(local_config.api_nat_socket) > 0:
+            callback.replace_netloc(local_config.api_nat_socket)
 
         media = Media.from_json(media_json, inspect_constructor=True)
         media.is_valid(True)
 
         # Verify that media file can be accessed
-        media_path = config.storage_medias_path(media, generate=False)
+        media_path = local_config.storage_medias_path(media, generate=False)
         if not media_path:
             raise NotImplementedError(to_bytes(u'Media will not be readed from shared storage : {0}'.format(media.uri)))
-        publish_path, publish_uri = config.publish_point(media)
+        publish_path, publish_uri = local_config.publish_point(media)
         media_root, publish_root = os.path.dirname(media_path), os.path.dirname(publish_path)
 
         infos = recursive_copy(media_root, publish_root, copy_callback, RATIO_DELTA, TIME_DELTA)
@@ -137,18 +137,18 @@ def revoke_publish_task(publish_uri, callback_json):
         print(u'{0} Revoke publication task started'.format(request.id))
 
         # Read current configuration to translate files uri to local paths
-        config = PublisherLocalConfig.read(u'local_config.pkl')
-        print(object2json(config, True))
+        local_config = PublisherLocalConfig.read(u'local_config.pkl')
+        print(object2json(local_config, True))
 
         # Load and check task parameters
         callback = Callback.from_json(callback_json, inspect_constructor=True)
         callback.is_valid(True)
 
         # Update callback socket according to configuration
-        if config.api_nat_socket and len(config.api_nat_socket) > 0:
-            callback.replace_netloc(config.api_nat_socket)
+        if local_config.api_nat_socket and len(local_config.api_nat_socket) > 0:
+            callback.replace_netloc(local_config.api_nat_socket)
 
-        publish_root = os.path.dirname(config.publish_uri_to_path(publish_uri))
+        publish_root = os.path.dirname(local_config.publish_uri_to_path(publish_uri))
         if not publish_root:
             raise ValueError(to_bytes(u'Media is not hosted on this publication point.'))
 

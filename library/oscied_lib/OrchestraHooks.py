@@ -140,12 +140,12 @@ class OrchestraHooks(CharmHooks_Storage):
         self.cmd(u'mongo celery g.js')
         [os.remove(f) for f in (u'f.js', u'g.js')]
 
-        config = ConfigObj(self.local_config.mongo_config_file)
-        config[u'bind_ip'] = u'0.0.0.0'
-        config[u'noauth'] = u'false'
-        config[u'auth'] = u'true'
-        self.debug(u'MongoDB configuration is: {0}'.format(config.__dict__))
-        config.write()
+        mongo_config = ConfigObj(self.local_config.mongo_config_file)
+        mongo_config[u'bind_ip'] = u'0.0.0.0'
+        mongo_config[u'noauth'] = u'false'
+        mongo_config[u'auth'] = u'true'
+        self.debug(u'MongoDB configuration is: {0}'.format(mongo_config.__dict__))
+        mongo_config.write()
 
         self.configure_rabbitmq()
 

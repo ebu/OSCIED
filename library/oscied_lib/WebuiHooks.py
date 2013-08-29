@@ -149,10 +149,10 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         infos[u'proxy_ips'] = self.proxy_ips_string
         infos[u'www_medias_uri'] = self.local_config.storage_uri(path=MEDIAS_PATH) or u''
         infos[u'www_uploads_uri'] = self.local_config.storage_uri(path=UPLOADS_PATH) or u''
-        config = self.local_config
-        self.template2config(config.general_template_file,  config.general_config_file,  infos)
-        self.template2config(config.database_template_file, config.database_config_file, infos)
-        self.template2config(config.htaccess_template_file, config.htaccess_config_file, infos)
+        local_config = self.local_config
+        self.template2config(local_config.general_template_file,  local_config.general_config_file,  infos)
+        self.template2config(local_config.database_template_file, local_config.database_config_file, infos)
+        self.template2config(local_config.htaccess_template_file, local_config.htaccess_config_file, infos)
         if self.storage_is_mounted:
             self.info(u'Create uploads directory and symlink storage')
             try_makedirs(self.local_config.storage_uploads_path)
