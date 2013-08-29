@@ -122,7 +122,7 @@ class StorageHooks(CharmHooks):
         """
         for i in range(max_retry):
             stdout = self.volume_do(u'info', volume=volume, fail=False)[u'stdout']
-            self.debug(u'({0} of {1}) Volume infos stdout: {2}'.format(i, max_retry, repr(stdout)))
+            self.debug(u'({0} of {1}) Volume infos stdout: {2}'.format(i+1, max_retry, repr(stdout)))
             match = self.local_config.volume_infos_regex.match(stdout)
             if match:
                 infos = match.groupdict()
