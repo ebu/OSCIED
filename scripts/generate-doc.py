@@ -26,7 +26,7 @@
 
 from __future__ import print_function
 
-import glob, re, shutil, os, sys
+import glob, re, shutil, os
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from codecs import open
 from os.path import basename, dirname, join, splitext
