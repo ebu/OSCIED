@@ -45,6 +45,12 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
 
     # ------------------------------------------------------------------------------------------------------------------
 
+    @property
+    def publish_path(self):
+        return os.path.join(self.config.www_root_path, 'www')
+
+    # ------------------------------------------------------------------------------------------------------------------
+
     def hook_install(self):
         self.hook_uninstall()
         self.info(u'Upgrade system and install prerequisites')
@@ -66,7 +72,6 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         shutil.rmtree(mod_streaming)
         self.info(u'Expose Apache 2 service')
         self.open_port(80, u'TCP')
-        raise NotImplementedError(u'To check something')
 
     def hook_config_changed(self):
         self.info(u'Configure Apache 2')
@@ -77,10 +82,10 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         if self.config.mod_streaming:
             lines += u'\n'.join(mods) + u'\n'
         open(self.local_config.apache_config_file, u'w', u'utf-8').write(u''.join(lines))
-        #
-        # FIXME use template and put self.publish_path into it
-        shutil.copy(self.local_config.site_template_file, self.local_config.sites_enabled_path)
-        self.local_config.www_root_path = self.www_root_path
+        infos = {u'publish_path': self.publish_path}
+        self.template2config(self.local_config.site_template_file, self.local_config.site_file, infos)
+        self.template2config(self.local_config.site_ssl_template_file, self.local_config.site_ssl_file, infos)
+        self.local_config.www_root_path = self.config.www_root_path
         self.storage_remount()
         self.subordinate_register()
 

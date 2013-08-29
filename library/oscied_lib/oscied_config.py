@@ -96,12 +96,16 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
 class PublisherLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinate):
 
     def __init__(self, proxy_ips=None, apache_config_file=u'/etc/apache2/apache2.conf', www_root_path=u'/mnt',
-                 publish_uri=u'', **kwargs):
+                 publish_uri=u'', site_template_file=u'templates/default.template',
+                 site_file=u'/etc/apache2/sites-available/default',
+                 site_ssl_template_file=u'templates/default-ssl.template',
+                 site_ssl_file=u'/etc/apache2/sites-available/default-ssl', **kwargs):
         super(PublisherLocalConfig, self).__init__(**kwargs)
         self.proxy_ips = proxy_ips or []
         self.apache_config_file = apache_config_file
-        self.www_root_path = www_root_path
-        self.publish_uri = publish_uri
+        self.www_root_path, self.publish_uri = www_root_path, publish_uri
+        self.site_template_file, self.site_file = site_template_file, site_file
+        self.site_ssl_template_file, self.site_ssl_file = site_ssl_template_file, site_ssl_file
 
     @property
     def publish_path(self):
@@ -125,7 +129,7 @@ class PublisherLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinat
         >>> print(config.publish_uri_to_path(u'http://another_host.com/a_path/a_file.txt'))
         None
         >>> print(config.publish_uri_to_path(u'http://my_host.com/a_path/a_file.txt'))
-        /var/www/a_path/a_file.txt
+        /mnt/www/a_path/a_file.txt
         """
         url = urlparse(uri)
         if u'{0}://{1}'.format(url.scheme, url.netloc) != self.publish_uri:
