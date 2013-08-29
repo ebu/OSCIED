@@ -25,6 +25,251 @@
 
 . ./common.sh
 
+# Constants ============================================================================================================
+
+RELEASE='raring'      # Update this according to your needs
+NETWORK_IFACE='eth0'  # Update this according to your needs
+
+SCRIPTS_PATH=$(pwd)
+BASE_PATH=$(dirname "$SCRIPTS_PATH")
+CHARMS_PATH="$BASE_PATH/charms"
+CHARMS_DEPLOY_PATH="$BASE_PATH/deploy/$RELEASE"
+DOCS_PATH="$BASE_PATH/docs"
+LIBRARY_PATH="$BASE_PATH/library"
+MEDIAS_PATH="$BASE_PATH/medias"
+SCENARIOS_PATH="$BASE_PATH/scenarios"
+TEMPLATES_PATH="$BASE_PATH/templates"
+TOOLS_PATH="$BASE_PATH/tools"
+REFERENCES_PATH="$DOCS_PATH/references"
+
+# Symbolic link to current configuration's path
+SCENARIO_CURRENT_PATH="$SCENARIOS_PATH/current"
+SCENARIO_GEN_UNITS_FILE="$SCENARIO_CURRENT_PATH/units.list"
+
+# Orchestra related configuration (e.g. initial setup)
+SCENARIO_API_USERS_FILE="$SCENARIO_CURRENT_PATH/users.csv"
+SCENARIO_API_MEDIAS_FILE="$SCENARIO_CURRENT_PATH/medias.csv"
+SCENARIO_API_TPROFILES_FILE="$SCENARIO_CURRENT_PATH/tprofiles.csv"
+
+# JuJu related configuration (e.g. environments)
+SCENARIO_JUJU_ID_RSA="$SCENARIO_CURRENT_PATH/id_rsa"
+SCENARIO_JUJU_ID_RSA_PUB="$SCENARIO_CURRENT_PATH/id_rsa.pub"
+SCENARIO_JUJU_ENVS_FILE="$SCENARIO_CURRENT_PATH/environments.yaml"
+SCENARIO_JUJU_LOG_FILE="$SCENARIO_CURRENT_PATH/juju-debug.log"
+
+# System configuration (e.g. certificates + juju configuration)
+ID_RSA="$HOME/.ssh/id_rsa"
+ID_RSA_PUB="$HOME/.ssh/id_rsa.pub"
+JUJU_PATH="$HOME/.juju"
+JUJU_STORAGE_PATH="$JUJU_PATH/local/"
+JUJU_ENVS_FILE="$JUJU_PATH/environments.yaml"
+
+
+# Utilities ============================================================================================================
+
+_check_juju()
+{
+  if which juju > /dev/null; then
+    echo ''
+  elif [ $# -gt 0 ]; then
+    echo '[DISABLED] '
+  else
+    xecho 'JuJu must be installed, this method is disabled'
+  fi
+}
+
+_deploy_helper()
+{
+  if [ $# -ne 1 ]; then
+    xecho "Usage: $(basename $0).deploy_helper scenario"
+  fi
+  scenario=$1
+
+  techo "Deploy scenario $scenario"
+
+  pecho 'Update symlink to current scenario'
+  rm -f "$SCENARIO_CURRENT_PATH" 2>/dev/null
+  ln -s "$scenario" "$SCENARIO_CURRENT_PATH" || xecho 'Unable to update symlink'
+
+  pecho 'Initialize JuJu orchestrator configuration'
+  if [ -f "$ID_RSA" ]; then
+    suffix=$(md5sum "$ID_RSA" | cut -d' ' -f1)
+    mecho "Backup certificate $ID_RSA into ${ID_RSA}_$suffix"
+    cp -f "$ID_RSA"     "${ID_RSA}_$suffix"     || xecho 'Unable to backup certificate file (1/2)'
+    cp -f "$ID_RSA_PUB" "${ID_RSA_PUB}_$suffix" || xecho 'Unable to backup certificate file (2/2)'
+  fi
+  if [ ! -f "$SCENARIO_JUJU_ID_RSA" ]; then
+    recho 'It is strongly advised to create a certificate per scenario'
+    yesOrNo $default 'generate it now'
+    if [ $REPLY -eq $true ]; then
+      ssh-keygen -t rsa -b 2048 -f "$SCENARIO_JUJU_ID_RSA"
+    fi
+  fi
+  if [ -f "$SCENARIO_JUJU_ID_RSA" ]; then
+    mecho "Using scenario's certificate file : $SCENARIO_JUJU_ID_RSA"
+    # And make scenario's certificate the default
+    cp -f "$SCENARIO_JUJU_ID_RSA"     "$ID_RSA"     || xecho 'Unable to copy certificate file (1/2)'
+    cp -f "$SCENARIO_JUJU_ID_RSA_PUB" "$ID_RSA_PUB" || xecho 'Unable to copy certificate file (2/2)'
+  fi
+  # Fix ERROR SSH forwarding error: Agent admitted failure to sign using the key.
+  ssh-add "$ID_RSA"
+
+  # FIXME and what about *.pem stuff ?
+
+  mkdir -p "$JUJU_PATH" "$JUJU_STORAGE_PATH" 2>/dev/null
+  # Backup any already existing environments file (magic stuff) !
+  if [ -f "$JUJU_ENVS_FILE" ]; then
+    suffix=$(md5sum "$JUJU_ENVS_FILE" | cut -d' ' -f1)
+    cp -f "$JUJU_ENVS_FILE" "${JUJU_ENVS_FILE}_$suffix" || xecho 'Unable to backup environments file'
+  fi
+  if [ -f "$SCENARIO_JUJU_ENVS_FILE" ]; then
+    mecho "Using scenario's environments file : $SCENARIO_JUJU_ENVS_FILE"
+    cp "$SCENARIO_JUJU_ENVS_FILE" "$JUJU_ENVS_FILE" || xecho 'Unable to copy environments file'
+  else
+    mecho 'Using juju to generate default environments file'
+    juju generate-config -w || xecho "Unable to generate juju's environments file"
+  fi
+  $udo ufw disable # Fix master thesis ticket #80 - Juju stuck in pending when using LXC
+
+  pecho "Copy JuJu environments file & SSH keys to Orchestra charm's deployment path"
+  cp -f "$ID_RSA"         "$CHARMS_DEPLOY_PATH/oscied-orchestra/ssh/"
+  cp -f "$ID_RSA_PUB"     "$CHARMS_DEPLOY_PATH/oscied-orchestra/ssh/"
+  cp -f "$JUJU_ENVS_FILE" "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/"
+  find "$JUJU_PATH" -mindepth 1 -maxdepth 1 -type f -name '*.pem' \
+    -exec sudo chown $USER:$USER {} \; \
+    -exec cp -f {} "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/" \;
+
+  pecho "Execute script of scenario $scenario"
+  python "$scenario/scenario.py" -m "$(dirname "$CHARMS_DEPLOY_PATH")" -r "$RELEASE"
+}
+
+_overwrite_helper()
+{
+  if [ $# -ne 2 ]; then
+    xecho "Usage: $(basename $0).overwrite_helper source destination"
+  fi
+
+  mkdir -p "$CHARMS_DEPLOY_PATH/$2" 2>/dev/null
+  rsync -rtvh -LH --delete --progress --exclude='.git' --exclude='*.log' --exclude='*.pyc' \
+    --exclude='celeryconfig.py' --exclude='build' --exclude='dist' --exclude='*.egg-info' \
+    "$CHARMS_PATH/$1/" "$CHARMS_DEPLOY_PATH/$2/" || xecho "Unable to overwrite $2 charm"
+}
+
+_rsync_helper()
+{
+  if [ $# -ne 1 ]; then
+    xecho "Usage: $(basename $0).rsync_publisher charm"
+  fi
+
+  chmod 600 "$ID_RSA" || xecho 'Unable to find id_rsa certificate'
+
+  yesOrNo $true 'Update units listing'
+  [ $REPLY -eq $true ] && config
+
+  # Initialize rsync menu
+  unitsList=$(cat "$SCENARIO_GEN_UNITS_FILE" | grep "$1" | sort | sed 's:=: :g;s:\n: :g')
+
+  # Rsync menu
+  while true
+  do
+    $DIALOG --backtitle 'OSCIED Operations with JuJu > Rsync source-code to a Unit' \
+            --menu 'Please select a unit' 0 0 0 \
+            $unitsList 2> $tmpfile
+
+    retval=$?
+    unit=$(cat $tmpfile)
+    [ $retval -ne 0 -o ! "$unit" ] && break
+    number=$(echo $unit | cut -d'/' -f2)
+    [ ! "$number" ] && xecho 'Unable to detect unit number'
+    _get_unit_public_url $true "$1" "$number"
+    host="ubuntu@$REPLY"
+    dest="/var/lib/juju/agents/unit-$1-$number/charm"
+    ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
+    rsync --rsync-path='sudo rsync' -avhL --progress --delete -e "ssh -i '$ID_RSA'" --exclude=.git --exclude=config.json \
+      --exclude=celeryconfig.py --exclude=*.pyc --exclude=local_config.pkl --exclude=charms \
+      --exclude=ssh --exclude=environments.yaml --exclude=*.log "$CHARMS_PATH/$1/" "$host:$dest/"
+    ssh -i "$ID_RSA" "$host" -n "sudo chown root:root $dest -R"
+
+    if [ "$1" == 'oscied-webui' ]; then
+      dest='/var/www'
+      ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
+      rsync -avh --progress -e "ssh -i '$ID_RSA'" --exclude=.git --exclude=.htaccess \
+        --exclude=application/config/config.php --exclude=application/config/database.php --exclude=medias \
+        --exclude=uploads --exclude=orchestra_relation_ok --delete "$CHARMS_PATH/oscied-webui/www/" "$host:$dest/"
+      ssh -i "$ID_RSA" "$host" -n "sudo chown www-data:www-data $dest -R"
+    fi
+
+    yesOrNo $false "Ask juju to retry setup of $unit"
+    if [ $REPLY -eq $true ]; then
+      juju resolved --retry "$unit"
+    fi
+    yesOrNo $false "SSH to unit $unit"
+    if [ $REPLY -eq $true ]; then
+      juju ssh "$unit"
+    fi
+    [ $retval -eq 0 ] && pause
+  done
+  REPLY=$number
+}
+
+_standalone_execute_hook()
+{
+  if [ $# -ne 2 ]; then
+    xecho "Usage: $(basename $0).standalone_execute_hook path hook"
+  fi
+
+  pecho 'Install juju-log & open-port tricks'
+  if ! getInterfaceIPv4 "$NETWORK_IFACE" '4'; then
+    xecho "Unable to detect network interface $NETWORK_IFACE IP address"
+  fi
+  ip=$REPLY
+  $udo sh -c "cp -f $TEMPLATES_PATH/juju-log      $jujulog;  chmod 777 $jujulog"
+  $udo sh -c "cp -f $TEMPLATES_PATH/open-port     $openport; chmod 777 $openport"
+  $udo sh -c "cp -f $TEMPLATES_PATH/something-get $cget;     chmod 777 $cget"
+  $udo sh -c "cp -f $TEMPLATES_PATH/something-get $rget;     chmod 777 $rget"
+  $udo sh -c "cp -f $TEMPLATES_PATH/something-get $uget;     chmod 777 $uget"
+  $udo sh -c "cp -f $TEMPLATES_PATH/something-get.list /tmp/;"
+  $udo sh -c "sed -i 's:127.0.0.1:$ip:g' /tmp/something-get.list"
+  pecho "Execute hook script $2"
+  cd "$1"  || xecho "Unable to find path $1"
+  $udo $2  || xecho 'Hook is unsucessful'
+  recho 'Hook successful'
+}
+
+# Parse charm's units URLs listing file to get specific URLs -----------------------------------------------------------
+
+_get_units_dialog_listing()
+{
+  REPLY=$(cat "$SCENARIO_GEN_UNITS_FILE" | sort | sed 's:=: :g;s:\n: :g')
+  [ ! $REPLY ] && xecho 'Unable to generate units listing for dialog'
+}
+
+_get_services_dialog_listing()
+{
+  REPLY=$(cat "$SCENARIO_GEN_UNITS_FILE" | sort | sed 's:/[0-9]*=: :g;s:\n: :g' | uniq)
+  [ ! $REPLY ] && xecho 'Unable to generate services listing for dialog'
+}
+
+_get_unit_public_url()
+{
+  if [ $# -gt 3 ]; then
+    xecho "Usage: $(basename $0).get_unit_public_url fail name (number)"
+  fi
+  fail=$1
+  name=$2
+
+  [ $# -eq 3 ] && number=$3 || number='.*'
+  if [ -f "$SCENARIO_GEN_UNITS_FILE" ]; then
+    url=$(cat "$SCENARIO_GEN_UNITS_FILE" | grep -m 1 "^$name/$number=" | cut -d '=' -f2)
+  else
+    url='127.0.0.1'
+  fi
+  [ ! "$url" -a $fail -eq $true ] && xecho "Unable to detect unit $1 public URL !"
+  REPLY="$url"
+}
+
+# Main menu ============================================================================================================
+
 main()
 {
   if [ $# -gt 0 ]; then
@@ -383,16 +628,6 @@ rsync_webui()
   chmod 600 "$ID_RSA" || xecho 'Unable to find id_rsa certificate'
 
   _rsync_helper 'oscied-webui'
-  [ ! "$REPLY" ] && return
-
-  _get_unit_public_url $true 'oscied-webui' "$REPLY"
-  host="ubuntu@$REPLY"
-  dest='/var/www'
-  ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
-  rsync -avh --progress -e "ssh -i '$ID_RSA'" --exclude=.git --exclude=.htaccess \
-    --exclude=application/config/config.php --exclude=application/config/database.php --exclude=medias \
-    --exclude=uploads --exclude=orchestra_relation_ok --delete "$CHARMS_PATH/oscied-webui/www/" "$host:$dest/"
-  ssh -i "$ID_RSA" "$host" -n "sudo chown www-data:www-data $dest -R"
 }
 
 unit_ssh()
