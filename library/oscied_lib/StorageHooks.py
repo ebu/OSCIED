@@ -27,8 +27,8 @@
 import os, re, shutil
 from kitchen.text.converters import to_bytes
 from oscied_config import StorageLocalConfig
-from oscied_hook_base import CharmHooks, DEFAULT_OS_ENV
 from pyutils.py_filesystem import first_that_exist
+from pyutils.py_juju import CharmHooks, DEFAULT_OS_ENV
 
 
 class StorageHooks(CharmHooks):
@@ -54,7 +54,7 @@ class StorageHooks(CharmHooks):
 
     @property
     def bricks_path(self):
-        return os.path.join(self.config.bricks_root_path, 'bricks')
+        return os.path.join(self.config.bricks_root_path, u'bricks')
 
     @property
     def volume(self):
@@ -242,7 +242,7 @@ class StorageHooks(CharmHooks):
 if __name__ == u'__main__':
     from pyutils.py_unicode import configure_unicode
     configure_unicode()
-    StorageHooks(first_that_exist(u'metadata.yaml',    u'../oscied-storage/metadata.yaml'),
-                 first_that_exist(u'config.yaml',      u'../oscied-storage/config.yaml'),
-                 first_that_exist(u'local_config.pkl', u'../oscied-storage/local_config.pkl'),
+    StorageHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-storage/metadata.yaml'),
+                 first_that_exist(u'config.yaml',      u'../../charms/oscied-storage/config.yaml'),
+                 first_that_exist(u'local_config.pkl', u'../../charms/oscied-storage/local_config.pkl'),
                  DEFAULT_OS_ENV).trigger()

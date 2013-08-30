@@ -27,8 +27,9 @@
 import os, multiprocessing, setuptools.archive_util, shutil
 from codecs import open
 from oscied_config import PublisherLocalConfig
-from oscied_hook_base import CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Website, DEFAULT_OS_ENV
+from oscied_hook_base import CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Website
 from pyutils.py_filesystem import chown, first_that_exist
+from pyutils.py_juju import DEFAULT_OS_ENV
 
 
 class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Website):

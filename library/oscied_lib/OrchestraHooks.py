@@ -29,9 +29,10 @@ from codecs import open
 from kitchen.text.converters import to_bytes
 from configobj import ConfigObj
 from oscied_config import OrchestraLocalConfig
-from oscied_hook_base import CharmHooks_Storage, DEFAULT_OS_ENV
+from oscied_hook_base import CharmHooks_Storage
 from pyutils.py_filesystem import first_that_exist, try_makedirs
 from pyutils.py_subprocess import rsync, screen_launch, screen_list, screen_kill
+from pyutils.py_juju import DEFAULT_OS_ENV
 
 
 class OrchestraHooks(CharmHooks_Storage):

@@ -28,8 +28,8 @@ sys.path.append(abspath(dirname(dirname(__file__))))
 
 from copy import copy
 from nose.tools import assert_equal
+from oscied_lib.pyutils.py_juju import DEFAULT_OS_ENV
 from oscied_lib.oscied_config import TransformLocalConfig
-from oscied_lib.oscied_hook_base import DEFAULT_OS_ENV
 from oscied_lib.TransformHooks import TransformHooks
 
 CONFIG_DEFAULT = {

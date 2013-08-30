@@ -29,10 +29,10 @@ sys.path.append(abspath(dirname(dirname(__file__))))
 from copy import copy
 from mock import call, Mock
 from nose.tools import assert_equal, raises
+from oscied_lib.pyutils.py_juju import DEFAULT_OS_ENV
 import oscied_lib.pyutils.py_unittest as py_unittest
 from oscied_lib.pyutils.py_unittest import mock_cmd, mock_side_effect
 from oscied_lib.oscied_config import StorageLocalConfig
-from oscied_lib.oscied_hook_base import DEFAULT_OS_ENV
 from oscied_lib.StorageHooks import StorageHooks
 
 CONFIG = {u'verbose': False, u'replica_count': 1, u'allowed_ips': u'*', u'bricks_root_path': u'/mnt/somewhere'}
@@ -51,7 +51,7 @@ class TestStorageHooks(object):
         os.remove(u'test.pkl')
 
     def test_class_properties(self):
-        assert_equal(self.hooks.brick, u'{0}:/mnt/somewhere/bricks/exp14'.format(self.hooks.private_address))
+        assert_equal(self.hooks.brick(), u'{0}:/mnt/somewhere/bricks/exp14'.format(self.hooks.private_address))
         assert_equal(self.hooks.bricks_path, u'/mnt/somewhere/bricks')
         assert_equal(self.hooks.volume, u'medias_volume_14')
 

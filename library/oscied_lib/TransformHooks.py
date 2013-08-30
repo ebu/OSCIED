@@ -26,8 +26,9 @@
 
 import os, multiprocessing, setuptools.archive_util, shutil
 from oscied_config import TransformLocalConfig
-from oscied_hook_base import CharmHooks_Storage, CharmHooks_Subordinate, DEFAULT_OS_ENV
+from oscied_hook_base import CharmHooks_Storage, CharmHooks_Subordinate
 from pyutils.py_filesystem import first_that_exist, try_makedirs
+from pyutils.py_juju import DEFAULT_OS_ENV
 
 
 class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
