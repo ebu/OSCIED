@@ -24,11 +24,12 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import os, multiprocessing, setuptools.archive_util, shutil
+import os
 from oscied_config import TransformLocalConfig
 from oscied_hook_base import CharmHooks_Storage, CharmHooks_Subordinate
-from pyutils.py_filesystem import first_that_exist, try_makedirs
+from pyutils.py_filesystem import first_that_exist
 from pyutils.py_juju import DEFAULT_OS_ENV
+from pyutils.py_subprocess import make
 
 
 class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
@@ -57,33 +58,11 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
         self.cmd(u'service ntp restart')
         # FIXME Compile and install openSVCDecoder
         self.info(u'Compile and install openHEVC')
-        shutil.rmtree(u'openHEVC', ignore_errors=True)
-        setuptools.archive_util.unpack_archive(u'openHEVC.tar.bz2', u'openHEVC')
-        os.chdir(u'openHEVC')
-        try_makedirs(u'build')
-        os.chdir(u'build')
-        self.cmd(u'cmake -DCMAKE_BUILD_TYPE=RELEASE ..')
-        self.cmd(u'make -j{0}'.format(multiprocessing.cpu_count()))
-        self.cmd(u'make install')
-        os.chdir(u'..')
+        make(u'openHEVC.tar.bz2', with_cmake=True, log=self.debug)
         self.info(u'Compile and install GPAC/DashCast')
-        shutil.rmtree(u'gpac', ignore_errors=True)
-        setuptools.archive_util.unpack_archive(u'gpac.tar.bz2', u'gpac')
-        os.chdir(u'gpac')
-        self.cmd(u'./configure')
-        self.cmd(u'make -j{0}'.format(multiprocessing.cpu_count()))
-        self.cmd(u'make install')
-        os.chdir(u'..')
-        shutil.rmtree(u'gpac')
+        make(u'gpac.tar.bz2', log=self.debug)
         self.info(u'Compile and install x264')
-        shutil.rmtree(u'x264', ignore_errors=True)
-        setuptools.archive_util.unpack_archive(u'x264.tar.bz2', u'x264')
-        os.chdir(u'x264')
-        self.cmd(u'./configure --enable-shared')
-        self.cmd(u'make -j{0}'.format(multiprocessing.cpu_count()))
-        self.cmd(u'make install')
-        os.chdir(u'..')
-        shutil.rmtree(u'x264')
+        make(u'x264.tar.bz2', configure_options=u'--enable-shared', log=self.debug)
         # FIXME Compile and install ffmpeg
         # http://ffmpeg.org/trac/ffmpeg/wiki/UbuntuCompilationGuide
 
