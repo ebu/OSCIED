@@ -78,8 +78,9 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    RATIO_DELTA = 0.01  # Update status if at least 1% of progress
-    TIME_DELTA = 1      # Update status if at least 1 second(s) elapsed
+    RATIO_DELTA, TIME_DELTA = 0.01, 1  # Update status if at least 1% of progress and 1 second elapsed.
+    MAX_TIME_DELTA = 5                 # Also ensure status update every 5 seconds.
+    DASHCAST_TIMEOUT_TIME = 10
 
     try:
         # Avoid 'referenced before assignment'
@@ -162,8 +163,8 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
                     except ZeroDivisionError:
                         ratio = 1.0
                     elapsed_time = time.time() - start_time
-                    # Update status of task only if delta time or delta ratio is sufficient
-                    if ratio - prev_ratio > RATIO_DELTA and elapsed_time - prev_time > TIME_DELTA:
+                    delta_time = elapsed_time - prev_time
+                    if (ratio - prev_ratio > RATIO_DELTA and delta_time > TIME_DELTA) or delta_time > MAX_TIME_DELTA:
                         prev_ratio, prev_time = ratio, elapsed_time
                         eta_time = int(elapsed_time * (1.0 - ratio) / ratio) if ratio > 0 else 0
                         transform_task.update_state(
@@ -204,8 +205,9 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
             media_in_size = get_size(media_in_root)
             try:
                 media_in_frames = int(get_media_tracks(media_in_path)[u'video'][u'0:0'][u'estimated_frames'])
+                media_out_frames = 0
             except:
-                media_in_frames = None
+                raise ValueError(to_bytes(u'Unable to estimate # frames of input media'))
 
             # Create DashCast subprocess
             cmd = u'DashCast -av "{0}" {1} -out "{2}" -mpd "{3}"'.format(
@@ -229,8 +231,8 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
                     except ZeroDivisionError:
                         ratio = 1.0
                     elapsed_time = time.time() - start_time
-                    # Update status of task only if delta time or delta ratio is sufficient
-                    if ratio - prev_ratio > RATIO_DELTA and elapsed_time - prev_time > TIME_DELTA:
+                    delta_time = elapsed_time - prev_time
+                    if (ratio - prev_ratio > RATIO_DELTA and delta_time > TIME_DELTA) or delta_time > MAX_TIME_DELTA:
                         prev_ratio, prev_time = ratio, elapsed_time
                         eta_time = int(elapsed_time * (1.0 - ratio) / ratio) if ratio > 0 else 0
                         transform_task.update_state(
@@ -248,10 +250,9 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
                 if returncode is not None:
                     encoder_out = u'stdout: {0}\nstderr: {1}'.format(stdout, stderr)
                     break
-                elif 'Press q or Q to exit' in stdout:
+                if media_out_frames == 0 and elapsed_time > DASHCAST_TIMEOUT_TIME:
                     encoder_out = u'stdout: {0}\nstderr: {1}'.format(stdout, stderr)
-                    raise OSError(to_bytes(u'DashCast is asking to exit, encoding probably failed.'))
-
+                    raise OSError(to_bytes(u'DashCast does not output frame number, encoding probably failed.'))
 
             # DashCast output sanity check
             if not os.path.exists(media_out_path):
