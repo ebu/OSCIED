@@ -109,7 +109,7 @@ class IBC2013(OsciedDeploymentScenario):
         self.config = CONFIG_AMAZON
         self.release = 'raring'
         self.bootstrap(u'amazon', wait_started=True)
-        self.deploy(u'oscied-transform', u'oscied-transform', local=True)
+        self.deploy(u'oscied-transform', u'oscied-transform', local=True, constraints=u'arch=amd64 cpu-cores=4 mem=1G')
         self.deploy(u'oscied-publisher', u'oscied-publisher', local=True, expose=True)
         self.deploy(u'oscied-orchestra', u'oscied-orchestra', local=True, expose=True)
         self.deploy(u'oscied-storage',   u'oscied-storage',   local=True)
