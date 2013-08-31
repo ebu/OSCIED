@@ -57,3 +57,29 @@ options:
     type: string
     default: ""
     description: Shared storage options (e.g. for nfs - rw,sync,no_subtree_check)
+  open_hevc_origin:
+    type: string
+    default: ""
+    description: |
+      * '' : Do not install openHEVC at all
+      * 'openHEVC.tar.bz2' : Compile openHEVC from local archive of sources
+  x264_origin:
+    type: string
+    default: ""
+    description: |
+      * '' : Get x264 from Ubuntu default repository
+      * 'x264.tar.bz2' : Compile x264 from local archive of sources
+  ffmpeg_origin:
+    type: string
+    default: "ppa:jon-severinsson/ffmpeg"
+    description: |
+      * '' : Get ffmpeg from Ubuntu default repository
+      * 'ppa:jon-severinsson/ffmpeg' : Get ffmpeg from this PPA repository
+      * 'ffmpeg.tar.bz2' : Compile ffmpeg from local archive of sources
+  gpac_origin:
+    type: string
+    default: "gpac_0.5.1.DEV-r4722_amd64.deb"
+    description: |
+      * '' : Get GPAC/DashCast from Ubuntu default repository
+      * 'gpac.tar.bz2' : Compile GPAC/DashCast from local archive of sources
+      * 'gpac_0.5.1.DEV-r4722_i386.deb' : Install GPAC/DashCast from a debian package
