@@ -43,7 +43,7 @@ class Callback(JsoneableObject):
 
     def replace_netloc(self, netloc):
         u"""
-        Replace network location of the media URI.
+        Replace network location of the media asset URI.
 
         **Example usage**:
 
@@ -96,10 +96,10 @@ class Storage(object):
                 try:
                     size = get_size(os.path.dirname(media_dst_path))
                 except OSError:
-                    raise ValueError(to_bytes(u'Unable to detect size of media {0}.'.format(media_dst_path)))
+                    raise ValueError(to_bytes(u'Unable to detect size of media asset {0}.'.format(media_dst_path)))
                 duration = get_media_duration(media_dst_path)
                 if duration is None:
-                    raise ValueError(to_bytes(u'Unable to detect duration of media {0}.'.format(media_dst_path)))
+                    raise ValueError(to_bytes(u'Unable to detect duration of media asset {0}.'.format(media_dst_path)))
                 return (size, duration)
             else:
                 raise NotImplementedError(to_bytes(u'FIXME Add of external URI not implemented.'))
@@ -111,4 +111,4 @@ class Storage(object):
         if media_path:
             shutil.rmtree(os.path.dirname(media_path), ignore_errors=True)
         else:
-            raise NotImplementedError(to_bytes(u'FIXME Delete of external uri not implemented.'))
+            raise NotImplementedError(to_bytes(u'FIXME Delete of external URI not implemented.'))

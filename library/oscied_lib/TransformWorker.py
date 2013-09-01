@@ -111,11 +111,11 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
         # Verify that media file can be accessed and create output path
         media_in_path = local_config.storage_medias_path(media_in, generate=False)
         if not media_in_path:
-            raise NotImplementedError(to_bytes(u'Input media will not be readed from shared storage : {0}'.format(
+            raise NotImplementedError(to_bytes(u'Input media asset will not be readed from shared storage : {0}'.format(
                                       media_in.uri)))
         media_out_path = local_config.storage_medias_path(media_out, generate=True)
         if not media_out_path:
-            raise NotImplementedError(to_bytes(u'Output media will not be written to shared storage : {0}'.format(
+            raise NotImplementedError(to_bytes(u'Output media asset will not be written to shared storage : {0}'.format(
                                       media_out.uri)))
         media_in_root = os.path.dirname(media_in_path)
         media_out_root = os.path.dirname(media_out_path)
@@ -207,7 +207,7 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
                 media_in_frames = int(get_media_tracks(media_in_path)[u'video'][u'0:0'][u'estimated_frames'])
                 media_out_frames = 0
             except:
-                raise ValueError(to_bytes(u'Unable to estimate # frames of input media'))
+                raise ValueError(to_bytes(u'Unable to estimate # frames of input media asset'))
 
             # Create DashCast subprocess
             cmd = u'DashCast -av "{0}" {1} -out "{2}" -mpd "{3}"'.format(
@@ -256,7 +256,7 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
 
             # DashCast output sanity check
             if not os.path.exists(media_out_path):
-                raise OSError(to_bytes(u'Output media not found, DashCast encoding probably failed.'))
+                raise OSError(to_bytes(u'Output media asset not found, DashCast encoding probably failed.'))
             if returncode != 0:
                 raise OSError(to_bytes(u'DashCast return code is {0}, encoding probably failed.'.format(returncode)))
             # FIXME check duration too !
@@ -264,7 +264,7 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
         # Here all seem okay -------------------------------------------------------------------------------------------
         media_out_size = get_size(media_out_root)
         media_out_duration = get_media_duration(media_out_path)
-        print(u'{0} Transformation task successful, output media {1}'.format(request.id, media_out.filename))
+        print(u'{0} Transformation task successful, output media asset {1}'.format(request.id, media_out.filename))
         transform_callback(states.SUCCESS)
         return {u'hostname': request.hostname, u'start_date': start_date, u'elapsed_time': elapsed_time,
                 u'eta_time': 0, u'media_in_size': media_in_size, u'media_in_duration': media_in_duration,

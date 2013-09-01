@@ -210,7 +210,7 @@ def api_flush():
     """
     Flush Orchestrator's database.
 
-    This method is useful for test/development purposes.
+    This method is useful for testing/development purposes.
 
     **Example request**:
 
@@ -251,8 +251,7 @@ def api_user_login():
     """
     Return authenticated user serialized to JSON if authentication passed (without ``secret`` field).
 
-    This method is useful for WebUI to simulate stateful login scheme and get informations about the
-    user.
+    This method is useful for WebUI to simulate stateful login scheme and get informations about the user.
 
     .. note::
 
@@ -303,7 +302,7 @@ def api_user_login():
 @app.route(u'/user/count', methods=[u'GET'])
 def api_user_count():
     """
-    Return users count.
+    Return the number of users.
 
     **Example request**:
 
@@ -378,7 +377,7 @@ def api_user_get():
 @app.route(u'/user', methods=[u'POST'])
 def api_user_post():
     """
-    Add an user.
+    Add a user.
 
     **Example request**:
 
@@ -447,7 +446,7 @@ def api_user_post():
 @app.route(u'/user/id/<id>', methods=[u'GET'])
 def api_user_id_get(id):
     """
-    Return an user serialized to JSON (without ``secret`` field).
+    Return a user serialized to JSON (without ``secret`` field).
 
     **Example request**:
 
@@ -502,8 +501,8 @@ def api_user_id_patch(id):
     """
     Update an user.
 
-    User's admin_platform attribute can only be modified by root or any authenticated user with
-    admin_platform attribute set.
+    User's admin_platform attribute can only be modified by root or any authenticated user with admin_platform attribute
+    set.
 
     **Example request**:
 
@@ -578,7 +577,7 @@ def api_user_id_patch(id):
 @app.route(u'/user/id/<id>', methods=[u'DELETE'])
 def api_user_id_delete(id):
     """
-    Delete an user.
+    Delete a user.
 
     **Example request**:
 
@@ -627,7 +626,7 @@ def api_user_id_delete(id):
 @app.route(u'/media/count', methods=[u'GET'])
 def api_media_count():
     """
-    Return medias count.
+    Return the number of media assets.
 
     **Example request**:
 
@@ -663,7 +662,7 @@ def api_media_count():
 @app.route(u'/media/HEAD', methods=[u'GET'])
 def api_media_head():
     """
-    Return an array containing the medias serialized to JSON.
+    Return an array containing the informations about the media assets serialized to JSON.
 
     **Example request**:
 
@@ -702,7 +701,7 @@ def api_media_head():
 @app.route(u'/media', methods=[u'GET'])
 def api_media_get():
     """
-    Return an array containing the medias serialized to JSON.
+    Return an array containing the informations about the media assets serialized to JSON.
 
     All ``thing_id`` fields are replaced by corresponding ``thing``.
     For example ``user_id`` is replaced by ``user``'s data.
@@ -744,24 +743,23 @@ def api_media_get():
 @app.route(u'/media', methods=[u'POST'])
 def api_media_post():
     """
-    Add a media.
+    Register a media asset and add informations about it.
 
-    This method handle registration of already uploaded media to the shared storage.
-    For example, the WebUI will upload a media to uploads path **before** registering it
-    with this method.
+    This method only register already uploaded media asset to the shared storage.
+    For example, the WebUI will upload a media asset to uploads path **before** registering it with this method.
 
     Medias in the shared storage are renamed with the following convention:
         ``storage_root``/medias/``user_id``/``media_id``
 
-    When published or downloaded, media file-name will be ``filename``.
+    When published or downloaded, media asset file-name will be ``filename``.
     Spaces ( ) are not allowed and they will be converted to underscores (_).
 
-    Media's ``metadata`` must contain any valid JSON string. Only the ``title`` key is required.
+    Media asset's ``metadata`` must contain any valid JSON string. Only the ``title`` key is required.
     The orchestrator will automatically add ``add_date`` and ``duration`` to ``metadata``.
 
     .. note::
 
-        Registration of external media (aka. http://) will be an interesting improvement.
+        Registration of external media assets (aka. http://) will be an interesting improvement.
 
     **Example request**:
 
@@ -811,19 +809,19 @@ def api_media_post():
         }
 
     :Allowed: Any user can do that
-    :query uri: Media's source URI, actually only shared storage's URI are handled (required)
+    :query uri: Media asset's (source) URI, actually only shared storage's URI are handled (required)
     :query filename: Media's filename when downloaded or published (required)
-    :query metadata: JSON string containing metadatas about the media (required)
+    :query metadata: JSON string containing metadatas about the media asset (required)
     :statuscode 200: OK
     :statuscode 400: on type or value error
     :statuscode 400: Key ``key`` not found.
-    :statuscode 400: The media uri ``uri`` is already used by another media.
-    :statuscode 400: Title key is required in media metadata.
+    :statuscode 400: The media URI ``uri`` is already used by another media asset.
+    :statuscode 400: Title key is required in media asset's metadata.
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     :statuscode 404: An error occured : ``OSError``
     :statuscode 415: Requires (valid) json content-type.
-    :statuscode 501: FIXME Add of external uri not implemented.
+    :statuscode 501: FIXME Add of external URI not implemented.
     """
     try:
         auth_user = requires_auth(request=request, allow_any=True)
@@ -839,7 +837,7 @@ def api_media_post():
 @app.route(u'/media/id/<id>/HEAD', methods=[u'GET'])
 def api_media_id_head(id):
     """
-    Return a media serialized to JSON.
+    Return the informations about a media asset serialized to JSON.
 
     **Example request**:
 
@@ -879,11 +877,11 @@ def api_media_id_head(id):
         }
 
     :Allowed: Any user
-    :param id: id of media to get
+    :param id: id of media asset to get
     :statuscode 200: OK
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 404: No media with id ``id``.
+    :statuscode 404: No media asset with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     """
     try:
@@ -891,7 +889,7 @@ def api_media_id_head(id):
         requires_auth(request=request, allow_any=True)
         media = orchestra.get_media(specs={u'_id': id})
         if not media:
-            raise IndexError(to_bytes(u'No media with id {0}.'.format(id)))
+            raise IndexError(to_bytes(u'No media asset with id {0}.'.format(id)))
         return ok_200(media, True)
     except Exception as e:
         map_exceptions(e)
@@ -900,7 +898,7 @@ def api_media_id_head(id):
 @app.route(u'/media/id/<id>', methods=[u'GET'])
 def api_media_id_get(id):
     """
-    Return a media serialized to JSON.
+    Return the informations about a media asset serialized to JSON.
 
     All ``thing_id`` fields are replaced by corresponding ``thing``.
     For example ``user_id`` is replaced by ``user``'s data.
@@ -950,11 +948,11 @@ def api_media_id_get(id):
         }
 
     :Allowed: Any user
-    :param id: id of media to get
+    :param id: id of media asset to get
     :statuscode 200: OK
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 404: No media with id ``id``.
+    :statuscode 404: No media asset with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     :statuscode 415: Requires json content-type.
     """
@@ -963,7 +961,7 @@ def api_media_id_get(id):
         requires_auth(request=request, allow_any=True)
         media = orchestra.get_media(specs={'_id': id}, load_fields=True)
         if not media:
-            raise IndexError(to_bytes(u'No media with id {0}.'.format(id)))
+            raise IndexError(to_bytes(u'No media asset with id {0}.'.format(id)))
         return ok_200(media, True)
     except Exception as e:
         map_exceptions(e)
@@ -972,7 +970,7 @@ def api_media_id_get(id):
 @app.route(u'/media/id/<id>', methods=[u'PATCH', u'PUT'])
 def api_media_id_patch(id):
     """
-    Update a media (only metadata field can be updated).
+    Update the informations of a media asset (only metadata field can be updated).
 
    **Example request**:
 
@@ -996,19 +994,19 @@ def api_media_id_patch(id):
 
         {
           "status": 200,
-          "value": "The media \\"fifth_element.mp4\\" has been updated."
+          "value": "The media asset \\"fifth_element.mp4\\" has been updated."
         }
 
     :Allowed: Only the author of the media
     :param id: media's id
     :query filename: Media's filename when downloaded or published (optional)
-    :query metadata: JSON string containing metadatas about the media (optional)
+    :query metadata: JSON string containing metadatas about the media asset (optional)
     :statuscode 200: OK
     :statuscode 400: Key ``key`` not found. *or* on type or value error
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 403: You are not allowed to modify media with id ``id``.
-    :statuscode 404: No media with id ``id``.
+    :statuscode 403: You are not allowed to modify media asset with id ``id``.
+    :statuscode 404: No media asset with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     :statuscode 415: Requires (valid) json content-type.
     """
@@ -1018,13 +1016,13 @@ def api_media_id_patch(id):
         media = orchestra.get_media(specs={u'_id': id})
         data = get_request_json(request)
         if not media:
-            raise IndexError(to_bytes(u'No media with id {0}.'.format(id)))
+            raise IndexError(to_bytes(u'No media asset with id {0}.'.format(id)))
         if auth_user._id != media.user_id:
-            abort(403, u'You are not allowed to modify media with id {0}.'.format(id))
+            abort(403, u'You are not allowed to modify media asset with id {0}.'.format(id))
         if u'metadata' in data:
             media.metadata = data[u'metadata']
         orchestra.save_media(media)
-        return ok_200(u'The media "{0}" has been updated.'.format(media.filename), False)
+        return ok_200(u'The media asset "{0}" has been updated.'.format(media.filename), False)
     except Exception as e:
         map_exceptions(e)
 
@@ -1032,9 +1030,7 @@ def api_media_id_patch(id):
 @app.route(u'/media/id/<id>', methods=[u'DELETE'])
 def api_media_id_delete(id):
     """
-    Delete a media.
-
-    The media file is removed from the shared storage and media's status is set to DELETED.
+    Remove a media asset from the shared storage and update informations about it (set status to DELETED).
 
    **Example request**:
 
@@ -1055,31 +1051,31 @@ def api_media_id_delete(id):
 
         {
           "status": 200,
-          "value": "The media \\"fifth_element.mp4\\" has been deleted."
+          "value": "The media asset \\"fifth_element.mp4\\" has been deleted."
         }
 
     :Allowed: Only the author of the media
-    :param id: id of media to delete
+    :param id: id of media asset to delete
     :statuscode 200: OK
-    :statuscode 400: Cannot delete the media, it is actually in use by transform task with id ``id`` and status ``status``.
-    :statuscode 400: Cannot delete the media, it is actually in use by publish task with id ``id`` and status ``status``.
+    :statuscode 400: Cannot delete the media, it is actually in use by transformation task with id ``id`` and status ``status``.
+    :statuscode 400: Cannot delete the media, it is actually in use by publication task with id ``id`` and status ``status``.
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 403: You are not allowed to delete media with id ``id``.
-    :statuscode 404: No media with id ``id``.
+    :statuscode 403: You are not allowed to delete media asset with id ``id``.
+    :statuscode 404: No media asset with id ``id``.
     :statuscode 415: Wrong id format ``id``.
-    :statuscode 501: FIXME Delete of external uri not implemented.
+    :statuscode 501: FIXME Delete of external URI not implemented.
     """
     try:
         check_id(id)
         auth_user = requires_auth(request=request, allow_any=True)
         media = orchestra.get_media(specs={u'_id': id})
         if not media:
-            raise IndexError(to_bytes(u'No media with id {0}.'.format(id)))
+            raise IndexError(to_bytes(u'No media asset with id {0}.'.format(id)))
         if auth_user._id != media.user_id:
-            abort(403, u'You are not allowed to delete media with id {0}.'.format(id))
+            abort(403, u'You are not allowed to delete media asset with id {0}.'.format(id))
         orchestra.delete_media(media)
-        return ok_200(u'The media "{0}" has been deleted.'.format(media.metadata[u'title']), False)
+        return ok_200(u'The media asset "{0}" has been deleted.'.format(media.metadata[u'title']), False)
     except Exception as e:
         map_exceptions(e)
 
@@ -1089,7 +1085,7 @@ def api_media_id_delete(id):
 @app.route(u'/environment/count', methods=[u'GET'])
 def api_environment_count():
     """
-    Return environments count.
+    Return the number of environments.
 
     **Example request**:
 
@@ -1203,12 +1199,12 @@ def api_environment_name_delete(name):
         map_exceptions(e)
 
 
-# Transform profiles management ----------------------------------------------------------------------------------------
+# Transformation profiles management -----------------------------------------------------------------------------------
 
 @app.route(u'/transform/profile/encoder', methods=[u'GET'])
 def api_transform_profile_encoder():
     """
-    Return an array containing the names of the transform profile encoders.
+    Return an array containing the names of the available encoders.
 
     **Example request**:
 
@@ -1247,7 +1243,7 @@ def api_transform_profile_encoder():
 @app.route(u'/transform/profile/count', methods=[u'GET'])
 def api_transform_profile_count():
     """
-    Return profiles count.
+    Return the number of transformation profiles.
 
     **Example request**:
 
@@ -1283,7 +1279,7 @@ def api_transform_profile_count():
 @app.route(u'/transform/profile', methods=[u'GET'])
 def api_transform_profile_get():
     """
-    Return an array containing the transform profiles serialized to JSON.
+    Return an array containing the transformation profiles serialized to JSON.
 
     **Example request**:
 
@@ -1321,13 +1317,13 @@ def api_transform_profile_get():
 @app.route(u'/transform/profile', methods=[u'POST'])
 def api_transform_profile_post():
     """
-    Add a transform profile.
+    Add a transformation profile.
 
-    The transform profile's ``encoder_name`` attribute can be the following :
+    The transformation profile's ``encoder_name`` attribute can be the following :
 
     * **copy** to bypass FFmpeg and do a simple file block copy ;
-    * **ffmpeg** to transcode a media to another with FFMpeg ;
-    * **dashcast** to transcode a media to MPEG-DASH with DashCast ;
+    * **ffmpeg** to transcode a media asset to another with FFMpeg ;
+    * **dashcast** to transcode a media asset to MPEG-DASH with DashCast ;
 
     **Example request**:
 
@@ -1372,7 +1368,7 @@ def api_transform_profile_post():
     :query encoder_string: New profile's encoder-specific string (optional)
     :statuscode 200: OK
     :statuscode 400: Key ``key`` not found. *or* on type or value error
-    :statuscode 400: Duplicate transform profile title ``profile``.
+    :statuscode 400: Duplicate transformation profile title ``profile``.
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     :statuscode 415: Requires (valid) json content-type.
@@ -1390,7 +1386,7 @@ def api_transform_profile_post():
 @app.route(u'/transform/profile/id/<id>', methods=[u'GET'])
 def api_transform_profile_id_get(id):
     """
-    Return a transform profile serialized to JSON.
+    Return a transformation profile serialized to JSON.
 
     **Example request**:
 
@@ -1425,7 +1421,7 @@ def api_transform_profile_id_get(id):
     :statuscode 200: OK
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 404: No transform profile with id ``id``.
+    :statuscode 404: No transformation profile with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     """
     try:
@@ -1433,7 +1429,7 @@ def api_transform_profile_id_get(id):
         requires_auth(request=request, allow_any=True)
         profile = orchestra.get_transform_profile(specs={u'_id': id})
         if not profile:
-            raise IndexError(to_bytes(u'No transform profile with id {0}.'.format(id)))
+            raise IndexError(to_bytes(u'No transformation profile with id {0}.'.format(id)))
         return ok_200(profile, True)
     except Exception as e:
         map_exceptions(e)
@@ -1442,7 +1438,7 @@ def api_transform_profile_id_get(id):
 @app.route(u'/transform/profile/id/<id>', methods=[u'DELETE'])
 def api_transform_profile_id_delete(id):
     """
-    Delete a transform profile.
+    Delete a transformation profile.
 
     **Example request**:
 
@@ -1463,7 +1459,7 @@ def api_transform_profile_id_delete(id):
 
         {
           "status": 200,
-          "value": "The transform profile \\"To MP4\\" has been deleted."
+          "value": "The transformation profile \\"To MP4\\" has been deleted."
         }
 
     :Allowed: Any user
@@ -1471,7 +1467,7 @@ def api_transform_profile_id_delete(id):
     :statuscode 200: OK
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 404: No transform profile with id ``id``.
+    :statuscode 404: No transformation profile with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     """
     try:
@@ -1479,9 +1475,9 @@ def api_transform_profile_id_delete(id):
         requires_auth(request=request, allow_any=True)
         profile = orchestra.get_transform_profile(specs={u'_id': id})
         if not profile:
-            raise IndexError(to_bytes(u'No transform profile with id {0}.'.format(id)))
+            raise IndexError(to_bytes(u'No transformation profile with id {0}.'.format(id)))
         orchestra.delete_transform_profile(profile)
-        return ok_200(u'The transform profile "{0}" has been deleted.'.format(profile.title), False)
+        return ok_200(u'The transformation profile "{0}" has been deleted.'.format(profile.title), False)
     except Exception as e:
         map_exceptions(e)
 
@@ -1491,7 +1487,7 @@ def api_transform_profile_id_delete(id):
 @app.route(u'/transform/unit/environment/<environment>/count', methods=[u'GET'])
 def api_transform_unit_count(environment):
     """
-    Return transform units count of environment ``environment``.
+    Return number of transformation units in the environment ``environment``.
 
     **Example request**:
 
@@ -1507,7 +1503,7 @@ def api_transform_unit_count(environment):
 @app.route(u'/transform/unit/environment/<environment>', methods=[u'GET'])
 def api_transform_unit_get(environment):
     """
-    Return an array containing the transform units of environment ``environment`` serialized to
+    Return an array containing the transformation units of environment ``environment`` serialized to
     JSON.
 
     **Example request**:
@@ -1524,7 +1520,7 @@ def api_transform_unit_get(environment):
 @app.route(u'/transform/unit/environment/<environment>', methods=[u'POST'])
 def api_transform_unit_post(environment):
     """
-    Deploy some new transform units into environment ``environment``.
+    Deploy some new transformation units into environment ``environment``.
 
     **Example request**:
 
@@ -1534,8 +1530,8 @@ def api_transform_unit_post(environment):
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
         data = get_request_json(request)
         orchestra.add_or_deploy_transform_units(environment, int(data[u'num_units']))
-        return ok_200(u'Deployed {0} transform units into environment "{1}"'.format(data[u'num_units'], environment),
-                      False)
+        return ok_200(u'Deployed {0} transformation units into environment "{1}"'.format(data[u'num_units'],
+                      environment), False)
     except Exception as e:
         map_exceptions(e)
 
@@ -1543,7 +1539,7 @@ def api_transform_unit_post(environment):
 @app.route(u'/transform/unit/environment/<environment>', methods=[u'DELETE'])
 def api_transform_unit_delete(environment):
     """
-    Remove some transform units from environment ``environment``.
+    Remove some transformation units from environment ``environment``.
 
     **Example request**:
 
@@ -1553,8 +1549,8 @@ def api_transform_unit_delete(environment):
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
         data = get_request_json(request)
         numbers = orchestra.destroy_transform_units(environment, int(data[u'num_units']), True)
-        return ok_200(u'Removed {0} (requested {1}) transform units with number(s) {2} from environment "{3}"'.format(
-                      len(numbers), data[u'num_units'], numbers, environment), False)
+        return ok_200(u'Removed {0} (requested {1}) transformation units with number(s) {2} from environment "{3}"'.
+                      format(len(numbers), data[u'num_units'], numbers, environment), False)
     except Exception as e:
         map_exceptions(e)
 
@@ -1562,7 +1558,7 @@ def api_transform_unit_delete(environment):
 @app.route(u'/transform/unit/environment/<environment>/number/<number>', methods=[u'GET'])
 def api_transform_unit_number_get(environment, number):
     """
-    Return a transform unit serialized to JSON.
+    Return a transformation unit serialized to JSON.
 
     **Example request**:
 
@@ -1572,7 +1568,8 @@ def api_transform_unit_number_get(environment, number):
         requires_auth(request=request, allow_root=True, allow_any=True)
         unit = orchestra.get_transform_unit(environment, number)
         if not unit:
-            raise IndexError(to_bytes(u'Transform unit {0} not found in environment {1}.'.format(number, environment)))
+            raise IndexError(to_bytes(u'Transformation unit {0} not found in environment {1}.'.format(number,
+                             environment)))
         return ok_200(unit, True)
     except Exception as e:
         map_exceptions(e)
@@ -1581,7 +1578,7 @@ def api_transform_unit_number_get(environment, number):
 @app.route(u'/transform/unit/environment/<environment>/number/<number>', methods=[u'DELETE'])
 def api_transform_unit_number_delete(environment, number):
     """
-    Remove transform unit number ``number`` from environment ``environment``.
+    Remove transformation unit number ``number`` from environment ``environment``.
 
     **Example request**:
 
@@ -1590,7 +1587,8 @@ def api_transform_unit_number_delete(environment, number):
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
         orchestra.destroy_transform_unit(environment, number, True)
-        return ok_200(u'The transform unit {0} has been removed of environment {1}.'.format(number, environment), False)
+        return ok_200(u'The transformation unit {0} has been removed of environment {1}.'.format(number, environment),
+                      False)
     except Exception as e:
         map_exceptions(e)
 
@@ -1600,7 +1598,7 @@ def api_transform_unit_number_delete(environment, number):
 @app.route(u'/transform/queue', methods=[u'GET'])
 def api_transform_queue():
     """
-    Return an array containing the transform queues serialized to JSON.
+    Return an array containing the transformation queues serialized to JSON.
 
     **Example request**:
 
@@ -1639,7 +1637,7 @@ def api_transform_queue():
 @app.route(u'/transform/task/count', methods=[u'GET'])
 def api_transform_task_count():
     """
-    Return transform tasks count.
+    Return the number of transformation tasks.
 
     **Example request**:
 
@@ -1675,9 +1673,9 @@ def api_transform_task_count():
 @app.route(u'/transform/task/HEAD', methods=[u'GET'])
 def api_transform_task_head():
     """
-    Return an array containing the transform tasks serialized as JSON.
+    Return an array containing the transformation tasks serialized as JSON.
 
-    The transform tasks attributes are appended with the Celery's ``async result`` of the tasks.
+    The transformation tasks attributes are appended with the Celery's ``async result`` of the tasks.
 
     **Example request**:
 
@@ -1716,9 +1714,9 @@ def api_transform_task_head():
 @app.route(u'/transform/task', methods=[u'GET'])
 def api_transform_task_get():
     """
-    Return an array containing the transform tasks serialized to JSON.
+    Return an array containing the transformation tasks serialized to JSON.
 
-    The transform tasks attributes are appended with the Celery's ``async result`` of the tasks.
+    The transformation tasks attributes are appended with the Celery's ``async result`` of the tasks.
 
     All ``thing_id`` fields are replaced by corresponding ``thing``.
     For example ``user_id`` is replaced by ``user``'s data.
@@ -1760,13 +1758,13 @@ def api_transform_task_get():
 @app.route(u'/transform/task', methods=[u'POST'])
 def api_transform_task_post():
     """
-    Launch a transform task.
+    Launch a transformation task.
 
-    Any user can launch a transform task using any media as input and any transform profile.
-    This is linked to media and transform profile API methods access policies.
+    Any user can launch a transformation task using any media asset as input and any transformation profile.
+    This is linked to media assets and transformation profile API methods access policies.
 
-    The output media is registered to the database with the PENDING status and the ``parent_id``
-    field is set to input media's ``id``. This permit to know relation between medias !
+    The output media asset is registered to the database with the PENDING status and the ``parent_id`` field is set to
+    input media asset's ``id``. This permit to know relation between media assets !
 
     The orchestrator will automatically add ``add_date`` to ``statistic``.
 
@@ -1812,18 +1810,18 @@ def api_transform_task_post():
     :query filename: New task output media's filename (required)
     :query metadata: New  task output media's metadata (required)
     :query send_email: Toggle e-mail delivery (required)
-    :query queue: The transform queue used to route the new task (required)
+    :query queue: The transformation queue used to route the new task (required)
     :statuscode 200: OK
     :statuscode 400: Key ``key`` not found. *or* on type or value error
     :statuscode 400: Unable to transmit task to workers of queue ``queue``.
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     :statuscode 404: No user with id ``id``.
-    :statuscode 404: No media with id ``media_in_id``.
+    :statuscode 404: No media asset with id ``media_in_id``.
     :statuscode 404: No profile with id ``profile_id``.
-    :statuscode 404: No transform queue with name ``queue``.
+    :statuscode 404: No transformation queue with name ``queue``.
     :statuscode 415: Required (valid) json content-type.
-    :statuscode 501: Cannot launch the task, input media status is ``status``.
+    :statuscode 501: Cannot launch the task, input media asset's status is ``status``.
     """
     try:
         auth_user = requires_auth(request=request, allow_any=True)
@@ -1840,9 +1838,9 @@ def api_transform_task_post():
 @app.route(u'/transform/task/id/<id>/HEAD', methods=[u'GET'])
 def api_transform_task_id_head(id):
     """
-    Return a transform task serialized to JSON.
+    Return a transformation task serialized to JSON.
 
-    The transform task attributes are appended with the Celery's ``async result`` of the task.
+    The transformation task attributes are appended with the Celery's ``async result`` of the task.
 
     **Example request**:
 
@@ -1890,7 +1888,7 @@ def api_transform_task_id_head(id):
     :statuscode 200: OK
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 404: No transform task with id ``id``.
+    :statuscode 404: No transformation task with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     """
     try:
@@ -1898,7 +1896,7 @@ def api_transform_task_id_head(id):
         requires_auth(request=request, allow_any=True)
         task = orchestra.get_transform_task(specs={u'_id': id})
         if not task:
-            raise IndexError(to_bytes(u'No transform task with id {0}.'.format(id)))
+            raise IndexError(to_bytes(u'No transformation task with id {0}.'.format(id)))
         return ok_200(task, True)
     except Exception as e:
         map_exceptions(e)
@@ -1907,9 +1905,9 @@ def api_transform_task_id_head(id):
 @app.route(u'/transform/task/id/<id>', methods=[u'GET'])
 def api_transform_task_id_get(id):
     """
-    Return a transform task serialized to JSON.
+    Return a transformation task serialized to JSON.
 
-    The transform task attributes are appended with the Celery's ``async result`` of the task.
+    The transformation task attributes are appended with the Celery's ``async result`` of the task.
 
     All ``thing_id`` fields are replaced by corresponding ``thing``.
     For example ``user_id`` is replaced by ``user``'s data.
@@ -2007,7 +2005,7 @@ def api_transform_task_id_get(id):
     :statuscode 200: OK
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 404: No transform task with id ``id``.
+    :statuscode 404: No transformation task with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     """
     try:
@@ -2015,7 +2013,7 @@ def api_transform_task_id_get(id):
         requires_auth(request=request, allow_any=True)
         task = orchestra.get_transform_task(specs={u'_id': id}, load_fields=True)
         if not task:
-            raise IndexError(to_bytes(u'No transform task with id {0}.'.format(id)))
+            raise IndexError(to_bytes(u'No transformation task with id {0}.'.format(id)))
         return ok_200(task, True)
     except Exception as e:
         map_exceptions(e)
@@ -2024,11 +2022,11 @@ def api_transform_task_id_get(id):
 @app.route(u'/transform/task/id/<id>', methods=[u'DELETE'])
 def api_transform_task_id_delete(id):
     """
-    Revoke a transform task.
+    Revoke a transformation task.
 
-    This method do not delete tasks from tasks database but set ``revoked`` attribute in tasks
-    database and broadcast revoke request to transform units with Celery. If the task is actually
-    running it will be canceled. The output media will be deleted.
+    This method do not delete tasks from tasks database but set ``revoked`` attribute in tasks database and broadcast
+    revoke request to transformation units with Celery. If the task is actually running it will be canceled.
+    The output media asset will be deleted.
 
     **Example request**:
 
@@ -2050,20 +2048,20 @@ def api_transform_task_id_delete(id):
 
         {
           "status": 200,
-          "value": "The transform task \\"<task_id>\\" has been revoked.
-                    Corresponding output media will be deleted."
+          "value": "The transformation task \\"<task_id>\\" has been revoked.
+                    Corresponding output media asset will be deleted."
         }
 
     :Allowed: Only author of the task
     :param id: id of task to delete
     :statuscode 200: OK
     :statuscode 400: on value error
-    :statuscode 400: Transform task ``id`` is already revoked !
-    :statuscode 400: Cannot revoke a transform task with status ``status``.
+    :statuscode 400: Transformation task ``id`` is already revoked !
+    :statuscode 400: Cannot revoke a transformation task with status ``status``.
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 403: You are not allowed to revoke transform task with id ``id``.
-    :statuscode 404: No transform task with id ``id``.
+    :statuscode 403: You are not allowed to revoke transformation task with id ``id``.
+    :statuscode 404: No transformation task with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     """
     try:
@@ -2071,12 +2069,12 @@ def api_transform_task_id_delete(id):
         auth_user = requires_auth(request=request, allow_any=True)
         task = orchestra.get_transform_task(specs={u'_id': id})
         if not task:
-            raise IndexError(to_bytes(u'No transform task with id {0}.'.format(id)))
+            raise IndexError(to_bytes(u'No transformation task with id {0}.'.format(id)))
         if auth_user._id != task.user_id:
-            abort(403, u'You are not allowed to revoke transform task with id {0}.'.format(id))
+            abort(403, u'You are not allowed to revoke transformation task with id {0}.'.format(id))
         orchestra.revoke_transform_task(task=task, terminate=True, remove=False, delete_media=True)
-        return ok_200(u'The transform task "{0}" has been revoked. Corresponding output media will be deleted.'.format(
-                      task._id), False)
+        return ok_200(u'The transformation task "{0}" has been revoked. Corresponding output media asset will be delete'
+                      'd.'.format(task._id), False)
     except Exception as e:
         map_exceptions(e)
 
@@ -2086,7 +2084,7 @@ def api_transform_task_id_delete(id):
 @app.route(u'/publisher/unit/environment/<environment>/count', methods=[u'GET'])
 def api_publisher_unit_count(environment):
     """
-    Return publisher units count of environment ``environment``.
+    Return publication units count of environment ``environment``.
 
     **Example request**:
 
@@ -2102,8 +2100,7 @@ def api_publisher_unit_count(environment):
 @app.route(u'/publisher/unit/environment/<environment>', methods=[u'GET'])
 def api_publisher_unit_get(environment):
     """
-    Return an array containing the publisher units of environment ``environment`` serialized to
-    JSON.
+    Return an array containing the publication units of environment ``environment`` serialized to JSON.
 
     **Example request**:
 
@@ -2119,7 +2116,7 @@ def api_publisher_unit_get(environment):
 @app.route(u'/publisher/unit/environment/<environment>', methods=[u'POST'])
 def api_publisher_unit_post(environment):
     """
-    Deploy some new publisher units into environment ``environment``.
+    Deploy some new publication units into environment ``environment``.
 
     **Example request**:
 
@@ -2129,7 +2126,7 @@ def api_publisher_unit_post(environment):
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
         data = get_request_json(request)
         orchestra.add_or_deploy_publisher_units(environment, int(data[u'num_units']))
-        return ok_200(u'Deployed {0} publisher units into environment "{1}"'.format(data[u'num_units'], environment),
+        return ok_200(u'Deployed {0} publication units into environment "{1}"'.format(data[u'num_units'], environment),
                       False)
     except Exception as e:
         map_exceptions(e)
@@ -2138,7 +2135,7 @@ def api_publisher_unit_post(environment):
 @app.route(u'/publisher/unit/environment/<environment>', methods=[u'DELETE'])
 def api_publisher_unit_delete(environment):
     """
-    Remove some publisher units from environment ``environment``.
+    Remove some publication units from environment ``environment``.
 
     **Example request**:
 
@@ -2148,7 +2145,7 @@ def api_publisher_unit_delete(environment):
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
         data = get_request_json(request)
         numbers = orchestra.destroy_publisher_units(environment, int(data[u'num_units']), True)
-        return ok_200(u'Removed {0} (requested {1}) publisher units with number(s) {2} from environment "{3}"'.format(
+        return ok_200(u'Removed {0} (requested {1}) publication units with number(s) {2} from environment "{3}"'.format(
                       len(numbers), data[u'num_units'], numbers, environment), False)
     except Exception as e:
         map_exceptions(e)
@@ -2157,7 +2154,7 @@ def api_publisher_unit_delete(environment):
 @app.route(u'/publisher/unit/environment/<environment>/number/<number>', methods=[u'GET'])
 def api_publisher_unit_number_get(environment, number):
     """
-    Return a publisher unit serialized to JSON.
+    Return a publication unit serialized to JSON.
 
     **Example request**:
 
@@ -2167,7 +2164,8 @@ def api_publisher_unit_number_get(environment, number):
         requires_auth(request=request, allow_root=True, allow_any=True)
         unit = orchestra.get_publisher_unit(environment, number)
         if not unit:
-            raise IndexError(to_bytes(u'Publisher unit {0} not found in environment {1}.'.format(number, environment)))
+            raise IndexError(to_bytes(u'Publication unit {0} not found in environment {1}.'.format(
+                             number, environment)))
         return ok_200(unit, True)
     except Exception as e:
         map_exceptions(e)
@@ -2176,7 +2174,7 @@ def api_publisher_unit_number_get(environment, number):
 @app.route(u'/publisher/unit/environment/<environment>/number/<number>', methods=[u'DELETE'])
 def api_publisher_unit_number_delete(environment, number):
     """
-    Remove publisher unit number ``number`` from environment ``environment``.
+    Remove publication unit number ``number`` from environment ``environment``.
 
     **Example request**:
 
@@ -2185,24 +2183,24 @@ def api_publisher_unit_number_delete(environment, number):
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
         orchestra.destroy_publisher_unit(environment, number, True)
-        return ok_200(u'The publisher unit {0} has been removed of environment {1}.'.format(number, environment), False)
+        return ok_200(u'The publication unit {0} has been removed of environment {1}.'.format(number, environment),
+                      False)
     except Exception as e:
         map_exceptions(e)
 
 
 # Publishing tasks -----------------------------------------------------------------------------------------------------
 
-@app.route(u'/publish/queue', methods=[u'GET'])
 @app.route(u'/publisher/queue', methods=[u'GET'])
 def api_publish_queue():
     """
-    Return an array containing the publish queues.
+    Return an array containing the publication queues.
 
     **Example request**:
 
     .. sourcecode:: http
 
-        GET /publish/queue HTTP/1.1
+        GET /publisher/queue HTTP/1.1
         Host: somewhere.com
         Header: jean-claude@oscied.org:oscied
         Accept: application/json
@@ -2232,16 +2230,16 @@ def api_publish_queue():
         map_exceptions(e)
 
 
-@app.route(u'/publish/task/count', methods=[u'GET'])
-def api_publish_task_count():
+@app.route(u'/publisher/task/count', methods=[u'GET'])
+def api_publisher_task_count():
     """
-    Return publish tasks count.
+    Return the number of publication tasks.
 
     **Example request**:
 
     .. sourcecode:: http
 
-        GET /publish/task/count HTTP/1.1
+        GET /publisher/task/count HTTP/1.1
         Host: somewhere.com
         Header: sophie@oscied.org:oscied
         Accept: application/json
@@ -2263,23 +2261,23 @@ def api_publish_task_count():
     """
     try:
         requires_auth(request=request, allow_any=True)
-        return ok_200(orchestra.get_publish_tasks_count(), False)
+        return ok_200(orchestra.get_publisher_tasks_count(), False)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route(u'/publish/task/HEAD', methods=[u'GET'])
-def api_publish_task_head():
+@app.route(u'/publisher/task/HEAD', methods=[u'GET'])
+def api_publisher_task_head():
     """
-    Return an array containing the publish tasks serialized as JSON.
+    Return an array containing the publication tasks serialized as JSON.
 
-    The publish tasks attributes are appended with the Celery's ``async result`` of the tasks.
+    The publication tasks attributes are appended with the Celery's ``async result`` of the tasks.
 
     **Example request**:
 
     .. sourcecode:: http
 
-        GET /publish/task/HEAD HTTP/1.1
+        GET /publisher/task/HEAD HTTP/1.1
         Host: somewhere.com
         Header: antonin@oscied.org:oscied
         Accept: application/json
@@ -2304,17 +2302,17 @@ def api_publish_task_head():
     """
     try:
         requires_auth(request=request, allow_any=True)
-        return ok_200(orchestra.get_publish_tasks(), True)
+        return ok_200(orchestra.get_publisher_tasks(), True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route(u'/publish/task', methods=[u'GET'])
-def api_publish_task_get():
+@app.route(u'/publisher/task', methods=[u'GET'])
+def api_publisher_task_get():
     """
-    Return an array containing the publish tasks serialized to JSON.
+    Return an array containing the publication tasks serialized to JSON.
 
-    The publish tasks attributes are appended with the Celery's ``async result`` of the tasks.
+    The publication tasks attributes are appended with the Celery's ``async result`` of the tasks.
 
     All ``thing_id`` fields are replaced by corresponding ``thing``.
     For example ``user_id`` is replaced by ``user``'s data.
@@ -2323,7 +2321,7 @@ def api_publish_task_get():
 
     .. sourcecode:: http
 
-        GET /publish/task HTTP/1.1
+        GET /publisher/task HTTP/1.1
         Host: somewhere.com
         Header: melanie@oscied.org:oscied
         Accept: application/json
@@ -2348,18 +2346,18 @@ def api_publish_task_get():
     """
     try:
         requires_auth(request=request, allow_any=True)
-        return ok_200(orchestra.get_publish_tasks(load_fields=True), True)
+        return ok_200(orchestra.get_publisher_tasks(load_fields=True), True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route(u'/publish/task', methods=[u'POST'])
-def api_publish_task_post():
+@app.route(u'/publisher/task', methods=[u'POST'])
+def api_publisher_task_post():
     """
-    Launch a publish task.
+    Launch a publication task.
 
-    Any user can launch a publish task using any media as input.
-    This is linked to media API methods access policy.
+    Any user can launch a publication task using any media asset as input.
+    This is linked to media asset API methods access policy.
 
     The orchestrator will automatically add ``add_date`` to ``statistic``.
 
@@ -2369,13 +2367,13 @@ def api_publish_task_post():
 
         * Schedule tasks by specifying start time (...)
         * Handle the registration of tasks related to PENDING medias
-        * Permit to publish a media on more than one (1) publication queue
+        * Permit to publication a media asset on more than one (1) publication queue
 
     **Example request**:
 
     .. sourcecode:: http
 
-        POST /publish/task HTTP/1.1
+        POST /publisher/task HTTP/1.1
         Host: somewhere.com
         Header: tabby@bernex.ch:miaow
         Accept: application/json
@@ -2384,7 +2382,7 @@ def api_publish_task_post():
         {
           "media_id": "a396fe66-74ee-11e2-89ad-3085a9accbb8",
           "send_email": "true",
-          "queue": "publish_london"
+          "queue": "publisher_london"
         }
 
     **Example response**:
@@ -2403,43 +2401,42 @@ def api_publish_task_post():
     :Allowed: Any user
     :query media_id: New task input media's id (required)
     :query send_email: Toggle e-mail delivery (required)
-    :query queue: The publish queue used to route task (required)
+    :query queue: The publication queue used to route task (required)
     :statuscode 200: OK
     :statuscode 400: Key ``key`` not found. *or* on type or value error
     :statuscode 400: Unable to transmit task to workers of queue ``queue``.
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
     :statuscode 404: No user with id ``id``.
-    :statuscode 404: No media with id ``media_id``.
-    :statuscode 404: No publish queue with name ``queue``.
+    :statuscode 404: No media asset with id ``media_id``.
+    :statuscode 404: No publication queue with name ``queue``.
     :statuscode 415: Required (valid) json content-type.
-    :statuscode 501: Cannot launch the task, input media status is ``status``.
-    :statuscode 501: Cannot launch the task, input media will be published by
-                     another task with id ``id``.
+    :statuscode 501: Cannot launch the task, input media asset's status is ``status``.
+    :statuscode 501: Cannot launch the task, input media asset will be published by another task with id ``id``.
     """
     try:
         auth_user = requires_auth(request=request, allow_any=True)
         data = get_request_json(request)
-        task_id = orchestra.launch_publish_task(auth_user._id, data[u'media_id'], data[u'send_email'], data[u'queue'],
-                                                u'/publish/callback')
+        task_id = orchestra.launch_publisher_task(auth_user._id, data[u'media_id'], data[u'send_email'], data[u'queue'],
+                                                u'/publisher/callback')
         return ok_200(task_id, True)
     except Exception as e:
         map_exceptions(e)
 
 
 # FIXME why HEAD verb doesn't work (curl: (18) transfer closed with 263 bytes remaining to read) ?
-@app.route(u'/publish/task/id/<id>/HEAD', methods=[u'GET'])
-def api_publish_task_id_head(id):
+@app.route(u'/publisher/task/id/<id>/HEAD', methods=[u'GET'])
+def api_publisher_task_id_head(id):
     """
-    Return a publish task serialized to JSON.
+    Return a publication task serialized to JSON.
 
-    The publish task attributes are appended with the Celery's ``async result`` of the task.
+    The publication task attributes are appended with the Celery's ``async result`` of the task.
 
     **Example request**:
 
     .. sourcecode:: http
 
-        GET /publish/task/id/c697f528-74f7-11e2-96a3-3085a9accc5d/HEAD HTTP/1.1
+        GET /publisher/task/id/c697f528-74f7-11e2-96a3-3085a9accc5d/HEAD HTTP/1.1
         Host: somewhere.com
         Header: tabby@bernex.ch:miaow
         Accept: application/json
@@ -2481,25 +2478,25 @@ def api_publish_task_id_head(id):
     :statuscode 200: OK
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 404: No publish task with id ``id``.
+    :statuscode 404: No publication task with id ``id``.
     """
     try:
         check_id(id)
         requires_auth(request=request, allow_any=True)
-        task = orchestra.get_publish_task(specs={u'_id': id})
+        task = orchestra.get_publisher_task(specs={u'_id': id})
         if not task:
-            raise IndexError(to_bytes(u'No publish task with id {0}.'.format(id)))
+            raise IndexError(to_bytes(u'No publication task with id {0}.'.format(id)))
         return ok_200(task, True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route(u'/publish/task/id/<id>', methods=[u'GET'])
-def api_publish_task_id_get(id):
+@app.route(u'/publisher/task/id/<id>', methods=[u'GET'])
+def api_publisher_task_id_get(id):
     """
-    Return a publish task serialized to JSON.
+    Return a publication task serialized to JSON.
 
-    The publish task attributes are appended with the Celery's ``async result`` of the task.
+    The publication task attributes are appended with the Celery's ``async result`` of the task.
 
     All ``thing_id`` fields are replaced by corresponding ``thing``.
     For example ``user_id`` is replaced by ``user``'s data.
@@ -2509,7 +2506,7 @@ def api_publish_task_id_get(id):
 
     .. sourcecode:: http
 
-        GET /publish/task/id/c697f528-74f7-11e2-96a3-3085a9accc5d HTTP/1.1
+        GET /publisher/task/id/c697f528-74f7-11e2-96a3-3085a9accc5d HTTP/1.1
         Host: somewhere.com
         Header: tabby@bernex.ch:miaow
         Accept: application/json
@@ -2567,27 +2564,27 @@ def api_publish_task_id_get(id):
     :statuscode 200: OK
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 404: No publish task with id ``id``.
+    :statuscode 404: No publication task with id ``id``.
     """
     try:
         check_id(id)
         requires_auth(request=request, allow_any=True)
-        task = orchestra.get_publish_task(specs={u'_id': id}, load_fields=True)
+        task = orchestra.get_publisher_task(specs={u'_id': id}, load_fields=True)
         if not task:
-            raise IndexError(to_bytes(u'No publish task with id {0}.'.format(id)))
+            raise IndexError(to_bytes(u'No publication task with id {0}.'.format(id)))
         return ok_200(task, True)
     except Exception as e:
         map_exceptions(e)
 
 
-@app.route(u'/publish/task/id/<id>', methods=[u'DELETE'])
-def api_publish_task_id_delete(id):
+@app.route(u'/publisher/task/id/<id>', methods=[u'DELETE'])
+def api_publisher_task_id_delete(id):
     """
-    Revoke a publish task.
+    Revoke a publication task.
 
-    This method do not delete tasks from tasks database but set ``revoked`` attribute in tasks
-    database and broadcast revoke request to publisher units with Celery. If the task is actually
-    running it will be canceled. The output publication media will be deleted.
+    This method do not delete tasks from tasks database but set ``revoked`` attribute in tasks database and broadcast
+    revoke request to publication units with Celery. If the task is actually running it will be canceled.
+    The media asset will be removed from the publication unit.
 
     **Example request**:
 
@@ -2609,8 +2606,8 @@ def api_publish_task_id_delete(id):
 
         {
           "status": 200,
-          "value": "The publish task \\"<task_id>\\" has been revoked.
-                    Corresponding media will be unpublished from here."
+          "value": "The publication task \\"<task_id>\\" has been revoked.
+                    Corresponding media asset will be unpublished from here."
         }
 
     :Allowed: Only author of the task
@@ -2618,21 +2615,22 @@ def api_publish_task_id_delete(id):
     :statuscode 200: OK
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 403: You are not allowed to revoke publish task with id ``id``.
-    :statuscode 404: No publish task with id ``id``.
+    :statuscode 403: You are not allowed to revoke publication task with id ``id``.
+    :statuscode 404: No publication task with id ``id``.
     :statuscode 415: Wrong id format ``id``.
     """
     try:
         check_id(id)
         auth_user = requires_auth(request=request, allow_any=True)
-        task = orchestra.get_publish_task(specs={u'_id': id})
+        task = orchestra.get_publisher_task(specs={u'_id': id})
         if not task:
-            raise IndexError(to_bytes(u'No publish task with id {0}.'.format(id)))
+            raise IndexError(to_bytes(u'No publication task with id {0}.'.format(id)))
         if auth_user._id != task.user_id:
-            abort(403, u'You are not allowed to revoke publish task with id {0}.'.format(id))
-        orchestra.revoke_publish_task(task=task, callback_url=u'/publish/revoke/callback', terminate=True, remove=False)
-        return ok_200(u'The publish task "{0}" has been revoked. Corresponding media will be unpublished from here.'
-                      .format(task._id), False)
+            abort(403, u'You are not allowed to revoke publication task with id {0}.'.format(id))
+        orchestra.revoke_publisher_task(task=task, callback_url=u'/publisher/revoke/callback', terminate=True,
+                                      remove=False)
+        return ok_200(u'The publication task "{0}" has been revoked. Corresponding media asset will be unpublished from'
+                      ' here.'.format(task._id), False)
     except Exception as e:
         map_exceptions(e)
 
@@ -2642,12 +2640,12 @@ def api_publish_task_id_delete(id):
 @app.route(u'/transform/callback', methods=[u'POST'])
 def api_transform_task_hook():
     """
-    This method is called by transform workers when they finish their work.
+    This method is called by transformation workers when they finish their work.
 
     If task is successful, the orchestrator will set media's status to READY.
     Else, the orchestrator will append ``error_details`` to ``statistic`` attribute of task.
 
-    The media will be deleted if task failed (even the worker already take care of that).
+    The media asset will be deleted if task failed (even the worker already take care of that).
 
     **Example request**:
 
@@ -2681,8 +2679,8 @@ def api_transform_task_hook():
     :statuscode 400: Key ``key`` not found. *or* on type or value error
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 404: No transform task with id ``id``.
-    :statuscode 404: Unable to find output media with id ``id``.
+    :statuscode 404: No transformation task with id ``id``.
+    :statuscode 404: Unable to find output media asset with id ``id``.
     :statuscode 415: Requires (valid) json content-type.
     """
     try:
@@ -2696,20 +2694,20 @@ def api_transform_task_hook():
         map_exceptions(e)
 
 
-@app.route(u'/publish/callback', methods=[u'POST'])
-def api_publish_task_hook():
+@app.route(u'/publisher/callback', methods=[u'POST'])
+def api_publisher_task_hook():
     """
-    This method is called by publisher workers when they finish their work.
+    This method is called by publication workers when they finish their work.
 
-    If task is successful, the orchestrator will update ``publish_uri`` attribute of task,
-    set media's status to SUCCESS and update ``public_uris`` attribute.
-    Else, the orchestrator will append ``error_details`` to ``statistic`` attribute of task.
+    If the task is successful, the orchestrator will update ``publish_uri`` attribute of the task, set media asset's
+    status to SUCCESS and update ``public_uris`` attribute.
+    Else, the orchestrator will append ``error_details`` to ``statistic`` attribute of the task.
 
     **Example request**:
 
     .. sourcecode:: http
 
-        POST /publish/callback HTTP/1.1
+        POST /publisher/callback HTTP/1.1
         Host: somewhere.com
         Header: node:abcdef
         Accept: application/json
@@ -2734,14 +2732,14 @@ def api_publish_task_hook():
 
     :Allowed: Node
     :query task_id: Task's id (required)
-    :query publish_uri: Publication URI of the media (required)
+    :query publish_uri: Publication URI of the media asset (required)
     :query status: Task's status (SUCCESS) or error's details (required)
     :statuscode 200: OK
     :statuscode 400: Key ``key`` not found. *or* on type or value error
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 404: No publish task with id ``id``.
-    :statuscode 404: Unable to find media with id ``id``.
+    :statuscode 404: No publication task with id ``id``.
+    :statuscode 404: Unable to find media asset with id ``id``.
     :statuscode 415: Requires (valid) json content-type.
     """
     try:
@@ -2757,20 +2755,19 @@ def api_publish_task_hook():
         map_exceptions(e)
 
 
-@app.route(u'/publish/revoke/callback', methods=[u'POST'])
-def api_revoke_publish_task_hook():
+@app.route(u'/publisher/revoke/callback', methods=[u'POST'])
+def api_revoke_publisher_task_hook():
     """
-    This method is called by publisher workers when they finish their work (revoke).
+    This method is called by publication workers when they finish their work (revoke).
 
-    If task is successful, the orchestrator will update media's ``status`` and ``public_uris``
-    attribute.
-    Else, the orchestrator will append ``error_details`` to ``statistic`` attribute of task.
+    If the task is successful, the orchestrator will update media asset's ``status`` and ``public_uris`` attribute.
+    Else, the orchestrator will append ``error_details`` to ``statistic`` attribute of the task.
 
     **Example request**:
 
     .. sourcecode:: http
 
-        POST /publish/revoke/callback HTTP/1.1
+        POST /publisher/revoke/callback HTTP/1.1
         Host: somewhere.com
         Header: node:abcdef
         Accept: application/json
@@ -2795,14 +2792,14 @@ def api_revoke_publish_task_hook():
 
     :Allowed: Node
     :query task_id: Task's id (required)
-    :query publish_uri: Revoked publication URI of the media (required)
+    :query publish_uri: Revoked publication URI of the media asset (required)
     :query status: Task's status (SUCCESS) or error's details (required)
     :statuscode 200: OK
     :statuscode 400: Key ``key`` not found. *or* on type or value error
     :statuscode 401: Authenticate.
     :statuscode 403: Authentication Failed.
-    :statuscode 404: No publish task with id ``id``.
-    :statuscode 404: Unable to find media with id ``id``.
+    :statuscode 404: No publication task with id ``id``.
+    :statuscode 404: Unable to find media asset with id ``id``.
     :statuscode 415: Requires (valid) json content-type.
     """
     try:

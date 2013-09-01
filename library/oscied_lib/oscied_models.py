@@ -282,11 +282,11 @@ class TransformProfile(OsciedDBModel):
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-class PublishTask(OsciedDBTask):
+class PublisherTask(OsciedDBTask):
 
     def __init__(self, user_id=None, media_id=None, publish_uri=None, revoke_task_id=None, send_email=False, _id=None,
                  statistic=None, status=u'UNKNOWN'):
-        super(PublishTask, self).__init__(_id, statistic, status)
+        super(PublisherTask, self).__init__(_id, statistic, status)
         self.user_id = user_id
         self.media_id = media_id
         self.publish_uri = publish_uri
@@ -294,7 +294,7 @@ class PublishTask(OsciedDBTask):
         self.send_email = send_email
 
     def is_valid(self, raise_exception):
-        if not super(PublishTask, self).is_valid(raise_exception):
+        if not super(PublisherTask, self).is_valid(raise_exception):
             return False
         if hasattr(self, u'user_id') and not valid_uuid(self.user_id, none_allowed=False):
             self._E(raise_exception, u'user_id is not a valid uuid string')
@@ -357,14 +357,14 @@ class TransformTask(OsciedDBTask):
     @staticmethod
     def validate_task(media_in, profile, media_out):
         if media_in.status != u'READY':
-            raise NotImplementedError(to_bytes(u'Cannot launch the task, input media status is {0}.'.format(
+            raise NotImplementedError(to_bytes(u"Cannot launch the task, input media asset's status is {0}.".format(
                                       media_in.status)))
         if media_in.is_dash and profile.encoder_name != u'copy':
-            raise NotImplementedError(to_bytes(u'Cannot launch the task, input media is MPEG-DASH content and encoder '
-                                      'is not copy.'))
+            raise NotImplementedError(to_bytes(u'Cannot launch the task, input media asset is MPEG-DASH content and enc'
+                                      'oder is not copy.'))
         if profile.is_dash and not media_out.is_dash:
-            raise ValueError(to_bytes(u'Cannot launch the task, output media is not a MPD but task is based on a '
+            raise ValueError(to_bytes(u'Cannot launch the task, output media asset is not a MPD but task is based on a '
                              'MPEG-DASH encoder called {0}.'.format(profile.encoder_name)))
         if not profile.is_dash and media_out.is_dash:
-            raise ValueError(to_bytes(u'Cannot launch the task, output media is a MPD but task is not based on a '
+            raise ValueError(to_bytes(u'Cannot launch the task, output media asset is a MPD but task is not based on a '
                              'MPEG-DASH encoder called {0}.'.format(profile.encoder_name)))

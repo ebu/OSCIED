@@ -38,7 +38,7 @@ from random import randint
 from requests import get, patch, post, delete
 import PublisherWorker, TransformWorker
 from oscied_config_test import ORCHESTRA_CONFIG_TEST
-from oscied_models import Media, User, TransformProfile, PublishTask, TransformTask, ENCODERS_NAMES
+from oscied_models import Media, User, TransformProfile, PublisherTask, TransformTask, ENCODERS_NAMES
 from oscied_util import Callback, Storage
 import pyutils.py_juju as juju
 from pyutils.pyutils import UUID_ZERO
@@ -131,6 +131,8 @@ class OrchestraAPIClient(object):
         self.transform_profiles = OsciedCRUDMapper(self, 'transform/profile', TransformProfile)
         self.transform_units = OsciedCRUDMapper(self, 'transform/unit', None, 'number', True)
         self.transform_tasks = OsciedCRUDMapper(self, 'transform/task', TransformTask)
+        self.publisher_units = OsciedCRUDMapper(self, 'publisher/unit', None, 'number', True)
+        self.publisher_tasks = OsciedCRUDMapper(self, 'publisher/task', PublisherTask)
         # FIXME api_transform_unit_number_get, api_transform_unit_number_delete ...
 
     # Miscellaneous methods of the API ---------------------------------------------------------------------------------
@@ -207,7 +209,7 @@ class OrchestraAPIClient(object):
         #     os.remove(f.name)
 
     def upload_media(self, filename):
-        u"""Upload a media by rsync-ing the local file to the shared storage mount point of the orchestrator !"""
+        u"""Upload a media asset by rsync-ing the local file to the shared storage mount point of the orchestrator !"""
         # FIXME detect name based on hostname ?
         os.chmod(self.id_rsa, 0600)
         service, number = self.api_unit.split(u'/')
@@ -274,7 +276,7 @@ class OrchestraAPICore(object):
         self._db.drop_collection(u'medias')
         self._db.drop_collection(u'transform_profiles')
         self._db.drop_collection(u'transform_tasks')
-        self._db.drop_collection(u'publish_tasks')
+        self._db.drop_collection(u'publisher_tasks')
         logging.info(u"Orchestra database's collections dropped !")
 
     def send_email(self, to_addresses, subject, text_plain, text_html=None):
@@ -310,14 +312,16 @@ class OrchestraAPICore(object):
                 media_in = self.get_media({u'_id': task.media_in_id})
                 if not media_in:
                     # FIXME maybe do not raise but put default value or return ?
-                    raise IndexError(to_bytes(u'Unable to find input media with id {0}.'.format(task.media_in_id)))
+                    raise IndexError(to_bytes(u'Unable to find input media asset with id {0}.'.format(
+                                     task.media_in_id)))
                 profile = self.get_transform_profile({u'_id': task.profile_id})
                 if not profile:
                     # FIXME maybe do not raise but put default value or return ?
-                    raise IndexError(to_bytes(u'Unable to find profile with id {0}.'.format(task.profile_id)))
+                    raise IndexError(to_bytes(u'Unable to find transformation profile with id {0}.'.format(
+                                     task.profile_id)))
                 task.load_fields(user, media_in, media_out, profile)
                 template, name = self.config.email_ttask_template, u'Transformation'
-            elif isinstance(task, PublishTask):
+            elif isinstance(task, PublisherTask):
                 task.load_fields(user, media)
                 template, name = self.config.email_ptask_template, u'Publication'
             else:
@@ -371,9 +375,9 @@ class OrchestraAPICore(object):
     def save_media(self, media):
         media.is_valid(True)
         if self.get_media({u'uri': media.uri, u'_id': {u'$ne': media._id}}, {u'_id': 1}):
-            raise ValueError(to_bytes(u'The media uri {0} is already used by another media.'.format(media.uri)))
+            raise ValueError(to_bytes(u'The media URI {0} is already used by another media asset.'.format(media.uri)))
         if not media.get_metadata(u'title'):
-            raise ValueError(to_bytes(u'Title key is required in media metadata.'))
+            raise ValueError(to_bytes(u"Title key is required in media asset's metadata."))
         if media.status != u'DELETED':
             if self.is_mock:
                 size = randint(10*1024*1024, 10*1024*1024*1024)
@@ -404,12 +408,12 @@ class OrchestraAPICore(object):
         media.is_valid(True)
         task = self.get_transform_task({u'media_in_id': media._id}, append_result=True)
         if task and (task.status in states.UNREADY_STATES or task.status == u'PROGRESS'):
-            raise ValueError(to_bytes(u'Cannot delete the media, it is actually in use by transformation task with id '
-                             '{0} and status {1}.'.format(task._id, task.status)))
-        task = self.get_publish_task({u'media_id': media._id}, append_result=True)
+            raise ValueError(to_bytes(u'Cannot delete the media asset, it is actually in use by transformation task wit'
+                             'h id {0} and status {1}.'.format(task._id, task.status)))
+        task = self.get_publisher_task({u'media_id': media._id}, append_result=True)
         if task and (task.status in states.UNREADY_STATES or task.status == u'PROGRESS'):
-            raise ValueError(to_bytes(u'Cannot delete the media, it is actually in use by publication task with id {0} '
-                             'and status {1}.'.format(task._id, task.status)))
+            raise ValueError(to_bytes(u'Cannot delete the media asset, it is actually in use by publication task with i'
+                             'd {0} and status {1}.'.format(task._id, task.status)))
         media.status = u'DELETED'
         self.save_media(media)
         #self._db.medias.remove({'_id': media._id})
@@ -577,7 +581,7 @@ class OrchestraAPICore(object):
             raise IndexError(to_bytes(u'No user with id {0}.'.format(user_id)))
         media_in = self.get_media({u'_id': media_in_id})
         if not media_in:  # FIXME maybe a media access control here
-            raise IndexError(to_bytes(u'No media with id {0}.'.format(media_in_id)))
+            raise IndexError(to_bytes(u'No media asset with id {0}.'.format(media_in_id)))
         profile = self.get_transform_profile({u'_id': profile_id})
         if not profile:  # FIXME maybe a profile access control here
             raise IndexError(to_bytes(u'No transformation profile with id {0}.'.format(profile_id)))
@@ -752,45 +756,45 @@ class OrchestraAPICore(object):
     def get_publisher_queues(self):
         return self.config.publisher_queues
 
-    def launch_publish_task(self, user_id, media_id, send_email, queue, callback_url):
+    def launch_publisher_task(self, user_id, media_id, send_email, queue, callback_url):
         user = self.get_user({u'_id': user_id}, {u'secret': 0})
         if not user:
             raise IndexError(to_bytes(u'No user with id {0}.'.format(user_id)))
         media = self.get_media({u'_id': media_id})
         if not media:  # FIXME maybe a media access control here
-            raise IndexError(to_bytes(u'No media with id {0}.'.format(media_id)))
+            raise IndexError(to_bytes(u'No media asset with id {0}.'.format(media_id)))
         if not queue in self.config.publisher_queues:
             raise IndexError(to_bytes(u'No publication queue with name {0}.'.format(queue)))
         if media.status != u'READY':
-            raise NotImplementedError(to_bytes(u'Cannot launch the task, input media status is {0}.'.format(
+            raise NotImplementedError(to_bytes(u"Cannot launch the task, input media asset's status is {0}.".format(
                                       media.status)))
         if len(media.public_uris) > 0:
-            raise NotImplementedError(to_bytes(u'Cannot launch the task, input media is already published.'))
-        other = self.get_publish_task({u'media_id': media._id})
+            raise NotImplementedError(to_bytes(u'Cannot launch the task, input media asset is already published.'))
+        other = self.get_publisher_task({u'media_id': media._id})
         if other and other.status not in states.READY_STATES and other.status != states.REVOKED:
-            raise NotImplementedError(to_bytes(u'Cannot launch the task, input media will be published by another task '
-                                      'with id {0}.'.format(other._id)))
+            raise NotImplementedError(to_bytes(u'Cannot launch the task, input media aset will be published by another '
+                                      'task with id {0}.'.format(other._id)))
         # FIXME create a one-time password to avoid fixed secret authentication ...
         callback = Callback(self.config.api_url + callback_url, u'node', self.config.node_secret)
         if self.is_mock:
             result_id = unicode(uuid.uuid4())
         else:
-            result = PublisherWorker.publish_task.apply_async(
+            result = PublisherWorker.publisher_task.apply_async(
                 args=(object2json(media, False), object2json(callback, False)), queue=queue)
             result_id = result.id
         if not result_id:
             raise ValueError(to_bytes(u'Unable to transmit task to workers of queue {0}.'.format(queue)))
         logging.info(u'New publication task {0} -> queue {1}.'.format(result_id, queue))
-        task = PublishTask(user._id, media._id, send_email=send_email, _id=result_id)
+        task = PublisherTask(user._id, media._id, send_email=send_email, _id=result_id)
         task.add_statistic(u'add_date', datetime_now(), True)
-        self._db.publish_tasks.save(task.__dict__)
+        self._db.publisher_tasks.save(task.__dict__)
         return result_id
 
-    def get_publish_task(self, specs, fields=None, load_fields=False, append_result=True):
-        entity = self._db.publish_tasks.find_one(specs, fields)
+    def get_publisher_task(self, specs, fields=None, load_fields=False, append_result=True):
+        entity = self._db.publisher_tasks.find_one(specs, fields)
         if not entity:
             return None
-        task = dict2object(PublishTask, entity, inspect_constructor=True)
+        task = dict2object(PublisherTask, entity, inspect_constructor=True)
         if load_fields:
             task.load_fields(self.get_user({u'_id': task.user_id}, {u'secret': 0}),
                              self.get_media({u'_id': task.media_id}))
@@ -798,12 +802,12 @@ class OrchestraAPICore(object):
             task.append_async_result()
         return task
 
-    def update_publish_task_and_media(self, task, publish_uri=None, revoke_task_id=None, status=None):
+    def update_publisher_task_and_media(self, task, publish_uri=None, revoke_task_id=None, status=None):
         if status:
             task.status = status
             media = self.get_media({u'_id': task.media_id})
             if not media:
-                raise IndexError(to_bytes(u'Unable to find media with id {0}.'.format(task.media_id)))
+                raise IndexError(to_bytes(u'Unable to find media asset with id {0}.'.format(task.media_id)))
             if task.status == states.SUCCESS:
                 task.publish_uri = publish_uri
                 media.public_uris[task._id] = publish_uri
@@ -815,18 +819,19 @@ class OrchestraAPICore(object):
             elif task.status == 'REVOKING':
                 task.revoke_task_id = revoke_task_id
             self.save_media(media)  # FIXME do not save if not modified.
-            self._db.publish_tasks.save(task.__dict__)  # FIXME The same here.
+            self._db.publisher_tasks.save(task.__dict__)  # FIXME The same here.
             return media
         return None
 
-    def revoke_publish_task(self, task, callback_url, terminate=False, remove=False):
+    def revoke_publisher_task(self, task, callback_url, terminate=False, remove=False):
         u"""
         This do not delete tasks from tasks database (if remove=False) but set revoked attribute in tasks database and
-        broadcast revoke request to publication units with celery. If the task is actually running it will be cancelled
-        if terminated = True. In any case, the output media will be deleted (task running or successfully finished).
+        broadcast revoke request to publication units with celery.
+        If the task is actually running it will be cancelled if terminated = True.
+        In any case, the output media asset will be deleted (task running or successfully finished).
         """
         if valid_uuid(task, none_allowed=False):
-            task = self.get_publish_task({u'_id': task})
+            task = self.get_publisher_task({u'_id': task})
         task.is_valid(True)
         if task.status in (states.REVOKED, 'REVOKING'):
             raise ValueError(to_bytes(u'Cannot revoke a publication task with status {0}.'.format(task.status)))
@@ -836,21 +841,21 @@ class OrchestraAPICore(object):
             # Send revoke task to the worker that published the media
             callback = Callback(self.config.api_url + callback_url, u'node', self.config.node_secret)
             queue = task.get_hostname()
-            result = PublisherWorker.revoke_publish_task.apply_async(
+            result = PublisherWorker.revoke_publisher_task.apply_async(
                 args=(task.publish_uri, object2json(callback, False)), queue=queue)
             if not result.id:
                 raise ValueError(to_bytes(u'Unable to transmit task to queue {0}.'.format(queue)))
             logging.info(u'New revoke publication task {0} -> queue {1}.'.format(result.id, queue))
-            self.update_publish_task_and_media(task, revoke_task_id=result.id, status='REVOKING')
+            self.update_publisher_task_and_media(task, revoke_task_id=result.id, status='REVOKING')
         else:
-            self.update_publish_task_and_media(task, status=states.REVOKED)
+            self.update_publisher_task_and_media(task, status=states.REVOKED)
         if remove:
-            self._db.publish_tasks.remove({u'_id': task._id})
+            self._db.publisher_tasks.remove({u'_id': task._id})
 
-    def get_publish_tasks(self, specs=None, fields=None, load_fields=False, append_result=True):
+    def get_publisher_tasks(self, specs=None, fields=None, load_fields=False, append_result=True):
         tasks = []
-        for entity in list(self._db.publish_tasks.find(specs, fields)):
-            task = dict2object(PublishTask, entity, inspect_constructor=True)
+        for entity in list(self._db.publisher_tasks.find(specs, fields)):
+            task = dict2object(PublisherTask, entity, inspect_constructor=True)
             if load_fields:
                 task.load_fields(self.get_user({u'_id': task.user_id}, {u'secret': 0}),
                                  self.get_media({u'_id': task.media_id}))
@@ -862,10 +867,10 @@ class OrchestraAPICore(object):
         #for task in state.itertasks():
         #    print task
         #for entity in entities:
-        #    task = get_publish_task_helper(entity._id)
+        #    task = get_publisher_task_helper(entity._id)
 
-    def get_publish_tasks_count(self, specs=None):
-        return self._db.publish_tasks.find(specs, {u'_id': 1}).count()
+    def get_publisher_tasks_count(self, specs=None):
+        return self._db.publisher_tasks.find(specs, {u'_id': 1}).count()
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -875,7 +880,7 @@ class OrchestraAPICore(object):
             raise IndexError(to_bytes(u'No transformation task with id {0}.'.format(task_id)))
         media_out = self.get_media({u'_id': task.media_out_id})
         if not media_out:
-            raise IndexError(to_bytes(u'Unable to find output media with id {0}.'.format(task.media_out_id)))
+            raise IndexError(to_bytes(u'Unable to find output media asset with id {0}.'.format(task.media_out_id)))
         if status == states.SUCCESS:
             media_out.status = u'READY'
             self.save_media(media_out)
@@ -889,31 +894,31 @@ class OrchestraAPICore(object):
             logging.info(u'{0} Media {1} is now deleted'.format(task_id, media_out.filename))
             #self.send_email_task(task, u'ERROR', media_out=media_out)
 
-    def publish_callback(self, task_id, publish_uri, status):
-        task = self.get_publish_task({u'_id': task_id})
+    def publisher_callback(self, task_id, publish_uri, status):
+        task = self.get_publisher_task({u'_id': task_id})
         if not task:
             raise IndexError(to_bytes(u'No publication task with id {0}.'.format(task_id)))
         if status == states.SUCCESS:
-            media = self.update_publish_task_and_media(task, publish_uri=publish_uri, status=status)
+            media = self.update_publisher_task_and_media(task, publish_uri=publish_uri, status=status)
             logging.info(u'{0} Media {1} is now PUBLISHED'.format(task_id, media.filename))
             #self.send_email_task(task, u'SUCCESS', media=media)
         else:
             task.add_statistic(u'error_details', status.replace(u'\n', u'\\n'), True)
-            self._db.publish_tasks.save(task.__dict__)
+            self._db.publisher_tasks.save(task.__dict__)
             logging.info(u'{0} Error: {1}'.format(task_id, status))
             logging.info(u'{0} Media {1} is not modified'.format(task_id, media.filename))
             #self.send_email_task(task, u'ERROR', media=None)
 
-    def publish_revoke_callback(self, task_id, publish_uri, status):
-        task = self.get_publish_task({u'revoke_task_id': task_id})
+    def publisher_revoke_callback(self, task_id, publish_uri, status):
+        task = self.get_publisher_task({u'revoke_task_id': task_id})
         if not task:
             raise IndexError(to_bytes(u'No publication task with revoke_task_id {0}.'.format(task_id)))
         if status == states.SUCCESS:
-            media = self.update_publish_task_and_media(task, status=states.REVOKED)
+            media = self.update_publisher_task_and_media(task, status=states.REVOKED)
             logging.info(u'{0} Media {1} is now {2}'.format(task_id, media.filename, media.status))
         else:
             task.add_statistic('revoke_error_details', status.replace(u'\n', u'\\n'), True)
-            self._db.publish_tasks.save(task.__dict__)
+            self._db.publisher_tasks.save(task.__dict__)
             logging.info(u'{0} Error: {1}'.format(task_id, status))
             logging.info(u'{0} Media {1} is not modified'.format(task_id, media.filename))
 
@@ -951,9 +956,9 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False):
         print(os.getcwd())
         media = Media(user_id=user._id, filename=filename, metadata={u'title': title})
         if not os.path.exists(local_filename):
-            print(u'Skip media {0}, file "{1}" Not found.'.format(media.metadata[u'title'], local_filename))
+            print(u'Skip media asset {0}, file "{1}" Not found.'.format(media.metadata[u'title'], local_filename))
             continue
-        print(u'Adding media {0} as user {1}'.format(media.metadata[u'title'], user.name))
+        print(u'Adding media asset {0} as user {1}'.format(media.metadata[u'title'], user.name))
         if is_core:
             #orchestra.config. bla bla -> get media.uri
             orchestra.save_media(media)
@@ -985,7 +990,7 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False):
             raise IndexError(to_bytes(u'No user with e-mail address {0}.'.format(user_email)))
         media_in = orchestra.get_media({u'filename': in_filename})
         if not media_in:
-            raise IndexError(to_bytes(u'No media with filename {0}.'.format(in_filename)))
+            raise IndexError(to_bytes(u'No media asset with filename {0}.'.format(in_filename)))
         profile = orchestra.get_transform_profile({u'title': profile_title})
         if not profile:
             raise IndexError(to_bytes(u'No transformation profile with title {0}.'.format(profile_title)))

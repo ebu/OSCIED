@@ -25,7 +25,7 @@
 
 import uuid
 from oscied_config_test import ORCHESTRA_CONFIG_TEST
-from oscied_models import Media, User, TransformProfile, PublishTask, TransformTask
+from oscied_models import Media, User, TransformProfile, PublisherTask, TransformTask
 
 
 MEDIA_TEST = Media(unicode(uuid.uuid4()), unicode(uuid.uuid4()), None, None, u'tabby.mpg',
@@ -37,8 +37,8 @@ USER_TEST = User(u'David', u'Fischer', u'david.fischer.ch@gmail.com', u'Secr4taB
 
 TRANSFORM_PROFILE_TEST = TransformProfile(u'HD 1080p', u'MP4 H.264 1080p, audio copy', u'ffmpeg', u'-c:a copy ...')
 
-PUBLISH_JOB_TEST = PublishTask(user_id=USER_TEST._id, media_id=MEDIA_TEST._id,
-                               publish_uri=u'http://amazon.com/salut.mpg')
+PUBLISH_JOB_TEST = PublisherTask(user_id=USER_TEST._id, media_id=MEDIA_TEST._id,
+                                 publish_uri=u'http://amazon.com/salut.mpg')
 
 TRANSFORM_JOB_TEST = TransformTask(user_id=USER_TEST._id, media_in_id=MEDIA_TEST._id, media_out_id=MEDIA_TEST._id,
                                    profile_id=TRANSFORM_PROFILE_TEST._id)
