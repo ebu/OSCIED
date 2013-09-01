@@ -24,19 +24,26 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 from oscied_api import OrchestraAPIClient, init_api
-from pyutils.py_juju import DeploymentScenario
+from pyutils.py_juju import Environment
 
 
-class OsciedDeploymentScenario(DeploymentScenario):
+class OsciedEnvironment(Environment):
 
     # FIXME an helper to update config passwords (generate) -> self.config
+    def __init__(self, name, api_unit=u'oscied-orchestra/0', **kwargs):
+        super(OsciedEnvironment, self).__init__(name, **kwargs)
+        self.api_unit = api_unit
+        self._api_client = None
 
-    def get_client(self, api_unit=u'oscied-orchestra/0', **kwargs):
-        service, number = api_unit.split('/')
-        settings = self.get_service_config(service)['settings']
-        self.root = (u'root', settings['root_secret']['value'])
-        hostname = self.get_unit(service, number)['public-address']
-        return OrchestraAPIClient(hostname, api_unit=api_unit, auth=self.root, environment=self.environment, **kwargs)
+    @property
+    def api_client(self):
+        if not self._api_client:
+            service, number = self.api_unit.split('/')
+            settings = self.get_service_config(service)['settings']
+            self.root = (u'root', settings['root_secret']['value'])
+            host = self.get_unit(service, number)['public-address']
+            self._api_client = OrchestraAPIClient(host, api_unit=self.api_unit, auth=self.root, environment=self.name)
+        return self._api_client
 
-    def init_api(self, client, api_init_csv_directory, flush=False, **kwargs):
-        init_api(client, api_init_csv_directory, flush=flush)
+    def init_api(self, api_init_csv_directory, flush=False, **kwargs):
+        init_api(self.api_client, api_init_csv_directory, flush=flush)
