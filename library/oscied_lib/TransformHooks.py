@@ -92,7 +92,7 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
             self.debug(make(u'gpac.tar.bz2', log=self.debug)['configure'])
         elif 'deb' in self.config.gpac_origin:
             self.info(u'Install GPAC/DashCast from debian package {0}'.format(self.config.gpac_origin))
-            self.cmd(u'dpkg -i {0}'.format(u'gpac_0.5.1.DEV-r4722_i386.deb'), fail=False)
+            self.cmd(u'dpkg -i {0}'.format(self.config.gpac_origin), fail=False)
             self.cmd(u'apt-get -y -f install')
         else:
             self.info(u'Install GPAC/DashCast')
