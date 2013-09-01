@@ -54,8 +54,12 @@ oscied-transform:
   storage_fstype: ""
   storage_mountpoint: ""
   storage_options: ""
+  open_hevc_origin: ""
+  x264_origin: ""
+  ffmpeg_origin: "ppa:jon-severinsson/ffmpeg"
+  gpac_origin: "gpac_0.5.1.DEV-r4722_amd64.deb"
 oscied-webui:
-  verbose: "false"
+  verbose: "true"
   cleanup: "true"
   max_upload_size: 4294967296
   max_execution_time: 180
