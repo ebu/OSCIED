@@ -1149,7 +1149,6 @@ def api_environment_post():
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
         data = get_request_json(request)
-        raise NotImplementedError(to_bytes(u'This method is not implemented in current release.'))
         return ok_200(orchestra.add_environment(data[u'name'], data[u'type'], data[u'region'], data[u'access_key'],
                       data[u'secret_key'], data[u'control_bucket']), False)
     except Exception as e:
@@ -2078,6 +2077,115 @@ def api_transform_task_id_delete(id):
         orchestra.revoke_transform_task(task=task, terminate=True, remove=False, delete_media=True)
         return ok_200(u'The transform task "{0}" has been revoked. Corresponding output media will be deleted.'.format(
                       task._id), False)
+    except Exception as e:
+        map_exceptions(e)
+
+
+# Publication units management -----------------------------------------------------------------------------------------
+
+@app.route(u'/publisher/unit/environment/<environment>/count', methods=[u'GET'])
+def api_publisher_unit_count(environment):
+    """
+    Return publisher units count of environment ``environment``.
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, allow_any=True)
+        return ok_200(orchestra.get_publisher_units_count(environment), False)
+    except Exception as e:
+        map_exceptions(e)
+
+
+@app.route(u'/publisher/unit/environment/<environment>', methods=[u'GET'])
+def api_publisher_unit_get(environment):
+    """
+    Return an array containing the publisher units of environment ``environment`` serialized to
+    JSON.
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, allow_any=True)
+        return ok_200(orchestra.get_publisher_units(environment), False)
+    except Exception as e:
+        map_exceptions(e)
+
+
+@app.route(u'/publisher/unit/environment/<environment>', methods=[u'POST'])
+def api_publisher_unit_post(environment):
+    """
+    Deploy some new publisher units into environment ``environment``.
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, role=u'admin_platform')
+        data = get_request_json(request)
+        orchestra.add_or_deploy_publisher_units(environment, int(data[u'num_units']))
+        return ok_200(u'Deployed {0} publisher units into environment "{1}"'.format(data[u'num_units'], environment),
+                      False)
+    except Exception as e:
+        map_exceptions(e)
+
+
+@app.route(u'/publisher/unit/environment/<environment>', methods=[u'DELETE'])
+def api_publisher_unit_delete(environment):
+    """
+    Remove some publisher units from environment ``environment``.
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, role=u'admin_platform')
+        data = get_request_json(request)
+        numbers = orchestra.destroy_publisher_units(environment, int(data[u'num_units']), True)
+        return ok_200(u'Removed {0} (requested {1}) publisher units with number(s) {2} from environment "{3}"'.format(
+                      len(numbers), data[u'num_units'], numbers, environment), False)
+    except Exception as e:
+        map_exceptions(e)
+
+
+@app.route(u'/publisher/unit/environment/<environment>/number/<number>', methods=[u'GET'])
+def api_publisher_unit_number_get(environment, number):
+    """
+    Return a publisher unit serialized to JSON.
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, allow_any=True)
+        unit = orchestra.get_publisher_unit(environment, number)
+        if not unit:
+            raise IndexError(to_bytes(u'Publisher unit {0} not found in environment {1}.'.format(number, environment)))
+        return ok_200(unit, True)
+    except Exception as e:
+        map_exceptions(e)
+
+
+@app.route(u'/publisher/unit/environment/<environment>/number/<number>', methods=[u'DELETE'])
+def api_publisher_unit_number_delete(environment, number):
+    """
+    Remove publisher unit number ``number`` from environment ``environment``.
+
+    **Example request**:
+
+    .. warning:: TODO
+    """
+    try:
+        requires_auth(request=request, allow_root=True, role=u'admin_platform')
+        orchestra.destroy_publisher_unit(environment, number, True)
+        return ok_200(u'The publisher unit {0} has been removed of environment {1}.'.format(number, environment), False)
     except Exception as e:
         map_exceptions(e)
 
