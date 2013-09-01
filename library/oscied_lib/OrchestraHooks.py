@@ -100,16 +100,6 @@ class OrchestraHooks(CharmHooks_Storage):
         self.cmd(u'apt-get -y install {0}'.format(u' '.join(OrchestraHooks.JUJU_PACKAGES)))
         self.info(u'Restart network time protocol service')
         self.cmd(u'service ntp restart')
-        #pecho 'Checkout OSCIED charms locally'
-        #eval $install subversion || xecho 'Unable to install packages' 5
-        #setSettingBASH "$SVN_SERVERS_FILE" $true 'store-passwords'           'yes' || exit 6
-        #setSettingBASH "$SVN_SERVERS_FILE" $true 'store-plaintext-passwords' 'yes' || exit 7
-        #setSettingBASH "$SVN_SERVERS_FILE" $true 'store-ssl-client-cert-pp'  'yes' || exit 8
-        #setSettingBASH "$SVN_SERVERS_FILE" $true 'store-ssl-client-cert-pp-plaintext' 'yes' || x 9
-        #mkdir -p "$SVN_CERTIFS_PATH"; cp -f "$REPOS_CERTIF_FILE" "$SVN_CERTIFS_PATH/"
-        #checkout "$WEBUI_REPO"     "$WEBUI_PATH"     "$REPOS_USER" "$REPOS_PASS" || exit 10
-        #checkout "$TRANSFORM_REPO" "$TRANSFORM_PATH" "$REPOS_USER" "$REPOS_PASS" || exit 11
-        #checkout "$PUBLISHER_REPO" "$PUBLISHER_PATH" "$REPOS_USER" "$REPOS_PASS" || exit 12
         self.info(u'Expose RESTful API, MongoDB & RabbitMQ service')
         self.open_port(5000,  u'TCP')  # Orchestra RESTful API
         self.open_port(27017, u'TCP')  # MongoDB port mongod and mongos instances

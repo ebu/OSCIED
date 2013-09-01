@@ -21,18 +21,6 @@ options:
     description: |
         Secret key used by workers/nodes to callback API when they finish their task.
         Please change it in production.
-  repositories_user:
-    type: string
-    default: "oscied"
-    description: OSCIED charms repositories client username.
-  repositories_pass:
-    type: string
-    default: ""
-    description: OSCIED charms repositories client password.
-  oscied_repository:
-    type: string
-    default: "https://github.com/ebu/OSCIED/charms"
-    description: OSCIED charms will be checked out locally under ~/charms/(release).
   mongo_admin_password:
     type: string
     default: "Mongo_admin_1234"
