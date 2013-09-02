@@ -34,6 +34,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from jinja2 import Template
 from kitchen.text.converters import to_bytes
+from pymongo.errors import DuplicateKeyError
 from random import randint
 from requests import get, patch, post, delete
 import PublisherWorker, TransformWorker
@@ -256,6 +257,7 @@ class OrchestraAPICore(object):
             self._db = mongomock.Connection().orchestra
         else:
             self._db = pymongo.Connection(config.mongo_admin_connection)[u'orchestra']
+        self.config_db()
         self.root_user = User(u'root', u'oscied', u'root@oscied.org', self.config.root_secret, True, _id=UUID_ZERO)
         self.node_user = User(u'node', u'oscied', u'node@oscied.org', self.config.node_secret, False, _id=UUID_ZERO)
 
@@ -271,12 +273,15 @@ class OrchestraAPICore(object):
 
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Functions >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+    def config_db(self):
+        self._db.users.ensure_index('mail', unique=True)
+        self._db.medias.ensure_index('uri', unique=True)
+        self._db.transform_profiles.ensure_index('title', unique=True)
+
     def flush_db(self):
-        self._db.drop_collection(u'users')
-        self._db.drop_collection(u'medias')
-        self._db.drop_collection(u'transform_profiles')
-        self._db.drop_collection(u'transform_tasks')
-        self._db.drop_collection(u'publisher_tasks')
+        for collection in (u'users', u'medias', u'transform_profiles', u'transform_tasks', u'publisher_tasks'):
+            self._db.drop_collection(collection)
+        self.config_db()
         logging.info(u"Orchestra database's collections dropped !")
 
     def send_email(self, to_addresses, subject, text_plain, text_html=None):
@@ -336,11 +341,12 @@ class OrchestraAPICore(object):
 
     def save_user(self, user, hash_secret):
         user.is_valid(True)
-        if self.get_user({u'mail': user.mail, u'_id': {u'$ne': user._id}}, {u'_id': 1}):
-            raise ValueError(to_bytes(u'The email address {0} is already used by another user.'.format(user.mail)))
         if hash_secret:
             user.hash_secret()
-        self._db.users.save(user.__dict__)
+        try:
+            self._db.users.save(user.__dict__, safe=True)
+        except DuplicateKeyError:
+            raise ValueError(to_bytes(u'The email address {0} is already used by another user.'.format(user.mail)))
 
     def get_user(self, specs, fields=None, secret=None):
         entity = self._db.users.find_one(specs, fields)
@@ -374,8 +380,6 @@ class OrchestraAPICore(object):
 
     def save_media(self, media):
         media.is_valid(True)
-        if self.get_media({u'uri': media.uri, u'_id': {u'$ne': media._id}}, {u'_id': 1}):
-            raise ValueError(to_bytes(u'The media URI {0} is already used by another media asset.'.format(media.uri)))
         if not media.get_metadata(u'title'):
             raise ValueError(to_bytes(u"Title key is required in media asset's metadata."))
         if media.status != u'DELETED':
@@ -390,7 +394,10 @@ class OrchestraAPICore(object):
         if duration:
             media.add_metadata(u'duration', duration, True)
         media.add_metadata(u'add_date', datetime_now(), True)
-        self._db.medias.save(media.__dict__)
+        try:
+            self._db.medias.save(media.__dict__, safe=True)
+        except DuplicateKeyError:
+            raise ValueError(to_bytes(u'The media URI {0} is already used by another media asset.'.format(media.uri)))
 
     def get_media(self, specs, fields=None, load_fields=False):
         entity = self._db.medias.find_one(specs, fields)
@@ -461,9 +468,11 @@ class OrchestraAPICore(object):
     def save_transform_profile(self, profile):
         profile.is_valid(True)
         # FIXME exact matching !
-        if self.get_transform_profile({u'title': profile.title, u'_id': {u'$ne': profile._id}}, {u'_id': 1}):
-            raise ValueError(to_bytes(u'Duplicate transformation profile title {0}.'.format(profile.title)))
-        self._db.transform_profiles.save(profile.__dict__)
+        try:
+            self._db.transform_profiles.save(profile.__dict__, safe=True)
+        except DuplicateKeyError:
+            raise ValueError(to_bytes(u'The title {0} is already used by another transformation profile.'.format(
+                             profile.title)))
 
     def get_transform_profile(self, specs, fields=None):
         entity = self._db.transform_profiles.find_one(specs, fields)
@@ -605,7 +614,7 @@ class OrchestraAPICore(object):
         logging.info(u'New transformation task {0} -> queue {1}.'.format(result_id, queue))
         task = TransformTask(user._id, media_in._id, media_out._id, profile._id, send_email=send_email, _id=result_id)
         task.add_statistic(u'add_date', datetime_now(), True)
-        self._db.transform_tasks.save(task.__dict__)
+        self._db.transform_tasks.save(task.__dict__, safe=True)
         return result_id
 
     def get_transform_task(self, specs, fields=None, load_fields=False, append_result=True):
@@ -641,7 +650,7 @@ class OrchestraAPICore(object):
             pass  # FIXME TODO
         else:
             revoke(task._id, terminate=terminate)
-        self._db.transform_tasks.save(task.__dict__)
+        self._db.transform_tasks.save(task.__dict__, safe=True)
         if delete_media and valid_uuid(task.media_out_id, none_allowed=False):
             self.delete_media(task.media_out_id)
         if remove:
@@ -787,7 +796,7 @@ class OrchestraAPICore(object):
         logging.info(u'New publication task {0} -> queue {1}.'.format(result_id, queue))
         task = PublisherTask(user._id, media._id, send_email=send_email, _id=result_id)
         task.add_statistic(u'add_date', datetime_now(), True)
-        self._db.publisher_tasks.save(task.__dict__)
+        self._db.publisher_tasks.save(task.__dict__, safe=True)
         return result_id
 
     def get_publisher_task(self, specs, fields=None, load_fields=False, append_result=True):
@@ -818,8 +827,8 @@ class OrchestraAPICore(object):
                     pass
             elif task.status == 'REVOKING':
                 task.revoke_task_id = revoke_task_id
-            self.save_media(media)  # FIXME do not save if not modified.
-            self._db.publisher_tasks.save(task.__dict__)  # FIXME The same here.
+            self.save_media(media, safe=True)  # FIXME do not save if not modified.
+            self._db.publisher_tasks.save(task.__dict__, safe=True)  # FIXME The same here.
             return media
         return None
 
@@ -889,7 +898,7 @@ class OrchestraAPICore(object):
         else:
             self.delete_media(media_out)
             task.add_statistic(u'error_details', status.replace(u'\n', u'\\n'), True)
-            self._db.transform_tasks.save(task.__dict__)
+            self._db.transform_tasks.save(task.__dict__, safe=True)
             logging.info(u'{0} Error: {1}'.format(task_id, status))
             logging.info(u'{0} Media {1} is now deleted'.format(task_id, media_out.filename))
             #self.send_email_task(task, u'ERROR', media_out=media_out)
@@ -904,7 +913,7 @@ class OrchestraAPICore(object):
             #self.send_email_task(task, u'SUCCESS', media=media)
         else:
             task.add_statistic(u'error_details', status.replace(u'\n', u'\\n'), True)
-            self._db.publisher_tasks.save(task.__dict__)
+            self._db.publisher_tasks.save(task.__dict__, safe=True)
             logging.info(u'{0} Error: {1}'.format(task_id, status))
             logging.info(u'{0} Media {1} is not modified'.format(task_id, media.filename))
             #self.send_email_task(task, u'ERROR', media=None)
@@ -918,7 +927,7 @@ class OrchestraAPICore(object):
             logging.info(u'{0} Media {1} is now {2}'.format(task_id, media.filename, media.status))
         else:
             task.add_statistic('revoke_error_details', status.replace(u'\n', u'\\n'), True)
-            self._db.publisher_tasks.save(task.__dict__)
+            self._db.publisher_tasks.save(task.__dict__, safe=True)
             logging.info(u'{0} Error: {1}'.format(task_id, status))
             logging.info(u'{0} Media {1} is not modified'.format(task_id, media.filename))
 
