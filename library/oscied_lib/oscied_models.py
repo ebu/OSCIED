@@ -29,7 +29,7 @@ from celery.result import AsyncResult
 from kitchen.text.converters import to_bytes
 from passlib.hash import pbkdf2_sha512
 from passlib.utils import consteq
-from pyutils.py_serialization import JsoneableObject
+from pyutils.py_serialization import dict2object, JsoneableObject
 from pyutils.py_validation import valid_email, valid_filename, valid_secret, valid_uuid
 
 
@@ -101,11 +101,15 @@ class Media(OsciedDBModel):
 
     STATUS = (u'PENDING', u'READY', u'DELETED')
 
-    def __init__(self, user_id=None, parent_id=None, uri=None, public_uris=None, filename=None, metadata={},
-                 status=u'PENDING', _id=None):
+    def __init__(self, user=None, user_id=None, parent=None, parent_id=None, uri=None, public_uris=None, filename=None,
+                 metadata=None, status=u'PENDING', _id=None):
         super(Media, self).__init__(_id)
-        self.user_id = user_id
-        self.parent_id = parent_id
+        self.user = dict2object(User, user, inspect_constructor=True) if isinstance(user, dict) else user
+        if user is None:  # User attribute overrides user_id
+            self.user_id = user_id
+        self.parent = dict2object(Media, parent, inspect_constructor=True) if isinstance(parent, dict) else parent
+        if parent is None:  # Parent attribute overrides parent_id
+            self.parent_id = parent_id
         self.uri = uri
         self.public_uris = public_uris or {}
         try:
@@ -134,12 +138,14 @@ class Media(OsciedDBModel):
     def is_valid(self, raise_exception):
         if not super(Media, self).is_valid(raise_exception):
             return False
+        if hasattr(self, u'user') and (not isinstance(self.user, User) or not self.user.is_valid(False)):
+            self._E(raise_exception, u'user is not a valid instance of user')
         if hasattr(self, u'user_id') and not valid_uuid(self.user_id, none_allowed=False):
             self._E(raise_exception, u'user_id is not a valid uuid string')
-        # FIXME check use if loaded
+        if hasattr(self, u'parent') and (not isinstance(self.parent, Media) or not self.parent.is_valid(False)):
+            self._E(raise_exception, u'parent is not a valid instance of media')
         if hasattr(self, u'parent_id') and not valid_uuid(self.parent_id, none_allowed=True):
             self._E(raise_exception, u'parent_id is not a valid uuid string')
-        # FIXME check parent if loaded
         # FIXME check uri
         # FIXME check public_uris
         if not valid_filename(self.filename):
@@ -186,14 +192,16 @@ class User(OsciedDBModel):
     def is_secret_hashed(self):
         return self.secret is not None and self.secret.startswith(u'$pbkdf2-sha512$')
 
-    # FIXME test other fields
     def is_valid(self, raise_exception):
         if not super(User, self).is_valid(raise_exception):
             return False
+        # FIXME check first_name
+        # FIXME check last_name
         if not valid_email(self.mail):
             self._E(raise_exception, u'mail is not a valid email address')
         if not self.is_secret_hashed and not valid_secret(self.secret, True):
             self._E(raise_exception, u'secret is not safe (8+ characters, upper/lower + numbers eg. StrongP6s)')
+        # FIXME check admin_platform
         return True
 
     def hash_secret(self, rounds=12000, salt=None, salt_size=16):
@@ -284,11 +292,15 @@ class TransformProfile(OsciedDBModel):
 
 class PublisherTask(OsciedDBTask):
 
-    def __init__(self, user_id=None, media_id=None, publish_uri=None, revoke_task_id=None, send_email=False, _id=None,
-                 statistic=None, status=u'UNKNOWN'):
+    def __init__(self, user=None, user_id=None, media=None, media_id=None, publish_uri=None, revoke_task_id=None,
+                 send_email=False, _id=None, statistic=None, status=u'UNKNOWN'):
         super(PublisherTask, self).__init__(_id, statistic, status)
-        self.user_id = user_id
-        self.media_id = media_id
+        self.user = dict2object(User, user, inspect_constructor=True) if isinstance(user, dict) else user
+        if user is None:  # User attribute overrides user_id
+            self.user_id = user_id
+        self.media = dict2object(Media, media, inspect_constructor=True) if isinstance(media, dict) else media
+        if media is None:  # Media attribute overrides media_id
+            self.media_id = media_id
         self.publish_uri = publish_uri
         self.revoke_task_id = revoke_task_id
         self.send_email = send_email
@@ -296,12 +308,14 @@ class PublisherTask(OsciedDBTask):
     def is_valid(self, raise_exception):
         if not super(PublisherTask, self).is_valid(raise_exception):
             return False
+        if hasattr(self, u'user') and (not isinstance(self.user, User) or not self.user.is_valid(False)):
+            self._E(raise_exception, u'user is not a valid instance of user')
         if hasattr(self, u'user_id') and not valid_uuid(self.user_id, none_allowed=False):
             self._E(raise_exception, u'user_id is not a valid uuid string')
-        # FIXME check user if loaded
+        if hasattr(self, u'media') and (not isinstance(self.media, Media) or not self.media.is_valid(False)):
+            self._E(raise_exception, u'media is not a valid instance of media')
         if hasattr(self, u'media_id') and not valid_uuid(self.media_id, none_allowed=False):
             self._E(raise_exception, u'media_id is not a valid uuid string')
-        # FIXME check media if loaded
         # FIXME check publish_uri
         if not valid_uuid(self.revoke_task_id, none_allowed=True):
             self._E(raise_exception, u'revoke_task_id is not a valid uuid string')
@@ -317,30 +331,44 @@ class PublisherTask(OsciedDBTask):
 
 class TransformTask(OsciedDBTask):
 
-    def __init__(self, user_id=None, media_in_id=None, media_out_id=None, profile_id=None, send_email=False, _id=None,
-                 statistic=None, status=u'UNKNOWN'):
+    def __init__(self, user=None, user_id=None, media_in=None, media_in_id=None, media_out=None, media_out_id=None,
+                 profile=None, profile_id=None, send_email=False, _id=None, statistic=None, status=u'UNKNOWN'):
         super(TransformTask, self).__init__(_id, statistic, status)
-        self.user_id = user_id
-        self.media_in_id = media_in_id
-        self.media_out_id = media_out_id
-        self.profile_id = profile_id
+        self.user = dict2object(User, user, inspect_constructor=True) if isinstance(user, dict) else user
+        if user is None:  # User attribute overrides user_id
+            self.user_id = user_id
+        self.media_in = dict2object(Media, media_in, True) if isinstance(media_in, dict) else media_in
+        if media_in is None:  # Media_in attribute overrides media_in_id
+            self.media_in_id = media_in_id
+        self.media_out = dict2object(Media, media_out, True) if isinstance(media_out, dict) else media_out
+        if media_out is None:  # Media_out attribute overrides media_out_id
+            self.media_out_id = media_out_id
+        self.profile = dict2object(TransformProfile, profile, True) if isinstance(profile, dict) else profile
+        if profile is None:  # Profile attribute overrides profile_id
+            self.profile_id = profile_id
         self.send_email = send_email
 
     def is_valid(self, raise_exception):
         if not super(TransformTask, self).is_valid(raise_exception):
             return False
+        if hasattr(self, u'user') and (not isinstance(self.user, User) or not self.user.is_valid(False)):
+            self._E(raise_exception, u'user is not a valid instance of user')
         if hasattr(self, u'user_id') and not valid_uuid(self.user_id, none_allowed=False):
             self._E(raise_exception, u'user_id is not a valid uuid string')
-        # FIXME check user if loaded
+        if hasattr(self, u'media_in') and (not isinstance(self.media_in, Media) or not self.media_in.is_valid(False)):
+            self._E(raise_exception, u'media_in is not a valid instance of media')
         if hasattr(self, u'media_in_id') and not valid_uuid(self.media_in_id, none_allowed=False):
             self._E(raise_exception, u'media_in_id is not a valid uuid string')
-        # FIXME check media_in if loaded
+        if hasattr(self, u'media_out') and (not isinstance(self.media_out, Media) or
+                                            not self.media_out.is_valid(False)):
+            self._E(raise_exception, u'media_out is not a valid instance of media')
         if hasattr(self, u'media_out_id') and not valid_uuid(self.media_out_id, none_allowed=False):
             self._E(raise_exception, u'media_out_id is not a valid uuid string')
-        # FIXME check media_out if loaded
+        if hasattr(self, u'profile') and (not isinstance(self.profile, TransformProfile) or
+                                          not self.profile.is_valid(False)):
+            self._E(raise_exception, u'profile is not a valid instance of transformation profile')
         if hasattr(self, u'profile_id') and not valid_uuid(self.profile_id, none_allowed=False):
             self._E(raise_exception, u'profile_id is not a valid uuid string')
-        # FIXME check profile if loaded
         # FIXME check send_email
         return True
 
