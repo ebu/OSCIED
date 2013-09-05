@@ -490,7 +490,7 @@ def api_user_id_get(id):
     try:
         check_id(id)
         requires_auth(request=request, allow_root=True, allow_any=True)
-        user = orchestra.get_user(specs={u'_id': id}, fields={u'secret': 0})
+        user = orchestra.get_user(spec={u'_id': id}, fields={u'secret': 0})
         if not user:
             raise IndexError(to_bytes(u'No user with id {0}.'.format(id)))
         return ok_200(user, True)
@@ -555,7 +555,7 @@ def api_user_id_patch(id):
     try:
         check_id(id)
         auth_user = requires_auth(request=request, allow_root=True, role=u'admin_platform', id=id)
-        user = orchestra.get_user(specs={u'_id': id})
+        user = orchestra.get_user(spec={u'_id': id})
         data = get_request_data(request)
         if not user:
             raise IndexError(to_bytes(u'No user with id {0}.'.format(id)))
@@ -614,7 +614,7 @@ def api_user_id_delete(id):
     try:
         check_id(id)
         requires_auth(request=request, allow_root=True, role=u'admin_platform', id=id)
-        user = orchestra.get_user(specs={u'_id': id})
+        user = orchestra.get_user(spec={u'_id': id})
         if not user:
             raise IndexError(to_bytes(u'No user with id {0}.'.format(id)))
         orchestra.delete_user(user)
@@ -892,7 +892,7 @@ def api_media_id_head(id):
     try:
         check_id(id)
         requires_auth(request=request, allow_any=True)
-        media = orchestra.get_media(specs={u'_id': id})
+        media = orchestra.get_media(spec={u'_id': id})
         if not media:
             raise IndexError(to_bytes(u'No media asset with id {0}.'.format(id)))
         return ok_200(media, True)
@@ -964,7 +964,7 @@ def api_media_id_get(id):
     try:
         check_id(id)
         requires_auth(request=request, allow_any=True)
-        media = orchestra.get_media(specs={'_id': id}, load_fields=True)
+        media = orchestra.get_media(spec={'_id': id}, load_fields=True)
         if not media:
             raise IndexError(to_bytes(u'No media asset with id {0}.'.format(id)))
         return ok_200(media, True)
@@ -1018,7 +1018,7 @@ def api_media_id_patch(id):
     try:
         check_id(id)
         auth_user = requires_auth(request=request, allow_any=True)
-        media = orchestra.get_media(specs={u'_id': id})
+        media = orchestra.get_media(spec={u'_id': id})
         data = get_request_data(request)
         if not media:
             raise IndexError(to_bytes(u'No media asset with id {0}.'.format(id)))
@@ -1074,7 +1074,7 @@ def api_media_id_delete(id):
     try:
         check_id(id)
         auth_user = requires_auth(request=request, allow_any=True)
-        media = orchestra.get_media(specs={u'_id': id})
+        media = orchestra.get_media(spec={u'_id': id})
         if not media:
             raise IndexError(to_bytes(u'No media asset with id {0}.'.format(id)))
         if auth_user._id != media.user_id:
@@ -1434,7 +1434,7 @@ def api_transform_profile_id_get(id):
     try:
         check_id(id)
         requires_auth(request=request, allow_any=True)
-        profile = orchestra.get_transform_profile(specs={u'_id': id})
+        profile = orchestra.get_transform_profile(spec={u'_id': id})
         if not profile:
             raise IndexError(to_bytes(u'No transformation profile with id {0}.'.format(id)))
         return ok_200(profile, True)
@@ -1480,7 +1480,7 @@ def api_transform_profile_id_delete(id):
     try:
         check_id(id)
         requires_auth(request=request, allow_any=True)
-        profile = orchestra.get_transform_profile(specs={u'_id': id})
+        profile = orchestra.get_transform_profile(spec={u'_id': id})
         if not profile:
             raise IndexError(to_bytes(u'No transformation profile with id {0}.'.format(id)))
         orchestra.delete_transform_profile(profile)
@@ -1904,7 +1904,7 @@ def api_transform_task_id_head(id):
     try:
         check_id(id)
         requires_auth(request=request, allow_any=True)
-        task = orchestra.get_transform_task(specs={u'_id': id})
+        task = orchestra.get_transform_task(spec={u'_id': id})
         if not task:
             raise IndexError(to_bytes(u'No transformation task with id {0}.'.format(id)))
         return ok_200(task, True)
@@ -2021,7 +2021,7 @@ def api_transform_task_id_get(id):
     try:
         check_id(id)
         requires_auth(request=request, allow_any=True)
-        task = orchestra.get_transform_task(specs={u'_id': id}, load_fields=True)
+        task = orchestra.get_transform_task(spec={u'_id': id}, load_fields=True)
         if not task:
             raise IndexError(to_bytes(u'No transformation task with id {0}.'.format(id)))
         return ok_200(task, True)
@@ -2077,7 +2077,7 @@ def api_transform_task_id_delete(id):
     try:
         check_id(id)
         auth_user = requires_auth(request=request, allow_any=True)
-        task = orchestra.get_transform_task(specs={u'_id': id})
+        task = orchestra.get_transform_task(spec={u'_id': id})
         if not task:
             raise IndexError(to_bytes(u'No transformation task with id {0}.'.format(id)))
         if auth_user._id != task.user_id:
@@ -2496,7 +2496,7 @@ def api_publisher_task_id_head(id):
     try:
         check_id(id)
         requires_auth(request=request, allow_any=True)
-        task = orchestra.get_publisher_task(specs={u'_id': id})
+        task = orchestra.get_publisher_task(spec={u'_id': id})
         if not task:
             raise IndexError(to_bytes(u'No publication task with id {0}.'.format(id)))
         return ok_200(task, True)
@@ -2582,7 +2582,7 @@ def api_publisher_task_id_get(id):
     try:
         check_id(id)
         requires_auth(request=request, allow_any=True)
-        task = orchestra.get_publisher_task(specs={u'_id': id}, load_fields=True)
+        task = orchestra.get_publisher_task(spec={u'_id': id}, load_fields=True)
         if not task:
             raise IndexError(to_bytes(u'No publication task with id {0}.'.format(id)))
         return ok_200(task, True)
@@ -2635,7 +2635,7 @@ def api_publisher_task_id_delete(id):
     try:
         check_id(id)
         auth_user = requires_auth(request=request, allow_any=True)
-        task = orchestra.get_publisher_task(specs={u'_id': id})
+        task = orchestra.get_publisher_task(spec={u'_id': id})
         if not task:
             raise IndexError(to_bytes(u'No publication task with id {0}.'.format(id)))
         if auth_user._id != task.user_id:
