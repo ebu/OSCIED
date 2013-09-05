@@ -51,7 +51,6 @@ from pyutils.py_unicode import csv_reader
 from pyutils.py_subprocess import rsync, ssh
 from pyutils.py_validation import valid_uuid
 
-# FIXME use mongodb uniqueness constraints (e.g. user mail, profile title)
 
 class OsciedCRUDMapper(object):
 
@@ -102,9 +101,10 @@ class OsciedCRUDMapper(object):
             instance.secret = value.secret if args else kwargs[u'secret']
         return instance
 
-    def list(self, head=False):
+    def list(self, head=False, **data):
         values = []
-        response_dict = self.api_client.do_request(get, self.get_url(extra=(u'HEAD' if head else None)))
+        response_dict = self.api_client.do_request(get, self.get_url(extra=(u'HEAD' if head else None)),
+                                                   data=object2json(data, include_properties=False))
         if self.cls is None:
             return response_dict
         for value_dict in response_dict:
@@ -271,6 +271,18 @@ class OrchestraAPICore(object):
     def about(self):
         return (u"Orchestra : EBU's OSCIED Orchestrator by David Fischer 2012-2013")
 
+    @property
+    def db_count_keys(self):
+        return (u'spec',)
+
+    @property
+    def db_find_keys(self):
+        return (u'spec', u'fields', u'limit', u'skip', u'sort')
+
+    @property
+    def db_find_options(self):
+        return {'timeout': True, 'snapshot': True}
+
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Functions >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     def config_db(self):
@@ -348,8 +360,8 @@ class OrchestraAPICore(object):
         except DuplicateKeyError:
             raise ValueError(to_bytes(u'The email address {0} is already used by another user.'.format(user.mail)))
 
-    def get_user(self, specs, fields=None, secret=None):
-        entity = self._db.users.find_one(specs, fields)
+    def get_user(self, spec, fields=None, secret=None):
+        entity = self._db.users.find_one(spec, fields)
         if not entity:
             return None
         user = dict2object(User, entity, inspect_constructor=True)
@@ -367,14 +379,18 @@ class OrchestraAPICore(object):
         user.is_valid(True)
         self._db.users.remove({u'_id': user._id})
 
-    def get_users(self, specs=None, fields=None):
+    def get_users(self, spec=None, fields=None, skip=0, limit=0, sort=None):
         users = []
-        for entity in list(self._db.users.find(specs, fields)):
-            users.append(dict2object(User, entity, inspect_constructor=True))
+        if fields is not None:
+            fields[u'secret'] = 0
+        for entity in list(self._db.users.find(spec=spec, fields=fields, skip=skip, limit=limit, sort=sort,
+                                               **self.db_find_options)):
+            user = dict2object(User, entity, inspect_constructor=True)
+            users.append(user)
         return users
 
-    def get_users_count(self, specs=None):
-        return self._db.users.find(specs, {u'_id': 1}).count()
+    def get_users_count(self, spec=None):
+        return self._db.users.find(spec, {u'_id': 1}).count()
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -399,8 +415,8 @@ class OrchestraAPICore(object):
         except DuplicateKeyError:
             raise ValueError(to_bytes(u'The media URI {0} is already used by another media asset.'.format(media.uri)))
 
-    def get_media(self, specs, fields=None, load_fields=False):
-        entity = self._db.medias.find_one(specs, fields)
+    def get_media(self, spec, fields=None, load_fields=False):
+        entity = self._db.medias.find_one(spec, fields)
         if not entity:
             return None
         media = dict2object(Media, entity, inspect_constructor=True)
@@ -426,9 +442,10 @@ class OrchestraAPICore(object):
         #self._db.medias.remove({'_id': media._id})
         Storage.delete_media(self.config, media)
 
-    def get_medias(self, specs=None, fields=None, load_fields=False):
+    def get_medias(self, spec=None, fields=None, skip=0, limit=0, sort=None, load_fields=False):
         medias = []
-        for entity in list(self._db.medias.find(specs, fields)):
+        for entity in list(self._db.medias.find(spec=spec, fields=fields, skip=skip, limit=limit, sort=sort,
+                                                **self.db_find_options)):
             media = dict2object(Media, entity, inspect_constructor=True)
             if load_fields:
                 media.load_fields(self.get_user({u'_id': media.user_id}, {u'secret': 0}),
@@ -436,8 +453,8 @@ class OrchestraAPICore(object):
             medias.append(media)
         return medias
 
-    def get_medias_count(self, specs=None):
-        return self._db.medias.find(specs, {u'_id': 1}).count()
+    def get_medias_count(self, spec=None):
+        return self._db.medias.find(spec, {u'_id': 1}).count()
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -474,8 +491,8 @@ class OrchestraAPICore(object):
             raise ValueError(to_bytes(u'The title {0} is already used by another transformation profile.'.format(
                              profile.title)))
 
-    def get_transform_profile(self, specs, fields=None):
-        entity = self._db.transform_profiles.find_one(specs, fields)
+    def get_transform_profile(self, spec, fields=None):
+        entity = self._db.transform_profiles.find_one(spec, fields)
         if not entity:
             return None
         return dict2object(TransformProfile, entity, inspect_constructor=True)
@@ -486,14 +503,15 @@ class OrchestraAPICore(object):
         profile.is_valid(True)
         self._db.transform_profiles.remove({u'_id': profile._id})
 
-    def get_transform_profiles(self, specs=None, fields=None):
+    def get_transform_profiles(self, spec=None, fields=None, skip=0, limit=0, sort=None):
         profiles = []
-        for entity in list(self._db.transform_profiles.find(specs, fields)):
+        for entity in list(self._db.transform_profiles.find(spec=spec, fields=fields, skip=skip, limit=limit, sort=sort,
+                                                            **self.db_find_options)):
             profiles.append(dict2object(TransformProfile, entity, inspect_constructor=True))
         return profiles
 
-    def get_transform_profiles_count(self, specs=None):
-        return self._db.transform_profiles.find(specs, {u'_id': 1}).count()
+    def get_transform_profiles_count(self, spec=None):
+        return self._db.transform_profiles.find(spec, {u'_id': 1}).count()
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -617,8 +635,8 @@ class OrchestraAPICore(object):
         self._db.transform_tasks.save(task.__dict__, safe=True)
         return result_id
 
-    def get_transform_task(self, specs, fields=None, load_fields=False, append_result=True):
-        entity = self._db.transform_tasks.find_one(specs, fields)
+    def get_transform_task(self, spec, fields=None, load_fields=False, append_result=True):
+        entity = self._db.transform_tasks.find_one(spec, fields)
         if not entity:
             return None
         task = dict2object(TransformTask, entity, inspect_constructor=True)
@@ -656,9 +674,11 @@ class OrchestraAPICore(object):
         if remove:
             self._db.transform_tasks.remove({u'_id': task._id})
 
-    def get_transform_tasks(self, specs=None, fields=None, load_fields=False, append_result=True):
+    def get_transform_tasks(self, spec=None, fields=None, skip=0, limit=0, sort=None, load_fields=False,
+                            append_result=True):
         tasks = []
-        for entity in list(self._db.transform_tasks.find(specs, fields)):
+        for entity in list(self._db.transform_tasks.find(spec=spec, fields=fields, skip=skip, limit=limit, sort=sort,
+                                                         **self.db_find_options)):
             task = dict2object(TransformTask, entity, inspect_constructor=True)
             if load_fields:
                 task.load_fields(self.get_user({u'_id': task.user_id}, {u'secret': 0}),
@@ -675,8 +695,8 @@ class OrchestraAPICore(object):
         #for entity in entities:
         #    task = get_transform_task_helper(entity._id)
 
-    def get_transform_tasks_count(self, specs=None):
-        return self._db.transform_tasks.find(specs, {u'_id': 1}).count()
+    def get_transform_tasks_count(self, spec=None):
+        return self._db.transform_tasks.find(spec, {u'_id': 1}).count()
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -799,8 +819,8 @@ class OrchestraAPICore(object):
         self._db.publisher_tasks.save(task.__dict__, safe=True)
         return result_id
 
-    def get_publisher_task(self, specs, fields=None, load_fields=False, append_result=True):
-        entity = self._db.publisher_tasks.find_one(specs, fields)
+    def get_publisher_task(self, spec, fields=None, load_fields=False, append_result=True):
+        entity = self._db.publisher_tasks.find_one(spec, fields)
         if not entity:
             return None
         task = dict2object(PublisherTask, entity, inspect_constructor=True)
@@ -861,9 +881,11 @@ class OrchestraAPICore(object):
         if remove:
             self._db.publisher_tasks.remove({u'_id': task._id})
 
-    def get_publisher_tasks(self, specs=None, fields=None, load_fields=False, append_result=True):
+    def get_publisher_tasks(self, spec=None, fields=None, skip=0, limit=0, sort=None, load_fields=False,
+                            append_result=True):
         tasks = []
-        for entity in list(self._db.publisher_tasks.find(specs, fields)):
+        for entity in list(self._db.publisher_tasks.find(spec=spec, fields=fields, skip=skip, limit=limit, sort=sort,
+                                                         **self.db_find_options)):
             task = dict2object(PublisherTask, entity, inspect_constructor=True)
             if load_fields:
                 task.load_fields(self.get_user({u'_id': task.user_id}, {u'secret': 0}),
@@ -878,8 +900,8 @@ class OrchestraAPICore(object):
         #for entity in entities:
         #    task = get_publisher_task_helper(entity._id)
 
-    def get_publisher_tasks_count(self, specs=None):
-        return self._db.publisher_tasks.find(specs, {u'_id': 1}).count()
+    def get_publisher_tasks_count(self, spec=None):
+        return self._db.publisher_tasks.find(spec, {u'_id': 1}).count()
 
     # ------------------------------------------------------------------------------------------------------------------
 
