@@ -92,6 +92,14 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
     def transform_config(self):
         return join(self.charms_repository, self.charms_release, self.transform_service, u'config.yaml')
 
+    @property
+    def publisher_service(self):
+        return u'oscied-publisher'
+
+    @property
+    def publisher_config(self):
+        return join(self.charms_repository, self.charms_release, self.publisher_service, u'config.yaml')
+
 
 class PublisherLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinate):
 
