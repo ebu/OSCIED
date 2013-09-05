@@ -183,6 +183,10 @@ class User(OsciedDBModel):
         self.admin_platform = (unicode(admin_platform).lower() == u'true')
 
     @property
+    def credentials(self):
+        return (self.mail, self.secret)
+
+    @property
     def name(self):
         if self.first_name and self.last_name:
             return u'{0} {1}'.format(self.first_name, self.last_name)

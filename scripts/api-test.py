@@ -30,8 +30,8 @@ if __name__ == '__main__':
     from nose.tools import assert_raises
     from library.oscied_lib.oscied_api import OrchestraAPIClient
     from library.oscied_lib.oscied_models import User
-    from library.pyutils.py_exception import assert_raises_item
-    from library.pyutils.py_unicode import configure_unicode
+    from library.oscied_lib.pyutils.py_exception import assert_raises_item
+    from library.oscied_lib.pyutils.py_unicode import configure_unicode
 
     configure_unicode()
 
@@ -52,9 +52,9 @@ if __name__ == '__main__':
     print(u'Register some test users')
     client.auth = root
     admin = User(first_name=u'Admin', last_name=u'Test', mail=u'a@u.test', secret=u'AdminS3cret', admin_platform=True)
-    user = User(first_name=u'User', last_name=u'Test', mail=u'u@u.test', secret=u'SimpleS3cret')
+    user  = User(first_name=u'User',  last_name=u'Test', mail=u'u@u.test', secret=u'SimpleS3cret')
     admin = client.login_or_create(admin)
-    user = client.login_or_create(user)
+    user  = client.login_or_create(user)
 
     print(u'Test user API')
 
@@ -100,7 +100,7 @@ if __name__ == '__main__':
     assert_raises_item(Exception, client.users, user._id, delete=True)
 
     print(u'\t\tAdmin ...')
-    client.login(admin.mail, admin.secret)
+    client.login(admin)
     len(client.users)
     client.users.list()
     client.users[user._id]
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     user = client.users.add(user)
 
     print(u'\t\tUser ...')
-    client.login(user.mail, user.secret)
+    client.login(user)
     len(client.users)
     assert_raises(Exception, client.users.list)
     client.users[admin._id]

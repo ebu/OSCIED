@@ -40,9 +40,9 @@ class OsciedEnvironment(Environment):
         if not self._api_client:
             service, number = self.api_unit.split('/')
             settings = self.get_service_config(service)['settings']
-            self.root = (u'root', settings['root_secret']['value'])
+            root_auth = (u'root', settings['root_secret']['value'])
             host = self.get_unit(service, number)['public-address']
-            self._api_client = OrchestraAPIClient(host, api_unit=self.api_unit, auth=self.root, environment=self.name)
+            self._api_client = OrchestraAPIClient(host, api_unit=self.api_unit, auth=root_auth, environment=self.name)
         return self._api_client
 
     def init_api(self, api_init_csv_directory, flush=False, **kwargs):

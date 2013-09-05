@@ -117,23 +117,24 @@ class OsciedCRUDMapper(object):
 class OrchestraAPIClient(object):
 
     def __init__(self, hostname, port=5000, api_unit=u'oscied-orchestra/0', api_local_config=u'local_config.pkl',
-                 auth=None, id_rsa='~/.ssh/id_rsa', environment='default', timeout=10.0):
+                 auth=None, id_rsa=u'~/.ssh/id_rsa', environment=u'default', timeout=10.0):
         self.api_url = u'{0}:{1}'.format(hostname, port)
         self.api_unit = api_unit
         self.api_local_config = api_local_config
         self.auth = auth
+        self.root_auth = auth if (auth is not None and not isinstance(auth, User) and auth[0] == u'root') else None
         self.id_rsa = os.path.abspath(os.path.expanduser(id_rsa))
         self.environment = environment
         self.timeout = timeout
         self.storage_path = self.storage_address = self.storage_mountpoint = None
-        self.users = OsciedCRUDMapper(self, 'user', User)
-        self.medias = OsciedCRUDMapper(self, 'media', Media)
-        self.environments = OsciedCRUDMapper(self, 'environment', None, 'name')
-        self.transform_profiles = OsciedCRUDMapper(self, 'transform/profile', TransformProfile)
-        self.transform_units = OsciedCRUDMapper(self, 'transform/unit', None, 'number', True)
-        self.transform_tasks = OsciedCRUDMapper(self, 'transform/task', TransformTask)
-        self.publisher_units = OsciedCRUDMapper(self, 'publisher/unit', None, 'number', True)
-        self.publisher_tasks = OsciedCRUDMapper(self, 'publisher/task', PublisherTask)
+        self.users = OsciedCRUDMapper(self, u'user', User)
+        self.medias = OsciedCRUDMapper(self, u'media', Media)
+        self.environments = OsciedCRUDMapper(self, u'environment', None, u'name')
+        self.transform_profiles = OsciedCRUDMapper(self, u'transform/profile', TransformProfile)
+        self.transform_units = OsciedCRUDMapper(self, u'transform/unit', None, u'number', True)
+        self.transform_tasks = OsciedCRUDMapper(self, u'transform/task', TransformTask)
+        self.publisher_units = OsciedCRUDMapper(self, u'publisher/unit', None, u'number', True)
+        self.publisher_tasks = OsciedCRUDMapper(self, u'publisher/task', PublisherTask)
         # FIXME api_transform_unit_number_get, api_transform_unit_number_delete ...
 
     # Miscellaneous methods of the API ---------------------------------------------------------------------------------
@@ -145,20 +146,28 @@ class OrchestraAPIClient(object):
     def flush(self):
         return self.do_request(post, u'{0}/flush'.format(self.api_url))
 
-    def login(self, mail, secret, update_auth=True):
-        user_dict = self.do_request(get, u'{0}/user/login'.format(self.api_url), (mail, secret))
+    def login(self, user_or_mail, secret=None, update_auth=True):
+        if isinstance(user_or_mail, User):
+            auth = user_or_mail.credentials
+        elif secret is not None:
+            auth = (user_or_mail, secret)
+        else:
+            raise ValueError(to_bytes(u'User_or_mail is neither a valid instance of User nor a mail with a secret '
+                                      'following.'))
+        user_dict = self.do_request(get, u'{0}/user/login'.format(self.api_url), auth)
         user = dict2object(User, user_dict, inspect_constructor=True)
         if update_auth:
             # Recover user's secret
-            user.secret = secret
+            user.secret = auth[1]
             self.auth = user
         return user
 
-    def login_or_add(self, user, add_auth):
+    def login_or_add(self, user):
+        u"""Return logged ``user`` and take care of adding this ``user`` if login is not successful (as root)."""
         try:
-            return self.login(user.mail, user.secret)
+            return self.login(user)
         except:
-            self.auth = add_auth
+            self.auth = self.root_auth
             self.auth = self.users.add(user)
             return self.auth
 
@@ -180,7 +189,7 @@ class OrchestraAPIClient(object):
         u"""Execute a method of the API."""
         headers = {u'Content-type': u'application/json', u'Accept': u'application/json'}
         auth = auth or self.auth
-        auth = (auth.mail, auth.secret) if isinstance(auth, User) else auth
+        auth = auth.credentials if isinstance(auth, User) else auth
         url = u'http://{0}'.format(resource)
         return map_exceptions(verb(url, auth=auth, data=data, headers=headers, timeout=self.timeout).json())
 
