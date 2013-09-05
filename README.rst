@@ -19,5 +19,4 @@ Paths
 * medias : A path where you may put your media assets required by the deployment scenarios
 * openstack : Trial to speed-up testing of OpenStack, abandonware
 * scripts : Utility scripts to develop, deploy and manage OSCIED
-* templates : Some templates, please do not modifiy
 * tools : Mainly submodules to git repositories of FLOSS tools

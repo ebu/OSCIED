@@ -27,8 +27,7 @@
 
 # Constants ============================================================================================================
 
-RELEASE='raring'      # Update this according to your needs
-NETWORK_IFACE='eth0'  # Update this according to your needs
+RELEASE='raring'  # Update this according to your needs
 
 SCRIPTS_PATH=$(pwd)
 BASE_PATH=$(dirname "$SCRIPTS_PATH")
@@ -38,7 +37,6 @@ DOCS_PATH="$BASE_PATH/docs"
 LIBRARY_PATH="$BASE_PATH/library"
 MEDIAS_PATH="$BASE_PATH/medias"
 SCENARIOS_PATH="$BASE_PATH/scenarios"
-TEMPLATES_PATH="$BASE_PATH/templates"
 TOOLS_PATH="$BASE_PATH/tools"
 REFERENCES_PATH="$DOCS_PATH/references"
 
@@ -78,10 +76,45 @@ _check_juju()
   fi
 }
 
+_config_helper()
+{
+  _check_juju
+
+  if [ $# -ne 0 ]; then
+    xecho "Usage: $(basename $0) _config_helper"
+  fi
+  ok=$true
+
+  content=''
+  count=1
+  last_name=''
+  juju status 2>/dev/null > $tmpfile
+  while read line
+  do
+    name=$(expr match "$line" '.*\(oscied-.*/[0-9]*\):.*')
+    address=$(expr match "$line" '.*public-address: *\([^ ]*\) *')
+    [ "$name" ] && last_name=$name
+    if [ "$address" -a "$last_name" ]; then
+      mecho "$last_name -> $address"
+      [ "$content" ] && content="$content\n"
+      content="$content$last_name=$address"
+      last_name=''
+    fi
+    count=$((count+1))
+  done < $tmpfile
+
+  if [ "$content" ]; then
+    echo $e_ "$content" > "$SCENARIO_GEN_UNITS_FILE"
+    recho "Charms's units public URLs listing file updated"
+  else
+    xecho "Unable to detect charms's units public URLs"
+  fi
+}
+
 _deploy_helper()
 {
   if [ $# -ne 1 ]; then
-    xecho "Usage: $(basename $0).deploy_helper scenario"
+    xecho "Usage: $(basename $0)._deploy_helper scenario"
   fi
   scenario=$1
 
@@ -146,7 +179,7 @@ _deploy_helper()
 _overwrite_helper()
 {
   if [ $# -ne 2 ]; then
-    xecho "Usage: $(basename $0).overwrite_helper source destination"
+    xecho "Usage: $(basename $0)._overwrite_helper source destination"
   fi
 
   mkdir -p "$CHARMS_DEPLOY_PATH/$2" 2>/dev/null
@@ -158,13 +191,12 @@ _overwrite_helper()
 _rsync_helper()
 {
   if [ $# -ne 1 ]; then
-    xecho "Usage: $(basename $0).rsync_publisher charm"
+    xecho "Usage: $(basename $0)._rsync_helper charm"
   fi
 
   chmod 600 "$ID_RSA" || xecho 'Unable to find id_rsa certificate'
 
-  yesOrNo $true 'Update units listing'
-  [ $REPLY -eq $true ] && config
+  _config_helper
 
   # Initialize rsync menu
   unitsList=$(cat "$SCENARIO_GEN_UNITS_FILE" | grep "$1" | sort | sed 's:=: :g;s:\n: :g')
@@ -212,29 +244,6 @@ _rsync_helper()
   REPLY=$number
 }
 
-_standalone_execute_hook()
-{
-  if [ $# -ne 2 ]; then
-    xecho "Usage: $(basename $0).standalone_execute_hook path hook"
-  fi
-
-  pecho 'Install juju-log & open-port tricks'
-  if ! getInterfaceIPv4 "$NETWORK_IFACE" '4'; then
-    xecho "Unable to detect network interface $NETWORK_IFACE IP address"
-  fi
-  ip=$REPLY
-  $udo sh -c "cp -f $TEMPLATES_PATH/juju-log      $jujulog;  chmod 777 $jujulog"
-  $udo sh -c "cp -f $TEMPLATES_PATH/open-port     $openport; chmod 777 $openport"
-  $udo sh -c "cp -f $TEMPLATES_PATH/something-get $cget;     chmod 777 $cget"
-  $udo sh -c "cp -f $TEMPLATES_PATH/something-get $rget;     chmod 777 $rget"
-  $udo sh -c "cp -f $TEMPLATES_PATH/something-get $uget;     chmod 777 $uget"
-  $udo sh -c "cp -f $TEMPLATES_PATH/something-get.list /tmp/;"
-  $udo sh -c "sed -i 's:127.0.0.1:$ip:g' /tmp/something-get.list"
-  pecho "Execute hook script $2"
-  cd "$1"  || xecho "Unable to find path $1"
-  $udo $2  || xecho 'Hook is unsucessful'
-  recho 'Hook successful'
-}
 
 # Parse charm's units URLs listing file to get specific URLs -----------------------------------------------------------
 
@@ -313,7 +322,6 @@ main()
               install          'Download / update documents and tools'          \
               cleanup          'Cleanup *.pyc compiled python, deploy path'     \
               deploy           "${a}Launch a deployment scenario"               \
-              config           "${a}Update units public URL listing file"       \
               status           "${a}Display juju status"                        \
               log              "${a}Launch juju debug log in a screen"          \
               browse_webui     "Launch a browser to browse the Web UI"          \
@@ -494,41 +502,6 @@ deploy()
   fi
 }
 
-config()
-{
-  _check_juju
-
-  if [ $# -ne 0 ]; then
-    xecho "Usage: $(basename $0) config"
-  fi
-  ok=$true
-
-  content=''
-  count=1
-  last_name=''
-  juju status 2>/dev/null > $tmpfile
-  while read line
-  do
-    name=$(expr match "$line" '.*\(oscied-.*/[0-9]*\):.*')
-    address=$(expr match "$line" '.*public-address: *\([^ ]*\) *')
-    [ "$name" ] && last_name=$name
-    if [ "$address" -a "$last_name" ]; then
-      mecho "$last_name -> $address"
-      [ "$content" ] && content="$content\n"
-      content="$content$last_name=$address"
-      last_name=''
-    fi
-    count=$((count+1))
-  done < $tmpfile
-
-  if [ "$content" ]; then
-    echo $e_ "$content" > "$SCENARIO_GEN_UNITS_FILE"
-    recho "Charms's units public URLs listing file updated"
-  else
-    xecho "Unable to detect charms's units public URLs"
-  fi
-}
-
 status()
 {
   _check_juju
@@ -618,15 +591,12 @@ rsync_webui()
 
 unit_ssh()
 {
-  _check_juju
-
   if [ $# -ne 0 ]; then
     xecho "Usage: $(basename $0) unit_ssh"
   fi
   ok=$true
 
-  yesOrNo $true 'Update units listing'
-  [ $REPLY -eq $true ] && config
+  _config_helper
 
   # Initialize remote menu
   unitsList=$(cat "$SCENARIO_GEN_UNITS_FILE" | sort | sed 's:=: :g;s:\n: :g')
@@ -648,15 +618,12 @@ unit_ssh()
 
 unit_add()
 {
-  _check_juju
-
   if [ $# -ne 0 ]; then
     xecho "Usage: $(basename $0) unit_add"
   fi
   ok=$true
 
-  yesOrNo $true 'Update units listing'
-  [ $REPLY -eq $true ] && config
+  _config_helper
 
   # Initialize add unit menu
   _get_services_dialog_listing
@@ -674,15 +641,12 @@ unit_add()
 
 unit_remove()
 {
-  _check_juju
-
   if [ $# -ne 0 ]; then
     xecho "Usage: $(basename $0) unit_remove"
   fi
   ok=$true
 
-  yesOrNo $true 'Update units listing'
-  [ $REPLY -eq $true ] && config
+  _config_helper
 
   # Initialize remove unit menu
   _get_units_dialog_listing
