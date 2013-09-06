@@ -25,7 +25,7 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 u"""
-This module is the demo scenario shown during the International Broadcasting Convention at RAI Amsterdam in 2013.
+Entry-point of the demo scenario shown during the International Broadcasting Convention at RAI Amsterdam in 2013.
 
 TODO
 
@@ -35,56 +35,27 @@ TODO
 # file:///home/famille/David/git/OSCIED/scenarios/oscied_amazon.svg
 # http://pygal.org/custom_styles/
 
-import pygal, shutil, time
-from collections import deque
-from os.path import join, dirname
+import time
 #from requests.exceptions import ConnectionError
 from library.oscied_lib.oscied_models import User
 from library.oscied_lib.oscied_juju import OsciedEnvironment
 from library.oscied_lib.pyutils.py_console import confirm #, print_error
 from library.oscied_lib.pyutils.py_datetime import datetime_now
 #from library.oscied_lib.pyutils.py_filesystem import try_remove
-from library.oscied_lib.pyutils.py_juju import DeploymentScenario, ALL_STATES, ERROR_STATES, PENDING_STATES, STARTED
-from library.oscied_lib.pyutils.py_serialization import PickleableObject
+from library.oscied_lib.pyutils.py_juju import DeploymentScenario, ERROR_STATES, PENDING_STATES, STARTED
 from library.oscied_lib.pyutils.py_unicode import configure_unicode
-from library.oscied_lib.pyutils.py_collections import pygal_deque
+
+from scenario_config import (
+    ENABLE_TESTING, ENABLE_UNITS_API, CONFIG_AMAZ, CONFIG_MAAS, EVENTS_AMAZ, EVENTS_MAAS, LABELS, MAPPERS
+)
+from scenario_statistics import STATS_AMAZ, STATS_MAAS
+
 
 description = u'Launch IBC 2013 demo setup (MaaS Cluster with 3 machines // Amazon)'
 
-
-class ServiceStatistics(PickleableObject):
-    u"""A brand new class to store statistics about a service."""
-
-    def __init__(self, units_planned=None, units_current=None):
-        self.units_planned = units_planned or pygal_deque(maxlen=TIME_SCALE)
-        self.units_current = units_current or {state: deque(maxlen=TIME_SCALE) for state in ALL_STATES}
-
-
-LABELS  = {u'oscied-transform': u'encoding',        u'oscied-publisher': u'distribution'}
-MAPPERS = {u'oscied-transform': u'transform_units', u'oscied-publisher': u'publisher_units'}
-
-FAST = True
-TIME_SCALE = 70
-SCENARIO_PATH = dirname(__file__)
-
-CONFIG_AMAZ, STATS_AMAZ = join(SCENARIO_PATH, u'config_amazon.yaml'), {}
-CONFIG_MAAS, STATS_MAAS = join(SCENARIO_PATH, u'config_maas.yaml'), {}
-
-for service in (u'oscied-transform', u'oscied-publisher'):
-    STATS_AMAZ[service] = ServiceStatistics()
-    STATS_MAAS[service] = ServiceStatistics()
-
-EVENTS_AMAZ = {
-     0: {u'oscied-transform': 5, u'oscied-publisher': 0},
-    17: {u'oscied-transform': 0},
-    43: {u'oscied-publisher': 1},
-    45: {u'oscied-transform': 4},
-    50: {u'oscied-publisher': 3},
-    55: {u'oscied-publisher': 1}
-}
-EVENTS_MAAS = {
-     0: {u'oscied-transform': 4, u'oscied-publisher': 2},
-}
+# def generate_line_chart(statistics_env,):
+#     chart = pygal.Pie(width=width, height=height, explicit_size=explicit_size)
+#     width=300, height=300, explicit_size=True, show_dots=True, truncate_legend=20
 
 
 class IBC2013(DeploymentScenario):
@@ -96,16 +67,17 @@ class IBC2013(DeploymentScenario):
     """
     def run(self):
         print(description)
-        if confirm(u'Deploy on MAAS'):
-            self.deploy_maas()
-        if confirm(u'Initialize orchestra on MAAS'):
-            self.maas.init_api(SCENARIO_PATH, flush=True)
-        if confirm(u'Deploy on Amazon'):
-            self.deploy_amazon()
-        if confirm(u'Initialize orchestra on Amazon'):
-            self.amazon.init_api(SCENARIO_PATH, flush=True)
-        if confirm(u'Start events loop'):
-            self.events_loop()
+        self.events_loop()
+        # if confirm(u'Deploy on MAAS'):
+        #     self.deploy_maas()
+        # if confirm(u'Initialize orchestra on MAAS'):
+        #     self.maas.init_api(SCENARIO_PATH, flush=True)
+        # if confirm(u'Deploy on Amazon'):
+        #     self.deploy_amazon()
+        # if confirm(u'Initialize orchestra on Amazon'):
+        #     self.amazon.init_api(SCENARIO_PATH, flush=True)
+        # if confirm(u'Start events loop'):
+        #     self.events_loop()
 
     def deploy_maas(self):
         u"""
@@ -155,7 +127,7 @@ class IBC2013(DeploymentScenario):
         """
         self.amazon.bootstrap(wait_started=True)
         self.amazon.deploy(u'oscied-transform', u'oscied-transform', local=True,
-                           constraints=u'arch=amd64 cpu-cores=4 mem=1G')
+                           constraints=u'arch=amd64 cpu-cores=1 mem=3G')
         self.amazon.deploy(u'oscied-publisher', u'oscied-publisher', local=True, expose=True)
         self.amazon.deploy(u'oscied-orchestra', u'oscied-orchestra', local=True, expose=True)
         # WAIT
@@ -195,15 +167,15 @@ class IBC2013(DeploymentScenario):
         old_index = None
         while True:
             # Get current time to retrieve state
-            now = datetime_now(format=None)
-            index = now.second if FAST else now.minute
+            now, now_string = datetime_now(format=None), datetime_now()
+            index = now.second if ENABLE_TESTING else now.minute
             if index != old_index:
                 old_index = index
-                self.handle_event(index)
+                self.handle_event(index, now_string)
             else:
                 print(u'Skip already consumed event(s) for minute {0}.'.format(index))
             now = datetime_now(format=None)
-            sleep_time = 0.8 if FAST else 60 - now.second
+            sleep_time = 0.8 if ENABLE_TESTING else 60 - now.second
             print(u'Sleep {0} seconds ...'.format(sleep_time))
             time.sleep(sleep_time)
         #try:
@@ -213,7 +185,7 @@ class IBC2013(DeploymentScenario):
         #finally:
         #    try_remove(u'statistics.json.tmp')
 
-    def handle_event(self, index):
+    def handle_event(self, index, now_string):
         u"""
         Schedule new units and drives the deployed OSCIED setups by using the RESTful API of the orchestration service
         to run encoding and distribution tasks.
@@ -225,9 +197,6 @@ class IBC2013(DeploymentScenario):
             env_name = environment.name
             # api_client = environment.api_client
             # api_client.auth = self.admins[env_name]
-            chart = pygal.StackedBar(show_dots=True, truncate_legend=20)
-            # FIXME set custom css (colors)
-            chart.title = u'OSCIED services on {0} (# of units)'.format(env_name)
             event = environment.events.get(index, {})
             print(u'Handle {0} scheduled event for minute {1} = {2}.'.format(env_name, index, event))
             for service, stats in environment.statistics.items():
@@ -245,19 +214,19 @@ class IBC2013(DeploymentScenario):
                 else:                                             # FIXME remove this at IBC 2013
                     api_client = environment.api_client           # FIXME remove this at IBC 2013
                     api_client.auth = self.admins[env_name]       # FIXME remove this at IBC 2013
-                    units = getattr(api_client, mapper).list()
-                    current = {state: 0 for state in ALL_STATES}
-                    for unit in units.values():
-                        current[unit['agent-state']] += 1
-                    print(u'{0} - {1} planned {2} current {3}'.format(env_name, label, planned, current))
-                    import random
-                    for state, number in current.items():
-                        stats.units_current[state].append(number if number != 0 else random.randint(1,3))
-                #chart.add(u'{0} [planned]'.format(label), stats.units_planned.list)
-            for state, history in stats.units_current.items():
-                chart.add(u'{0} {1}'.format(label, state), list(history))
-            chart.render_to_file(u'oscied_{0}.new.svg'.format(env_name))
-            shutil.copy(u'oscied_{0}.new.svg'.format(env_name), u'oscied_{0}.svg'.format(env_name))
+                    units = getattr(api_client, mapper).list() if ENABLE_UNITS_API else environment.get_units(service)
+                    stats.update(now_string, planned, units)
+                    delta = planned - len(units)
+                    if delta > 0:
+                        print(u'Deploy {0} instances'.format(delta))
+                    elif delta < 0:
+                        delta = -delta
+                        print(u'Remove {0} instances'.format(delta))
+                    else:
+                        print(u'Nothing to do !')
+                    #environment.deploy(service,)
+                stats.generate_line_chart()
+                stats.generate_pie_chart_by_status()
 
 if __name__ == u'__main__':
     configure_unicode()
@@ -265,17 +234,3 @@ if __name__ == u'__main__':
         OsciedEnvironment(u'amazon', config=CONFIG_AMAZ, release=u'raring',  statistics=STATS_AMAZ, events=EVENTS_AMAZ),
         OsciedEnvironment(u'maas',   config=CONFIG_MAAS, release=u'precise', statistics=STATS_MAAS, events=EVENTS_MAAS)
     ])
-
-# pie_chart = pygal.Pie()
-# pie_chart.title = 'OSCIED  (in %)'
-# pie_chart.add('IE', [5.7, 10.2, 2.6, 1])
-# pie_chart.add('Firefox', [.6, 16.8, 7.4, 2.2, 1.2, 1, 1, 1.1, 4.3, 1])
-# pie_chart.add('Chrome', [.3, .9, 17.1, 15.3, .6, .5, 1.6])
-# pie_chart.add('Safari', [4.4, .1])
-# pie_chart.add('Opera', [.1, 1.6, .1, .5])
-
-# worldmap_chart = pygal.Worldmap()
-# worldmap_chart.title = 'Where is OSCIED running ?'
-# worldmap_chart.add('MAAS countries', {'nl': 4})
-# worldmap_chart.add('Amazon countries', {'us': 6})
-# worldmap_chart.render_to_file('world.svg')

@@ -28,3 +28,6 @@
 [submodule "library/pyutils-source"]
 	path = library/pyutils-source
 	url = git://github.com/davidfischer-ch/pyutils.git
+[submodule "tools/pygal-source"]
+	path = tools/pygal-source
+	url = git@github.com:davidfischer-ch/pygal.git
