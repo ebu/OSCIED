@@ -1529,7 +1529,7 @@ def api_transform_unit_get(environment):
 @app.route(u'/transform/unit/environment/<environment>', methods=[u'POST'])
 def api_transform_unit_post(environment):
     """
-    Deploy some new transformation units into environment ``environment``.
+    Ensure that ``num_units`` transformation units are deployed into environment ``environment``.
 
     **Example request**:
 
@@ -1538,8 +1538,8 @@ def api_transform_unit_post(environment):
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
         data = get_request_data(request)
-        orchestra.add_or_deploy_transform_units(environment, int(data[u'num_units']))
-        return ok_200(u'Deployed {0} transformation units into environment "{1}"'.format(data[u'num_units'],
+        orchestra.ensure_num_transform_units(environment, int(data[u'num_units']), terminate=True)
+        return ok_200(u'Ensured {0} transformation units into environment "{1}"'.format(data[u'num_units'],
                       environment), False)
     except Exception as e:
         map_exceptions(e)
@@ -1548,7 +1548,7 @@ def api_transform_unit_post(environment):
 @app.route(u'/transform/unit/environment/<environment>', methods=[u'DELETE'])
 def api_transform_unit_delete(environment):
     """
-    Remove some transformation units from environment ``environment``.
+    Remove the transformation service from environment ``environment``.
 
     **Example request**:
 
@@ -1556,10 +1556,8 @@ def api_transform_unit_delete(environment):
     """
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        data = get_request_data(request)
-        numbers = orchestra.destroy_transform_units(environment, int(data[u'num_units']), True)
-        return ok_200(u'Removed {0} (requested {1}) transformation units with number(s) {2} from environment "{3}"'.
-                      format(len(numbers), data[u'num_units'], numbers, environment), False)
+        orchestra.ensure_transform_units(environment, None, terminate=True)
+        return ok_200(u'Removed transformation service from environment "{0}"'.format(environment), False)
     except Exception as e:
         map_exceptions(e)
 
@@ -1587,7 +1585,7 @@ def api_transform_unit_number_get(environment, number):
 @app.route(u'/transform/unit/environment/<environment>/number/<number>', methods=[u'DELETE'])
 def api_transform_unit_number_delete(environment, number):
     """
-    Remove transformation unit number ``number`` from environment ``environment``.
+    Remove the transformation unit number ``number`` from environment ``environment``.
 
     **Example request**:
 
@@ -1595,8 +1593,8 @@ def api_transform_unit_number_delete(environment, number):
     """
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        orchestra.destroy_transform_unit(environment, number, True)
-        return ok_200(u'The transformation unit {0} has been removed of environment {1}.'.format(number, environment),
+        orchestra.destroy_transform_unit(environment, number, terminate=True)
+        return ok_200(u'The transformation unit {0} has been removed from environment {1}.'.format(number, environment),
                       False)
     except Exception as e:
         map_exceptions(e)
@@ -2128,7 +2126,7 @@ def api_publisher_unit_get(environment):
 @app.route(u'/publisher/unit/environment/<environment>', methods=[u'POST'])
 def api_publisher_unit_post(environment):
     """
-    Deploy some new publication units into environment ``environment``.
+    Ensure that ``num_units`` publication units are deployed into environment ``environment``.
 
     **Example request**:
 
@@ -2137,8 +2135,8 @@ def api_publisher_unit_post(environment):
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
         data = get_request_data(request)
-        orchestra.add_or_deploy_publisher_units(environment, int(data[u'num_units']))
-        return ok_200(u'Deployed {0} publication units into environment "{1}"'.format(data[u'num_units'], environment),
+        orchestra.ensure_publisher_units(environment, int(data[u'num_units']), terminate=True)
+        return ok_200(u'Ensured {0} publication units into environment "{1}"'.format(data[u'num_units'], environment),
                       False)
     except Exception as e:
         map_exceptions(e)
@@ -2147,7 +2145,7 @@ def api_publisher_unit_post(environment):
 @app.route(u'/publisher/unit/environment/<environment>', methods=[u'DELETE'])
 def api_publisher_unit_delete(environment):
     """
-    Remove some publication units from environment ``environment``.
+    Remove the publication service from environment ``environment``.
 
     **Example request**:
 
@@ -2155,10 +2153,8 @@ def api_publisher_unit_delete(environment):
     """
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        data = get_request_data(request)
-        numbers = orchestra.destroy_publisher_units(environment, int(data[u'num_units']), True)
-        return ok_200(u'Removed {0} (requested {1}) publication units with number(s) {2} from environment "{3}"'.format(
-                      len(numbers), data[u'num_units'], numbers, environment), False)
+        orchestra.destroy_publisher_units(environment, None, terminate=True)
+        return ok_200(u'Removed publication service from environment "{0}"'.format(environment), False)
     except Exception as e:
         map_exceptions(e)
 
@@ -2194,7 +2190,7 @@ def api_publisher_unit_number_delete(environment, number):
     """
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        orchestra.destroy_publisher_unit(environment, number, True)
+        orchestra.destroy_publisher_unit(environment, number, terminate=True)
         return ok_200(u'The publication unit {0} has been removed of environment {1}.'.format(number, environment),
                       False)
     except Exception as e:

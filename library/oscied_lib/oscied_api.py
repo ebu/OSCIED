@@ -526,7 +526,17 @@ class OrchestraAPICore(object):
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def add_or_deploy_transform_units(self, environment, num_units, test=False):
+    def ensure_num_transform_units(self, environment, num_units, terminate, test=False):
+        u"""
+
+        .. warning::
+
+            FIXME implement more robust resources listing and removing, sometimes juju fail during a call
+            (e.g. destroy_transform_units with num_units=10) and then some machines are not destroyed.
+
+            * implement a garbage collector method callable by user when he want to destroy useless machines ?
+            * implement a thread to handle removing unit asynchronously.
+        """
         if not test:
             raise NotImplementedError(u'This method is in development, set test to True to disable this warning.')
         environments, default = self.get_environments()
@@ -536,8 +546,8 @@ class OrchestraAPICore(object):
         config = juju.load_unit_config(self.config.transform_config)
         config[u'rabbit_queues'] = u'transform_{0}'.format(environment)
         if not same_environment:
-            raise NotImplementedError(to_bytes(u'Unable to launch transformation units into non-default environment '
-                                      '{0} (default is {1}).'.format(environment, default)))
+            raise NotImplementedError(to_bytes(u'Unable to setup transformation units into non-default environment {0} '
+                                      '(default is {1}).'.format(environment, default)))
             config[u'mongo_connection'] = self.config.mongo_node_connection
             config[u'rabbit_connection'] = self.config.rabbit_connection
             # FIXME copy storage configuration, first method
@@ -546,10 +556,10 @@ class OrchestraAPICore(object):
             config[u'storage_mountpoint'] = self.config.storage_mountpoint
             config[u'storage_options'] = self.config.storage_options
         juju.save_unit_config(self.config.charms_config, self.config.transform_service, config)
-        juju.add_or_deploy_units(environment, self.config.transform_service, num_units,
-                                 config=self.config.charms_config, local=True, release=self.config.charms_release,
-                                 repository=self.config.charms_repository)
-        if same_environment:
+        juju.ensure_num_units(environment, self.config.transform_service, num_units=num_units, terminate=terminate,
+                              config=self.config.charms_config, local=True, release=self.config.charms_release,
+                              repository=self.config.charms_repository)
+        if same_environment and num_units:
             try:
                 try:
                     juju.add_relation(environment, self.config.orchestra_service, self.config.transform_service,
@@ -575,37 +585,10 @@ class OrchestraAPICore(object):
     def get_transform_units_count(self, environment):
         return juju.get_units_count(environment, self.config.transform_service)
 
-    def destroy_transform_unit(self, environment, number, destroy_machine, test=False):
+    def destroy_transform_unit(self, environment, number, terminate, test=False):
         if not test:
             raise NotImplementedError(u'This method is in development, set test to True to disable this warning.')
-        juju.destroy_unit(environment, self.config.transform_service, number, destroy_machine)
-        if self.get_transform_units_count(environment) == 0:
-            return juju.destroy_service(environment, self.config.transform_service, fail=False)
-
-    def destroy_transform_units(self, environment, num_units, destroy_machine, test=False):
-        u"""
-
-        .. warning::
-
-            FIXME implement more robust resources listing and removing, sometimes juju fail during a call
-            (e.g. destroy_transform_units with num_units=10) and then some machines are not destroyed.
-
-            * implement a garbage collector method callable by user when he want to destroy useless machines ?
-            * implement a thread to handle removing unit asynchronously.
-        """
-        if not test:
-            raise NotImplementedError(u'This method is in development, set test to True to disable this warning.')
-        units = self.get_transform_units(environment)
-        numbers = []
-        for unit_number in units.iterkeys():
-            num_units -= 1
-            if num_units < 0:
-                break
-            juju.destroy_unit(environment, self.config.transform_service, unit_number, destroy_machine)
-            numbers.append(unit_number)
-        if self.get_transform_units_count(environment) == 0:
-            juju.destroy_service(environment, self.config.transform_service, fail=False)
-        return numbers
+        juju.destroy_unit(environment, self.config.transform_service, number, terminate)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -712,7 +695,17 @@ class OrchestraAPICore(object):
 
     # ------------------------------------------------------------------------------------------------------------------
 
-    def add_or_deploy_publisher_units(self, environment, num_units, test=False):
+    def ensure_publisher_units(self, environment, num_units, terminate, test=False):
+        u"""
+
+        .. warning::
+
+            FIXME implement more robust resources listing and removing, sometimes juju fail during a call
+            (e.g. destroy_transform_units with num_units=10) and then some machines are not destroyed.
+
+            * implement a garbage collector method callable by user when he want to destroy useless machines ?
+            * implement a thread to handle removing unit asynchronously.
+        """
         if not test:
             raise NotImplementedError(u'This method is in development, set test to True to disable this warning.')
         environments, default = self.get_environments()
@@ -722,8 +715,8 @@ class OrchestraAPICore(object):
         config = juju.load_unit_config(self.config.publisher_config)
         config[u'rabbit_queues'] = u'publisher_{0}'.format(environment)
         if not same_environment:
-            raise NotImplementedError(to_bytes(u'Unable to launch publication units into non-default environment '
-                                      '{0} (default is {1}).'.format(environment, default)))
+            raise NotImplementedError(to_bytes(u'Unable to setup publication units into non-default environment {0} '
+                                      '(default is {1}).'.format(environment, default)))
             config[u'mongo_connection'] = self.config.mongo_node_connection
             config[u'rabbit_connection'] = self.config.rabbit_connection
             # FIXME copy storage configuration, first method
@@ -732,10 +725,10 @@ class OrchestraAPICore(object):
             config[u'storage_mountpoint'] = self.config.storage_mountpoint
             config[u'storage_options'] = self.config.storage_options
         juju.save_unit_config(self.config.charms_config, self.config.publisher_service, config)
-        juju.add_or_deploy_units(environment, self.config.publisher_service, num_units,
-                                 config=self.config.charms_config, local=True, release=self.config.charms_release,
-                                 repository=self.config.charms_repository)
-        if same_environment:
+        juju.ensure_num_units(environment, self.config.publisher_service, num_units, terminate=terminate,
+                              config=self.config.charms_config, local=True, release=self.config.charms_release,
+                              repository=self.config.charms_repository)
+        if same_environment and num_units:
             try:
                 try:
                     juju.add_relation(environment, self.config.orchestra_service, self.config.publisher_service,
@@ -761,37 +754,11 @@ class OrchestraAPICore(object):
     def get_publisher_units_count(self, environment):
         return juju.get_units_count(environment, self.config.publisher_service)
 
-    def destroy_publisher_unit(self, environment, number, destroy_machine, test=False):
+    def destroy_publisher_unit(self, environment, number, terminate, test=False):
         if not test:
             raise NotImplementedError(u'This method is in development, set test to True to disable this warning.')
-        juju.destroy_unit(environment, self.config.publisher_service, number, destroy_machine)
-        if self.get_publisher_units_count(environment) == 0:
-            return juju.destroy_service(environment, self.config.publisher_service, fail=False)
+        juju.destroy_unit(environment, self.config.publisher_service, number, terminate)
 
-    def destroy_publisher_units(self, environment, num_units, destroy_machine, test=False):
-        u"""
-
-        .. warning::
-
-            FIXME implement more robust resources listing and removing, sometimes juju fail during a call
-            (e.g. destroy_publisher_units with num_units=10) and then some machines are not destroyed.
-
-            * implement a garbage collector method callable by user when he want to destroy useless machines ?
-            * implement a thread to handle removing unit asynchronously.
-        """
-        if not test:
-            raise NotImplementedError(u'This method is in development, set test to True to disable this warning.')
-        units = self.get_publisher_units(environment)
-        numbers = []
-        for unit_number in units.iterkeys():
-            num_units -= 1
-            if num_units < 0:
-                break
-            juju.destroy_unit(environment, self.config.publisher_service, unit_number, destroy_machine)
-            numbers.append(unit_number)
-        if self.get_publisher_units_count(environment) == 0:
-            juju.destroy_service(environment, self.config.publisher_service, fail=False)
-        return numbers
     # ------------------------------------------------------------------------------------------------------------------
 
     def get_publisher_queues(self):
