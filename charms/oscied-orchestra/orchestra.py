@@ -436,8 +436,8 @@ def api_user_post():
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
         data = get_request_data(request)
-        user = User(data[u'first_name'], data[u'last_name'], data[u'mail'], data[u'secret'],
-                    data[u'admin_platform'])
+        user = User(first_name=data[u'first_name'], last_name=data[u'last_name'], mail=data[u'mail'],
+                    secret=data[u'secret'], admin_platform=data[u'admin_platform'])
         orchestra.save_user(user, hash_secret=True)
         delattr(user, u'secret')  # do not send back user's secret
         return ok_200(user, True)
@@ -831,7 +831,8 @@ def api_media_post():
     try:
         auth_user = requires_auth(request=request, allow_any=True)
         data = get_request_data(request)
-        media = Media(auth_user._id, None, data[u'uri'], None, data[u'filename'], data[u'metadata'], u'READY')
+        media = Media(user_id=auth_user._id, uri=data[u'uri'], filename=data[u'filename'], metadata=data[u'metadata'],
+                      status=u'READY')
         orchestra.save_media(media)
         return ok_200(media, True)
     except Exception as e:
@@ -1383,7 +1384,8 @@ def api_transform_profile_post():
     try:
         requires_auth(request=request, allow_any=True)
         data = get_request_data(request)
-        profile = TransformProfile(data[u'title'], data[u'description'], data[u'encoder_name'], data[u'encoder_string'])
+        profile = TransformProfile(title=data[u'title'], description=data[u'description'],
+                                   encoder_name=data[u'encoder_name'], encoder_string=data[u'encoder_string'])
         orchestra.save_transform_profile(profile)
         return ok_200(profile, True)
     except Exception as e:

@@ -28,14 +28,17 @@ from oscied_config_test import ORCHESTRA_CONFIG_TEST
 from oscied_models import Media, User, TransformProfile, PublisherTask, TransformTask
 
 
-MEDIA_TEST = Media(unicode(uuid.uuid4()), unicode(uuid.uuid4()), None, None, u'tabby.mpg',
-                   {u'title': u"Tabby's adventures §1", u'description': u'My cat drinking water'}, u'PENDING')
+MEDIA_TEST = Media(user_id=unicode(uuid.uuid4()), parent_id=unicode(uuid.uuid4()), filename=u'tabby.mpg',
+                   metadata={u'title': u"Tabby's adventures §1", u'description': u'My cat drinking water'},
+                   status=u'PENDING')
 MEDIA_TEST.uri = ORCHESTRA_CONFIG_TEST.storage_medias_uri(MEDIA_TEST)
 MEDIA_TEST.add_metadata(u'title', u'not authorized overwrite', False)
 MEDIA_TEST.add_metadata(u'size', 4096, True)
-USER_TEST = User(u'David', u'Fischer', u'david.fischer.ch@gmail.com', u'Secr4taB', True)
+USER_TEST = User(first_name=u'David', last_name=u'Fischer', mail=u'david.fischer.ch@gmail.com', secret=u'Secr4taB',
+                 admin_platform=True)
 
-TRANSFORM_PROFILE_TEST = TransformProfile(u'HD 1080p', u'MP4 H.264 1080p, audio copy', u'ffmpeg', u'-c:a copy ...')
+TRANSFORM_PROFILE_TEST = TransformProfile(title=u'HD 1080p', description=u'MP4 H.264 1080p, audio copy',
+                                          encoder_name=u'ffmpeg', encoder_string=u'-c:a copy ...')
 
 PUBLISH_JOB_TEST = PublisherTask(user_id=USER_TEST._id, media_id=MEDIA_TEST._id,
                                  publish_uri=u'http://amazon.com/salut.mpg')

@@ -267,8 +267,10 @@ class OrchestraAPICore(object):
         else:
             self._db = pymongo.Connection(config.mongo_admin_connection)[u'orchestra']
         self.config_db()
-        self.root_user = User(u'root', u'oscied', u'root@oscied.org', self.config.root_secret, True, _id=UUID_ZERO)
-        self.node_user = User(u'node', u'oscied', u'node@oscied.org', self.config.node_secret, False, _id=UUID_ZERO)
+        self.root_user = User(first_name=u'root', last_name=u'oscied', mail=u'root@oscied.org',
+                              secret=self.config.root_secret, admin_platform=True, _id=UUID_ZERO)
+        self.node_user = User(first_name=u'node', last_name=u'oscied', mail=u'node@oscied.org',
+                              secret=self.config.node_secret, admin_platform=False, _id=UUID_ZERO)
 
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Properties >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -623,7 +625,8 @@ class OrchestraAPICore(object):
             raise IndexError(to_bytes(u'No transformation profile with id {0}.'.format(profile_id)))
         if not queue in self.config.transform_queues:
             raise IndexError(to_bytes(u'No transformation queue with name {0}.'.format(queue)))
-        media_out = Media(user_id, media_in_id, None, None, filename, metadata, u'PENDING')
+        media_out = Media(user_id=user_id, parent_id=media_in_id, filename=filename, metadata=metadata,
+                          status=u'PENDING')
         media_out.uri = self.config.storage_medias_uri(media_out)
         TransformTask.validate_task(media_in, profile, media_out)
         self.save_media(media_out)  # Save pending output media
@@ -1011,7 +1014,8 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False):
     i, reader = 0, csv_reader(os.path.join(api_init_csv_directory, u'tprofiles.csv'))
     for title, description, encoder_name, encoder_string in reader:
         user = users[i]
-        profile = TransformProfile(title, description, encoder_name, encoder_string)
+        profile = TransformProfile(title=title, description=description, encoder_name=encoder_name,
+                                   encoder_string=encoder_string)
         print(u'Adding transformation profile {0} as user {1}'.format(profile.title, user.name))
         if is_core:
             orchestra.save_transform_profile(profile)

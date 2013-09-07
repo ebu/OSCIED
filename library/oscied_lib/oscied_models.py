@@ -138,11 +138,13 @@ class Media(OsciedDBModel):
     def is_valid(self, raise_exception):
         if not super(Media, self).is_valid(raise_exception):
             return False
-        if hasattr(self, u'user') and (not isinstance(self.user, User) or not self.user.is_valid(False)):
+        if (hasattr(self, u'user') and self.user is not None and
+            (not isinstance(self.user, User) or not self.user.is_valid(False))):
             self._E(raise_exception, u'user is not a valid instance of user')
         if hasattr(self, u'user_id') and not valid_uuid(self.user_id, none_allowed=False):
             self._E(raise_exception, u'user_id is not a valid uuid string')
-        if hasattr(self, u'parent') and (not isinstance(self.parent, Media) or not self.parent.is_valid(False)):
+        if (hasattr(self, u'parent') and self.parent is not None and
+            (not isinstance(self.parent, Media) or not self.parent.is_valid(False))):
             self._E(raise_exception, u'parent is not a valid instance of media')
         if hasattr(self, u'parent_id') and not valid_uuid(self.parent_id, none_allowed=True):
             self._E(raise_exception, u'parent_id is not a valid uuid string')
@@ -312,11 +314,13 @@ class PublisherTask(OsciedDBTask):
     def is_valid(self, raise_exception):
         if not super(PublisherTask, self).is_valid(raise_exception):
             return False
-        if hasattr(self, u'user') and (not isinstance(self.user, User) or not self.user.is_valid(False)):
+        if (hasattr(self, u'user') and self.user is not None and
+            (not isinstance(self.user, User) or not self.user.is_valid(False))):
             self._E(raise_exception, u'user is not a valid instance of user')
         if hasattr(self, u'user_id') and not valid_uuid(self.user_id, none_allowed=False):
             self._E(raise_exception, u'user_id is not a valid uuid string')
-        if hasattr(self, u'media') and (not isinstance(self.media, Media) or not self.media.is_valid(False)):
+        if (hasattr(self, u'media') and self.media is not None and
+            (not isinstance(self.media, Media) or not self.media.is_valid(False))):
             self._E(raise_exception, u'media is not a valid instance of media')
         if hasattr(self, u'media_id') and not valid_uuid(self.media_id, none_allowed=False):
             self._E(raise_exception, u'media_id is not a valid uuid string')
@@ -355,21 +359,23 @@ class TransformTask(OsciedDBTask):
     def is_valid(self, raise_exception):
         if not super(TransformTask, self).is_valid(raise_exception):
             return False
-        if hasattr(self, u'user') and (not isinstance(self.user, User) or not self.user.is_valid(False)):
+        if (hasattr(self, u'user') and self.user is not None and
+            (not isinstance(self.user, User) or not self.user.is_valid(False))):
             self._E(raise_exception, u'user is not a valid instance of user')
         if hasattr(self, u'user_id') and not valid_uuid(self.user_id, none_allowed=False):
             self._E(raise_exception, u'user_id is not a valid uuid string')
-        if hasattr(self, u'media_in') and (not isinstance(self.media_in, Media) or not self.media_in.is_valid(False)):
+        if (hasattr(self, u'media_in') and self.media_in is not None and
+            (not isinstance(self.media_in, Media) or not self.media_in.is_valid(False))):
             self._E(raise_exception, u'media_in is not a valid instance of media')
         if hasattr(self, u'media_in_id') and not valid_uuid(self.media_in_id, none_allowed=False):
             self._E(raise_exception, u'media_in_id is not a valid uuid string')
-        if hasattr(self, u'media_out') and (not isinstance(self.media_out, Media) or
-                                            not self.media_out.is_valid(False)):
+        if (hasattr(self, u'media_out') and self.media_out is not None and
+            (not isinstance(self.media_out, Media) or not self.media_out.is_valid(False))):
             self._E(raise_exception, u'media_out is not a valid instance of media')
         if hasattr(self, u'media_out_id') and not valid_uuid(self.media_out_id, none_allowed=False):
             self._E(raise_exception, u'media_out_id is not a valid uuid string')
-        if hasattr(self, u'profile') and (not isinstance(self.profile, TransformProfile) or
-                                          not self.profile.is_valid(False)):
+        if (hasattr(self, u'profile') and self.profile is not None and
+            (not isinstance(self.profile, TransformProfile) or not self.profile.is_valid(False))):
             self._E(raise_exception, u'profile is not a valid instance of transformation profile')
         if hasattr(self, u'profile_id') and not valid_uuid(self.profile_id, none_allowed=False):
             self._E(raise_exception, u'profile_id is not a valid uuid string')
