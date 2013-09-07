@@ -35,7 +35,7 @@ import library.pygal as pygal
 from library.oscied_lib.pyutils.py_collections import pygal_deque
 from library.oscied_lib.pyutils.py_juju import ALL_STATES, ERROR_STATES, PENDING_STATES, STARTED_STATES, STARTED
 from library.oscied_lib.pyutils.py_serialization import PickleableObject
-from scenario_config import ENABLE_TESTING, LABELS, TIME_SCALE
+from scenario_config import ENABLE_TESTING, LABELS, CHARTS_PATH, TIME_SCALE
 
 
 class ServiceStatistics(PickleableObject):
@@ -61,8 +61,8 @@ class ServiceStatistics(PickleableObject):
             self.units_current[state].append(number if (not ENABLE_TESTING or number != 0) else random.randint(1,3))
 
     def generate_line_chart(self, width=300, height=300, explicit_size=True, show_dots=True, truncate_legend=20):
-        tmp_file = os.path.join(SCENARIO_PATH, u'line_{0}_{1}.new.svg'.format(self.environment, self.service_label))
-        dst_file = os.path.join(SCENARIO_PATH, u'line_{0}_{1}.svg'.format(self.environment, self.service_label))
+        tmp_file = os.path.join(CHARTS_PATH, u'line_{0}_{1}.new.svg'.format(self.environment, self.service_label))
+        dst_file = os.path.join(CHARTS_PATH, u'line_{0}_{1}.svg'.format(self.environment, self.service_label))
         chart = pygal.Line(width=width, height=height, explicit_size=explicit_size, show_dots=show_dots,
                            truncate_legend=truncate_legend)
         chart.title = u'{0} {1} (# of units)'.format(self.environment, self.service_label)
@@ -72,8 +72,8 @@ class ServiceStatistics(PickleableObject):
         shutil.copy(tmp_file, dst_file)
 
     def generate_pie_chart_by_status(self, width=300, height=300, explicit_size=True):
-        tmp_file = os.path.join(SCENARIO_PATH, u'pie_{0}_{1}.new.svg'.format(self.environment, self.service_label))
-        dst_file = os.path.join(SCENARIO_PATH, u'pie_{0}_{1}.svg'.format(self.environment, self.service_label))
+        tmp_file = os.path.join(CHARTS_PATH, u'pie_{0}_{1}.new.svg'.format(self.environment, self.service_label))
+        dst_file = os.path.join(CHARTS_PATH, u'pie_{0}_{1}.svg'.format(self.environment, self.service_label))
         chart = pygal.Pie(width=width, height=height, explicit_size=explicit_size)
         chart.title = u'{0} {1} by status (# of units)'.format(self.environment, self.service_label)
         for states in (ERROR_STATES, STARTED_STATES, PENDING_STATES):

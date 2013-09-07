@@ -35,12 +35,14 @@ import os
 from scenario_events import get_full_events_table
 
 SCENARIO_PATH = os.path.abspath(os.path.expanduser(os.path.dirname(__file__)))
+CHARTS_PATH = os.path.join(SCENARIO_PATH, 'charts')
 
 ENABLE_UNITS_API = True
-ENABLE_TESTING = True
+ENABLE_TESTING = False
 TIME_RANGE = 24  # in hours
-TIME_SCALE = 30  # in hours
-TIME_SPEEDUP = TIME_RANGE * 60 if ENABLE_TESTING else 12  # how many times per 24H range the scenario will 'loop'
+TIME_SPEEDUP = TIME_RANGE * 60 if ENABLE_TESTING else 24  # how many times per 24H range the scenario will 'loop'
+TIME_CHECK   = 6  # how many checks per event
+TIME_SCALE = 30 * TIME_CHECK # in hours
 
 CONFIG_AMAZ = os.path.join(SCENARIO_PATH, u'config_amazon.yaml')
 EVENTS_AMAZ = get_full_events_table({
