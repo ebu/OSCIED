@@ -46,8 +46,9 @@ from library.oscied_lib.pyutils.py_juju import DeploymentScenario, ERROR_STATES,
 from library.oscied_lib.pyutils.py_unicode import configure_unicode
 
 from scenario_config import (
-    ENABLE_TESTING, ENABLE_UNITS_API, CONFIG_AMAZ, CONFIG_MAAS, EVENTS_AMAZ, EVENTS_MAAS, LABELS, MAPPERS
+    ENABLE_UNITS_API, TIME_RANGE, TIME_SPEEDUP, CONFIG_AMAZ, CONFIG_MAAS, EVENTS_AMAZ, EVENTS_MAAS, LABELS, MAPPERS
 )
+from scenario_events import get_index, get_sleep_time
 from scenario_statistics import STATS_AMAZ, STATS_MAAS
 
 
@@ -168,14 +169,14 @@ class IBC2013(DeploymentScenario):
         while True:
             # Get current time to retrieve state
             now, now_string = datetime_now(format=None), datetime_now()
-            index = now.second if ENABLE_TESTING else now.minute
+            index = get_index(now, TIME_RANGE, TIME_SPEEDUP)
             if index != old_index:
                 old_index = index
                 self.handle_event(index, now_string)
             else:
                 print(u'Skip already consumed event(s) for minute {0}.'.format(index))
             now = datetime_now(format=None)
-            sleep_time = 0.8 if ENABLE_TESTING else 60 - now.second
+            sleep_time = get_sleep_time(time, TIME_RANGE, TIME_SPEEDUP)
             print(u'Sleep {0} seconds ...'.format(sleep_time))
             time.sleep(sleep_time)
         #try:

@@ -32,37 +32,36 @@ TODO
 """
 
 import os
+from scenario_events import get_full_events_table
 
-
-def get_full_events_table(sparse_events_table):
-    u"""Scan (table[i] with i = [0;60[) a spare events table and replace missing entry by previous (non empty) entry."""
-    previous_event = {u'oscied-transform': 0, u'oscied-publisher': 0}
-    events = {}
-    for index in range(60):
-        event = sparse_events_table.get(index, previous_event)
-        events[index] = event
-        previous_event = event
-    return events
-
-TIME_SCALE = 70
-ENABLE_UNITS_API = True
-ENABLE_TESTING = False
 SCENARIO_PATH = os.path.abspath(os.path.expanduser(os.path.dirname(__file__)))
+
+ENABLE_UNITS_API = True
+ENABLE_TESTING = True
+TIME_RANGE = 24  # in hours
+TIME_SCALE = 30  # in hours
+TIME_SPEEDUP = TIME_RANGE * 60 if ENABLE_TESTING else 12  # how many times per 24H range the scenario will 'loop'
 
 CONFIG_AMAZ = os.path.join(SCENARIO_PATH, u'config_amazon.yaml')
 EVENTS_AMAZ = get_full_events_table({
-     0: {u'oscied-transform': 5, u'oscied-publisher': 0},
+     7: {u'oscied-transform': 5, u'oscied-publisher': 0},
     17: {u'oscied-transform': 0, u'oscied-publisher': 0},
-    43: {u'oscied-transform': 0, u'oscied-publisher': 1},
-    45: {u'oscied-transform': 4, u'oscied-publisher': 1},
-    50: {u'oscied-transform': 4, u'oscied-publisher': 3},
-    55: {u'oscied-transform': 4, u'oscied-publisher': 1}
-})
+    17: {u'oscied-transform': 0, u'oscied-publisher': 1},
+    18: {u'oscied-transform': 4, u'oscied-publisher': 1},
+    20: {u'oscied-transform': 4, u'oscied-publisher': 3},
+    22: {u'oscied-transform': 4, u'oscied-publisher': 1}
+}, TIME_RANGE)
 
 CONFIG_MAAS = os.path.join(SCENARIO_PATH, u'config_maas.yaml')
 EVENTS_MAAS = get_full_events_table({
      0: {u'oscied-transform': 4, u'oscied-publisher': 2},
-})
+}, TIME_RANGE)
 
 LABELS  = {u'oscied-transform': u'encoding',        u'oscied-publisher': u'distribution'}
 MAPPERS = {u'oscied-transform': u'transform_units', u'oscied-publisher': u'publisher_units'}
+
+if __name__ == u'__main__':
+    import doctest
+    print(u'Test scenario_config with doctest')
+    doctest.testmod()
+    print(u'OK')
