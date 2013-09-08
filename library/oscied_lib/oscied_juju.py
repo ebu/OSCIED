@@ -103,7 +103,7 @@ class ServiceStatistics(PickleableObject):
         for state, history in self.units_current.items():
             history.append(current[state])
 
-    def generate_line_chart(self, charts_path, width=300, height=300, explicit_size=True, show_dots=True,
+    def generate_line_chart(self, charts_path, width=600, height=300, explicit_size=True, show_dots=True,
                             truncate_legend=20):
         tmp_file = os.path.join(charts_path, u'line_{0}_{1}.new.svg'.format(self.environment, self.service_label))
         dst_file = os.path.join(charts_path, u'line_{0}_{1}.svg'.format(self.environment, self.service_label))
