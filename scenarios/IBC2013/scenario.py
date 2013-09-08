@@ -32,7 +32,6 @@ TODO
 """
 
 # http://docs.mongodb.org/manual/reference/operator/
-# file:///home/famille/David/git/OSCIED/scenarios/oscied_amazon.svg
 # http://pygal.org/custom_styles/
 
 from library.oscied_lib.oscied_models import User
@@ -42,7 +41,7 @@ from library.oscied_lib.pyutils.py_juju import DeploymentScenario
 from library.oscied_lib.pyutils.py_unicode import configure_unicode
 
 from scenario_config import (CONFIG_AMAZ, EVENTS_AMAZ, STATS_AMAZ,
-                             CONFIG_MAAS, EVENTS_MAAS, STATS_MAAS, CHARTS_PATH, ENABLE_UNITS_API)
+                             CONFIG_MAAS, EVENTS_MAAS, STATS_MAAS, CHARTS_PATH, SCENARIO_PATH, ENABLE_UNITS_API)
 
 
 description = u'Launch IBC 2013 demo setup (MaaS Cluster with 4 machines // Amazon)'
@@ -57,17 +56,16 @@ class IBC2013(DeploymentScenario):
     """
     def run(self):
         print(description)
-        self.events_loop()
-        # if confirm(u'Deploy on MAAS'):
-        #     self.deploy_maas()
-        # if confirm(u'Initialize orchestra on MAAS'):
-        #     self.maas.init_api(SCENARIO_PATH, flush=True)
-        # if confirm(u'Deploy on Amazon'):
-        #     self.deploy_amazon()
-        # if confirm(u'Initialize orchestra on Amazon'):
-        #     self.amazon.init_api(SCENARIO_PATH, flush=True)
-        # if confirm(u'Start events loop'):
-        #     self.events_loop()
+        if confirm(u'Deploy on MAAS'):
+            self.deploy_maas()
+        if confirm(u'Initialize orchestra on MAAS'):
+            self.maas.init_api(SCENARIO_PATH, flush=True)
+        if confirm(u'Deploy on Amazon'):
+            self.deploy_amazon()
+        if confirm(u'Initialize orchestra on Amazon'):
+            self.amazon.init_api(SCENARIO_PATH, flush=True)
+        if confirm(u'Start events loop'):
+            self.events_loop()
 
     def deploy_maas(self):
         u"""Deploy a full OSCIED setup in the EBU's private cluster (4 machines) provisioned by the MAAS controller."""
@@ -136,7 +134,7 @@ class IBC2013(DeploymentScenario):
         self.amazon.scaling_thread.join()
         self.amazon.statistics_thread.join()
         self.maas.statistics_thread.join()
-        print u"Exiting Main Thread"
+        print u'Exiting Main Thread'
 
 if __name__ == u'__main__':
     configure_unicode()
