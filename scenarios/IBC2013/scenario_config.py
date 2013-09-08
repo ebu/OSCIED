@@ -32,7 +32,8 @@ TODO
 """
 
 import os
-from scenario_events import get_full_events_table
+from library.oscied_lib.oscied_juju import ServiceStatistics
+from library.oscied_lib.pyutils.py_collections import EventsTable
 
 SCENARIO_PATH = os.path.abspath(os.path.expanduser(os.path.dirname(__file__)))
 CHARTS_PATH = os.path.join(SCENARIO_PATH, 'charts')
@@ -41,29 +42,32 @@ ENABLE_UNITS_API = True
 ENABLE_TESTING = False
 TIME_RANGE = 24  # in hours
 TIME_SPEEDUP = TIME_RANGE * 60 if ENABLE_TESTING else 24  # how many times per 24H range the scenario will 'loop'
-TIME_CHECK   = 6  # how many checks per event
-TIME_SCALE = 30 * TIME_CHECK # in hours
+DAEMONS_CHECKS_PER_EVENT = 6  # how many checks per event
+STATISTICS_MAXLEN = 30 * DAEMONS_CHECKS_PER_EVENT # in hours
 
 CONFIG_AMAZ = os.path.join(SCENARIO_PATH, u'config_amazon.yaml')
-EVENTS_AMAZ = get_full_events_table({
+EVENTS_AMAZ = EventsTable({
+     0: {u'oscied-transform': 5, u'oscied-publisher': 0},
      7: {u'oscied-transform': 5, u'oscied-publisher': 0},
     17: {u'oscied-transform': 0, u'oscied-publisher': 0},
     17: {u'oscied-transform': 0, u'oscied-publisher': 1},
     18: {u'oscied-transform': 4, u'oscied-publisher': 1},
     20: {u'oscied-transform': 4, u'oscied-publisher': 3},
     22: {u'oscied-transform': 4, u'oscied-publisher': 1}
-}, TIME_RANGE)
+}, TIME_RANGE, TIME_SPEEDUP, sleep_factor=DAEMONS_CHECKS_PER_EVENT)
 
 CONFIG_MAAS = os.path.join(SCENARIO_PATH, u'config_maas.yaml')
-EVENTS_MAAS = get_full_events_table({
-     0: {u'oscied-transform': 4, u'oscied-publisher': 2},
-}, TIME_RANGE)
-
-LABELS  = {u'oscied-transform': u'encoding',        u'oscied-publisher': u'distribution'}
-MAPPERS = {u'oscied-transform': u'transform_units', u'oscied-publisher': u'publisher_units'}
+EVENTS_MAAS = EventsTable({
+    0: {u'oscied-transform': 4, u'oscied-publisher': 2}
+}, TIME_RANGE, TIME_SPEEDUP, sleep_factor=DAEMONS_CHECKS_PER_EVENT)
 
 if __name__ == u'__main__':
     import doctest
     print(u'Test scenario_config with doctest')
     doctest.testmod()
     print(u'OK')
+
+STATS_AMAZ, STATS_MAAS = {}, {}
+for service in (u'oscied-transform', u'oscied-publisher'):
+    STATS_AMAZ[service] = ServiceStatistics(u'amazon', service, maxlen=STATISTICS_MAXLEN)
+    STATS_MAAS[service] = ServiceStatistics(u'maas',   service, maxlen=STATISTICS_MAXLEN)

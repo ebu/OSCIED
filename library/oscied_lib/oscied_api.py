@@ -51,6 +51,9 @@ from pyutils.py_unicode import csv_reader
 from pyutils.py_subprocess import rsync, ssh
 from pyutils.py_validation import valid_uuid
 
+SERVICE_TO_LABEL  = {u'oscied-transform': u'encoding',        u'oscied-publisher': u'distribution'}
+SERVICE_TO_MAPPER = {u'oscied-transform': u'transform_units', u'oscied-publisher': u'publisher_units'}
+
 
 class OsciedCRUDMapper(object):
 
