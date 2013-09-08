@@ -2855,6 +2855,6 @@ if __name__ == u'__main__':
         app.run(host=u'0.0.0.0', debug=orchestra.config.verbose)
 
     except Exception as error:
-        logging.exception(unicode(error))
+        logging.exception(error)
         logging.exception(u'Orchestra ... exiting')
         sys.exit(1)

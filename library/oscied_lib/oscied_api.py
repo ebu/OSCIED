@@ -628,7 +628,8 @@ class OrchestraAPICore(object):
         if not result_id:
             raise ValueError(to_bytes(u'Unable to transmit task to workers of queue {0}.'.format(queue)))
         logging.info(u'New transformation task {0} -> queue {1}.'.format(result_id, queue))
-        task = TransformTask(user._id, media_in._id, media_out._id, profile._id, send_email=send_email, _id=result_id)
+        task = TransformTask(user_id=user._id, media_in_id=media_in._id, media_out_id=media_out._id,
+                             profile_id=profile._id, send_email=send_email, _id=result_id)
         task.add_statistic(u'add_date', datetime_now(), True)
         self._db.transform_tasks.save(task.__dict__, safe=True)
         return result_id
@@ -796,7 +797,7 @@ class OrchestraAPICore(object):
         if not result_id:
             raise ValueError(to_bytes(u'Unable to transmit task to workers of queue {0}.'.format(queue)))
         logging.info(u'New publication task {0} -> queue {1}.'.format(result_id, queue))
-        task = PublisherTask(user._id, media._id, send_email=send_email, _id=result_id)
+        task = PublisherTask(user_id=user._id, media_id=media._id, send_email=send_email, _id=result_id)
         task.add_statistic(u'add_date', datetime_now(), True)
         self._db.publisher_tasks.save(task.__dict__, safe=True)
         return result_id
