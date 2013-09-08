@@ -32,7 +32,7 @@ from subprocess import Popen, PIPE
 from oscied_config import TransformLocalConfig
 from oscied_models import Media, TransformProfile
 from oscied_util import Callback
-from pyutils.py_datetime import datetime_now, duration2secs
+from pyutils.py_datetime import datetime_now, total_seconds
 from pyutils.py_ffmpeg import get_media_duration, get_media_tracks
 from pyutils.py_filesystem import get_size, recursive_copy, try_makedirs
 from pyutils.py_serialization import object2json
@@ -158,7 +158,7 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
                     stats = match.groupdict()
                     media_out_duration = stats[u'time']
                     try:
-                        ratio = duration2secs(media_out_duration) / duration2secs(media_in_duration)
+                        ratio = total_seconds(media_out_duration) / total_seconds(media_in_duration)
                         ratio = 0.0 if ratio < 0.0 else 1.0 if ratio > 1.0 else ratio
                     except ZeroDivisionError:
                         ratio = 1.0
@@ -192,7 +192,7 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
 
             # Output media file sanity check
 #            media_out_duration = get_media_duration(media_out_path)
-#            if duration2secs(media_out_duration) / duration2secs(media_in_duration) > 1.5 or < 0.8:
+#            if total_seconds(media_out_duration) / total_seconds(media_in_duration) > 1.5 or < 0.8:
 #                salut
 
         # A REAL TRANSFORM : TRANSCODE WITH DASHCAST -------------------------------------------------------------------
