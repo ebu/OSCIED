@@ -531,6 +531,13 @@ log()
 
 browse_webui()
 {
+  if [ $# -ne 0 ]; then
+    xecho "Usage: $(basename $0) browse_webui"
+  fi
+  ok=$true
+
+  _config_helper
+
   _get_unit_public_url $true 'oscied-webui'
   xdg-open "http://$REPLY"
 }
