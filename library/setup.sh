@@ -36,4 +36,4 @@ oscied_install()
   cd "$base" && ./setup.py develop || { echo 'Unable to install oscied_lib module' 1>&2; exit 3; }
 }
 
-oscied_install 2>&1 > 'setup.log'
+oscied_install 2>&1 3>&1 > 'setup.log'
