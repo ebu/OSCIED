@@ -32,11 +32,13 @@ TODO
 """
 
 import os
+from library.oscied_lib.oscied_api import SERVICE_TO_LABEL
 from library.oscied_lib.oscied_juju import ServiceStatistics
 from library.oscied_lib.pyutils.py_collections import EventsTable
 
 SCENARIO_PATH = os.path.abspath(os.path.expanduser(os.path.dirname(__file__)))
 CHARTS_PATH = os.path.join(SCENARIO_PATH, 'charts')
+STATISTICS_PATH = os.path.join(SCENARIO_PATH, 'statistics')
 
 ENABLE_UNITS_API = True
 ENABLE_TESTING = False
@@ -61,13 +63,17 @@ EVENTS_MAAS = EventsTable({
     0: {u'oscied-transform': 4, u'oscied-publisher': 2}
 }, TIME_RANGE, TIME_SPEEDUP, sleep_factor=DAEMONS_CHECKS_PER_EVENT)
 
-if __name__ == u'__main__':
-    import doctest
-    print(u'Test scenario_config with doctest')
-    doctest.testmod()
-    print(u'OK')
+def read_or_default(environment, service, **kwargs):
+    label = SERVICE_TO_LABEL.get(service, service)
+    filename = os.path.join(STATISTICS_PATH, u'{0}_{1}.pkl'.format(environment, label))
+    statistics = ServiceStatistics.read(filename, store_filename=True, create_if_error=True,
+                                        environment=environment, service=service, **kwargs)
+    print(u'Read {0} with {1} measures.'.format(os.path.basename(filename), len(statistics.units_planned)))
+    if statistics.unknown_states:
+        print(u'[WARNING] Unknown states: {0}.'.format(statistics.unknown_states))
+    return statistics
 
 STATS_AMAZ, STATS_MAAS = {}, {}
 for service in (u'oscied-transform', u'oscied-publisher'):
-    STATS_AMAZ[service] = ServiceStatistics(u'amazon', service, maxlen=STATISTICS_MAXLEN)
-    STATS_MAAS[service] = ServiceStatistics(u'maas',   service, maxlen=STATISTICS_MAXLEN)
+    STATS_AMAZ[service] = read_or_default(u'amazon', service, maxlen=STATISTICS_MAXLEN)
+    STATS_MAAS[service] = read_or_default(u'maas',   service, maxlen=STATISTICS_MAXLEN)

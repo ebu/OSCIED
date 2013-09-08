@@ -24,11 +24,14 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 import os, pygal, shutil, threading, time
+from collections import defaultdict
 from requests.exceptions import Timeout
 from oscied_api import OrchestraAPIClient, init_api, SERVICE_TO_LABEL, SERVICE_TO_MAPPER
 from pyutils.py_collections import pygal_deque
 from pyutils.py_datetime import datetime_now
-from pyutils.py_juju import Environment, ALL_STATES, ERROR_STATES, PENDING_STATES, STARTED_STATES, STARTED
+from pyutils.py_juju import (
+    Environment, ALL_STATES, ERROR_STATES, PENDING_STATES, STARTED_STATES, STOPPED_STATES, STARTED
+)
 from pyutils.py_serialization import PickleableObject
 
 
@@ -76,22 +79,29 @@ class OsciedEnvironment(Environment):
 class ServiceStatistics(PickleableObject):
     u"""Store statistics about a service."""
 
-    def __init__(self, environment=None, service=None, time=None, units_planned=None, units_current=None, maxlen=100):
+    def __init__(self, environment=None, service=None, time=None, units_planned=None, units_current=None,
+                 unknown_states=None, maxlen=100):
         self.environment, self.service = environment, service
         self.time = time or pygal_deque(maxlen=maxlen)
         self.units_planned = units_planned or pygal_deque(maxlen=maxlen)
         self.units_current = units_current or {state: pygal_deque(maxlen=maxlen) for state in ALL_STATES}
+        self.unknown_states = defaultdict(int)
 
     @property
     def service_label(self):
         return SERVICE_TO_LABEL.get(self.service, self.service)
 
     def update(self, now_string, planned, units):
-        current = {state: 0 for state in ALL_STATES}
+        self.units_planned.append(planned)
+        current = defaultdict(int)
         for unit in units.values():
-            current[unit['agent-state']] += 1
-        for state, number in current.items():
-            self.units_current[state].append(number)
+            state = unit.get(u'agent-state', u'unknown')
+            if state in ALL_STATES:
+                current[state] += 1
+            else:
+                self.unknown_states[state] += 1
+        for state, history in self.units_current.items():
+            history.append(current[state])
 
     def generate_line_chart(self, charts_path, width=300, height=300, explicit_size=True, show_dots=True,
                             truncate_legend=20):
@@ -180,7 +190,6 @@ class StatisticsThread(threading.Thread):
                 for service, stats in self.environment.statistics.items():
                     label, mapper = SERVICE_TO_LABEL.get(service, service), SERVICE_TO_MAPPER[service]
                     planned = event.get(service, None)
-                    stats.units_planned.append(planned)
                     if self.environment.enable_units_status:
                         if self.environment.enable_units_api:
                             api_client = self.environment.api_client
@@ -188,13 +197,12 @@ class StatisticsThread(threading.Thread):
                             units = getattr(api_client, mapper).list()
                         else:
                             units = self.environment.get_units(service)
-                        stats.update(now_string, planned, units)
                     else:
-                        stats.units_current[STARTED].append(planned)
-                        for state in PENDING_STATES + ERROR_STATES:
-                            stats.units_current[state].append(0)
+                        units = {k: {u'agent-state': STARTED} for k in range(planned)}
+                    stats.update(now_string, planned, units)
                     stats.generate_line_chart(self.environment.charts_path)
                     stats.generate_pie_chart_by_status(self.environment.charts_path)
+                    stats.write()
             except Timeout as e:
                 # FIXME do something here ...
                 print(u'[{0}] WARNING! Timeout, reason: {1}.'.format(self.name, e))
