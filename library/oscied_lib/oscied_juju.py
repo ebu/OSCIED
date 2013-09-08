@@ -48,7 +48,7 @@ class OsciedEnvironment(Environment):
         self.enable_units_api = enable_units_api
         self.enable_units_status = enable_units_status
         self.daemons_auth = daemons_auth
-        self._api_client = self._statistics_thread = self._scaling_thread = None
+        self._api_client = self._statistics_thread = self._scaling_thread = self._tasks_thread = None
 
     @property
     def api_client(self):
@@ -72,8 +72,33 @@ class OsciedEnvironment(Environment):
             self._statistics_thread = StatisticsThread(u'{0} STATISTICS THREAD'.format(self.name.upper()), self)
         return self._statistics_thread
 
+    @property
+    def tasks_thread(self):
+        if not self._tasks_thread:
+            self._tasks_thread = TasksThread(u'{0} TASKS THREAD'.format(self.name.upper()), self)
+        return self._tasks_thread
+
     def init_api(self, api_init_csv_directory, flush=False, **kwargs):
         init_api(self.api_client, api_init_csv_directory, flush=flush)
+
+    @property
+    def threads(self):
+        return filter(None, [self._statistics_thread, self._scaling_thread, self._tasks_thread])
+
+
+class OsciedEnvironmentThread(threading.Thread):
+
+    def __init__(self, name, environment, daemon=True):
+        super(StatisticsThread, self).__init__()
+        self.name = name
+        self.environment = environment
+        self.daemon = daemon
+
+    def sleep(self):
+        now = datetime_now(format=None)
+        sleep_time = self.environment.events.sleep_time(now)
+        print(u'[{0}] Sleep {1} seconds ...'.format(self.name, sleep_time))
+        time.sleep(sleep_time)
 
 
 class ServiceStatistics(PickleableObject):
@@ -129,14 +154,8 @@ class ServiceStatistics(PickleableObject):
         return dst_file
 
 
-class ScalingThread(threading.Thread):
+class ScalingThread(OsciedEnvironmentThread):
     u"""Handle the scaling of a deployed OSCIED setup."""
-
-    def __init__(self, name, environment, daemon=True):
-        super(ScalingThread, self).__init__()
-        self.name = name
-        self.environment = environment
-        self.daemon = daemon
 
     def run(self):
         while True:
@@ -164,20 +183,11 @@ class ScalingThread(threading.Thread):
             except Timeout as e:
                 # FIXME do something here ...
                 print(u'[{0}] WARNING! Timeout, reason: {1}.'.format(self.name, e))
-            now = datetime_now(format=None)
-            sleep_time = self.environment.events.sleep_time(now)
-            print(u'[{0}] Sleep {1} seconds ...'.format(self.name, sleep_time))
-            time.sleep(sleep_time)
+            self.sleep()
 
 
-class StatisticsThread(threading.Thread):
+class StatisticsThread(OsciedEnvironmentThread):
     u"""Update statistics and generate charts of the deployed OSCIED setups."""
-
-    def __init__(self, name, environment, daemon=True):
-        super(StatisticsThread, self).__init__()
-        self.name = name
-        self.environment = environment
-        self.daemon = daemon
 
     def run(self):
         while True:
@@ -206,7 +216,26 @@ class StatisticsThread(threading.Thread):
             except Timeout as e:
                 # FIXME do something here ...
                 print(u'[{0}] WARNING! Timeout, reason: {1}.'.format(self.name, e))
-            now = datetime_now(format=None)
-            sleep_time = self.environment.events.sleep_time(now)
-            print(u'[{0}] Sleep {1} seconds ...'.format(self.name, sleep_time))
-            time.sleep(sleep_time)
+            self.sleep()
+
+
+class TasksThread(OsciedEnvironmentThread):
+    u"""Drives a deployed OSCIED setup to transcode, publish and cleanup media assets."""
+
+    def run(self):
+        while True:
+            # Get current time to retrieve state
+            now, now_string = datetime_now(format=None), datetime_now()
+            try:
+                self.environment.auto = True  # Really better like that ;-)
+                index, event = self.environment.events.get(now, default_value={})
+                print(u'[{0}] Handle (TODO) at index {1}.'.format(self.name, index))
+                for service, stats in self.environment.statistics.items():
+                    label = SERVICE_TO_LABEL.get(service, service)
+                    api_client = self.environment.api_client
+                    api_client.auth = self.environment.daemons_auth
+                    raise NotImplementedError(u'Transcode, publish, cleanup ...')
+            except Timeout as e:
+                # FIXME do something here ...
+                print(u'[{0}] WARNING! Timeout, reason: {1}.'.format(self.name, e))
+            self.sleep()

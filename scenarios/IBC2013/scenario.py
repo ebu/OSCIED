@@ -118,22 +118,19 @@ class IBC2013(DeploymentScenario):
     def events_loop(self):
         u"""Prepare the events-based client "main" loop and periodically calls the event handling method."""
         for environment in self.environments:
-            if environment.name == u'maas': continue  # FIXME remove this at IBC 2013
-            print(u'Register or retrieve an administrator in environment {0}.'.format(environment.name))
-            admin = User(first_name=u'Mister admin', last_name=u'IBC2013', mail=u'admin.ibc2013@oscied.org',
-                        secret='big_secret_to_sav3', admin_platform=True)
-            environment.daemons_auth = environment.api_client.login_or_add(admin)
             environment.enable_units_api = ENABLE_UNITS_API
-
-        self.maas.enable_units_status = False  # FIXME enable it during IBC (??)
-        self.amazon.statistics_thread.start()
-        self.maas.statistics_thread.start()
-        self.amazon.scaling_thread.start()
-
-        # Wait for all threads to complete
-        self.amazon.scaling_thread.join()
-        self.amazon.statistics_thread.join()
-        self.maas.statistics_thread.join()
+            if environment.name == u'maas':
+                environment.enable_units_status = False  # FIXME enable it during IBC (??)
+            else:
+                print(u'Register or retrieve an administrator in environment {0}.'.format(environment.name))
+                admin = User(first_name=u'Mister admin', last_name=u'IBC2013', mail=u'admin.ibc2013@oscied.org',
+                            secret='big_secret_to_sav3', admin_platform=True)
+                environment.daemons_auth = environment.api_client.login_or_add(admin)
+                environment.scaling_thread.start()
+            environment.statistics_thread.start()
+            environment.tasks_thread.start()
+        for environment in self.environments:
+            [thread.join() for thread in environment.threads]
         print u'Exiting Main Thread'
 
 if __name__ == u'__main__':
