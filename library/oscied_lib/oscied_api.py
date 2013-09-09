@@ -939,7 +939,8 @@ class OrchestraAPICore(object):
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-def init_api(api_core_or_client, api_init_csv_directory, flush=False):
+def init_api(api_core_or_client, api_init_csv_directory, flush=False, add_users=True, add_medias=True,
+             add_profiles=True, add_tasks=True):
 
     is_core = isinstance(api_core_or_client, OrchestraAPICore)
     orchestra = api_core_or_client if is_core else None
@@ -957,6 +958,8 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False):
     for first_name, last_name, email, secret, admin_platform in reader:
         user = User(first_name, last_name, email, secret, admin_platform)
         users.append(user)
+        if not add_users:
+            continue
         print(u'Adding user {0}'.format(user.name))
         if is_core:
             orchestra.save_user(user, hash_secret=True)
@@ -964,56 +967,59 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False):
             api_client.users.add(user)
     users = orchestra.get_users() if is_core else users# api_client.users.list()
 
-    i, reader = 0, csv_reader(os.path.join(api_init_csv_directory, u'medias.csv'))
-    for local_filename, filename, title in reader:
-        user = users[i]
-        print(os.getcwd())
-        media = Media(user_id=user._id, filename=filename, metadata={u'title': title})
-        if not os.path.exists(local_filename):
-            print(u'Skip media asset {0}, file "{1}" Not found.'.format(media.metadata[u'title'], local_filename))
-            continue
-        print(u'Adding media asset {0} as user {1}'.format(media.metadata[u'title'], user.name))
-        if is_core:
-            #orchestra.config. bla bla -> get media.uri
-            orchestra.save_media(media)
-        else:
-            api_client.auth = user
-            media.uri = api_client.upload_media(local_filename)
-            api_client.medias.add(media)
-        i = (i + 1) % len(users)
+    if add_medias:
+        i, reader = 0, csv_reader(os.path.join(api_init_csv_directory, u'medias.csv'))
+        for local_filename, filename, title in reader:
+            user = users[i]
+            print(os.getcwd())
+            media = Media(user_id=user._id, filename=filename, metadata={u'title': title})
+            if not os.path.exists(local_filename):
+                print(u'Skip media asset {0}, file "{1}" Not found.'.format(media.metadata[u'title'], local_filename))
+                continue
+            print(u'Adding media asset {0} as user {1}'.format(media.metadata[u'title'], user.name))
+            if is_core:
+                #orchestra.config. bla bla -> get media.uri
+                orchestra.save_media(media)
+            else:
+                api_client.auth = user
+                media.uri = api_client.upload_media(local_filename)
+                api_client.medias.add(media)
+            i = (i + 1) % len(users)
 
-    i, reader = 0, csv_reader(os.path.join(api_init_csv_directory, u'tprofiles.csv'))
-    for title, description, encoder_name, encoder_string in reader:
-        user = users[i]
-        profile = TransformProfile(title=title, description=description, encoder_name=encoder_name,
-                                   encoder_string=encoder_string)
-        print(u'Adding transformation profile {0} as user {1}'.format(profile.title, user.name))
-        if is_core:
-            orchestra.save_transform_profile(profile)
-        else:
-            api_client.auth = user
-            api_client.transform_profiles.add(profile)
-        i = (i + 1) % len(users)
+    if add_profiles:
+        i, reader = 0, csv_reader(os.path.join(api_init_csv_directory, u'tprofiles.csv'))
+        for title, description, encoder_name, encoder_string in reader:
+            user = users[i]
+            profile = TransformProfile(title=title, description=description, encoder_name=encoder_name,
+                                       encoder_string=encoder_string)
+            print(u'Adding transformation profile {0} as user {1}'.format(profile.title, user.name))
+            if is_core:
+                orchestra.save_transform_profile(profile)
+            else:
+                api_client.auth = user
+                api_client.transform_profiles.add(profile)
+            i = (i + 1) % len(users)
 
     if not is_core:
         return
 
-    reader = csv_reader(os.path.join(api_init_csv_directory, u'ttasks.csv'))
-    for user_email, in_filename, profile_title, out_filename, out_title, send_email, queue in reader:
-        user = orchestra.get_user({u'mail': user_email})
-        if not user:
-            raise IndexError(to_bytes(u'No user with e-mail address {0}.'.format(user_email)))
-        media_in = orchestra.get_media({u'filename': in_filename})
-        if not media_in:
-            raise IndexError(to_bytes(u'No media asset with filename {0}.'.format(in_filename)))
-        profile = orchestra.get_transform_profile({u'title': profile_title})
-        if not profile:
-            raise IndexError(to_bytes(u'No transformation profile with title {0}.'.format(profile_title)))
-        print(u'Launching transformation task {0} with profile {1} as user {2}.'.format(media_in.metadata[u'title'],
-              profile.title, user.name))
-        metadata = {u'title': out_title}
-        orchestra.launch_transform_task(user._id, media_in._id, profile._id, out_filename, metadata, send_email, queue,
-                                        u'/transform/callback')
+    if add_tasks:
+        reader = csv_reader(os.path.join(api_init_csv_directory, u'ttasks.csv'))
+        for user_email, in_filename, profile_title, out_filename, out_title, send_email, queue in reader:
+            user = orchestra.get_user({u'mail': user_email})
+            if not user:
+                raise IndexError(to_bytes(u'No user with e-mail address {0}.'.format(user_email)))
+            media_in = orchestra.get_media({u'filename': in_filename})
+            if not media_in:
+                raise IndexError(to_bytes(u'No media asset with filename {0}.'.format(in_filename)))
+            profile = orchestra.get_transform_profile({u'title': profile_title})
+            if not profile:
+                raise IndexError(to_bytes(u'No transformation profile with title {0}.'.format(profile_title)))
+            print(u'Launching transformation task {0} with profile {1} as user {2}.'.format(
+                  media_in.metadata[u'title'], profile.title, user.name))
+            metadata = {u'title': out_title}
+            orchestra.launch_transform_task(user._id, media_in._id, profile._id, out_filename, metadata, send_email,
+                                            queue, u'/transform/callback')
 
 
 # Main -----------------------------------------------------------------------------------------------------------------

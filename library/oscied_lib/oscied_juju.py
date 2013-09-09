@@ -78,8 +78,8 @@ class OsciedEnvironment(Environment):
             self._tasks_thread = TasksThread(u'{0} TASKS THREAD'.format(self.name.upper()), self)
         return self._tasks_thread
 
-    def init_api(self, api_init_csv_directory, flush=False, **kwargs):
-        init_api(self.api_client, api_init_csv_directory, flush=flush)
+    def init_api(self, api_init_csv_directory, **kwargs):
+        init_api(self.api_client, api_init_csv_directory, **kwargs)
 
     @property
     def threads(self):
