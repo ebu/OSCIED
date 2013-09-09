@@ -89,7 +89,7 @@ class OsciedEnvironment(Environment):
 class OsciedEnvironmentThread(threading.Thread):
 
     def __init__(self, name, environment, daemon=True):
-        super(StatisticsThread, self).__init__()
+        super(OsciedEnvironmentThread, self).__init__()
         self.name = name
         self.environment = environment
         self.daemon = daemon
