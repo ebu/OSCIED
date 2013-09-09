@@ -64,7 +64,7 @@ class IBC2013(DeploymentScenario):
             self.deploy_amazon()
         if confirm(u'Initialize orchestra on Amazon'):
             self.amazon.init_api(SCENARIO_PATH, flush=True)
-        if confirm(u'Start events loop'):
+        if confirm(u'Start events loop', default=True):
             self.events_loop()
 
     def deploy_maas(self):
