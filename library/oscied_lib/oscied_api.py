@@ -296,7 +296,7 @@ class OrchestraAPICore(object):
 
     @property
     def db_find_options(self):
-        return {'timeout': True, 'snapshot': True}
+        return {'timeout': True, 'snapshot': False}  # FIXME E12001 can't sort with $snapshot
 
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Functions >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -395,9 +395,9 @@ class OrchestraAPICore(object):
         self._db.users.remove({u'_id': user._id})
 
     def get_users(self, spec=None, fields=None, skip=0, limit=0, sort=None):
-        users = []
         if fields is not None:
-            fields[u'secret'] = 0
+            fields[u'secret'] = 0  # Disable access to users secret !
+        users, sort = [], sort or [('last_name',  1), ('first_name', 1)]  # Sort by default, this is nicer like that !
         for entity in list(self._db.users.find(spec=spec, fields=fields, skip=skip, limit=limit, sort=sort,
                                                **self.db_find_options)):
             user = dict2object(User, entity, inspect_constructor=True)
@@ -458,7 +458,7 @@ class OrchestraAPICore(object):
         Storage.delete_media(self.config, media)
 
     def get_medias(self, spec=None, fields=None, skip=0, limit=0, sort=None, load_fields=False):
-        medias = []
+        medias, sort = [], sort or [('metadata.title',  1)]  # Sort by default, this is nicer like that !
         for entity in list(self._db.medias.find(spec=spec, fields=fields, skip=skip, limit=limit, sort=sort,
                                                 **self.db_find_options)):
             media = dict2object(Media, entity, inspect_constructor=True)
@@ -519,7 +519,7 @@ class OrchestraAPICore(object):
         self._db.transform_profiles.remove({u'_id': profile._id})
 
     def get_transform_profiles(self, spec=None, fields=None, skip=0, limit=0, sort=None):
-        profiles = []
+        profiles, sort = [], sort or [('encoder_name', 1), ('title',  1)]  # Sort by default, this is nicer like that !
         for entity in list(self._db.transform_profiles.find(spec=spec, fields=fields, skip=skip, limit=limit, sort=sort,
                                                             **self.db_find_options)):
             profiles.append(dict2object(TransformProfile, entity, inspect_constructor=True))
@@ -676,7 +676,7 @@ class OrchestraAPICore(object):
 
     def get_transform_tasks(self, spec=None, fields=None, skip=0, limit=0, sort=None, load_fields=False,
                             append_result=True):
-        tasks = []
+        tasks, sort = [], sort or [('statistic.add_date', 1)]  # Sort by default, this is nicer like that !
         for entity in list(self._db.transform_tasks.find(spec=spec, fields=fields, skip=skip, limit=limit, sort=sort,
                                                          **self.db_find_options)):
             task = dict2object(TransformTask, entity, inspect_constructor=True)
@@ -867,7 +867,7 @@ class OrchestraAPICore(object):
 
     def get_publisher_tasks(self, spec=None, fields=None, skip=0, limit=0, sort=None, load_fields=False,
                             append_result=True):
-        tasks = []
+        tasks, sort = [], sort or [('statistic.add_date', 1)]  # Sort by default, this is nicer like that !
         for entity in list(self._db.publisher_tasks.find(spec=spec, fields=fields, skip=skip, limit=limit, sort=sort,
                                                          **self.db_find_options)):
             task = dict2object(PublisherTask, entity, inspect_constructor=True)
