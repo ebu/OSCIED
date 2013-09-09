@@ -126,9 +126,10 @@ class IBC2013(DeploymentScenario):
                 admin = User(first_name=u'Mister admin', last_name=u'IBC2013', mail=u'admin.ibc2013@oscied.org',
                             secret='big_secret_to_sav3', admin_platform=True)
                 environment.daemons_auth = environment.api_client.login_or_add(admin)
-                environment.scaling_thread.start()
             environment.statistics_thread.start()
-            environment.tasks_thread.start()
+            if isinstance(environment.daemons_auth, User):
+                environment.scaling_thread.start()
+                environment.tasks_thread.start()
         for environment in self.environments:
             [thread.join() for thread in environment.threads]
         print u'Exiting Main Thread'

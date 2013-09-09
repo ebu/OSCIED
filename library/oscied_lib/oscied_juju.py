@@ -25,6 +25,7 @@
 
 import os, pygal, shutil, threading, time
 from collections import defaultdict
+from kitchen.text.converters import to_bytes
 from requests.exceptions import Timeout
 from oscied_api import OrchestraAPIClient, init_api, SERVICE_TO_LABEL, SERVICE_TO_MAPPER
 from pyutils.py_collections import pygal_deque
@@ -220,7 +221,7 @@ class StatisticsThread(OsciedEnvironmentThread):
 
 
 class TasksThread(OsciedEnvironmentThread):
-    u"""Drives a deployed OSCIED setup to transcode, publish and cleanup media assets."""
+    u"""Drives a deployed OSCIED setup to trans-code, publish and cleanup media assets."""
 
     def run(self):
         while True:
@@ -228,13 +229,36 @@ class TasksThread(OsciedEnvironmentThread):
             now, now_string = datetime_now(format=None), datetime_now()
             try:
                 self.environment.auto = True  # Really better like that ;-)
-                index, event = self.environment.events.get(now, default_value={})
-                print(u'[{0}] Handle (TODO) at index {1}.'.format(self.name, index))
-                for service, stats in self.environment.statistics.items():
-                    label = SERVICE_TO_LABEL.get(service, service)
-                    api_client = self.environment.api_client
-                    api_client.auth = self.environment.daemons_auth
-                    raise NotImplementedError(u'Transcode, publish, cleanup ...')
+                api_client = self.environment.api_client
+                api_client.auth = self.environment.daemons_auth
+                medias = api_client.medias.list(head=True)
+
+                try:  # Retrieve demo transformation profile (1 out of 2)
+                    tablet_profile = api_client.transform_profiles.list(spec={u'title': u'Tablet 480p/25'})[0]
+                except IndexError:
+                    raise IndexError(to_bytes(u'Missing transformation profile "Tablet 480p/25".'))
+
+                # Detect source media assets (not resulting of a transformation task)
+                source_medias = [m for m in medias if not m.parent_id and m.status != u'DELETED']
+
+                # Create a tablet-optimized media asset per source-media asset
+                profile_key, profile_title = u'profile', tablet_profile.title
+                skip = set([m.parent_id for m in medias if m.status != u'DELETED' and
+                            m.metadata.get(profile_key) == profile_title])
+
+                # Create missing tablet-optimized media assets
+                for source_media in source_medias:
+                    if source_media._id not in skip:
+                        media_title = source_media.metadata['title']
+                        print(u'Create a tablet-optimized version of {0} ...'.format(media_title))
+                        api_client.transform_tasks.add({
+                            u'filename': u'{0}_tablet.mp4'.format(os.path.splitext(source_media.filename)[0]),
+                            u'media_in_id': source_media._id,
+                            u'profile_id': tablet_profile._id,
+                            u'metadata': { u'title': u'Tablet {0}'.format(media_title), profile_key: profile_title },
+                            u'send_email': False,
+                            u'queue': u'transform_private'})
+
             except Timeout as e:
                 # FIXME do something here ...
                 print(u'[{0}] WARNING! Timeout, reason: {1}.'.format(self.name, e))
