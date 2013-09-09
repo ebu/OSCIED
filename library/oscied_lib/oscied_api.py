@@ -632,7 +632,7 @@ class OrchestraAPICore(object):
                              profile_id=profile._id, send_email=send_email, _id=result_id)
         task.add_statistic(u'add_date', datetime_now(), True)
         self._db.transform_tasks.save(task.__dict__, safe=True)
-        return result_id
+        return task
 
     def get_transform_task(self, spec, fields=None, load_fields=False, append_result=True):
         entity = self._db.transform_tasks.find_one(spec, fields)
@@ -800,7 +800,7 @@ class OrchestraAPICore(object):
         task = PublisherTask(user_id=user._id, media_id=media._id, send_email=send_email, _id=result_id)
         task.add_statistic(u'add_date', datetime_now(), True)
         self._db.publisher_tasks.save(task.__dict__, safe=True)
-        return result_id
+        return task
 
     def get_publisher_task(self, spec, fields=None, load_fields=False, append_result=True):
         entity = self._db.publisher_tasks.find_one(spec, fields)
