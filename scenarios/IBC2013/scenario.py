@@ -121,6 +121,7 @@ class IBC2013(DeploymentScenario):
             environment.enable_units_api = ENABLE_UNITS_API
             if environment.name == u'maas':
                 environment.enable_units_status = False  # FIXME enable it during IBC (??)
+                environment.enable_tasks_status = False  # FIXME enable it during IBC
             else:
                 print(u'Register or retrieve an administrator in environment {0}.'.format(environment.name))
                 admin = User(first_name=u'Mister admin', last_name=u'IBC2013', mail=u'admin.ibc2013@oscied.org',

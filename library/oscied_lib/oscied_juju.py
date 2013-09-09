@@ -27,7 +27,7 @@ import os, pygal, shutil, threading, time
 from collections import defaultdict
 from kitchen.text.converters import to_bytes
 from requests.exceptions import Timeout
-from oscied_api import OrchestraAPIClient, init_api, SERVICE_TO_LABEL, SERVICE_TO_MAPPER
+from oscied_api import OrchestraAPIClient, init_api, SERVICE_TO_LABEL, SERVICE_TO_UNITS_API, SERVICE_TO_TASKS_API
 from pyutils.py_collections import pygal_deque
 from pyutils.py_datetime import datetime_now
 from pyutils.py_juju import (
@@ -40,7 +40,7 @@ class OsciedEnvironment(Environment):
 
     # FIXME an helper to update config passwords (generate) -> self.config
     def __init__(self, name, events, statistics, charts_path, api_unit=u'oscied-orchestra/0', enable_units_api=False,
-                 enable_units_status=True, daemons_auth=None, **kwargs):
+                 enable_units_status=True, enable_tasks_status=True, daemons_auth=None, **kwargs):
         super(OsciedEnvironment, self).__init__(name, **kwargs)
         self.events = events
         self.statistics = statistics
@@ -48,6 +48,7 @@ class OsciedEnvironment(Environment):
         self.api_unit = api_unit
         self.enable_units_api = enable_units_api
         self.enable_units_status = enable_units_status
+        self.enable_tasks_status = enable_tasks_status
         self.daemons_auth = daemons_auth
         self._api_client = self._statistics_thread = self._scaling_thread = self._tasks_thread = None
 
@@ -117,7 +118,7 @@ class ServiceStatistics(PickleableObject):
     def service_label(self):
         return SERVICE_TO_LABEL.get(self.service, self.service)
 
-    def update(self, now_string, planned, units):
+    def update(self, now_string, planned, units, tasks):
         self.units_planned.append(planned)
         current = defaultdict(int)
         for unit in units.values():
@@ -129,8 +130,8 @@ class ServiceStatistics(PickleableObject):
         for state, history in self.units_current.items():
             history.append(current[state])
 
-    def generate_line_chart(self, charts_path, width=600, height=300, explicit_size=True, show_dots=True,
-                            truncate_legend=20):
+    def generate_units_line_chart(self, charts_path, width=600, height=300, explicit_size=True, show_dots=True,
+                                  truncate_legend=20):
         tmp_file = os.path.join(charts_path, u'line_{0}_{1}.new.svg'.format(self.environment, self.service_label))
         dst_file = os.path.join(charts_path, u'line_{0}_{1}.svg'.format(self.environment, self.service_label))
         chart = pygal.Line(width=width, height=height, explicit_size=explicit_size, show_dots=show_dots,
@@ -142,7 +143,7 @@ class ServiceStatistics(PickleableObject):
         shutil.copy(tmp_file, dst_file)
         return dst_file
 
-    def generate_pie_chart_by_status(self, charts_path, width=300, height=300, explicit_size=True):
+    def generate_units_pie_chart_by_status(self, charts_path, width=300, height=300, explicit_size=True):
         tmp_file = os.path.join(charts_path, u'pie_{0}_{1}.new.svg'.format(self.environment, self.service_label))
         dst_file = os.path.join(charts_path, u'pie_{0}_{1}.svg'.format(self.environment, self.service_label))
         chart = pygal.Pie(width=width, height=height, explicit_size=explicit_size)
@@ -154,6 +155,13 @@ class ServiceStatistics(PickleableObject):
         shutil.copy(tmp_file, dst_file)
         return dst_file
 
+    def generate_tasks_line_chart(self, charts_path, width=600, height=300, explicit_size=True, show_dots=True,
+                                  truncate_legend=20):
+        # {"status": "SUCCESS", "profile_id": "...", "user_id": "...", "media_in_id": "...", "media_out_id": "...", "send_email": false, "statistic": {"media_in_duration": "00:02:02.96", "media_in_size": 165259332, "add_date": "2013-09-09 22:03:47", "media_out_size": 7597629, "hostname": "transform_ec2-107-20-102-255.compute-1.amazonaws.com", "percent": 100, "elapsed_time": 153.32889699935913, "eta_time": 0, "start_date": "2013-09-09 22:03:47", "media_out_duration": "00:02:03.20"}, "_id": "..."}
+
+        # {"status": "PENDING", "profile_id": "...", "user_id": "...", "media_in_id": "...", "media_out_id": "...", "send_email": false, "statistic": {"add_date": "2013-09-09 22:04:28", "error": "None"}, "_id": "..."}
+    pass
+
 
 class ScalingThread(OsciedEnvironmentThread):
     u"""Handle the scaling of a deployed OSCIED setup."""
@@ -161,24 +169,25 @@ class ScalingThread(OsciedEnvironmentThread):
     def run(self):
         while True:
             # Get current time to retrieve state
-            now, now_string = datetime_now(format=None), datetime_now()
+            env, now, now_string = self.environment, datetime_now(format=None), datetime_now()
             try:
-                self.environment.auto = True  # Really better like that ;-)
-                index, event = self.environment.events.get(now, default_value={})
+                env.auto = True  # Really better like that ;-)
+                index, event = env.events.get(now, default_value={})
                 print(u'[{0}] Handle scaling at index {1}.'.format(self.name, index))
-                for service, stats in self.environment.statistics.items():
-                    label, mapper = SERVICE_TO_LABEL.get(service, service), SERVICE_TO_MAPPER[service]
+                for service, stats in env.statistics.items():
+                    label = SERVICE_TO_LABEL.get(service, service)
+                    units_api = SERVICE_TO_UNITS_API[service]
                     planned = event.get(service, None)
-                    if self.environment.enable_units_api:
-                        api_client = self.environment.api_client
-                        api_client.auth = self.environment.daemons_auth
-                        units = getattr(api_client, mapper).list()
+                    if env.enable_units_api:
+                        api_client = env.api_client
+                        api_client.auth = env.daemons_auth
+                        units = getattr(api_client, units_api).list()
                     else:
-                        units = self.environment.get_units(service)
+                        units = env.get_units(service)
                     if len(units) != planned:
                         print(u'[{0}] Ensure {1} instances of service {2}'.format(self.name, planned, label))
-                        self.environment.ensure_num_units(service, service, num_units=planned)
-                        self.environment.cleanup_machines()  # Safer way to terminate machines !
+                        env.ensure_num_units(service, service, num_units=planned)
+                        env.cleanup_machines()  # Safer way to terminate machines !
                     else:
                         print(u'[{0}] Nothing to do !'.format(self.name))
             except Timeout as e:
@@ -193,26 +202,29 @@ class StatisticsThread(OsciedEnvironmentThread):
     def run(self):
         while True:
             # Get current time to retrieve state
-            now, now_string = datetime_now(format=None), datetime_now()
+            env, now, now_string = self.environment, datetime_now(format=None), datetime_now()
             try:
-                self.environment.auto = True  # Really better like that ;-)
-                index, event = self.environment.events.get(now, default_value={})
+                env.auto = True  # Really better like that ;-)
+                index, event = env.events.get(now, default_value={})
                 print(u'[{0}] Update charts at index {1}.'.format(self.name, index))
-                for service, stats in self.environment.statistics.items():
-                    label, mapper = SERVICE_TO_LABEL.get(service, service), SERVICE_TO_MAPPER[service]
+                for service, stats in env.statistics.items():
+                    label = SERVICE_TO_LABEL.get(service, service)
+                    units_api, tasks_api = SERVICE_TO_MAPPER[service], SERVICE_TO_TASKS_API[service]
                     planned = event.get(service, None)
-                    if self.environment.enable_units_status:
-                        if self.environment.enable_units_api:
-                            api_client = self.environment.api_client
-                            api_client.auth = self.environment.daemons_auth
-                            units = getattr(api_client, mapper).list()
+                    if env.enable_units_status:
+                        if env.enable_units_api:
+                            api_client = env.api_client
+                            api_client.auth = env.daemons_auth
+                            units = getattr(api_client, units_api).list()
                         else:
-                            units = self.environment.get_units(service)
+                            units = env.get_units(service)
                     else:
                         units = {k: {u'agent-state': STARTED} for k in range(planned)}
-                    stats.update(now_string, planned, units)
-                    stats.generate_line_chart(self.environment.charts_path)
-                    stats.generate_pie_chart_by_status(self.environment.charts_path)
+                    tasks = getattr(api_client, tasks_api).list(head=True) if env.enable_tasks_api else None
+                    stats.update(now_string, planned, units, tasks)
+                    stats.generate_units_pie_chart_by_status(env.charts_path)
+                    stats.generate_units_line_chart(env.charts_path)
+                    stats.generate_tasks_line_chart(env.charts_path)
                     stats.write()
             except Timeout as e:
                 # FIXME do something here ...
@@ -226,23 +238,23 @@ class TasksThread(OsciedEnvironmentThread):
     def run(self):
         while True:
             # Get current time to retrieve state
-            now, now_string = datetime_now(format=None), datetime_now()
+            env, now, now_string = self.environment, datetime_now(format=None), datetime_now()
             try:
-                self.environment.auto = True  # Really better like that ;-)
-                api_client = self.environment.api_client
-                api_client.auth = self.environment.daemons_auth
+                env.auto = True  # Really better like that ;-)
+                api_client = env.api_client
+                api_client.auth = env.daemons_auth
                 medias = api_client.medias.list(head=True)
 
                 try:  # Retrieve demo transformation profile (1 out of 2)
-                    tablet_profile = api_client.transform_profiles.list(spec={u'title': u'Tablet 480p/25'})[0]
+                    profile_key, profile_title = u'profile', u'Tablet 480p/25'
+                    tablet_profile = api_client.transform_profiles.list(spec={u'title': profile_title})[0]
                 except IndexError:
-                    raise IndexError(to_bytes(u'Missing transformation profile "Tablet 480p/25".'))
+                    raise IndexError(to_bytes(u'Missing transformation profile "{0}".'.format(profile_title)))
 
                 # Detect source media assets (not resulting of a transformation task)
                 source_medias = [m for m in medias if not m.parent_id and m.status != u'DELETED']
 
                 # Create a tablet-optimized media asset per source-media asset
-                profile_key, profile_title = u'profile', tablet_profile.title
                 skip = set([m.parent_id for m in medias if m.status != u'DELETED' and
                             m.metadata.get(profile_key) == profile_title])
 
@@ -258,6 +270,10 @@ class TasksThread(OsciedEnvironmentThread):
                             u'metadata': { u'title': u'Tablet {0}'.format(media_title), profile_key: profile_title },
                             u'send_email': False,
                             u'queue': u'transform_private'})
+
+                tasks = api_client.transform_tasks.list(head=True)
+                for task in tasks:
+                    print(task.to_json(include_properties=False))
 
             except Timeout as e:
                 # FIXME do something here ...
