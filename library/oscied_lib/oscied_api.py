@@ -830,7 +830,7 @@ class OrchestraAPICore(object):
                     pass
             elif task.status == 'REVOKING':
                 task.revoke_task_id = revoke_task_id
-            self.save_media(media, safe=True)  # FIXME do not save if not modified.
+            self.save_media(media)  # FIXME do not save if not modified.
             self._db.publisher_tasks.save(task.__dict__, safe=True)  # FIXME The same here.
             return media
         return None

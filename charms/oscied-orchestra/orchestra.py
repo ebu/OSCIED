@@ -2200,7 +2200,7 @@ def api_publisher_unit_number_delete(environment, number):
 # Publishing tasks -----------------------------------------------------------------------------------------------------
 
 @app.route(u'/publisher/queue', methods=[u'GET'])
-def api_publish_queue():
+def api_publisher_queue():
     """
     Return an array containing the publication queues.
 
@@ -2760,7 +2760,7 @@ def api_publisher_task_hook():
         publish_uri = data[u'publish_uri'] if u'publish_uri' in data else None
         status = data[u'status']
         logging.debug(u'task {0}, publish_uri {1}, status {2}'.format(task_id, publish_uri, status))
-        orchestra.publish_callback(task_id, publish_uri, status)
+        orchestra.publisher_callback(task_id, publish_uri, status)
         return ok_200(u'Your work is much appreciated, thanks !', False)
     except Exception as e:
         map_exceptions(e)
@@ -2820,7 +2820,7 @@ def api_revoke_publisher_task_hook():
         publish_uri = data[u'publish_uri'] if u'publish_uri' in data else None
         status = data[u'status']
         logging.debug(u'task {0}, revoked publish_uri {1}, status {2}'.format(task_id, publish_uri, status))
-        orchestra.publish_revoke_callback(task_id, publish_uri, status)
+        orchestra.publisher_revoke_callback(task_id, publish_uri, status)
         return ok_200(u'Your work is much appreciated, thanks !', False)
     except Exception as e:
         map_exceptions(e)
