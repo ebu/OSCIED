@@ -26,6 +26,7 @@
 import os, requests, shutil, time
 from kitchen.text.converters import to_bytes
 from urlparse import urlparse, ParseResult
+from oscied_models import Media
 from pyutils.py_ffmpeg import get_media_duration
 from pyutils.py_filesystem import get_size, try_makedirs
 from pyutils.py_serialization import JsoneableObject
@@ -72,7 +73,7 @@ class Storage(object):
 
     @staticmethod
     def add_media(config, media):
-        if not media.status in (u'PENDING',):
+        if media.status != Media.PENDING:
             media_src_path = config.storage_medias_path(media, generate=False)
             if media_src_path:
                 media_dst_path = config.storage_medias_path(media, generate=True)

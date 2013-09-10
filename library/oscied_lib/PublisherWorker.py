@@ -24,11 +24,11 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 import os, shutil, time
-from celery import current_task, states
+from celery import current_task
 from celery.decorators import task
 from kitchen.text.converters import to_bytes
 from oscied_config import PublisherLocalConfig
-from oscied_models import Media
+from oscied_models import Media, PublisherTask
 from oscied_util import Callback
 from pyutils.py_datetime import datetime_now
 from pyutils.py_filesystem import recursive_copy
@@ -42,7 +42,7 @@ configure_unicode()
 def publisher_task(media_json, callback_json):
 
     def copy_callback(start_date, elapsed_time, eta_time, src_size, dst_size, ratio):
-        publisher_task.update_state(state=u'PROGRESS', meta={
+        publisher_task.update_state(state=PublisherTask.PROGRESS, meta={
             u'hostname': request.hostname, u'start_date': start_date, u'elapsed_time': elapsed_time,
             u'eta_time': eta_time, u'media_size': src_size, u'publish_size': dst_size, u'percent': int(100 * ratio)})
 
@@ -99,7 +99,7 @@ def publisher_task(media_json, callback_json):
 
         # Here all seem okay
         print(u'{0} Publication task successful, media asset published as {1}'.format(request.id, publish_uri))
-        publish_callback(states.SUCCESS, publish_uri)
+        publish_callback(PublisherTask.SUCCESS, publish_uri)
         return {u'hostname': request.hostname, u'start_date': infos[u'start_date'],
                 u'elapsed_time': infos[u'elapsed_time'], u'eta_time': 0, u'media_size': infos[u'src_size'],
                 u'publish_size': infos[u'src_size'], u'percent': 100}
@@ -163,7 +163,7 @@ def revoke_publisher_task(publish_uri, callback_json):
         # Here all seem okay
         print(u'{0} Revoke publication task successful, media asset unpublished from {1}'.format(
               request.id, publish_uri))
-        revoke_publish_callback(states.SUCCESS, publish_uri)
+        revoke_publish_callback(PublisherTask.SUCCESS, publish_uri)
         return {u'hostname': request.hostname, u'start_date': start_date, u'elapsed_time': elapsed_time, u'eta_time': 0,
                 u'percent': 100}
 

@@ -30,7 +30,7 @@ from oscied_models import Media, User, TransformProfile, PublisherTask, Transfor
 
 MEDIA_TEST = Media(user_id=unicode(uuid.uuid4()), parent_id=unicode(uuid.uuid4()), filename=u'tabby.mpg',
                    metadata={u'title': u"Tabby's adventures §1", u'description': u'My cat drinking water'},
-                   status=u'PENDING')
+                   status=Media.PENDING)
 MEDIA_TEST.uri = ORCHESTRA_CONFIG_TEST.storage_medias_uri(MEDIA_TEST)
 MEDIA_TEST.add_metadata(u'title', u'not authorized overwrite', False)
 MEDIA_TEST.add_metadata(u'size', 4096, True)

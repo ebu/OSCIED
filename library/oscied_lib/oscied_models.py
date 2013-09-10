@@ -54,7 +54,21 @@ class OsciedDBModel(JsoneableObject):
 
 class OsciedDBTask(OsciedDBModel):
 
-    def __init__(self, _id=None, statistic=None, status=u'UNKNOWN'):
+    ALL_STATUS = PENDING, RECEIVED, STARTED, PROGRESS, SUCCESS, FAILURE, REVOKING, REVOKED, RETRY, IGNORED, UNKNOWN = \
+        states.PENDING, states.RECEIVED, states.STARTED, u'PROGRESS', states.SUCCESS, states.FAILURE, u'REVOKING', \
+        states.REVOKED, states.RETRY, states.IGNORED, u'UNKNOWN'
+
+    ALL_STATUS      = frozenset(ALL_STATUS)
+    PENDING_STATUS  = frozenset([PENDING, RECEIVED])
+    RUNNING_STATUS  = frozenset([STARTED, PROGRESS, RETRY])
+    SUCCESS_STATUS  = frozenset([SUCCESS])
+    CANCELED_STATUS = frozenset([REVOKING, REVOKED])
+    ERROR_STATUS    = frozenset([FAILURE])
+    UNDEF_STATUS    = frozenset([IGNORED, UNKNOWN])
+    FINAL_SATUS     = SUCCESS_STATUS | CANCELED_STATUS | ERROR_STATUS
+    WORK_IN_PROGRESS_STATUS = PENDING_STATUS | RUNNING_STATUS
+
+    def __init__(self, _id=None, statistic=None, status=UNKNOWN):
         super(OsciedDBTask, self).__init__(_id)
         self.statistic = statistic or {}
         self.status = status
@@ -83,33 +97,36 @@ class OsciedDBTask(OsciedDBModel):
         async_result = AsyncResult(self._id)
         if async_result:
             try:
-                if self.status not in (states.REVOKED, 'REVOKING'):
+                if self.status not in (OsciedDBTask.REVOKED, OsciedDBTask.REVOKING):
                     self.status = async_result.status
                 try:
                     self.statistic.update(async_result.result)
                 except:
                     self.statistic[u'error'] = unicode(async_result.result)
             except NotImplementedError:
-                self.status = u'UNKNOWN'
+                self.status = OsciedDBTask.UNKNOWN
         else:
-            self.status = u'UNKNOWN'
+            self.status = OsciedDBTask.UNKNOWN
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 
 class Media(OsciedDBModel):
 
-    STATUS = (u'PENDING', u'READY', u'DELETED')
+    ALL_STATUS = PENDING, READY, DELETED = u'PENDING', u'READY', u'DELETED'
+    ALL_STATUS = frozenset(ALL_STATUS)
 
     def __init__(self, user=None, user_id=None, parent=None, parent_id=None, uri=None, public_uris=None, filename=None,
-                 metadata=None, status=u'PENDING', _id=None):
+                 metadata=None, status=PENDING, _id=None):
         super(Media, self).__init__(_id)
         self.user = dict2object(User, user, inspect_constructor=True) if isinstance(user, dict) else user
         if user is None:  # User attribute overrides user_id
             self.user_id = user_id
+            del self.user
         self.parent = dict2object(Media, parent, inspect_constructor=True) if isinstance(parent, dict) else parent
         if parent is None:  # Parent attribute overrides parent_id
             self.parent_id = parent_id
+            del self.parent_id
         self.uri = uri
         self.public_uris = public_uris or {}
         try:
@@ -138,6 +155,7 @@ class Media(OsciedDBModel):
     def is_valid(self, raise_exception):
         if not super(Media, self).is_valid(raise_exception):
             return False
+        # FIXME check user XOR user_id ...
         if (hasattr(self, u'user') and self.user is not None and
             (not isinstance(self.user, User) or not self.user.is_valid(False))):
             self._E(raise_exception, u'user is not a valid instance of user')
@@ -170,8 +188,8 @@ class Media(OsciedDBModel):
     def load_fields(self, user, parent):
         self.user = user
         self.parent = parent
-        delattr(self, u'user_id')
-        delattr(self, u'parent_id')
+        del self.user_id
+        del self.parent_id
 
 
 class User(OsciedDBModel):
@@ -299,14 +317,16 @@ class TransformProfile(OsciedDBModel):
 class PublisherTask(OsciedDBTask):
 
     def __init__(self, user=None, user_id=None, media=None, media_id=None, publish_uri=None, revoke_task_id=None,
-                 send_email=False, _id=None, statistic=None, status=u'UNKNOWN'):
+                 send_email=False, _id=None, statistic=None, status=OsciedDBTask.UNKNOWN):
         super(PublisherTask, self).__init__(_id, statistic, status)
         self.user = dict2object(User, user, inspect_constructor=True) if isinstance(user, dict) else user
         if user is None:  # User attribute overrides user_id
             self.user_id = user_id
+            del self.user
         self.media = dict2object(Media, media, inspect_constructor=True) if isinstance(media, dict) else media
         if media is None:  # Media attribute overrides media_id
             self.media_id = media_id
+            del self.media
         self.publish_uri = publish_uri
         self.revoke_task_id = revoke_task_id
         self.send_email = send_email
@@ -333,27 +353,32 @@ class PublisherTask(OsciedDBTask):
     def load_fields(self, user, media):
         self.user = user
         self.media = media
-        delattr(self, u'user_id')
-        delattr(self, u'media_id')
+        del self.user_id
+        del self.media_id
 
 
 class TransformTask(OsciedDBTask):
 
     def __init__(self, user=None, user_id=None, media_in=None, media_in_id=None, media_out=None, media_out_id=None,
-                 profile=None, profile_id=None, send_email=False, _id=None, statistic=None, status=u'UNKNOWN'):
+                 profile=None, profile_id=None, send_email=False, _id=None, statistic=None,
+                 status=OsciedDBTask.UNKNOWN):
         super(TransformTask, self).__init__(_id, statistic, status)
         self.user = dict2object(User, user, inspect_constructor=True) if isinstance(user, dict) else user
         if user is None:  # User attribute overrides user_id
             self.user_id = user_id
+            del self.user
         self.media_in = dict2object(Media, media_in, True) if isinstance(media_in, dict) else media_in
         if media_in is None:  # Media_in attribute overrides media_in_id
             self.media_in_id = media_in_id
+            del self.media_in
         self.media_out = dict2object(Media, media_out, True) if isinstance(media_out, dict) else media_out
         if media_out is None:  # Media_out attribute overrides media_out_id
             self.media_out_id = media_out_id
+            del self.media_out
         self.profile = dict2object(TransformProfile, profile, True) if isinstance(profile, dict) else profile
         if profile is None:  # Profile attribute overrides profile_id
             self.profile_id = profile_id
+            del self.profile
         self.send_email = send_email
 
     def is_valid(self, raise_exception):
@@ -387,14 +412,14 @@ class TransformTask(OsciedDBTask):
         self.media_in = media_in
         self.media_out = media_out
         self.profile = profile
-        delattr(self, u'user_id')
-        delattr(self, u'media_in_id')
-        delattr(self, u'media_out_id')
-        delattr(self, u'profile_id')
+        del self.user_id
+        del self.media_in_id
+        del self.media_out_id
+        del self.profile_id
 
     @staticmethod
     def validate_task(media_in, profile, media_out):
-        if media_in.status != u'READY':
+        if media_in.status != Media.READY:
             raise NotImplementedError(to_bytes(u"Cannot launch the task, input media asset's status is {0}.".format(
                                       media_in.status)))
         if media_in.is_dash and profile.encoder_name != u'copy':

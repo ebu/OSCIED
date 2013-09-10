@@ -24,13 +24,13 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 import os, re, select, shlex, time
-from celery import current_task, states
+from celery import current_task
 from celery.decorators import task
 #from celery.signals import celeryd_after_setup, worker_shutdown
 from kitchen.text.converters import to_bytes
 from subprocess import Popen, PIPE
 from oscied_config import TransformLocalConfig
-from oscied_models import Media, TransformProfile
+from oscied_models import Media, TransformProfile, TransformTask
 from oscied_util import Callback
 from pyutils.py_datetime import datetime_now, total_seconds
 from pyutils.py_ffmpeg import get_media_duration, get_media_tracks
@@ -63,7 +63,7 @@ FFMPEG_REGEX = re.compile(
 def transform_task(media_in_json, media_out_json, profile_json, callback_json):
 
     def copy_callback(start_date, elapsed_time, eta_time, src_size, dst_size, ratio):
-        transform_task.update_state(state=u'PROGRESS', meta={
+        transform_task.update_state(state=TransformTask.PROGRESS, meta={
             u'hostname': request.hostname, 'start_date': start_date, u'elapsed_time': elapsed_time,
             u'eta_time': eta_time, u'media_in_size': src_size, u'media_out_size': dst_size,
             u'percent': int(100 * ratio)})
@@ -168,7 +168,7 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
                         prev_ratio, prev_time = ratio, elapsed_time
                         eta_time = int(elapsed_time * (1.0 - ratio) / ratio) if ratio > 0 else 0
                         transform_task.update_state(
-                            state=u'PROGRESS',
+                            state=TransformTask.PROGRESS,
                             meta={u'hostname': request.hostname,
                                   u'start_date': start_date,
                                   u'elapsed_time': elapsed_time,
@@ -236,7 +236,7 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
                         prev_ratio, prev_time = ratio, elapsed_time
                         eta_time = int(elapsed_time * (1.0 - ratio) / ratio) if ratio > 0 else 0
                         transform_task.update_state(
-                            state=u'PROGRESS',
+                            state=TransformTask.PROGRESS,
                             meta={u'hostname': request.hostname,
                                   u'start_date': start_date,
                                   u'elapsed_time': elapsed_time,
@@ -265,7 +265,7 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
         media_out_size = get_size(media_out_root)
         media_out_duration = get_media_duration(media_out_path)
         print(u'{0} Transformation task successful, output media asset {1}'.format(request.id, media_out.filename))
-        transform_callback(states.SUCCESS)
+        transform_callback(TransformTask.SUCCESS)
         return {u'hostname': request.hostname, u'start_date': start_date, u'elapsed_time': elapsed_time,
                 u'eta_time': 0, u'media_in_size': media_in_size, u'media_in_duration': media_in_duration,
                 u'media_out_size': media_out_size, u'media_out_duration': media_out_duration, u'percent': 100}

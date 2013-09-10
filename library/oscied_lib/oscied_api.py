@@ -25,7 +25,6 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 import logging, mongomock, os, pymongo, re, smtplib, uuid
-from celery import states
 #from celery import current_app
 #from celery.task.control import inspect
 from celery.task.control import revoke
@@ -413,7 +412,7 @@ class OrchestraAPICore(object):
         media.is_valid(True)
         if not media.get_metadata(u'title'):
             raise ValueError(to_bytes(u"Title key is required in media asset's metadata."))
-        if media.status != u'DELETED':
+        if media.status != Media.DELETED:
             if self.is_mock:
                 size = randint(10*1024*1024, 10*1024*1024*1024)
                 duration = u'%02d:%02d:%02d' % (randint(0, 2), randint(0, 59), randint(0, 59))
@@ -445,14 +444,14 @@ class OrchestraAPICore(object):
             media = self.get_media({u'_id': media})
         media.is_valid(True)
         task = self.get_transform_task({u'media_in_id': media._id}, append_result=True)
-        if task and (task.status in states.UNREADY_STATES or task.status == u'PROGRESS'):
+        if task and task.status in TransformTask.WORK_IN_PROGRESS_STATUS:
             raise ValueError(to_bytes(u'Cannot delete the media asset, it is actually in use by transformation task wit'
                              'h id {0} and status {1}.'.format(task._id, task.status)))
         task = self.get_publisher_task({u'media_id': media._id}, append_result=True)
-        if task and (task.status in states.UNREADY_STATES or task.status == u'PROGRESS'):
+        if task and task.status in TransformTask.WORK_IN_PROGRESS_STATUS:
             raise ValueError(to_bytes(u'Cannot delete the media asset, it is actually in use by publication task with i'
                              'd {0} and status {1}.'.format(task._id, task.status)))
-        media.status = u'DELETED'
+        media.status = Media.DELETED
         self.save_media(media)
         #self._db.medias.remove({'_id': media._id})
         Storage.delete_media(self.config, media)
@@ -613,7 +612,7 @@ class OrchestraAPICore(object):
         if not queue in self.config.transform_queues:
             raise IndexError(to_bytes(u'No transformation queue with name {0}.'.format(queue)))
         media_out = Media(user_id=user_id, parent_id=media_in_id, filename=filename, metadata=metadata,
-                          status=u'PENDING')
+                          status=Media.PENDING)
         media_out.uri = self.config.storage_medias_uri(media_out)
         TransformTask.validate_task(media_in, profile, media_out)
         self.save_media(media_out)  # Save pending output media
@@ -659,11 +658,11 @@ class OrchestraAPICore(object):
         if valid_uuid(task, none_allowed=False):
             task = self.get_transform_task({u'_id': task})
         task.is_valid(True)
-        if task.status == states.REVOKED:
+        if task.status == TransformTask.CANCELED_STATUS:
             raise ValueError(to_bytes(u'Transformation task {0} is already revoked !'.format(task._id)))
-        if task.status in states.READY_STATES:
+        if task.status in TransformTask.FINAL_SATUS:
             raise ValueError(to_bytes(u'Cannot revoke a transformation task with status {0}.'.format(task.status)))
-        task.status = states.REVOKED
+        task.status = TransformTask.REVOKED
         if self.is_mock:
             pass  # FIXME TODO
         else:
@@ -778,15 +777,15 @@ class OrchestraAPICore(object):
             raise IndexError(to_bytes(u'No media asset with id {0}.'.format(media_id)))
         if not queue in self.config.publisher_queues:
             raise IndexError(to_bytes(u'No publication queue with name {0}.'.format(queue)))
-        if media.status != u'READY':
+        if media.status != Media.READY:
             raise NotImplementedError(to_bytes(u"Cannot launch the task, input media asset's status is {0}.".format(
                                       media.status)))
         if len(media.public_uris) > 0:
             raise NotImplementedError(to_bytes(u'Cannot launch the task, input media asset is already published.'))
         other = self.get_publisher_task({u'media_id': media._id})
-        if other and other.status not in states.READY_STATES and other.status != states.REVOKED:
-            raise NotImplementedError(to_bytes(u'Cannot launch the task, input media aset will be published by another '
-                                      'task with id {0}.'.format(other._id)))
+        if other and other.status not in PublisherTask.FINAL_STATUS and other.status != PublisherTask.REVOKED:
+            raise NotImplementedError(to_bytes(u'Cannot launch the task, input media asset will be published by another'
+                                      ' task with id {0}.'.format(other._id)))
         # FIXME create a one-time password to avoid fixed secret authentication ...
         callback = Callback(self.config.api_url + callback_url, u'node', self.config.node_secret)
         if self.is_mock:
@@ -821,15 +820,15 @@ class OrchestraAPICore(object):
             media = self.get_media({u'_id': task.media_id})
             if not media:
                 raise IndexError(to_bytes(u'Unable to find media asset with id {0}.'.format(task.media_id)))
-            if task.status == states.SUCCESS:
+            if task.status == PublisherTask.SUCCESS:
                 task.publish_uri = publish_uri
                 media.public_uris[task._id] = publish_uri
-            elif task.status == states.REVOKED:
+            elif task.status == PublisherTask.REVOKED:
                 try:  # Remove if missing or not !
                     del media.public_uris[task._id]
                 except:
                     pass
-            elif task.status == 'REVOKING':
+            elif task.status == PublisherTask.REVOKING:
                 task.revoke_task_id = revoke_task_id
             self.save_media(media)  # FIXME do not save if not modified.
             self._db.publisher_tasks.save(task.__dict__, safe=True)  # FIXME The same here.
@@ -846,11 +845,11 @@ class OrchestraAPICore(object):
         if valid_uuid(task, none_allowed=False):
             task = self.get_publisher_task({u'_id': task})
         task.is_valid(True)
-        if task.status in (states.REVOKED, 'REVOKING'):
+        if task.status in PublisherTask.CANCELED_STATUS:
             raise ValueError(to_bytes(u'Cannot revoke a publication task with status {0}.'.format(task.status)))
         if not self.is_mock:
             revoke(task._id, terminate=terminate)
-        if task.status == states.SUCCESS and not self.is_mock:
+        if task.status == PublisherTask.SUCCESS and not self.is_mock:
             # Send revoke task to the worker that published the media
             callback = Callback(self.config.api_url + callback_url, u'node', self.config.node_secret)
             queue = task.get_hostname()
@@ -859,9 +858,9 @@ class OrchestraAPICore(object):
             if not result.id:
                 raise ValueError(to_bytes(u'Unable to transmit task to queue {0}.'.format(queue)))
             logging.info(u'New revoke publication task {0} -> queue {1}.'.format(result.id, queue))
-            self.update_publisher_task_and_media(task, revoke_task_id=result.id, status='REVOKING')
+            self.update_publisher_task_and_media(task, revoke_task_id=result.id, status=PublisherTask.REVOKING)
         else:
-            self.update_publisher_task_and_media(task, status=states.REVOKED)
+            self.update_publisher_task_and_media(task, status=PublisherTask.REVOKED)
         if remove:
             self._db.publisher_tasks.remove({u'_id': task._id})
 
@@ -896,11 +895,11 @@ class OrchestraAPICore(object):
         media_out = self.get_media({u'_id': task.media_out_id})
         if not media_out:
             raise IndexError(to_bytes(u'Unable to find output media asset with id {0}.'.format(task.media_out_id)))
-        if status == states.SUCCESS:
-            media_out.status = u'READY'
+        if status == TransformTask.SUCCESS:
+            media_out.status = Media.READY
             self.save_media(media_out)
-            logging.info(u'{0} Media {1} is now READY'.format(task_id, media_out.filename))
-            #self.send_email_task(task, u'SUCCESS', media_out=media_out)
+            logging.info(u'{0} Media {1} is now {2}'.format(task_id, media_out.filename, media_out.status))
+            #self.send_email_task(task, TransformTask.SUCCESS, media_out=media_out)
         else:
             self.delete_media(media_out)
             task.add_statistic(u'error_details', status.replace(u'\n', u'\\n'), True)
@@ -913,10 +912,10 @@ class OrchestraAPICore(object):
         task = self.get_publisher_task({u'_id': task_id})
         if not task:
             raise IndexError(to_bytes(u'No publication task with id {0}.'.format(task_id)))
-        if status == states.SUCCESS:
+        if status == PublisherTask.SUCCESS:
             media = self.update_publisher_task_and_media(task, publish_uri=publish_uri, status=status)
-            logging.info(u'{0} Media {1} is now PUBLISHED'.format(task_id, media.filename))
-            #self.send_email_task(task, u'SUCCESS', media=media)
+            logging.info(u'{0} Media {1} is now available at {2}'.format(task_id, media.filename, media.public_uris))
+            #self.send_email_task(task, PublisherTask.SUCCESS, media=media)
         else:
             task.add_statistic(u'error_details', status.replace(u'\n', u'\\n'), True)
             self._db.publisher_tasks.save(task.__dict__, safe=True)
@@ -928,9 +927,9 @@ class OrchestraAPICore(object):
         task = self.get_publisher_task({u'revoke_task_id': task_id})
         if not task:
             raise IndexError(to_bytes(u'No publication task with revoke_task_id {0}.'.format(task_id)))
-        if status == states.SUCCESS:
-            media = self.update_publisher_task_and_media(task, status=states.REVOKED)
-            logging.info(u'{0} Media {1} is now {2}'.format(task_id, media.filename, media.status))
+        if status == PublisherTask.SUCCESS:
+            media = self.update_publisher_task_and_media(task, status=PublisherTask.REVOKED)
+            logging.info(u'{0} Media {1} is now available at {2}'.format(task_id, media.filename, media.public_uris))
         else:
             task.add_statistic('revoke_error_details', status.replace(u'\n', u'\\n'), True)
             self._db.publisher_tasks.save(task.__dict__, safe=True)
