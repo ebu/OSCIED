@@ -50,13 +50,14 @@ STATISTICS_MAXLEN = 30 * DAEMONS_CHECKS_PER_EVENT # in hours
 CONFIG_AMAZ = os.path.join(SCENARIO_PATH, u'config_amazon.yaml')
 EVENTS_AMAZ = EventsTable({
      0: {u'oscied-transform': 5, u'oscied-publisher': 0},
-     7: {u'oscied-transform': 5, u'oscied-publisher': 0},
-    17: {u'oscied-transform': 0, u'oscied-publisher': 0},
+     8: {u'oscied-transform': 0, u'oscied-publisher': 0},
     17: {u'oscied-transform': 0, u'oscied-publisher': 1},
-    18: {u'oscied-transform': 4, u'oscied-publisher': 1},
-    20: {u'oscied-transform': 4, u'oscied-publisher': 3},
-    22: {u'oscied-transform': 4, u'oscied-publisher': 1}
+    18: {u'oscied-transform': 3, u'oscied-publisher': 2},
+    20: {u'oscied-transform': 3, u'oscied-publisher': 2},
+    23: {u'oscied-transform': 3, u'oscied-publisher': 2}
 }, TIME_RANGE, TIME_SPEEDUP, sleep_factor=DAEMONS_CHECKS_PER_EVENT)
+
+print EVENTS_AMAZ.events
 
 CONFIG_MAAS = os.path.join(SCENARIO_PATH, u'config_maas.yaml')
 EVENTS_MAAS = EventsTable({
