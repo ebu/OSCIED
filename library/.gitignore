@@ -1,4 +1,5 @@
 build/
 cover/
+dist/
 .coverage
 setup.log
