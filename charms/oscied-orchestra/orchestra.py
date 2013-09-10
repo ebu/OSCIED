@@ -832,7 +832,7 @@ def api_media_post():
         auth_user = requires_auth(request=request, allow_any=True)
         data = get_request_data(request)
         media = Media(user_id=auth_user._id, uri=data[u'uri'], filename=data[u'filename'], metadata=data[u'metadata'],
-                      status=u'READY')
+                      status=Media.READY)
         orchestra.save_media(media)
         return ok_200(media, True)
     except Exception as e:
