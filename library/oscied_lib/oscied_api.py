@@ -671,7 +671,7 @@ class OrchestraAPICore(object):
 
     def get_transform_tasks(self, spec=None, fields=None, skip=0, limit=0, sort=None, load_fields=False,
                             append_result=True):
-        tasks, sort = [], sort or [('statistic.add_date', 1)]  # Sort by default, this is nicer like that !
+        tasks, sort = [], sort or [('statistic.add_date', -1)]  # Sort by default, this is nicer like that !
         for entity in list(self._db.transform_tasks.find(spec=spec, fields=fields, skip=skip, limit=limit, sort=sort,
                                                          **self.db_find_options)):
             task = dict2object(TransformTask, entity, inspect_constructor=True)
@@ -862,7 +862,7 @@ class OrchestraAPICore(object):
 
     def get_publisher_tasks(self, spec=None, fields=None, skip=0, limit=0, sort=None, load_fields=False,
                             append_result=True):
-        tasks, sort = [], sort or [('statistic.add_date', 1)]  # Sort by default, this is nicer like that !
+        tasks, sort = [], sort or [('statistic.add_date', -1)]  # Sort by default, this is nicer like that !
         for entity in list(self._db.publisher_tasks.find(spec=spec, fields=fields, skip=skip, limit=limit, sort=sort,
                                                          **self.db_find_options)):
             task = dict2object(PublisherTask, entity, inspect_constructor=True)
