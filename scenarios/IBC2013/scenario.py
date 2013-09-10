@@ -54,6 +54,17 @@ class IBC2013(DeploymentScenario):
     TODO
 
     """
+
+    def get_parser(self, statistics=False, scaling=False, tasks=False, **kwargs):
+        HELP_I = u'Toggle charts / statistics threads.'
+        HELP_S = u'Toggle pre-scheduled scaling threads.'
+        HELP_T = u'Toggle automatic tasks and assets threads (for demo purpose).'
+        parser = super(IBC2013, self).get_parser(**kwargs)
+        parser.add_argument(u'-i', u'--statistics', action=u'store_true', help=HELP_I, default=statistics)
+        parser.add_argument(u'-s', u'--scaling',    action=u'store_true', help=HELP_S, default=scaling)
+        parser.add_argument(u'-t', u'--tasks',      action=u'store_true', help=HELP_T, default=tasks)
+        return parser
+
     def run(self):
         print(description)
         if confirm(u'Deploy on MAAS'):
@@ -127,10 +138,13 @@ class IBC2013(DeploymentScenario):
                 admin = User(first_name=u'Mister admin', last_name=u'IBC2013', mail=u'admin.ibc2013@oscied.org',
                             secret='big_secret_to_sav3', admin_platform=True)
                 environment.daemons_auth = environment.api_client.login_or_add(admin)
-            environment.statistics_thread.start()
+            if self.statistics:
+                environment.statistics_thread.start()
             if isinstance(environment.daemons_auth, User):
-                environment.scaling_thread.start()
-                environment.tasks_thread.start()
+                if self.scaling:
+                    environment.scaling_thread.start()
+                if self.tasks:
+                    environment.tasks_thread.start()
         for environment in self.environments:
             [thread.join() for thread in environment.threads]
         print u'Exiting Main Thread'
