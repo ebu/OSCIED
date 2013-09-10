@@ -23,7 +23,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import os, uuid
+import os, re, uuid
 from celery import states
 from celery.result import AsyncResult
 from kitchen.text.converters import to_bytes
@@ -296,6 +296,33 @@ class TransformProfile(OsciedDBModel):
         >>> assert(profile.is_dash)
         """
         return self.encoder_name == u'dashcast'
+
+    def output_filename(self, input_filename, suffix=None):
+        u"""
+        >>> p = TransformProfile(title=u'test', encoder_name=u'copy')
+        >>> print(p.output_filename(u'my_media.mkv'))
+        my_media.mkv
+        >>> print(p.output_filename(u'my_media.ts', suffix=u'_xyz'))
+        my_media_xyz.ts
+        >>> p.encoder_name = u'ffmpeg'
+        >>> p.encoder_string = u"-r 25 -c:v libx264 -vf scale='trunc(oh*a/2)*2:min(480\,iw)' -acodec aac -f mp4"
+        >>> print(p.output_filename(u'my_media.avi'))
+        my_media.mp4
+        >>> p.encoder_string = u'-acodec copy -vcodec copy'
+        >>> print(p.output_filename(u'my_media.mov'))
+        my_media.mov
+        >>> p.encoder_name = u'dashcast'
+        >>> print(p.output_filename(u'my_media.mp4', suffix=u' dash'))
+        my_media dash.mpd
+        """
+        filename, extension = os.path.splitext(input_filename)
+        if self.encoder_name == u'dashcast':
+            extension = u'.mpd'
+        elif self.encoder_name == u'ffmpeg':
+            match = re.search(u'-f (?P<extension>\S+)', self.encoder_string)
+            if match:
+                extension = u'.' + match.groupdict()['extension']
+        return u'{0}{1}{2}'.format(filename, suffix or u'', extension)
 
     # FIXME test other fields
     def is_valid(self, raise_exception):
