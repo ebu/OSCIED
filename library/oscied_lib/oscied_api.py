@@ -939,8 +939,8 @@ class OrchestraAPICore(object):
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-def init_api(api_core_or_client, api_init_csv_directory, flush=False, add_users=True, add_medias=True,
-             add_profiles=True, add_tasks=True):
+def init_api(api_core_or_client, api_init_csv_directory, flush=False, add_users=True, add_profiles=True,
+             add_medias=True, add_tasks=True):
 
     is_core = isinstance(api_core_or_client, OrchestraAPICore)
     orchestra = api_core_or_client if is_core else None
@@ -967,6 +967,20 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False, add_users=
             api_client.users.add(user)
     users = orchestra.get_users() if is_core else users# api_client.users.list()
 
+    if add_profiles:
+        i, reader = 0, csv_reader(os.path.join(api_init_csv_directory, u'tprofiles.csv'))
+        for title, description, encoder_name, encoder_string in reader:
+            user = users[i]
+            profile = TransformProfile(title=title, description=description, encoder_name=encoder_name,
+                                       encoder_string=encoder_string)
+            print(u'Adding transformation profile {0} as user {1}'.format(profile.title, user.name))
+            if is_core:
+                orchestra.save_transform_profile(profile)
+            else:
+                api_client.auth = user
+                api_client.transform_profiles.add(profile)
+            i = (i + 1) % len(users)
+
     if add_medias:
         i, reader = 0, csv_reader(os.path.join(api_init_csv_directory, u'medias.csv'))
         for local_filename, filename, title in reader:
@@ -984,20 +998,6 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False, add_users=
                 api_client.auth = user
                 media.uri = api_client.upload_media(local_filename)
                 api_client.medias.add(media)
-            i = (i + 1) % len(users)
-
-    if add_profiles:
-        i, reader = 0, csv_reader(os.path.join(api_init_csv_directory, u'tprofiles.csv'))
-        for title, description, encoder_name, encoder_string in reader:
-            user = users[i]
-            profile = TransformProfile(title=title, description=description, encoder_name=encoder_name,
-                                       encoder_string=encoder_string)
-            print(u'Adding transformation profile {0} as user {1}'.format(profile.title, user.name))
-            if is_core:
-                orchestra.save_transform_profile(profile)
-            else:
-                api_client.auth = user
-                api_client.transform_profiles.add(profile)
             i = (i + 1) % len(users)
 
     if not is_core:
