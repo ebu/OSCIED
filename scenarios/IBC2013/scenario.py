@@ -37,7 +37,7 @@ TODO
 from library.oscied_lib.oscied_models import User
 from library.oscied_lib.oscied_juju import OsciedEnvironment
 from library.oscied_lib.pyutils.py_console import confirm
-from library.oscied_lib.pyutils.py_juju import DeploymentScenario
+from library.oscied_lib.pyutils.py_juju import DeploymentScenario, M1_SMALL, C1_MEDIUM
 from library.oscied_lib.pyutils.py_unicode import configure_unicode
 
 from scenario_config import (CONFIG_AMAZ, EVENTS_AMAZ, STATS_AMAZ,
@@ -81,21 +81,22 @@ class IBC2013(DeploymentScenario):
     def deploy_maas(self):
         u"""Deploy a full OSCIED setup in the EBU's private cluster (4 machines) provisioned by the MAAS controller."""
         self.maas.bootstrap(wait_started=True, timeout=1200, polling_delay=30)
-        self.maas.ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, num_units=4, expose=True) # 1,2,3
+        ensure_num_units = self.maas.ensure_num_units
+        ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, num_units=4, expose=True) # 1,2,3
         # WAIT
-        self.maas.ensure_num_units(u'oscied-orchestra', u'oscied-orchestra', local=True, to=1, expose=True)
+        ensure_num_units(u'oscied-orchestra', u'oscied-orchestra', local=True, to=1, expose=True)
         # WAIT
-        self.maas.ensure_num_units(u'oscied-webui',     u'oscied-webui',     local=True, to=1, expose=True)
-        self.maas.ensure_num_units(u'oscied-publisher', u'oscied-publisher', local=True, to=2, expose=True)
-        self.maas.ensure_num_units(u'oscied-publisher', u'oscied-publisher', local=True, to=3, expose=True) #3=5
+        ensure_num_units(u'oscied-webui',     u'oscied-webui',     local=True, to=1, expose=True)
+        ensure_num_units(u'oscied-publisher', u'oscied-publisher', local=True, to=2, expose=True)
+        ensure_num_units(u'oscied-publisher', u'oscied-publisher', local=True, to=3, expose=True) #3=5
         # WAIT
-        self.maas.ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, to=1)
-        self.maas.ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, to=2)
-        self.maas.ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, to=3) #3=5
+        ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, to=1)
+        ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, to=2)
+        ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, to=3) #3=5
         # WAIT -> Makes juju crazy (/var/log/juju/all-machines.log -> growing to GB)
-        self.maas.ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, to=0, expose=True)
+        ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, to=0, expose=True)
         # WAIT -> Makes juju crazy (/var/log/juju/all-machines.log -> growing to GB)
-        self.maas.ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, to=0, expose=True)
+        ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, to=0, expose=True)
 
         if confirm(u'Disconnect all services [DEBUG PURPOSE ONLY] (with juju remove-relation)'):
             for peer in (u'orchestra', u'webui', u'transform', u'publisher'):
@@ -113,13 +114,13 @@ class IBC2013(DeploymentScenario):
     def deploy_amazon(self):
         u"""Deploy a full OSCIED setup in the infrastructure (IaaS) of the cloud provider, here Amazon AWS EC2."""
         self.amazon.bootstrap(wait_started=True)
-        self.amazon.ensure_num_units(u'oscied-transform', u'oscied-transform', local=True,
-                           constraints=u'arch=amd64 cpu-cores=1 mem=3G')
-        self.amazon.ensure_num_units(u'oscied-publisher', u'oscied-publisher', local=True, expose=True)
-        self.amazon.ensure_num_units(u'oscied-orchestra', u'oscied-orchestra', local=True, expose=True)
+        ensure_num_units = self.amazon.ensure_num_units
+        ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, constraints=C1_MEDIUM)
+        ensure_num_units(u'oscied-publisher', u'oscied-publisher', local=True, constraints=M1_SMALL, expose=True)
+        ensure_num_units(u'oscied-orchestra', u'oscied-orchestra', local=True, constraints=M1_SMALL, expose=True)
         # WAIT
-        self.amazon.ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, to=3)
-        self.amazon.ensure_num_units(u'oscied-webui',     u'oscied-webui',     local=True, to=3, expose=True)
+        ensure_num_units(u'oscied-storage',   u'oscied-storage', local=True, to=3)
+        ensure_num_units(u'oscied-webui',     u'oscied-webui',   local=True, to=3, expose=True)
         for peer in (u'orchestra', u'webui', u'transform', u'publisher'):
             self.amazon.add_relation(u'oscied-storage', u'oscied-{0}'.format(peer))
         self.amazon.add_relation(u'oscied-orchestra:transform', u'oscied-transform:transform')
