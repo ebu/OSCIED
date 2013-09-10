@@ -40,8 +40,11 @@ from library.oscied_lib.pyutils.py_console import confirm
 from library.oscied_lib.pyutils.py_juju import DeploymentScenario, M1_SMALL, C1_MEDIUM
 from library.oscied_lib.pyutils.py_unicode import configure_unicode
 
-from scenario_config import (CONFIG_AMAZ, EVENTS_AMAZ, STATS_AMAZ,
-                             CONFIG_MAAS, EVENTS_MAAS, STATS_MAAS, CHARTS_PATH, SCENARIO_PATH, ENABLE_UNITS_API)
+from scenario_config import (
+    CONFIG_AMAZ, EVENTS_AMAZ, STATS_AMAZ, CONFIG_MAAS, EVENTS_MAAS, STATS_MAAS, CHARTS_PATH, SCENARIO_PATH,
+    ENABLE_UNITS_API, PERMANENT_TRANSFORM_PROFILES, MAX_TEMPORARY_TRANSFORM_TASKS,
+    MAX_TEMPORARY_MEDIA_ASSETS
+)
 
 
 description = u'Launch IBC 2013 demo setup (MaaS Cluster with 4 machines // Amazon)'
@@ -131,6 +134,9 @@ class IBC2013(DeploymentScenario):
         u"""Prepare the events-based client "main" loop and periodically calls the event handling method."""
         for environment in self.environments:
             environment.enable_units_api = ENABLE_UNITS_API
+            environment.permanent_transform_profiles = PERMANENT_TRANSFORM_PROFILES
+            environment.max_temporary_transform_tasks = MAX_TEMPORARY_TRANSFORM_TASKS
+            environment.max_temporary_media_assets = MAX_TEMPORARY_MEDIA_ASSETS
             if environment.name == u'maas':
                 environment.enable_units_status = False  # FIXME enable it during IBC (??)
                 environment.enable_tasks_status = False  # FIXME enable it during IBC
