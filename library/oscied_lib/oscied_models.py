@@ -126,7 +126,7 @@ class Media(OsciedDBModel):
         self.parent = dict2object(Media, parent, inspect_constructor=True) if isinstance(parent, dict) else parent
         if parent is None:  # Parent attribute overrides parent_id
             self.parent_id = parent_id
-            del self.parent_id
+            del self.parent
         self.uri = uri
         self.public_uris = public_uris or {}
         try:
@@ -171,8 +171,8 @@ class Media(OsciedDBModel):
         if not valid_filename(self.filename):
             self._E(raise_exception, u'filename is not a valid file-name')
         # FIXME check metadata
-        if not self.status in Media.STATUS:
-            self._E(raise_exception, u'status is not in {0}'.format(self.__class__.STATUS))
+        if not self.status in Media.ALL_STATUS:
+            self._E(raise_exception, u'status is not in {0}'.format(Media.ALL_STATUS))
         return True
 
     def add_metadata(self, key, value, overwrite):
