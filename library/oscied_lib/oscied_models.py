@@ -58,15 +58,14 @@ class OsciedDBTask(OsciedDBModel):
         states.PENDING, states.RECEIVED, states.STARTED, u'PROGRESS', states.SUCCESS, states.FAILURE, u'REVOKING', \
         states.REVOKED, states.RETRY, states.IGNORED, u'UNKNOWN'
 
-    ALL_STATUS      = frozenset(ALL_STATUS)
-    PENDING_STATUS  = frozenset([PENDING, RECEIVED])
-    RUNNING_STATUS  = frozenset([STARTED, PROGRESS, RETRY])
-    SUCCESS_STATUS  = frozenset([SUCCESS])
-    CANCELED_STATUS = frozenset([REVOKING, REVOKED])
-    ERROR_STATUS    = frozenset([FAILURE])
-    UNDEF_STATUS    = frozenset([IGNORED, UNKNOWN])
-    FINAL_SATUS     = SUCCESS_STATUS | CANCELED_STATUS | ERROR_STATUS
-    WORK_IN_PROGRESS_STATUS = PENDING_STATUS | RUNNING_STATUS
+    PENDING_STATUS  = (PENDING, RECEIVED)
+    RUNNING_STATUS  = (STARTED, PROGRESS, RETRY)
+    SUCCESS_STATUS  = (SUCCESS, )
+    CANCELED_STATUS = (REVOKING, REVOKED)
+    ERROR_STATUS    = (FAILURE, )
+    UNDEF_STATUS    = (IGNORED, UNKNOWN)
+    FINAL_SATUS     = SUCCESS_STATUS + CANCELED_STATUS + ERROR_STATUS
+    WORK_IN_PROGRESS_STATUS = PENDING_STATUS + RUNNING_STATUS
 
     def __init__(self, _id=None, statistic=None, status=UNKNOWN):
         super(OsciedDBTask, self).__init__(_id)
@@ -114,7 +113,6 @@ class OsciedDBTask(OsciedDBModel):
 class Media(OsciedDBModel):
 
     ALL_STATUS = PENDING, READY, DELETED = u'PENDING', u'READY', u'DELETED'
-    ALL_STATUS = frozenset(ALL_STATUS)
 
     def __init__(self, user=None, user_id=None, parent=None, parent_id=None, uri=None, public_uris=None, filename=None,
                  metadata=None, status=PENDING, _id=None):
