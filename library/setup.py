@@ -24,6 +24,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+import os
 from codecs import open
 from setuptools import setup, sys
 
@@ -71,7 +72,7 @@ setup(name=u'oscied-lib',
       version=u'2.19.20',
       packages=['oscied_lib'],
       description=u'Library of EBU/UER OSCIED Project',
-      long_description=open(u'README.rst', u'r', encoding=u'utf-8').read(),
+      long_description=open(os.path.join(os.path.dirname(__file__), u'README.rst'), u'r', encoding=u'utf-8').read(),
       author=u'David Fischer',
       author_email=u'david.fischer.ch@gmail.com',
       url=u'https://github.com/ebu/OSCIED',
