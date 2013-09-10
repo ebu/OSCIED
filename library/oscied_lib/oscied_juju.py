@@ -23,16 +23,18 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import os, pygal, shutil, threading, time
-from collections import defaultdict
+import pygal, shutil, threading, time
+import pyutils.py_juju as py_juju
+from os.path import join, splitext
+from collections import defaultdict, deque
 from kitchen.text.converters import to_bytes
 from requests.exceptions import Timeout
-from oscied_api import OrchestraAPIClient, init_api, SERVICE_TO_LABEL, SERVICE_TO_UNITS_API, SERVICE_TO_TASKS_API
+from oscied_api import OrchestraAPIClient, init_api
+from oscied_constants import ENVIRONMENT_TO_LABEL, SERVICE_TO_LABEL, SERVICE_TO_UNITS_API, SERVICE_TO_TASKS_API
+from oscied_models import OsciedDBTask
 from pyutils.py_collections import pygal_deque
 from pyutils.py_datetime import datetime_now
-from pyutils.py_juju import (
-    Environment, ALL_STATES, ERROR_STATES, PENDING_STATES, STARTED_STATES, STOPPED_STATES, STARTED
-)
+from pyutils.py_juju import Environment
 from pyutils.py_serialization import PickleableObject
 
 
@@ -107,60 +109,102 @@ class ServiceStatistics(PickleableObject):
     u"""Store statistics about a service."""
 
     def __init__(self, environment=None, service=None, time=None, units_planned=None, units_current=None,
-                 unknown_states=None, maxlen=100):
+                 tasks_current=None, unknown_states=None, maxlen=100):
         self.environment, self.service = environment, service
         self.time = time or pygal_deque(maxlen=maxlen)
         self.units_planned = units_planned or pygal_deque(maxlen=maxlen)
-        self.units_current = units_current or {state: pygal_deque(maxlen=maxlen) for state in ALL_STATES}
+        self.units_current = units_current or {state: pygal_deque(maxlen=maxlen) for state in py_juju.ALL_STATES}
+        self.tasks_current = tasks_current or {status: deque(maxlen=maxlen) for status in self.tasks_status}
         self.unknown_states = defaultdict(int)
+
+    @property
+    def environment_label(self):
+        return ENVIRONMENT_TO_LABEL.get(self.environment, self.environment)
 
     @property
     def service_label(self):
         return SERVICE_TO_LABEL.get(self.service, self.service)
+
+    @property
+    def tasks_status(self):
+        return (OsciedDBTask.PENDING, OsciedDBTask.SUCCESS, OsciedDBTask.PROGRESS)
 
     def update(self, now_string, planned, units, tasks):
         self.units_planned.append(planned)
         current = defaultdict(int)
         for unit in units.values():
             state = unit.get(u'agent-state', u'unknown')
-            if state in ALL_STATES:
+            if state in py_juju.ALL_STATES:
                 current[state] += 1
             else:
                 self.unknown_states[state] += 1
         for state, history in self.units_current.items():
             history.append(current[state])
+        if tasks is not None:
+            current = defaultdict(int)
+            for task in tasks:
+                status = task.status
+                if status in OsciedDBTask.PENDING_STATUS:
+                    current[OsciedDBTask.PENDING] += 1
+                elif status in OsciedDBTask.RUNNING_STATUS:
+                    current[OsckedDBTask.PROGRESS] += 1
+                elif status in OsciedDBTask.SUCCESS_STATUS:
+                    current[OsciedDBTask.SUCCESS] += 1
+                # ... else do not add to statistics.
+        for status, history in self.tasks_current.items():
+            history.append(current[status])
 
-    def generate_units_line_chart(self, charts_path, width=600, height=300, explicit_size=True, show_dots=True,
-                                  truncate_legend=20):
-        tmp_file = os.path.join(charts_path, u'line_{0}_{1}.new.svg'.format(self.environment, self.service_label))
-        dst_file = os.path.join(charts_path, u'line_{0}_{1}.svg'.format(self.environment, self.service_label))
-        chart = pygal.Line(width=width, height=height, explicit_size=explicit_size, show_dots=show_dots,
-                           truncate_legend=truncate_legend)
-        chart.title = u'{0} {1} (# of units)'.format(self.environment, self.service_label)
-        chart.add('planned', self.units_planned.list)
-        chart.add('current', self.units_current[STARTED].list)
+
+    def _write_chart(self, chart, charts_path, prefix):
+        tmp_file = join(charts_path, u'{0}_{1}_{2}.new.svg'.format(prefix, self.environment, self.service_label))
+        dst_file = join(charts_path, u'{0}_{1}_{2}.svg'.format(prefix, self.environment, self.service_label))
         chart.render_to_file(tmp_file)
         shutil.copy(tmp_file, dst_file)
         return dst_file
 
     def generate_units_pie_chart_by_status(self, charts_path, width=300, height=300, explicit_size=True):
-        tmp_file = os.path.join(charts_path, u'pie_{0}_{1}.new.svg'.format(self.environment, self.service_label))
-        dst_file = os.path.join(charts_path, u'pie_{0}_{1}.svg'.format(self.environment, self.service_label))
         chart = pygal.Pie(width=width, height=height, explicit_size=explicit_size)
-        chart.title = u'{0} {1} by status (# of units)'.format(self.environment, self.service_label)
-        for states in (ERROR_STATES, STARTED_STATES, PENDING_STATES):
+        chart.title = u'Number of {0} {1} units by status'.format(self.environment_label, self.service_label)
+        for states in (py_juju.ERROR_STATES, py_juju.STARTED_STATES, py_juju.PENDING_STATES):
             units_number = sum((self.units_current.get(state, pygal_deque()).last or 0) for state in states)
             chart.add(u'{0} {1}'.format(units_number, states[0]), units_number)
-        chart.render_to_file(tmp_file)
-        shutil.copy(tmp_file, dst_file)
-        return dst_file
+        return self._write_chart(chart, charts_path, u'pie_units')
 
-    def generate_tasks_line_chart(self, charts_path, width=600, height=300, explicit_size=True, show_dots=True,
+    def generate_units_line_chart(self, charts_path, width=700, height=300, explicit_size=True, show_dots=True,
                                   truncate_legend=20):
-        # {"status": "SUCCESS", "profile_id": "...", "user_id": "...", "media_in_id": "...", "media_out_id": "...", "send_email": false, "statistic": {"media_in_duration": "00:02:02.96", "media_in_size": 165259332, "add_date": "2013-09-09 22:03:47", "media_out_size": 7597629, "hostname": "transform_ec2-107-20-102-255.compute-1.amazonaws.com", "percent": 100, "elapsed_time": 153.32889699935913, "eta_time": 0, "start_date": "2013-09-09 22:03:47", "media_out_duration": "00:02:03.20"}, "_id": "..."}
+        chart = pygal.Line(width=width, height=height, explicit_size=explicit_size, show_dots=show_dots,
+                           truncate_legend=truncate_legend)
+        chart.title = u'Number of {0} {1} units'.format(self.environment_label, self.service_label)
+        planned_list, current_list = self.units_planned.list, self.units_current[py_juju.STARTED].list
+        chart.add(u'{0} planned'.format(planned_list[-1] if len(planned_list) > 0 else 0), planned_list)
+        chart.add(u'{0} current'.format(current_list[-1] if len(current_list) > 0 else 0), current_list)
+        return self._write_chart(chart, charts_path, u'line_units')
 
-        # {"status": "PENDING", "profile_id": "...", "user_id": "...", "media_in_id": "...", "media_out_id": "...", "send_email": false, "statistic": {"add_date": "2013-09-09 22:04:28", "error": "None"}, "_id": "..."}
-    pass
+    def generate_tasks_line_chart(self, charts_path, width=1200, height=300, explicit_size=True, show_dots=True,
+                                  truncate_legend=20):
+        total, lines = 0, {}
+        for status in self.tasks_status:
+            current_list = list(self.tasks_current[status])
+            number = current_list[-1] if len(current_list) > 0 else 0
+            total += number
+            lines[status] = (number, current_list)
+        print('[DEBUG]', self.environment, self.service, total)
+        chart = pygal.StackedLine(fill=True, width=width, height=height, explicit_size=explicit_size, show_dots=show_dots,
+                           truncate_legend=truncate_legend, range=(0, total))
+        chart.title = u'Number of {0} {1} tasks by status'.format(self.environment_label, self.service_label)
+
+        for status in self.tasks_status:
+            chart.add(u'{0} {1}'.format(lines[status][0], status), lines[status][1])
+        return self._write_chart(chart, charts_path, u'line_tasks')
+
+        # {"status": "SUCCESS", "profile_id": "...", "user_id": "...", "media_in_id": "...", "media_out_id": "...",
+        # "send_email": false, "statistic": {"media_in_duration": "00:02:02.96", "media_in_size": 165259332,
+        # "add_date": "2013-09-09 22:03:47", "media_out_size": 7597629, "hostname": "transform_...com", "percent": 100,
+        # "elapsed_time": 153.32889699935913, "eta_time": 0, "start_date": "2013-09-09 22:03:47", "media_out_duration":
+        # "00:02:03.20"}, "_id": "..."}
+
+        # {"status": "PENDING", "profile_id": "...", "user_id": "...", "media_in_id": "...", "media_out_id": "...",
+        # "send_email": false, "statistic": {"add_date": "2013-09-09 22:04:28", "error": "None"}, "_id": "..."}
 
 
 class ScalingThread(OsciedEnvironmentThread):
@@ -209,7 +253,7 @@ class StatisticsThread(OsciedEnvironmentThread):
                 print(u'[{0}] Update charts at index {1}.'.format(self.name, index))
                 for service, stats in env.statistics.items():
                     label = SERVICE_TO_LABEL.get(service, service)
-                    units_api, tasks_api = SERVICE_TO_MAPPER[service], SERVICE_TO_TASKS_API[service]
+                    units_api, tasks_api = SERVICE_TO_UNITS_API[service], SERVICE_TO_TASKS_API[service]
                     planned = event.get(service, None)
                     if env.enable_units_status:
                         if env.enable_units_api:
@@ -219,8 +263,8 @@ class StatisticsThread(OsciedEnvironmentThread):
                         else:
                             units = env.get_units(service)
                     else:
-                        units = {k: {u'agent-state': STARTED} for k in range(planned)}
-                    tasks = getattr(api_client, tasks_api).list(head=True) if env.enable_tasks_api else None
+                        units = {k: {u'agent-state': py_juju.STARTED} for k in range(planned)}
+                    tasks = getattr(api_client, tasks_api).list(head=True) if env.enable_tasks_status else None
                     stats.update(now_string, planned, units, tasks)
                     stats.generate_units_pie_chart_by_status(env.charts_path)
                     stats.generate_units_line_chart(env.charts_path)
@@ -252,10 +296,10 @@ class TasksThread(OsciedEnvironmentThread):
                     raise IndexError(to_bytes(u'Missing transformation profile "{0}".'.format(profile_title)))
 
                 # Detect source media assets (not resulting of a transformation task)
-                source_medias = [m for m in medias if not m.parent_id and m.status != u'DELETED']
+                source_medias = [m for m in medias if not m.parent_id and m.status != Media.DELETED]
 
                 # Create a tablet-optimized media asset per source-media asset
-                skip = set([m.parent_id for m in medias if m.status != u'DELETED' and
+                skip = set([m.parent_id for m in medias if m.status != Media.DELETED and
                             m.metadata.get(profile_key) == profile_title])
 
                 # Create missing tablet-optimized media assets
@@ -264,7 +308,7 @@ class TasksThread(OsciedEnvironmentThread):
                         media_title = source_media.metadata['title']
                         print(u'Create a tablet-optimized version of {0} ...'.format(media_title))
                         api_client.transform_tasks.add({
-                            u'filename': u'{0}_tablet.mp4'.format(os.path.splitext(source_media.filename)[0]),
+                            u'filename': u'{0}_tablet.mp4'.format(splitext(source_media.filename)[0]),
                             u'media_in_id': source_media._id,
                             u'profile_id': tablet_profile._id,
                             u'metadata': { u'title': u'Tablet {0}'.format(media_title), profile_key: profile_title },

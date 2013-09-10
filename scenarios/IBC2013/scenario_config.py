@@ -32,7 +32,7 @@ TODO
 """
 
 import os
-from library.oscied_lib.oscied_api import SERVICE_TO_LABEL
+from library.oscied_lib.oscied_constants import SERVICE_TO_LABEL
 from library.oscied_lib.oscied_juju import ServiceStatistics
 from library.oscied_lib.pyutils.py_collections import EventsTable
 
