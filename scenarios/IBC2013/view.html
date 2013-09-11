@@ -1,27 +1,43 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta http-equiv="refresh" content="5">
+        <meta http-equiv="refresh" content="15">
         <style type="text/css">
-            body { background: black; }
-            tr   { margin: 0; padding: 0; }
+            h2    { float: center; color: #FFFFFF; font: 24px ubuntu mono, helvetica, sans-serif; }
+            body  { background: black; }
+            tr    { margin: 0; padding: 0; }
             table { float: left; margin: 0; border-collapse: collapse; }
-            svg { display: block; }
+            svg   { display: block; }
         </style>
+        <script src="jquery-1.10.2.min.js"></script>
     </head>
     <body>
         <table>
             <tr>
-                <th><embed type="image/svg+xml" src="charts/pie_amazon_encoding.svg" /></th>
-                <th><embed type="image/svg+xml" src="charts/pie_amazon_distribution.svg" /></th>
-                <th><embed type="image/svg+xml" src="charts/line_amazon_encoding.svg" /></th>
-                <th><embed type="image/svg+xml" src="charts/line_amazon_distribution.svg" /></th>
+                <th colspan="2"><h2>Private Cluster &amp; Public Cloud: Active services</h2></th>
+                <th colspan="4"><h2>Encoding tasks TODO</h2></th>
             </tr>
             <tr>
-                <th><embed type="image/svg+xml" src="charts/pie_maas_encoding.svg" /></th>
-                <th><embed type="image/svg+xml" src="charts/pie_maas_distribution.svg" /></th>
-                <th><embed type="image/svg+xml" src="charts/line_maas_encoding.svg" /></th>
-                <th><embed type="image/svg+xml" src="charts/line_maas_distribution.svg" /></th>
+                <th colspan="1"><embed type="image/svg+xml" src="charts/pie_units_amazon_encoding.svg" /></th>
+                <th colspan="1"><embed type="image/svg+xml" src="charts/pie_units_amazon_distribution.svg" /></th>
+                <th colspan="4"><embed type="image/svg+xml" src="charts/line_tasks_amazon_encoding.svg" /></th>
+            </tr>
+            <tr>
+                <th colspan="1"><embed type="image/svg+xml" src="charts/pie_units_maas_encoding.svg" /></th>
+                <th colspan="1"><embed type="image/svg+xml" src="charts/pie_units_maas_distribution.svg" /></th>
+                <th colspan="4"><embed type="image/svg+xml" src="charts/line_tasks_maas_encoding.svg" /></th>
+            </tr>
+            <tr>
+                <th colspan="2"><h2>Public Cloud: Active and planned activation of Amazon EC2 instances</h2></th>
+                <th colspan="4"><h2>Distribution tasks TODO</h2></th>
+            </tr>
+            <tr>
+                <th colspan="2"><embed type="image/svg+xml" id="re" src="charts/line_units_amazon_encoding.svg" /></th>
+                <th colspan="4"><embed type="image/svg+xml" src="charts/line_tasks_amazon_distribution.svg" /></th>
+            </tr>
+            <tr>
+                <th colspan="2"><embed type="image/svg+xml" src="charts/line_units_amazon_distribution.svg" /></th>
+                <th colspan="4"><embed type="image/svg+xml" src="charts/line_tasks_maas_distribution.svg" /></th>
             </tr>
     </body>
 </html>
