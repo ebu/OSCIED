@@ -57,6 +57,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         self.info(u'Upgrade system and install prerequisites')
         self.cmd(u'apt-add-repository -y ppa:jon-severinsson/ffmpeg')
         self.cmd(u'apt-get -y update', fail=False)
+        self.cmd(u'apt-get -y -f install')  # May recover problems with upgrade !
         self.cmd(u'apt-get -y upgrade')
         self.cmd(u'apt-get -y install {0}'.format(u' '.join(PublisherHooks.PACKAGES)))
         self.info(u'Restart network time protocol service')

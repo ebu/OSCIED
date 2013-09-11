@@ -61,6 +61,7 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
         if 'ppa:' in self.config.ffmpeg_origin:
             self.cmd(u'apt-add-repository -y {0}'.format(self.config.ffmpeg_origin))
         self.cmd(u'apt-get -y update', fail=False)
+        self.cmd(u'apt-get -y -f install')  # May recover problems with upgrade !
         self.cmd(u'apt-get -y upgrade')
         self.cmd(u'apt-get -y install {0}'.format(u' '.join(TransformHooks.PACKAGES)))
         self.info(u'Restart network time protocol service')

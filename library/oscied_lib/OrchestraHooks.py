@@ -95,6 +95,7 @@ class OrchestraHooks(CharmHooks_Storage):
         self.cmd(u'apt-add-repository -y ppa:jon-severinsson/ffmpeg')
         self.cmd(u'apt-add-repository -y ppa:juju/stable')
         self.cmd(u'apt-get -y update', fail=False)
+        self.cmd(u'apt-get -y -f install')  # May recover problems with upgrade !
         self.cmd(u'apt-get -y upgrade')
         self.cmd(u'apt-get -y install {0}'.format(u' '.join(OrchestraHooks.PACKAGES)))
         self.cmd(u'apt-get -y install {0}'.format(u' '.join(OrchestraHooks.JUJU_PACKAGES)))

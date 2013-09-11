@@ -113,6 +113,7 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         self.hook_uninstall()
         self.info(u'Upgrade system, pre-configure and install prerequisites')
         self.cmd(u'apt-get -y update', fail=False)
+        self.cmd(u'apt-get -y -f install')  # May recover problems with upgrade !
         self.cmd(u'apt-get -y upgrade')
         try_makedirs(u'/etc/mysql')
         debconf, mysql = u'debconf-set-selections', u'mysql-server mysql-server'
