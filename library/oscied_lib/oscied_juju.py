@@ -223,8 +223,24 @@ class ScalingThread(OsciedEnvironmentThread):
     def permanent_publish(api_client):
         u"""Publish all permanent media assets, skipping already published media assets."""
         for media in api_client.medias.list(head=True):  # FIXME MongoDB-based filtering ?
-            if media.status == Media.READY and media.metadata.get(u'permanent') and not media.public_uri:
-                TasksThread.launch_publish(api_client, media)
+            if media.status == Media.READY and media.metadata.get(u'permanent') and not media.public_uris:
+                ScalingThread.launch_publish(api_client, media)
+
+    @staticmethod
+    def revoke_all_publisher_tasks(api_client):
+        u"""Revoke publication tasks of all media assets."""
+        for task in api_client.publisher_tasks.list(head=True):  # FIXME MongoDB-based filtering ?
+            if task.status in (OsciedDBTask.WORK_IN_PROGRESS_STATUS + OsciedDBTask.SUCCESS_STATUS):
+                print(u'Revoke publication task {0}.'.format(task._id))
+                try:
+                    del api_client.publisher_tasks[task._id]
+                    # FIXME this is not a clean way to ensure that tasks are revoked ...
+                    for i in range(5):
+                        time.sleep(1)
+                        if api_client.publisher_tasks[task._id].status == OsciedDBTask.REVOKED:
+                            break
+                except Exception as e:
+                    print(u'WARNING! Unable to revoke publication task {0}, reason: {1}'.format(task._id, e))
 
     def run(self):
         while True:
@@ -245,12 +261,14 @@ class ScalingThread(OsciedEnvironmentThread):
                     else:
                         units = env.get_units(service)
                     if len(units) != planned:
-                        # if u'publisher' in service:
-                        #     if planned > 0:
-                        #         ScalingThread.permanent_publish(api_client)
-                        #     else:
-                        #         ScalingThread.permanent_unpublish(api_client)
-                        #         # FIXME wait unit media assets are unpublished !!
+                        if u'publisher' in service:
+                            if planned > 0:
+                                print(u'Publish some media assets, {0} publication units are planned.'.format(planned))
+                                ScalingThread.permanent_publish(api_client)
+                            else:
+                                print(u'Unpublish media assets before destroying publication units.')
+                                ScalingThread.revoke_all_publisher_tasks(api_client)
+                                # FIXME wait unit media assets are unpublished !!
                         print(u'[{0}] Ensure {1} instances of service {2}'.format(self.name, planned, label))
                         env.ensure_num_units(service, service, num_units=planned)
                         env.cleanup_machines()  # Safer way to terminate machines !
