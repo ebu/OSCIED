@@ -153,6 +153,7 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
                 select.select([ffmpeg.stderr], [], [])
                 chunk = ffmpeg.stderr.read()
                 encoder_out += chunk
+                elapsed_time = time.time() - start_time
                 match = FFMPEG_REGEX.match(chunk)
                 if match:
                     stats = match.groupdict()
@@ -162,7 +163,6 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
                         ratio = 0.0 if ratio < 0.0 else 1.0 if ratio > 1.0 else ratio
                     except ZeroDivisionError:
                         ratio = 1.0
-                    elapsed_time = time.time() - start_time
                     delta_time = elapsed_time - prev_time
                     if (ratio - prev_ratio > RATIO_DELTA and delta_time > TIME_DELTA) or delta_time > MAX_TIME_DELTA:
                         prev_ratio, prev_time = ratio, elapsed_time
@@ -221,6 +221,7 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
                 # Wait for data to become available
                 select.select([dashcast.stdout.fileno()], [], [])
                 stdout, stderr = read_async(dashcast.stdout), read_async(dashcast.stderr)
+                elapsed_time = time.time() - start_time
                 match = DASHCAST_REGEX.match(stdout)
                 if match:
                     stats = match.groupdict()
@@ -230,7 +231,6 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
                         ratio = 0.0 if ratio < 0.0 else 1.0 if ratio > 1.0 else ratio
                     except ZeroDivisionError:
                         ratio = 1.0
-                    elapsed_time = time.time() - start_time
                     delta_time = elapsed_time - prev_time
                     if (ratio - prev_ratio > RATIO_DELTA and delta_time > TIME_DELTA) or delta_time > MAX_TIME_DELTA:
                         prev_ratio, prev_time = ratio, elapsed_time
