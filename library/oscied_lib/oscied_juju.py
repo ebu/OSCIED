@@ -363,8 +363,8 @@ class TasksThread(OsciedEnvironmentThread):
                     TasksThread.permanent_transform(api_client, source_medias, medias, profile, title_prefix,
                                                     filename_suffix)
 
-                TasksThread.temporary_transform(api_client, source_medias, medias, profiles, title_prefix,
-                                                filename_suffix, env.max_temporary_transform_tasks)
+                #TasksThread.temporary_transform(api_client, source_medias, medias, profiles, title_prefix,
+                #                                filename_suffix, env.max_temporary_transform_tasks)
 
                 TasksThread.cleanup_temporary_media_assets(api_client, env.max_temporary_media_assets)
 
