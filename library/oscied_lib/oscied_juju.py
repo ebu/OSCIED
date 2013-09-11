@@ -338,11 +338,13 @@ class TasksThread(OsciedEnvironmentThread):
     def temporary_transform(api_client, source_medias, medias, profiles, temporary_counter, maximum):
         u"""Transcode some randomly picked source media assets with some randomly picked profiles."""
         wip = OsciedDBTask.WORK_IN_PROGRESS_STATUS
-        counter = maximum - sum(1 for t in api_client.transform_tasks.list(head=True) if t.status in wip)
+        temporary_count = sum(1 for t in api_client.transform_tasks.list(head=True) if t.status in wip)
+        counter = maximum - temporary_count
         # FIXME I do not why but $in operator does not work !
         # api_client.transform_tasks.count(spec={'status': {'$in': OsciedDBTask.WORK_IN_PROGRESS_STATUS}})
         if counter <= 0:
-            print(u'No need to create any temporary media asset.')
+            print(u'No need to create any temporary media asset, already processing {0} of them.'.format(
+                  temporary_count))
         else:
             s = u's' if counter > 1 else u''
             print(u'Launch {0} transcoding task{1} to create temporary media assets.'.format(counter, s))
@@ -363,17 +365,20 @@ class TasksThread(OsciedEnvironmentThread):
         u"""Ensure ``maximum`` temporary media assets in shared storage by deleting the oldest."""
         # FIXME check if this is the oldest that are deleted and not the youngest ...
         medias = api_client.medias.list(head=True, sort=[(u'metadata.add_date', 1)])
-        temporary_medias = [m for m in medias if m.parent_id and not m.metadata.get(u'permanent')]
+        temporary_medias = [m for m in medias if m.status == Media.READY and m.parent_id and
+                            not m.metadata.get(u'permanent')]
         counter = len(temporary_medias) - maximum
         if counter <= 0:
-            print(u'No need to delete any temporary media asset.')
+            print(u'No need to delete any temporary media asset, they are {0} ready and limit is {1}.'.format(
+                  len(temporary_medias), maximum))
         else:
             s = u's' if counter > 1 else u''
             print(u'Delete {0} temporary media asset{1} to keep at most {2} of them.'.format(counter, s, maximum))
             for i in range(counter):
                 media = temporary_medias.pop()
                 print(u'Delete temporary media asset "{0}".'.format(media.metadata['title']))
-                #del api_client.medias[media._id]
+                assert(media.parent_id and not media.metadata.get(u'permanent'))
+                del api_client.medias[media._id]
 
     # @staticmethod
     # def cleanup_temporary_media_assets_v2_with_mongodb_filters(api_client, maximum):
