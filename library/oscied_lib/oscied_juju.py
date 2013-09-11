@@ -178,22 +178,22 @@ class ServiceStatistics(PickleableObject):
         return dst_file
 
     def generate_units_pie_chart_by_status(self, charts_path, width=300, height=300):
-        chart = pygal.Pie(width=width, height=height, no_data_text=u'No instance')
+        chart = pygal.Pie(width=width, height=height, no_data_text=u'No unit')
         chart.title = u'Number of {0} {1} units by status'.format(self.environment_label, self.service_label)
         for states in (py_juju.ERROR_STATES, py_juju.STARTED_STATES, py_juju.PENDING_STATES):
             units_number = sum((self.units_current.get(state, pygal_deque()).last or 0) for state in states)
             chart.add(u'{0} {1}'.format(units_number, states[0]), units_number)
         return self._write_chart(chart, charts_path, u'pie_units', add_x_labels=False)
 
-    def generate_units_line_chart(self, charts_path, width=700, height=300, show_dots=True):
-        chart = pygal.Line(width=width, height=height, show_dots=show_dots, no_data_text=u'No instance')
+    def generate_units_line_chart(self, charts_path, width=700, height=300):
+        chart = pygal.Line(width=width, height=height, show_dots=True, no_data_text=u'No unit')
         chart.title = u'Number of {0} {1} units'.format(self.environment_label, self.service_label)
         planned_list, current_list = self.units_planned.list, self.units_current[py_juju.STARTED].list
         chart.add(u'{0} planned'.format(planned_list[-1] if len(planned_list) > 0 else 0), planned_list)
         chart.add(u'{0} current'.format(current_list[-1] if len(current_list) > 0 else 0), current_list)
         return self._write_chart(chart, charts_path, u'line_units')
 
-    def generate_tasks_line_chart(self, charts_path, width=1200, height=300, show_dots=True):
+    def generate_tasks_line_chart(self, charts_path, width=1200, height=300):
         total, lines = 0, {}
         for status in self.tasks_status:
             current_list = list(self.tasks_current[status])
@@ -202,21 +202,12 @@ class ServiceStatistics(PickleableObject):
             lines[status] = (number, current_list)
         print('[DEBUG]', self.environment, self.service, total)
         # , range=(0, total)
-        chart = pygal.StackedLine(fill=True, width=width, height=height, show_dots=show_dots, no_data_text=u'No task')
+        chart = pygal.StackedLine(fill=True, width=width, height=height, show_dots=False, no_data_text=u'No task')
         chart.title = u'Number of {0} {1} tasks by status'.format(self.environment_label, self.service_label)
 
         for status in self.tasks_status:
             chart.add(u'{0} {1}'.format(lines[status][0], status), lines[status][1])
         return self._write_chart(chart, charts_path, u'line_tasks')
-
-        # {"status": "SUCCESS", "profile_id": "...", "user_id": "...", "media_in_id": "...", "media_out_id": "...",
-        # "send_email": false, "statistic": {"media_in_duration": "00:02:02.96", "media_in_size": 165259332,
-        # "add_date": "2013-09-09 22:03:47", "media_out_size": 7597629, "hostname": "transform_...com", "percent": 100,
-        # "elapsed_time": 153.32889699935913, "eta_time": 0, "start_date": "2013-09-09 22:03:47", "media_out_duration":
-        # "00:02:03.20"}, "_id": "..."}
-
-        # {"status": "PENDING", "profile_id": "...", "user_id": "...", "media_in_id": "...", "media_out_id": "...",
-        # "send_email": false, "statistic": {"add_date": "2013-09-09 22:04:28", "error": "None"}, "_id": "..."}
 
 
 class ScalingThread(OsciedEnvironmentThread):
