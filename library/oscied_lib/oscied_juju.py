@@ -200,7 +200,6 @@ class ServiceStatistics(PickleableObject):
             number = current_list[-1] if len(current_list) > 0 else 0
             total += number
             lines[status] = (number, current_list)
-        print('[DEBUG]', self.environment, self.service, total)
         # , range=(0, total)
         chart = pygal.StackedLine(fill=True, width=width, height=height, show_dots=False, no_data_text=u'No task')
         chart.title = u'Number of {0} {1} tasks by status'.format(self.environment_label, self.service_label)
