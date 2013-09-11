@@ -66,7 +66,7 @@ class OsciedCRUDMapper(object):
         return u'/'.join(filter(None, [self.api_client.api_url, self.method, environment, index, extra]))
 
     def __len__(self):
-        return self.count()
+        return self.api_client.do_request(get, self.get_url(extra=u'count'))
 
     def __getitem__(self, index):
         response_dict = self.api_client.do_request(get, self.get_url(index))
@@ -101,8 +101,8 @@ class OsciedCRUDMapper(object):
         return instance
 
     def count(self, **data):
-        return self.api_client.do_request(get, self.get_url(extra=u'count',
-                                          data=object2json(data, include_properties=False)))
+        return self.api_client.do_request(get, self.get_url(extra=u'count'),
+                                          data=object2json(data, include_properties=False))
 
     def list(self, head=False, **data):
         values = []
