@@ -28,10 +28,10 @@ import pyutils.py_juju as py_juju
 from os.path import join, splitext
 from collections import defaultdict, deque
 from kitchen.text.converters import to_bytes
-from requests.exceptions import Timeout
+from requests.exceptions import ConnectionError, Timeout
 from oscied_api import OrchestraAPIClient, init_api
 from oscied_constants import ENVIRONMENT_TO_LABEL, SERVICE_TO_LABEL, SERVICE_TO_UNITS_API, SERVICE_TO_TASKS_API
-from oscied_models import OsciedDBTask
+from oscied_models import Media, OsciedDBTask
 from pyutils.py_collections import pygal_deque
 from pyutils.py_datetime import datetime_now
 from pyutils.py_juju import Environment
@@ -152,7 +152,7 @@ class ServiceStatistics(PickleableObject):
                 if status in OsciedDBTask.PENDING_STATUS:
                     current[OsciedDBTask.PENDING] += 1
                 elif status in OsciedDBTask.RUNNING_STATUS:
-                    current[OsckedDBTask.PROGRESS] += 1
+                    current[OsciedDBTask.PROGRESS] += 1
                 elif status in OsciedDBTask.SUCCESS_STATUS:
                     current[OsciedDBTask.SUCCESS] += 1
                 # ... else do not add to statistics.
@@ -239,9 +239,9 @@ class ScalingThread(OsciedEnvironmentThread):
                         env.cleanup_machines()  # Safer way to terminate machines !
                     else:
                         print(u'[{0}] Nothing to do !'.format(self.name))
-            except Timeout as e:
+            except (ConnectionError, Timeout) as e:
                 # FIXME do something here ...
-                print(u'[{0}] WARNING! Timeout, reason: {1}.'.format(self.name, e))
+                print(u'[{0}] WARNING! Communication error, details: {1}.'.format(self.name, e))
             self.sleep()
 
 
@@ -275,14 +275,14 @@ class StatisticsThread(OsciedEnvironmentThread):
                     stats.generate_units_line_chart(env.charts_path)
                     stats.generate_tasks_line_chart(env.charts_path)
                     stats.write()
-            except Timeout as e:
+            except (ConnectionError, Timeout) as e:
                 # FIXME do something here ...
-                print(u'[{0}] WARNING! Timeout, reason: {1}.'.format(self.name, e))
+                print(u'[{0}] WARNING! Communication error, details: {1}.'.format(self.name, e))
             self.sleep()
 
 
 class TasksThread(OsciedEnvironmentThread):
-    u"""Drives a deployed OSCIED setup to trans-code, publish and cleanup media assets."""
+    u"""Drives a deployed OSCIED setup to transcode, publish and cleanup media assets."""
 
     @staticmethod
     def get_profile_or_raise(profiles, profile_title):
@@ -293,14 +293,14 @@ class TasksThread(OsciedEnvironmentThread):
             raise IndexError(to_bytes(u'Missing transformation profile "{0}".'.format(profile_title)))
 
     @staticmethod
-    def launch_transform(api_client, media_in, profile, title_prefix, filename_suffix, permanent):
+    def launch_transform(api_client, media_in, profile, title_prefix, filename_suffix, permanent=False):
         in_title = media_in.metadata['title']
         out_title = u'{0} {1}'.format(title_prefix, in_title)
         mtype = u'permanent' if permanent else u'temporary'
         metadata = {u'title': out_title, u'profile': profile.title}
         if permanent:
             metadata[u'permanent'] = True
-        print(u'Trans-code "{0}" to {1} "{2}" with profile {3} ...'.format(in_title, mtype, out_title, profile.title))
+        print(u'Transcode "{0}" to {1} "{2}" with profile {3} ...'.format(in_title, mtype, out_title, profile.title))
         return api_client.transform_tasks.add({
             u'filename': profile.output_filename(media_in.filename, suffix=filename_suffix),
             u'media_in_id': media_in._id, u'profile_id': profile._id, u'send_email': False,
@@ -309,35 +309,40 @@ class TasksThread(OsciedEnvironmentThread):
 
     @staticmethod
     def permanent_transform(api_client, source_medias, medias, profile, title_prefix, filename_suffix):
-        u"""Trans-code all source media assets with profile ``profile_title``, skipping already available outputs."""
+        u"""Transcode all source media assets with profile ``profile_title``, skipping already available outputs."""
         skip = set([m.parent_id for m in medias if m.metadata.get(u'permanent') and
-                                                   m.metadata.get(u'profile') == profile_title])
-        # Create missing trans-coded media assets
+                                                   m.metadata.get(u'profile') == profile.title])
+        # Create missing transcoded media assets
         for source_media in source_medias:
             if source_media._id not in skip:
-                TaskThread.launch_transform(api_client, source_media, profile, title_prefix, filename_suffix, True)
+                TasksThread.launch_transform(api_client, source_media, profile, title_prefix, filename_suffix, True)
 
     @staticmethod
     def temporary_transform(api_client, source_medias, medias, profiles, title_prefix, filename_suffix, maximum):
-        u"""Trans-code some randomly picked source media assets with some randomly picked profiles."""
+        u"""Transcode some randomly picked source media assets with some randomly picked profiles."""
         counter = maximum - api_client.transform_tasks.count(
             spec={'status': {'$in': OsciedDBTask.WORK_IN_PROGRESS_STATUS}})
+        if counter <= 0:
+            print(u'No need to transcode any temporary media assets.')
         while counter > 0:
             k = min(len(source_medias), counter)
             if k == 0:
                 return  # No source media asset available, do not loop oo to keep your processor cool.
             for source_media in random.sample(source_medias, k):
-                TaskThread.launch_transform(source_media, random.choice(profiles), title_prefix, filename_suffix, False)
+                TasksThread.launch_transform(api_client, source_media, random.choice(profiles), title_prefix,
+                                             filename_suffix)
             counter -= k
 
     @staticmethod
     def cleanup_temporary_media_assets(api_client, maximum):
         u"""Ensure ``maximum`` temporary media assets in shared storage by deleting the oldest."""
-        spec = {u'status': u'READY', {u'metadata.permanent': {'$exists': False}}}
-        counter = maximum - api_client.medias.count(spec=spec, sort={u'metadata.add_date': 1})
-        while counter > 0:
-            del api_client.medias[medias[counter-1]._id]
-            counter -= 1
+        spec = {u'status': u'READY', u'parent_id': None, u'metadata.permanent': {u'$exists': False}}
+        medias = api_client.medias.list(spec=spec, sort=[(u'metadata.add_date', -1)], skip=maximum)
+        for media in medias:
+            print(u'Delete media asset "{0}".'.format(media.metadata['title'].title))
+            #del api_client.medias[media._id]
+        else:
+            print(u'No need to delete any temporary media assets.')
 
     def run(self):
         while True:
@@ -349,20 +354,21 @@ class TasksThread(OsciedEnvironmentThread):
                 api_client.auth = env.daemons_auth
 
                 # Get all media assets and detect source media assets (not resulting of a transformation task)
-                medias = api_client.medias.list(head=True, spec={'$not': {'$status': Media.DELETED}})
-                profiles = api_client.transform_profiles.list()
+                medias = api_client.medias.list(head=True, spec={'status': {'$ne': Media.DELETED}})
                 source_medias = [m for m in medias if not m.parent_id]
+                profiles = api_client.transform_profiles.list()
 
-                for profile_title, media_prefix in env.permanent_transform_profiles:
-                    profile = TaskThread.get_profile_or_raise(profiles, profile_title)
-                    TaskThread.permanent_transform(api_client, source_medias, medias, profile, media_prefix)
+                for profile_title, title_prefix, filename_suffix in env.permanent_transform_profiles:
+                    profile = TasksThread.get_profile_or_raise(profiles, profile_title)
+                    TasksThread.permanent_transform(api_client, source_medias, medias, profile, title_prefix,
+                                                    filename_suffix)
 
-                TaskThread.temporary_transform(api_client, source_medias, medias, profiles,
-                                               env.max_temporary_transform_tasks)
+                TasksThread.temporary_transform(api_client, source_medias, medias, profiles, title_prefix,
+                                                filename_suffix, env.max_temporary_transform_tasks)
 
-                TaskThread.cleanup_temporary_media_assets(api_client, env.max_temporary_media_assets)
+                TasksThread.cleanup_temporary_media_assets(api_client, env.max_temporary_media_assets)
 
-            except Timeout as e:
+            except (ConnectionError, Timeout) as e:
                 # FIXME do something here ...
-                print(u'[{0}] WARNING! Timeout, reason: {1}.'.format(self.name, e))
+                print(u'[{0}] WARNING! Communication error, details: {1}.'.format(self.name, e))
             self.sleep()
