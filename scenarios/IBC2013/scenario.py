@@ -119,8 +119,8 @@ class IBC2013(DeploymentScenario):
         self.amazon.bootstrap(wait_started=True)
         ensure_num_units = self.amazon.ensure_num_units
         ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, constraints=C1_MEDIUM)
-        ensure_num_units(u'oscied-publisher', u'oscied-publisher', local=True, constraints=M1_SMALL, expose=True)
-        ensure_num_units(u'oscied-orchestra', u'oscied-orchestra', local=True, constraints=M1_SMALL, expose=True)
+        ensure_num_units(u'oscied-publisher', u'oscied-publisher', local=True, constraints=M1_SMALL,  expose=True)
+        ensure_num_units(u'oscied-orchestra', u'oscied-orchestra', local=True, constraints=C1_MEDIUM, expose=True)
         # WAIT
         ensure_num_units(u'oscied-storage',   u'oscied-storage', local=True, to=3)
         ensure_num_units(u'oscied-webui',     u'oscied-webui',   local=True, to=3, expose=True)
