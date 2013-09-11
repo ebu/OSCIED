@@ -330,7 +330,7 @@ def api_user_count():
     """
     try:
         requires_auth(request=request, allow_root=True, allow_any=True)
-        data = get_request_data(request, accepted_keys=orchestra.db_count_keys, fail=False)
+        data = get_request_data(request, accepted_keys=orchestra.db_count_keys, qs_only_first_value=True, fail=False)
         return ok_200(orchestra.get_users_count(**data), False)
     except Exception as e:
         map_exceptions(e)
@@ -370,7 +370,7 @@ def api_user_get():
     """
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        data = get_request_data(request, accepted_keys=orchestra.db_find_keys, fail=False)
+        data = get_request_data(request, accepted_keys=orchestra.db_find_keys, qs_only_first_value=True, fail=False)
         return ok_200(orchestra.get_users(**data), True)
     except Exception as e:
         map_exceptions(e)
@@ -435,7 +435,7 @@ def api_user_post():
     """
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        data = get_request_data(request)
+        data = get_request_data(request, qs_only_first_value=True)
         user = User(first_name=data[u'first_name'], last_name=data[u'last_name'], mail=data[u'mail'],
                     secret=data[u'secret'], admin_platform=data[u'admin_platform'])
         orchestra.save_user(user, hash_secret=True)
@@ -556,7 +556,7 @@ def api_user_id_patch(id):
         check_id(id)
         auth_user = requires_auth(request=request, allow_root=True, role=u'admin_platform', id=id)
         user = orchestra.get_user(spec={u'_id': id})
-        data = get_request_data(request)
+        data = get_request_data(request, qs_only_first_value=True)
         if not user:
             raise IndexError(to_bytes(u'No user with id {0}.'.format(id)))
         old_name = user.name
@@ -656,7 +656,7 @@ def api_media_count():
     """
     try:
         requires_auth(request=request, allow_any=True)
-        data = get_request_data(request, accepted_keys=orchestra.db_count_keys, fail=False)
+        data = get_request_data(request, accepted_keys=orchestra.db_count_keys, qs_only_first_value=True, fail=False)
         return ok_200(orchestra.get_medias_count(**data), False)
     except Exception as e:
         map_exceptions(e)
@@ -696,7 +696,7 @@ def api_media_head():
     """
     try:
         requires_auth(request=request, allow_any=True)
-        data = get_request_data(request, accepted_keys=orchestra.db_find_keys, fail=False)
+        data = get_request_data(request, accepted_keys=orchestra.db_find_keys, qs_only_first_value=True, fail=False)
         return ok_200(orchestra.get_medias(**data), True)
     except Exception as e:
         map_exceptions(e)
@@ -739,7 +739,7 @@ def api_media_get():
     """
     try:
         requires_auth(request=request, allow_any=True)
-        data = get_request_data(request, accepted_keys=orchestra.db_find_keys, fail=False)
+        data = get_request_data(request, accepted_keys=orchestra.db_find_keys, qs_only_first_value=True, fail=False)
         return ok_200(orchestra.get_medias(load_fields=True, **data), True)
     except Exception as e:
         map_exceptions(e)
@@ -830,7 +830,7 @@ def api_media_post():
     """
     try:
         auth_user = requires_auth(request=request, allow_any=True)
-        data = get_request_data(request)
+        data = get_request_data(request, qs_only_first_value=True)
         media = Media(user_id=auth_user._id, uri=data[u'uri'], filename=data[u'filename'], metadata=data[u'metadata'],
                       status=Media.READY)
         orchestra.save_media(media)
@@ -1020,7 +1020,7 @@ def api_media_id_patch(id):
         check_id(id)
         auth_user = requires_auth(request=request, allow_any=True)
         media = orchestra.get_media(spec={u'_id': id})
-        data = get_request_data(request)
+        data = get_request_data(request, qs_only_first_value=True)
         if not media:
             raise IndexError(to_bytes(u'No media asset with id {0}.'.format(id)))
         if auth_user._id != media.user_id:
@@ -1150,7 +1150,7 @@ def api_environment_post():
     """
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        data = get_request_data(request)
+        data = get_request_data(request, qs_only_first_value=True)
         return ok_200(orchestra.add_environment(data[u'name'], data[u'type'], data[u'region'], data[u'access_key'],
                       data[u'secret_key'], data[u'control_bucket']), False)
     except Exception as e:
@@ -1277,7 +1277,7 @@ def api_transform_profile_count():
     """
     try:
         requires_auth(request=request, allow_any=True)
-        data = get_request_data(request, accepted_keys=orchestra.db_count_keys, fail=False)
+        data = get_request_data(request, accepted_keys=orchestra.db_count_keys, qs_only_first_value=True, fail=False)
         return ok_200(orchestra.get_transform_profiles_count(**data), False)
     except Exception as e:
         map_exceptions(e)
@@ -1316,7 +1316,7 @@ def api_transform_profile_get():
     """
     try:
         requires_auth(request=request, allow_any=True)
-        data = get_request_data(request, accepted_keys=orchestra.db_find_keys, fail=False)
+        data = get_request_data(request, accepted_keys=orchestra.db_find_keys, qs_only_first_value=True, fail=False)
         return ok_200(orchestra.get_transform_profiles(**data), True)
     except Exception as e:
         map_exceptions(e)
@@ -1383,7 +1383,7 @@ def api_transform_profile_post():
     """
     try:
         requires_auth(request=request, allow_any=True)
-        data = get_request_data(request)
+        data = get_request_data(request, qs_only_first_value=True)
         profile = TransformProfile(title=data[u'title'], description=data[u'description'],
                                    encoder_name=data[u'encoder_name'], encoder_string=data[u'encoder_string'])
         orchestra.save_transform_profile(profile)
@@ -1537,7 +1537,7 @@ def api_transform_unit_post(environment):
     """
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        data = get_request_data(request)
+        data = get_request_data(request, qs_only_first_value=True)
         orchestra.ensure_num_transform_units(environment, int(data[u'num_units']), terminate=True)
         return ok_200(u'Ensured {0} transformation units into environment "{1}"'.format(data[u'num_units'],
                       environment), False)
@@ -1672,7 +1672,7 @@ def api_transform_task_count():
     """
     try:
         requires_auth(request=request, allow_any=True)
-        data = get_request_data(request, accepted_keys=orchestra.db_count_keys, fail=False)
+        data = get_request_data(request, accepted_keys=orchestra.db_count_keys, qs_only_first_value=True, fail=False)
         return ok_200(orchestra.get_transform_tasks_count(**data), False)
     except Exception as e:
         map_exceptions(e)
@@ -1714,7 +1714,7 @@ def api_transform_task_head():
     """
     try:
         requires_auth(request=request, allow_any=True)
-        data = get_request_data(request, accepted_keys=orchestra.db_find_keys, fail=False)
+        data = get_request_data(request, accepted_keys=orchestra.db_find_keys, qs_only_first_value=True, fail=False)
         return ok_200(orchestra.get_transform_tasks(**data), True)
     except Exception as e:
         map_exceptions(e)
@@ -1759,7 +1759,7 @@ def api_transform_task_get():
     """
     try:
         requires_auth(request=request, allow_any=True)
-        data = get_request_data(request, accepted_keys=orchestra.db_find_keys, fail=False)
+        data = get_request_data(request, accepted_keys=orchestra.db_find_keys, qs_only_first_value=True, fail=False)
         return ok_200(orchestra.get_transform_tasks(load_fields=True, **data), True)
     except Exception as e:
         map_exceptions(e)
@@ -1835,7 +1835,7 @@ def api_transform_task_post():
     """
     try:
         auth_user = requires_auth(request=request, allow_any=True)
-        data = get_request_data(request)
+        data = get_request_data(request, qs_only_first_value=True)
         task_id = orchestra.launch_transform_task(
             auth_user._id, data[u'media_in_id'], data[u'profile_id'], data[u'filename'], data[u'metadata'],
             data[u'send_email'], data[u'queue'], u'/transform/callback')
@@ -2134,7 +2134,7 @@ def api_publisher_unit_post(environment):
     """
     try:
         requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        data = get_request_data(request)
+        data = get_request_data(request, qs_only_first_value=True)
         orchestra.ensure_publisher_units(environment, int(data[u'num_units']), terminate=True)
         return ok_200(u'Ensured {0} publication units into environment "{1}"'.format(data[u'num_units'], environment),
                       False)
@@ -2269,7 +2269,7 @@ def api_publisher_task_count():
     """
     try:
         requires_auth(request=request, allow_any=True)
-        data = get_request_data(request, accepted_keys=orchestra.db_count_keys, fail=False)
+        data = get_request_data(request, accepted_keys=orchestra.db_count_keys, qs_only_first_value=True, fail=False)
         return ok_200(orchestra.get_publisher_tasks_count(**data), False)
     except Exception as e:
         map_exceptions(e)
@@ -2311,7 +2311,7 @@ def api_publisher_task_head():
     """
     try:
         requires_auth(request=request, allow_any=True)
-        data = get_request_data(request, accepted_keys=orchestra.db_find_keys, fail=False)
+        data = get_request_data(request, accepted_keys=orchestra.db_find_keys, qs_only_first_value=True, fail=False)
         return ok_200(orchestra.get_publisher_tasks(**data), True)
     except Exception as e:
         map_exceptions(e)
@@ -2356,7 +2356,7 @@ def api_publisher_task_get():
     """
     try:
         requires_auth(request=request, allow_any=True)
-        data = get_request_data(request, accepted_keys=orchestra.db_find_keys, fail=False)
+        data = get_request_data(request, accepted_keys=orchestra.db_find_keys, qs_only_first_value=True, fail=False)
         return ok_200(orchestra.get_publisher_tasks(load_fields=True, **data), True)
     except Exception as e:
         map_exceptions(e)
@@ -2427,7 +2427,7 @@ def api_publisher_task_post():
     """
     try:
         auth_user = requires_auth(request=request, allow_any=True)
-        data = get_request_data(request)
+        data = get_request_data(request, qs_only_first_value=True)
         task_id = orchestra.launch_publisher_task(auth_user._id, data[u'media_id'], data[u'send_email'], data[u'queue'],
                                                   u'/publisher/callback')
         return ok_200(task_id, True)
@@ -2696,7 +2696,7 @@ def api_transform_task_hook():
     """
     try:
         requires_auth(request=request, allow_node=True)
-        data = get_request_data(request)
+        data = get_request_data(request, qs_only_first_value=True)
         task_id, status = data[u'task_id'], data[u'status']
         logging.debug(u'task {0}, status {1}'.format (task_id, status))
         orchestra.transform_callback(task_id, status)
@@ -2755,7 +2755,7 @@ def api_publisher_task_hook():
     """
     try:
         requires_auth(request=request, allow_node=True)
-        data = get_request_data(request)
+        data = get_request_data(request, qs_only_first_value=True)
         task_id = data[u'task_id']
         publish_uri = data[u'publish_uri'] if u'publish_uri' in data else None
         status = data[u'status']
@@ -2815,7 +2815,7 @@ def api_revoke_publisher_task_hook():
     """
     try:
         requires_auth(request=request, allow_node=True)
-        data = get_request_data(request)
+        data = get_request_data(request, qs_only_first_value=True)
         task_id = data[u'task_id']
         publish_uri = data[u'publish_uri'] if u'publish_uri' in data else None
         status = data[u'status']
