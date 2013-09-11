@@ -184,8 +184,9 @@ _overwrite_helper()
 
   mkdir -p "$CHARMS_DEPLOY_PATH/$2" 2>/dev/null
   rsync -rtvh -LH --delete --progress --exclude='.git' --exclude='*.log' --exclude='*.pyc' \
-    --exclude='celeryconfig.py' --exclude='build' --exclude='dist' --exclude='*.egg-info' \
-    "$CHARMS_PATH/$1/" "$CHARMS_DEPLOY_PATH/$2/" || xecho "Unable to overwrite $2 charm"
+    --exclude='celeryconfig.py' --exclude='build' --exclude='dist' --exclude='cover' \
+    --exclude='*.egg-info' "$CHARMS_PATH/$1/" "$CHARMS_DEPLOY_PATH/$2/" || \
+    xecho "Unable to overwrite $2 charm"
 }
 
 _rsync_helper()
@@ -217,7 +218,8 @@ _rsync_helper()
     host="ubuntu@$REPLY"
     dest="/var/lib/juju/agents/unit-$1-$number/charm"
     ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
-    rsync --rsync-path='sudo rsync' -avhL --progress --delete -e "ssh -i '$ID_RSA'" --exclude=.git --exclude=config.json \
+    rsync --rsync-path='sudo rsync' -avhL --progress --delete -e "ssh -i '$ID_RSA'" --exclude=.git \
+      --exclude='build' --exclude='cover' --exclude='dist' --exclude=config.json \
       --exclude=celeryconfig.py --exclude=*.pyc --exclude=local_config.pkl --exclude=charms \
       --exclude=ssh --exclude=environments.yaml --exclude=*.log "$CHARMS_PATH/$1/" "$host:$dest/"
     ssh -i "$ID_RSA" "$host" -n "sudo chown root:root $dest -R"
