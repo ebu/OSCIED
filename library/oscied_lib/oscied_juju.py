@@ -116,7 +116,7 @@ class ServiceStatistics(PickleableObject):
     def __init__(self, environment=None, service=None, time=None, units_planned=None, units_current=None,
                  tasks_current=None, unknown_states=None, maxlen=100):
         self.environment, self.service = environment, service
-        self.time = time or pygal_deque(maxlen=maxlen)
+        self.time = time or deque(maxlen=maxlen)
         self.units_planned = units_planned or pygal_deque(maxlen=maxlen)
         self.units_current = units_current or {state: pygal_deque(maxlen=maxlen) for state in py_juju.ALL_STATES}
         self.tasks_current = tasks_current or {status: deque(maxlen=maxlen) for status in self.tasks_status}
@@ -158,35 +158,41 @@ class ServiceStatistics(PickleableObject):
                 # ... else do not add to statistics.
         for status, history in self.tasks_current.items():
             history.append(current[status])
+        self.time.append(now_string)
 
 
-    def _write_chart(self, chart, charts_path, prefix):
+    def _write_chart(self, chart, charts_path, prefix, add_x_labels=True):
+        if add_x_labels:
+            chart.x_labels = list(self.time)
+            chart.x_labels_major_count = 3
+            chart.x_label_rotation = 0
+            chart.show_minor_x_labels = False
+            chart.explicit_size = True
+        chart.truncate_label = 20
+        chart.truncate_legend = 20
         tmp_file = join(charts_path, u'{0}_{1}_{2}.new.svg'.format(prefix, self.environment, self.service_label))
         dst_file = join(charts_path, u'{0}_{1}_{2}.svg'.format(prefix, self.environment, self.service_label))
         chart.render_to_file(tmp_file)
         shutil.copy(tmp_file, dst_file)
         return dst_file
 
-    def generate_units_pie_chart_by_status(self, charts_path, width=300, height=300, explicit_size=True):
-        chart = pygal.Pie(width=width, height=height, explicit_size=explicit_size)
+    def generate_units_pie_chart_by_status(self, charts_path, width=300, height=300):
+        chart = pygal.Pie(width=width, height=height, no_data_text=u'No instance')
         chart.title = u'Number of {0} {1} units by status'.format(self.environment_label, self.service_label)
         for states in (py_juju.ERROR_STATES, py_juju.STARTED_STATES, py_juju.PENDING_STATES):
             units_number = sum((self.units_current.get(state, pygal_deque()).last or 0) for state in states)
             chart.add(u'{0} {1}'.format(units_number, states[0]), units_number)
-        return self._write_chart(chart, charts_path, u'pie_units')
+        return self._write_chart(chart, charts_path, u'pie_units', add_x_labels=False)
 
-    def generate_units_line_chart(self, charts_path, width=700, height=300, explicit_size=True, show_dots=True,
-                                  truncate_legend=20):
-        chart = pygal.Line(width=width, height=height, explicit_size=explicit_size, show_dots=show_dots,
-                           truncate_legend=truncate_legend)
+    def generate_units_line_chart(self, charts_path, width=700, height=300, show_dots=True):
+        chart = pygal.Line(width=width, height=height, show_dots=show_dots, no_data_text=u'No instance')
         chart.title = u'Number of {0} {1} units'.format(self.environment_label, self.service_label)
         planned_list, current_list = self.units_planned.list, self.units_current[py_juju.STARTED].list
         chart.add(u'{0} planned'.format(planned_list[-1] if len(planned_list) > 0 else 0), planned_list)
         chart.add(u'{0} current'.format(current_list[-1] if len(current_list) > 0 else 0), current_list)
         return self._write_chart(chart, charts_path, u'line_units')
 
-    def generate_tasks_line_chart(self, charts_path, width=1200, height=300, explicit_size=True, show_dots=True,
-                                  truncate_legend=20):
+    def generate_tasks_line_chart(self, charts_path, width=1200, height=300, show_dots=True):
         total, lines = 0, {}
         for status in self.tasks_status:
             current_list = list(self.tasks_current[status])
@@ -194,8 +200,8 @@ class ServiceStatistics(PickleableObject):
             total += number
             lines[status] = (number, current_list)
         print('[DEBUG]', self.environment, self.service, total)
-        chart = pygal.StackedLine(fill=True, width=width, height=height, explicit_size=explicit_size, show_dots=show_dots,
-                           truncate_legend=truncate_legend, range=(0, total))
+        # , range=(0, total)
+        chart = pygal.StackedLine(fill=True, width=width, height=height, show_dots=show_dots, no_data_text=u'No task')
         chart.title = u'Number of {0} {1} tasks by status'.format(self.environment_label, self.service_label)
 
         for status in self.tasks_status:
