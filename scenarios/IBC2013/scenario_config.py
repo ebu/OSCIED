@@ -82,6 +82,6 @@ for service in (u'oscied-transform', u'oscied-publisher'):
     STATS_MAAS[service] = read_or_default(u'maas',   service, maxlen=STATISTICS_MAXLEN)
 
 
-PERMANENT_TRANSFORM_PROFILES = ((u'Tablet 480p/25', u'Tablet', u' tablet'),)
+PERMANENT_TRANSFORM_PROFILES = ((u'Tablet 480p/25', u'Tablet', u' tablet'),(u'Tablet DASH', u'DASH', u' dash'),)
 MAX_TEMPORARY_TRANSFORM_TASKS = 10
 MAX_TEMPORARY_MEDIA_ASSETS = 15

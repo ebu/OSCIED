@@ -26,6 +26,7 @@
 import os, re, select, shlex, time
 from celery import current_task
 from celery.decorators import task
+from codecs import open
 #from celery.signals import celeryd_after_setup, worker_shutdown
 from kitchen.text.converters import to_bytes
 from subprocess import Popen, PIPE
