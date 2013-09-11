@@ -34,7 +34,7 @@ from oscied_models import Media, TransformProfile, TransformTask
 from oscied_util import Callback
 from pyutils.py_datetime import datetime_now, total_seconds
 from pyutils.py_ffmpeg import get_media_duration, get_media_tracks
-from pyutils.py_filesystem import get_size, recursive_copy, try_makedirs
+from pyutils.py_filesystem import get_size, recursive_copy, try_makedirs, try_remove
 from pyutils.py_serialization import object2json
 from pyutils.py_subprocess import make_async, read_async
 from pyutils.py_unicode import configure_unicode
@@ -84,7 +84,8 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
 
     try:
         # Avoid 'referenced before assignment'
-        callback, encoder_out, request = None, u'', current_task.request
+        callback = dashcast_conf = None
+        encoder_out, request = u'', current_task.request
 
         # Let's the task begin !
         print(u'{0} Transformation task started'.format(request.id))
@@ -209,9 +210,12 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
             except:
                 raise ValueError(to_bytes(u'Unable to estimate # frames of input media asset'))
 
-            # Create DashCast subprocess
-            cmd = u'DashCast -av "{0}" {1} -out "{2}" -mpd "{3}"'.format(
-                media_in_path, profile.encoder_string, media_out_root, media_out.filename)
+            # Create DashCast configuration file and subprocess
+            dashcast_conf = u'dashcast_{0}.conf'.format(request.id)
+            with open(dashcast_conf, u'w', u'utf-8') as f:
+                f.write(profile.dash_config)
+            cmd = u'DashCast -conf {0} -av "{1}" {2} -out "{3}" -mpd "{4}"'.format(
+                dashcast_conf, media_in_path, profile.dash_options, media_out_root, media_out.filename)
             print(cmd)
             dashcast = Popen(shlex.split(cmd), stdout=PIPE, stderr=PIPE, close_fds=True)
             make_async(dashcast.stdout.fileno())
@@ -276,3 +280,7 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
         print(u'{0} Transformation task failed '.format(request.id))
         transform_callback(u'ERROR\n{0}\n\nOUTPUT\n{1}'.format(unicode(error), encoder_out))
         raise
+
+    finally:
+        if dashcast_conf:
+            try_remove(dashcast_conf)

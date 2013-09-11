@@ -297,6 +297,19 @@ class TransformProfile(OsciedDBModel):
         """
         return self.encoder_name == u'dashcast'
 
+    @property
+    def dash_options(self):
+        return self.encoder_string.split(u'/')[0].strip() if self.is_dash else None
+
+    @property
+    def dash_config(self):
+        if not self.is_dash:
+            return None
+        try:
+            return self.encoder_string.split(u'/')[1].strip().replace(u' ', u'\n')
+        except:
+            return u''
+
     def output_filename(self, input_filename, suffix=None):
         u"""
         >>> p = TransformProfile(title=u'test', encoder_name=u'copy')
@@ -326,6 +339,41 @@ class TransformProfile(OsciedDBModel):
 
     # FIXME test other fields
     def is_valid(self, raise_exception):
+        u"""
+        >>> p = TransformProfile(title=u'test', encoder_name=u'ffmpeg')
+        >>> print(p.dash_options)
+        None
+        >>> print(p.dash_config)
+        None
+        >>> p.encoder_name = u'dashcast'
+        >>> p.encoder_string = u'--seg-dur 1000 --frag-dur 200 / [v1] type=video width=960 height=540 bitrate=1536000 [v2] type=video width=640 height=360 bitrate=819200 [v3] type=video width=480 height=270 bitrate=512000 [v4] type=video width=160 height=90 bitrate=256000 [a1] type=audio bitrate=98304'
+        >>> print(p.dash_options)
+        --seg-dur 1000 --frag-dur 200
+        >>> print(p.dash_config)
+        [v1]
+        type=video
+        width=960
+        height=540
+        bitrate=1536000
+        [v2]
+        type=video
+        width=640
+        height=360
+        bitrate=819200
+        [v3]
+        type=video
+        width=480
+        height=270
+        bitrate=512000
+        [v4]
+        type=video
+        width=160
+        height=90
+        bitrate=256000
+        [a1]
+        type=audio
+        bitrate=98304
+        """
         if not valid_uuid(self._id, none_allowed=False):
             self._E(raise_exception, u'_id is not a valid uuid string')
         if not self.title or not self.title.strip():
