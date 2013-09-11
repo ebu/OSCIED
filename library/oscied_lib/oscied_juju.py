@@ -168,6 +168,7 @@ class ServiceStatistics(PickleableObject):
             chart.x_label_rotation = 0
             chart.show_minor_x_labels = False
         chart.explicit_size = True
+        chart.order_min = 0
         chart.truncate_label = 20
         chart.truncate_legend = 20
         tmp_file = join(charts_path, u'{0}_{1}_{2}.new.svg'.format(prefix, self.environment, self.service_label))
