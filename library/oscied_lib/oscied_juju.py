@@ -330,14 +330,15 @@ class TasksThread(OsciedEnvironmentThread):
             spec={'status': {'$in': OsciedDBTask.WORK_IN_PROGRESS_STATUS}})
         if counter <= 0:
             print(u'No need to transcode any temporary media assets.')
-        while counter > 0:
-            k = min(len(source_medias), counter)
-            if k == 0:
-                return  # No source media asset available, do not loop oo to keep your processor cool.
-            for source_media in random.sample(source_medias, k):
-                TasksThread.launch_transform(api_client, source_media, random.choice(profiles), title_prefix,
-                                             filename_suffix)
-            counter -= k
+        else:
+            while counter > 0:
+                k = min(len(source_medias), counter)
+                if k == 0:
+                    break  # No source media asset available, do not loop oo to keep your processor cool.
+                for source_media in random.sample(source_medias, k):
+                    TasksThread.launch_transform(api_client, source_media, random.choice(profiles), title_prefix,
+                                                 filename_suffix)
+                counter -= k
 
     @staticmethod
     def cleanup_temporary_media_assets(api_client, maximum):
