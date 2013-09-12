@@ -44,8 +44,7 @@ class OsciedEnvironment(Environment):
     # FIXME an helper to update config passwords (generate) -> self.config
     def __init__(self, name, events, statistics, charts_path, api_unit=u'oscied-orchestra/0', enable_units_api=False,
                  enable_units_status=True, enable_tasks_status=True, daemons_auth=None,
-                 permanent_transform_profiles=None,
-                 temporary_transform_max_wip_tasks=10, max_temporary_media_assets=15, **kwargs):
+                 transform_matrix=None, transform_max_wip_tasks=10, max_output_media_assets=15, **kwargs):
         super(OsciedEnvironment, self).__init__(name, **kwargs)
         self.events = events
         self.statistics = statistics
@@ -55,9 +54,9 @@ class OsciedEnvironment(Environment):
         self.enable_units_status = enable_units_status
         self.enable_tasks_status = enable_tasks_status
         self.daemons_auth = daemons_auth
-        self.permanent_transform_profiles = permanent_transform_profiles
-        self.temporary_transform_max_wip_tasks = temporary_transform_max_wip_tasks
-        self.max_temporary_media_assets = max_temporary_media_assets
+        self.transform_matrix = transform_matrix
+        self.transform_max_wip_tasks = transform_max_wip_tasks
+        self.max_output_media_assets = max_output_media_assets
         self._api_client = self._statistics_thread = self._scaling_thread = self._tasks_thread = None
 
     @property
@@ -137,7 +136,7 @@ class ServiceStatistics(PickleableObject):
 
     @property
     def tasks_status(self):
-        return (OsciedDBTask.PENDING, OsciedDBTask.SUCCESS, OsciedDBTask.PROGRESS)
+        return (OsciedDBTask.PENDING, OsciedDBTask.PROGRESS) # OsciedDBTask.SUCCESS, 
 
     def update(self, now_string, planned, units, tasks):
         self.units_planned.append(planned)
@@ -217,35 +216,6 @@ class ServiceStatistics(PickleableObject):
 class ScalingThread(OsciedEnvironmentThread):
     u"""Handle the scaling of a deployed OSCIED setup."""
 
-    @staticmethod
-    def launch_publish(api_client, media):
-        print(u'Publish "{0}" media asset ...'.format(media.metadata['title']))
-        return api_client.publisher_tasks.add({
-            u'media_id': media._id, u'send_email': False, u'queue': u'publisher_private'})
-
-    @staticmethod
-    def permanent_publish(api_client):
-        u"""Publish all permanent media assets, skipping already published media assets."""
-        for media in api_client.medias.list(head=True):  # FIXME MongoDB-based filtering ?
-            if media.status == Media.READY and media.metadata.get(u'permanent') and not media.public_uris:
-                ScalingThread.launch_publish(api_client, media)
-
-    @staticmethod
-    def revoke_all_publisher_tasks(api_client):
-        u"""Revoke publication tasks of all media assets."""
-        for task in api_client.publisher_tasks.list(head=True):  # FIXME MongoDB-based filtering ?
-            if task.status in (OsciedDBTask.WORK_IN_PROGRESS_STATUS + OsciedDBTask.SUCCESS_STATUS):
-                print(u'Revoke publication task {0}.'.format(task._id))
-                try:
-                    del api_client.publisher_tasks[task._id]
-                    # FIXME this is not a clean way to ensure that tasks are revoked ...
-                    for i in range(5):
-                        time.sleep(1)
-                        if api_client.publisher_tasks[task._id].status == OsciedDBTask.REVOKED:
-                            break
-                except Exception as e:
-                    print(u'WARNING! Unable to revoke publication task {0}, reason: {1}'.format(task._id, e))
-
     def run(self):
         while True:
             # Get current time to retrieve state
@@ -265,18 +235,9 @@ class ScalingThread(OsciedEnvironmentThread):
                     else:
                         units = env.get_units(service)
                     if len(units) != planned:
-                        if u'publisher' in service:
-                            if planned > 0:
-                                print(u'Publish some media assets, {0} publication units are planned.'.format(planned))
-                                ScalingThread.permanent_publish(api_client)
-                            else:
-                                print(u'Unpublish media assets before destroying publication units.')
-                                ScalingThread.revoke_all_publisher_tasks(api_client)
-                                # FIXME wait unit media assets are unpublished !!
                         print(u'[{0}] Ensure {1} instances of service {2}'.format(self.name, planned, label))
                         env.ensure_num_units(service, service, num_units=planned)
                         env.cleanup_machines()  # Safer way to terminate machines !
-                        # Publication of media assets triggered by the deployment of publication points.
                     else:
                         print(u'[{0}] Nothing to do !'.format(self.name))
             except (ConnectionError, Timeout) as e:
@@ -300,10 +261,10 @@ class StatisticsThread(OsciedEnvironmentThread):
                     label = SERVICE_TO_LABEL.get(service, service)
                     units_api, tasks_api = SERVICE_TO_UNITS_API[service], SERVICE_TO_TASKS_API[service]
                     planned = event.get(service, None)
+                    api_client = env.api_client
+                    api_client.auth = env.daemons_auth
                     if env.enable_units_status:
                         if env.enable_units_api:
-                            api_client = env.api_client
-                            api_client.auth = env.daemons_auth
                             units = getattr(api_client, units_api).list()
                         else:
                             units = env.get_units(service)
@@ -325,6 +286,14 @@ class TasksThread(OsciedEnvironmentThread):
     u"""Drives a deployed OSCIED setup to transcode, publish and cleanup media assets."""
 
     @staticmethod
+    def get_media_or_raise(medias, media_title):
+        u"""Return a media asset with title ``media_title`` or raise an IndexError."""
+        try:
+            return next(media for media in medias if media.metadata['title'] == media_title)
+        except StopIteration:
+            raise IndexError(to_bytes(u'Missing media asset "{0}".'.format(media_title)))
+
+    @staticmethod
     def get_profile_or_raise(profiles, profile_title):
         u"""Return a transformation profile with title ``profile_title`` or raise an IndexError."""
         try:
@@ -333,14 +302,11 @@ class TasksThread(OsciedEnvironmentThread):
             raise IndexError(to_bytes(u'Missing transformation profile "{0}".'.format(profile_title)))
 
     @staticmethod
-    def launch_transform(api_client, media_in, profile, title_prefix, filename_suffix, permanent=False):
+    def launch_transform(api_client, media_in, profile, title_prefix, filename_suffix):
         in_title = media_in.metadata['title']
         out_title = u'{0} {1}'.format(title_prefix, in_title)
-        mtype = u'permanent' if permanent else u'temporary'
         metadata = {u'title': out_title, u'profile': profile.title}
-        if permanent:
-            metadata[u'permanent'] = True
-        print(u'Transcode "{0}" to {1} "{2}" with profile {3} ...'.format(in_title, mtype, out_title, profile.title))
+        print(u'Transcode "{0}" to "{1}" with profile {2} ...'.format(in_title, out_title, profile.title))
         return api_client.transform_tasks.add({
             u'filename': profile.output_filename(media_in.filename, suffix=filename_suffix),
             u'media_in_id': media_in._id, u'profile_id': profile._id, u'send_email': False,
@@ -348,77 +314,48 @@ class TasksThread(OsciedEnvironmentThread):
         })
 
     @staticmethod
-    def permanent_transform(api_client, source_medias, medias, profile, title_prefix, filename_suffix):
-        u"""Transcode all source media assets with profile ``profile_title``, skipping already available outputs."""
-        skip = set([m.parent_id for m in medias if m.metadata.get(u'permanent') and
-                                                   m.metadata.get(u'profile') == profile.title])
-        for source_media in source_medias:
-            if source_media.status == Media.READY and source_media._id not in skip:
-                TasksThread.launch_transform(api_client, source_media, profile, title_prefix, filename_suffix, True)
-
-    @staticmethod
-    def temporary_transform(api_client, source_medias, medias, profiles, temporary_counter, maximum):
-        u"""Transcode some randomly picked source media assets with some randomly picked profiles."""
+    def transform(api_client, medias, profiles, matrix, maximum, output_counter):
+        u"""Transcode source media assets with chosen profiles limiting amount of running tasks."""
         wip = OsciedDBTask.WORK_IN_PROGRESS_STATUS
-        temporary_count = sum(1 for t in api_client.transform_tasks.list(head=True) if t.status in wip)
-        counter = maximum - temporary_count
+        output_count = sum(1 for t in api_client.transform_tasks.list(head=True) if t.status in wip)
+        counter = maximum - output_count
         # FIXME I do not why but $in operator does not work !
         # api_client.transform_tasks.count(spec={'status': {'$in': OsciedDBTask.WORK_IN_PROGRESS_STATUS}})
         if counter <= 0:
-            print(u'No need to create any temporary media asset, already processing {0} of them.'.format(
-                  temporary_count))
+            print(u'No need to create any media asset, already processing {0} of them.'.format(output_count))
         else:
             s = u's' if counter > 1 else u''
-            print(u'Launch {0} transcoding task{1} to create temporary media assets.'.format(counter, s))
-            while counter > 0:
-                k = min(len(source_medias), counter)
-                if k == 0:
-                    break  # No source media asset available, do not loop oo to keep your processor cool.
-                for source_media in random.sample(source_medias, k):
-                    TasksThread.launch_transform(api_client, source_media, random.choice(profiles),
-                                                 u'Temp {0}'.format(temporary_counter),
-                                                 u'_temp_{0}'.format(temporary_counter))
-                    temporary_counter += 1
-                counter -= k
-        return temporary_counter
+            print(u'Launch {0} transcoding task{1} to create media assets.'.format(counter, s))
+            for i in range(counter):
+                media_title, profile_title = random.choice(matrix)
+                media = TasksThread.get_media_or_raise(medias, media_title)
+                profile = TasksThread.get_profile_or_raise(profiles, profile_title)
+                TasksThread.launch_transform(api_client, media, profile,
+                                             u'Output {0}'.format(output_counter),
+                                             u'_output_{0}'.format(output_counter))
+                output_counter += 1
+        return output_counter
 
     @staticmethod
-    def cleanup_temporary_media_assets(api_client, maximum):
-        u"""Ensure ``maximum`` temporary media assets in shared storage by deleting the oldest."""
-        # FIXME check if this is the oldest that are deleted and not the youngest ...
+    def cleanup_media_assets(api_client, maximum):
+        u"""Ensure ``maximum`` output media assets in shared storage by deleting the oldest."""
         medias = api_client.medias.list(head=True, sort=[(u'metadata.add_date', 1)])
-        temporary_medias = [m for m in medias if m.status == Media.READY and m.parent_id and
-                            not m.metadata.get(u'permanent')]
-        counter = len(temporary_medias) - maximum
+        output_medias = [m for m in medias if m.status == Media.READY and m.parent_id]
+        counter = len(output_medias) - maximum
         if counter <= 0:
-            print(u'No need to delete any temporary media asset, they are {0} ready and limit is {1}.'.format(
-                  len(temporary_medias), maximum))
+            print(u'No need to delete any output media asset, they are {0} ready and limit is {1}.'.format(
+                  len(output_medias), maximum))
         else:
             s = u's' if counter > 1 else u''
-            print(u'Delete {0} temporary media asset{1} to keep at most {2} of them.'.format(counter, s, maximum))
+            print(u'Delete {0} output media asset{1} to keep at most {2} of them.'.format(counter, s, maximum))
             for i in range(counter):
-                media = temporary_medias.pop()
-                print(u'Delete temporary media asset "{0}".'.format(media.metadata['title']))
-                assert(media.parent_id and not media.metadata.get(u'permanent'))
+                media = output_medias.pop()
+                print(u'Delete output media asset "{0}".'.format(media.metadata['title']))
+                assert(media.parent_id)
                 del api_client.medias[media._id]
 
-    # @staticmethod
-    # def cleanup_temporary_media_assets_v2_with_mongodb_filters(api_client, maximum):
-    #     u"""Ensure ``maximum`` temporary media assets in shared storage by deleting the oldest."""
-    #     FIXME I do not why but this does not work :
-    #     spec = {u'status': u'READY', u'parent_id': None}, u'metadata.permanent': {u'$exists': False}}
-    #     medias = api_client.medias.list(head=True, spec=spec, sort=[(u'metadata.add_date', -1)], skip=maximum)
-    #     if medias:
-    #         s = u's' if len(medias) > 1 else u''
-    #         print(u'Delete {0} temporary media asset{1} to keep at most {2} of them.'.format(len(medias), s, maximum))
-    #     for media in medias:
-    #         print(u'Delete temporary media asset "{0}".'.format(media.metadata['title'].title))
-    #         del api_client.medias[media._id]
-    #     else:
-    #         print(u'No need to delete any temporary media asset.')
-
     def run(self):
-        temporary_counter = 0
+        output_counter = 0
         while True:
             # Get current time to retrieve state
             env, now, now_string = self.environment, datetime_now(format=None), datetime_now()
@@ -429,18 +366,12 @@ class TasksThread(OsciedEnvironmentThread):
 
                 # Get all media assets and detect source media assets (not resulting of a transformation task)
                 medias = api_client.medias.list(head=True, spec={'status': {'$ne': Media.DELETED}})
-                source_medias = [m for m in medias if not m.parent_id]
                 profiles = api_client.transform_profiles.list()
 
-                for profile_title, title_prefix, filename_suffix in env.permanent_transform_profiles:
-                    profile = TasksThread.get_profile_or_raise(profiles, profile_title)
-                    TasksThread.permanent_transform(api_client, source_medias, medias, profile, title_prefix,
-                                                    filename_suffix)
+                output_counter = TasksThread.transform(api_client, medias, profiles, env.transform_matrix,
+                                                       env.transform_max_wip_tasks, output_counter)
 
-                temporary_counter = TasksThread.temporary_transform(
-                    api_client, source_medias, medias, profiles, temporary_counter, env.max_temporary_transform_tasks)
-
-                TasksThread.cleanup_temporary_media_assets(api_client, env.max_temporary_media_assets)
+                TasksThread.cleanup_media_assets(api_client, env.max_output_media_assets)
 
             except (ConnectionError, Timeout) as e:
                 # FIXME do something here ...

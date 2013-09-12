@@ -42,8 +42,7 @@ from library.oscied_lib.pyutils.py_unicode import configure_unicode
 
 from scenario_config import (
     CONFIG_AMAZ, EVENTS_AMAZ, STATS_AMAZ, CONFIG_MAAS, EVENTS_MAAS, STATS_MAAS, CHARTS_PATH, SCENARIO_PATH,
-    ENABLE_UNITS_API, PERMANENT_TRANSFORM_PROFILES, MAX_TEMPORARY_TRANSFORM_TASKS,
-    MAX_TEMPORARY_MEDIA_ASSETS
+    ENABLE_UNITS_API, TRANSFORM_MATRIX, TRANSFORM_MAX_WIP_TASKS, MAX_OUTPUT_MEDIA_ASSETS
 )
 
 
@@ -134,17 +133,15 @@ class IBC2013(DeploymentScenario):
         u"""Prepare the events-based client "main" loop and periodically calls the event handling method."""
         for environment in self.environments:
             environment.enable_units_api = ENABLE_UNITS_API
-            environment.permanent_transform_profiles = PERMANENT_TRANSFORM_PROFILES
-            environment.max_temporary_transform_tasks = MAX_TEMPORARY_TRANSFORM_TASKS
-            environment.max_temporary_media_assets = MAX_TEMPORARY_MEDIA_ASSETS
-            if environment.name == u'maas':
-                environment.enable_units_status = False  # FIXME enable it during IBC (??)
-                environment.enable_tasks_status = False  # FIXME enable it during IBC
-            else:
-                print(u'Register or retrieve an administrator in environment {0}.'.format(environment.name))
-                admin = User(first_name=u'Mister admin', last_name=u'IBC2013', mail=u'admin.ibc2013@oscied.org',
-                            secret='big_secret_to_sav3', admin_platform=True)
-                environment.daemons_auth = environment.api_client.login_or_add(admin)
+            environment.transform_matrix = TRANSFORM_MATRIX
+            environment.transform_max_wip_tasks = TRANSFORM_MAX_WIP_TASKS
+            environment.max_output_media_assets = MAX_OUTPUT_MEDIA_ASSETS
+            if environment.name == u'maas':  # Cheat code
+                environment.enable_units_status = False
+            print(u'Register or retrieve an administrator in environment {0}.'.format(environment.name))
+            admin = User(first_name=u'Mister admin', last_name=u'IBC2013', mail=u'admin.ibc2013@oscied.org',
+                        secret='big_secret_to_sav3', admin_platform=True)
+            environment.daemons_auth = environment.api_client.login_or_add(admin)
             if self.statistics:
                 environment.statistics_thread.start()
             if isinstance(environment.daemons_auth, User):
