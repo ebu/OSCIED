@@ -1,9 +1,9 @@
 File Copy;A simple block file copy;copy;useless string
-Force 720p;Force aspect to 16/9 and resolution to 720p;ffmpeg;-aspect 16:9 -s 1280x720 -sameq
-Deinterlace;Deinterlace video track -> MP4;ffmpeg;-strict experimental -vf 'yadif=0.-1:0, scale=trunc(iw/2)*2:trunc(ih/2)*2' -sameq
-Speed-up 2x;Speed-up video track by a factor of 2, remove audio -> MP4;ffmpeg;-strict experimental -vf 'setpts=0.5*PTS' -sameq
-Negate;Negate video track -> MP4;ffmpeg;-strict experimental -vf 'negate' -sameq
-Tablet 480p/25;480p for tablets (480p/25 at 1Mbps in main profile with low-latency);ffmpeg;-r 25 -c:v libx264 -profile:v main -preset slow -tune zerolatency -pix_fmt yuv420p -strict experimental -b:v 1000k -maxrate 1000k -bufsize 2000k -vf scale='trunc(oh*a/2)*2:min(480\,iw)' -acodec aac -ac 2 -ar 44100 -ab 96k -f mp4
-HQ PAL-SD;High-quality SD for archive/storage (PAL at 1Mbps in high profile);ffmpeg;-c:v libx264 -profile:v high -preset slower -b:v 1000k -vf scale=-1:576 -acodec aac -ar 196k -f mp4
 DASH-1;From DashCast website;dashcast;-seg-dur 1000 -frag-dur 200
-Tablet DASH;TODO;dashcast;-seg-dur 1000 -frag-dur 200 / [v1] type=video width=960 height=540 bitrate=1536000 [v2] type=video width=640 height=360 bitrate=819200 [v3] type=video width=480 height=270 bitrate=512000 [v4] type=video width=160 height=90 bitrate=256000 [a1] type=audio bitrate=98304
+Tablet DASH;TODO;dashcast;-seg-dur 1000 -frag-dur 200 / [v1] type=video width=960 height=540 bitrate=1536000 [v2] type=video width=640 height=360 bitrate=819200 [v3] type=video width=480 height=270 bitrate=512000 [v4] type=video width=160 height=90 bitrate=256000 [a1] type=audio bitrate=192000
+Deinterlace;Deinterlace video track -> MP4;ffmpeg;-strict experimental -vf 'yadif=0.-1:0, scale=trunc(iw/2)*2:trunc(ih/2)*2' -sameq
+Force 720p;Force aspect to 16/9 and resolution to 720p;ffmpeg;-aspect 16:9 -s 1280x720 -sameq
+HQ PAL-SD;High-quality SD for archive/storage (PAL at 1Mbps in high profile);ffmpeg;-c:v libx264 -profile:v high -preset slower -b:v 1000k -vf scale=-1:576 -acodec aac -ar 196k -f mp4
+Negate;Negate video track -> MP4;ffmpeg;-strict experimental -vf 'negate' -sameq
+Speed-up 2x;Speed-up video track by a factor of 2, remove audio -> MP4;ffmpeg;-strict experimental -vf 'setpts=0.5*PTS' -sameq
+Tablet 480p/25;480p for tablets (480p/25 at 1Mbps in main profile with low-latency);ffmpeg;-r 25 -c:v libx264 -profile:v main -preset slow -tune zerolatency -pix_fmt yuv420p -strict experimental -b:v 1000k -maxrate 1000k -bufsize 2000k -vf scale='trunc(oh*a/2)*2:min(480\,iw)' -acodec aac -ac 2 -ar 44100 -ab 96k -f mp4
