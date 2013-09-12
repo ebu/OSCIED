@@ -42,8 +42,8 @@ from pyutils.py_unicode import configure_unicode
 
 configure_unicode()
 
-# Read video frame 4903
 DASHCAST_REGEX = re.compile(r'Read video frame (?P<frame>\d+)')
+DASHCAST_SUCCESS_REGEX = re.compile(r'MPD file generated')
 
 # frame= 2071 fps=  0 q=-1.0 size=   34623kB time=00:01:25.89 bitrate=3302.3kbits/s
 FFMPEG_REGEX = re.compile(
@@ -251,8 +251,9 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
                                   u'media_out_size': get_size(media_out_root),
                                   u'percent': int(100 * ratio),
                                   u'encoding_frame': media_out_frames})
+                match = DASHCAST_SUCCESS_REGEX.match(stdout)
                 returncode = dashcast.poll()
-                if returncode is not None:
+                if returncode is not None or match:
                     encoder_out = u'stdout: {0}\nstderr: {1}'.format(stdout, stderr)
                     break
                 if media_out_frames == 0 and elapsed_time > DASHCAST_TIMEOUT_TIME:
