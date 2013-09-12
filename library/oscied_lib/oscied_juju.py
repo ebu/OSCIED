@@ -30,7 +30,8 @@ from collections import defaultdict, deque
 from kitchen.text.converters import to_bytes
 from requests.exceptions import ConnectionError, Timeout
 from oscied_api import OrchestraAPIClient, init_api
-from oscied_constants import ENVIRONMENT_TO_LABEL, SERVICE_TO_LABEL, SERVICE_TO_UNITS_API, SERVICE_TO_TASKS_API
+from oscied_constants import (ENVIRONMENT_TO_LABEL, ENVIRONMENT_TO_TYPE, SERVICE_TO_LABEL, SERVICE_TO_UNITS_API,
+                              SERVICE_TO_TASKS_API)
 from oscied_models import Media, OsciedDBTask
 from pyutils.py_collections import pygal_deque
 from pyutils.py_datetime import datetime_now
@@ -127,6 +128,10 @@ class ServiceStatistics(PickleableObject):
         return ENVIRONMENT_TO_LABEL.get(self.environment, self.environment)
 
     @property
+    def environment_type(self):
+        return ENVIRONMENT_TO_TYPE.get(self.environment, self.environment)
+
+    @property
     def service_label(self):
         return SERVICE_TO_LABEL.get(self.service, self.service)
 
@@ -179,7 +184,7 @@ class ServiceStatistics(PickleableObject):
 
     def generate_units_pie_chart_by_status(self, charts_path, width=300, height=300):
         chart = pygal.Pie(width=width, height=height, no_data_text=u'No unit')
-        chart.title = u'Number of {0} {1} units by status'.format(self.environment_label, self.service_label)
+        chart.title = u'Number of {0} {1} nodes'.format(self.environment_type, self.service_label)
         for states in (py_juju.ERROR_STATES, py_juju.STARTED_STATES, py_juju.PENDING_STATES):
             units_number = sum((self.units_current.get(state, pygal_deque()).last or 0) for state in states)
             chart.add(u'{0} {1}'.format(units_number, states[0]), units_number)
@@ -187,7 +192,7 @@ class ServiceStatistics(PickleableObject):
 
     def generate_units_line_chart(self, charts_path, width=700, height=300):
         chart = pygal.Line(width=width, height=height, show_dots=True, no_data_text=u'No unit')
-        chart.title = u'Number of {0} {1} units'.format(self.environment_label, self.service_label)
+        chart.title = u'Number of {0} nodes'.format(self.service_label)
         planned_list, current_list = self.units_planned.list, self.units_current[py_juju.STARTED].list
         chart.add(u'{0} planned'.format(planned_list[-1] if len(planned_list) > 0 else 0), planned_list)
         chart.add(u'{0} current'.format(current_list[-1] if len(current_list) > 0 else 0), current_list)
@@ -202,7 +207,7 @@ class ServiceStatistics(PickleableObject):
             lines[status] = (number, current_list)
         # , range=(0, total)
         chart = pygal.StackedLine(fill=True, width=width, height=height, show_dots=False, no_data_text=u'No task')
-        chart.title = u'Number of {0} {1} tasks by status'.format(self.environment_label, self.service_label)
+        chart.title = u'Scheduling of {0} tasks on {1}'.format(self.service_label, self.environment_label)
 
         for status in self.tasks_status:
             chart.add(u'{0} {1}'.format(lines[status][0], status), lines[status][1])

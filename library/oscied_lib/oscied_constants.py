@@ -24,7 +24,8 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-ENVIRONMENT_TO_LABEL = {u'amazon': u'Amazon EC2', u'maas': u'Private Cluster'}
+ENVIRONMENT_TO_LABEL = {u'amazon': u'Public Cloud', u'maas': u'Private Cluster'}
+ENVIRONMENT_TO_TYPE  = {u'amazon': u'public', u'maas': u'private'}
 SERVICE_TO_LABEL     = {u'oscied-transform': u'encoding',        u'oscied-publisher': u'distribution'}
 SERVICE_TO_UNITS_API = {u'oscied-transform': u'transform_units', u'oscied-publisher': u'publisher_units'}
 SERVICE_TO_TASKS_API = {u'oscied-transform': u'transform_tasks', u'oscied-publisher': u'publisher_tasks'}
