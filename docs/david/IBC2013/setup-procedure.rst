@@ -1,5 +1,5 @@
-Installation procedure of OSCIED for IBC 2013
-*********************************************
+Installation procedure of OSCIED for IBC 2013 (!! DRAFT !!)
+************************************************************
 
 Setup of OSCIED the physical setup
 ==================================
