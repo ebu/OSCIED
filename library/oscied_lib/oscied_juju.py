@@ -242,7 +242,7 @@ class ScalingThread(OsciedEnvironmentThread):
                         print(u'[{0}] Nothing to do !'.format(self.name))
                     # Recover faulty units
                     # FIXME only once and then destroy and warn admin by mail ...
-                    for number, unit_dict in units:
+                    for number, unit_dict in units.items():
                         if unit_dict.get(u'agent-state') in ERROR_STATES:
                             unit = u'{0}/{1}'.format(service, number)
                             juju_do(u'resolved', environment=env.name, options=[u'--retry', unit], fail=False)
