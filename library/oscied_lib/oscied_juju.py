@@ -171,6 +171,7 @@ class ServiceStatistics(PickleableObject):
             chart.x_labels_major_count = 3
             chart.x_label_rotation = 0
             chart.show_minor_x_labels = False
+        chart.label_font_size = chart.major_label_font_size = 12
         chart.explicit_size = True
         chart.order_min = 0
         chart.truncate_label = 20
@@ -319,32 +320,42 @@ class TasksThread(OsciedEnvironmentThread):
             u'queue': u'transform_private', u'metadata': metadata
         })
 
-    @staticmethod
-    def transform(api_client, medias, profiles, matrix, maximum, output_counter):
-        u"""Transcode source media assets with chosen profiles limiting amount of running tasks."""
-        pending = OsciedDBTask.PENDING_STATUS
-        output_count = sum(1 for t in api_client.transform_tasks.list(head=True) if t.status in pending)
-        counter = maximum - output_count
-        # FIXME I do not why but $in operator does not work !
-        # api_client.transform_tasks.count(spec={'status': {'$in': OsciedDBTask.WORK_IN_PROGRESS_STATUS}})
+    def transform(self, api_client, medias, profiles, cleanup_progress_time=20):
+        u"""Transcode source media assets with chosen profiles limiting amount of pending tasks."""
+        medias = api_client.medias.list(head=True, spec={'status': {'$ne': Media.DELETED}})
+        profiles = api_client.transform_profiles.list()
+        tasks = api_client.transform_tasks.list(head=True)
+        new_time = time.time()
+        counter = (self.environment.transform_max_pending_tasks -
+                   sum(1 for task in tasks if task.status in OsciedDBTask.PENDING_STATUS))
         if counter <= 0:
-            print(u'No need to create any media asset, already processing {0} of them.'.format(output_count))
+            print(u'No need to create any media asset, already {0} pending.'.format(self.output_count))
         else:
             s = u's' if counter > 1 else u''
             print(u'Launch {0} transcoding task{1} to create media assets.'.format(counter, s))
             for i in range(counter):
-                media_title, profile_title = random.choice(matrix)
+                media_title, profile_title = random.choice(self.environment.transform_matrix)
                 media = TasksThread.get_media_or_raise(medias, media_title)
                 profile = TasksThread.get_profile_or_raise(profiles, profile_title)
                 TasksThread.launch_transform(api_client, media, profile,
-                                             u'Output {0}'.format(output_counter),
-                                             u'_output_{0}'.format(output_counter))
-                output_counter += 1
-        return output_counter
+                                             u'Output {0}'.format(self.output_counter),
+                                             u'_output_{0}'.format(self.output_counter))
+                self.output_counter += 1
+        # Cleanup transformation tasks
+        # if cleanup_progress_time and new_time - self.progress_tasks[0] > cleanup_progress_time:
+        #     progress_tasks = [task in tasks if task.status == OsciedDBTask.PROGRESS]
+        #     for task in progress_tasks[1]:
+        #         try:
+        #             prev_task = next(t for t in self.progress_tasks if t._id == task._id)
+        #             if task.statistic.get('eta_time') == prev_task.statistic.get('eta_time'):
+        #                 print(u'PROGRESS task stuck', task.statistic.get('eta_time'))
+        #         except StopIteration:
+        #             pass
+        #     self.progress_tasks = (new_time, progress_tasks)
 
-    @staticmethod
-    def cleanup_media_assets(api_client, maximum):
-        u"""Ensure ``maximum`` output media assets in shared storage by deleting the oldest."""
+    def cleanup_media_assets(api_client):
+        u"""Limit output media assets in shared storage by deleting the oldest."""
+        maximum = self.environment.max_output_media_assets
         medias = api_client.medias.list(head=True, sort=[(u'metadata.add_date', 1)])
         output_medias = [m for m in medias if m.status == Media.READY and m.parent_id]
         counter = len(output_medias) - maximum
@@ -361,23 +372,17 @@ class TasksThread(OsciedEnvironmentThread):
                 del api_client.medias[media._id]
 
     def run(self):
-        output_counter = 0
+        self.output_counter = 0
+        self.progress_tasks = (time.time(), [])
         while True:
             # Get current time to retrieve state
-            env, now, now_string = self.environment, datetime_now(format=None), datetime_now()
+            now, now_string = datetime_now(format=None), datetime_now()
             try:
-                env.auto = True  # Really better like that ;-)
+                self.environment.auto = True  # Really better like that ;-)
                 api_client = env.api_client
                 api_client.auth = env.daemons_auth
-
-                # Get all media assets and detect source media assets (not resulting of a transformation task)
-                medias = api_client.medias.list(head=True, spec={'status': {'$ne': Media.DELETED}})
-                profiles = api_client.transform_profiles.list()
-
-                output_counter = TasksThread.transform(api_client, medias, profiles, env.transform_matrix,
-                                                       env.transform_max_pending_tasks, output_counter)
-
-                TasksThread.cleanup_media_assets(api_client, env.max_output_media_assets)
+                self.transform(api_client, medias, profiles)
+                self.cleanup_media_assets(api_client)
 
             except (ConnectionError, Timeout) as e:
                 # FIXME do something here ...
