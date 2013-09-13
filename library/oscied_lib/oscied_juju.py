@@ -44,7 +44,7 @@ class OsciedEnvironment(Environment):
     # FIXME an helper to update config passwords (generate) -> self.config
     def __init__(self, name, events, statistics, charts_path, api_unit=u'oscied-orchestra/0', enable_units_api=False,
                  enable_units_status=True, enable_tasks_status=True, daemons_auth=None,
-                 transform_matrix=None, transform_max_wip_tasks=10, max_output_media_assets=15, **kwargs):
+                 transform_matrix=None, transform_max_pending_tasks=5, max_output_media_assets=15, **kwargs):
         super(OsciedEnvironment, self).__init__(name, **kwargs)
         self.events = events
         self.statistics = statistics
@@ -55,7 +55,7 @@ class OsciedEnvironment(Environment):
         self.enable_tasks_status = enable_tasks_status
         self.daemons_auth = daemons_auth
         self.transform_matrix = transform_matrix
-        self.transform_max_wip_tasks = transform_max_wip_tasks
+        self.transform_max_pending_tasks = transform_max_pending_tasks
         self.max_output_media_assets = max_output_media_assets
         self._api_client = self._statistics_thread = self._scaling_thread = self._tasks_thread = None
 
@@ -119,7 +119,7 @@ class ServiceStatistics(PickleableObject):
         self.time = time or deque(maxlen=maxlen)
         self.units_planned = units_planned or pygal_deque(maxlen=maxlen)
         self.units_current = units_current or {state: pygal_deque(maxlen=maxlen) for state in py_juju.ALL_STATES}
-        self.tasks_current = tasks_current or {status: deque(maxlen=maxlen) for status in self.tasks_status}
+        self.tasks_current = tasks_current or {status: pygal_deque(maxlen=maxlen) for status in self.tasks_status}
         self.unknown_states = defaultdict(int)
 
     @property
@@ -136,7 +136,7 @@ class ServiceStatistics(PickleableObject):
 
     @property
     def tasks_status(self):
-        return (OsciedDBTask.PENDING, OsciedDBTask.PROGRESS) # OsciedDBTask.SUCCESS, 
+        return (OsciedDBTask.PROGRESS,) # OsciedDBTask.PENDING, OsciedDBTask.SUCCESS, 
 
     def update(self, now_string, planned, units, tasks):
         self.units_planned.append(planned)
@@ -200,12 +200,12 @@ class ServiceStatistics(PickleableObject):
     def generate_tasks_line_chart(self, charts_path, width=1200, height=300):
         total, lines = 0, {}
         for status in self.tasks_status:
-            current_list = list(self.tasks_current[status])
+            current_list = self.tasks_current[status].list
             number = current_list[-1] if len(current_list) > 0 else 0
             total += number
             lines[status] = (number, current_list)
         # , range=(0, total)
-        chart = pygal.StackedLine(fill=True, width=width, height=height, show_dots=False, no_data_text=u'No task')
+        chart = pygal.Line(width=width, height=height, show_dots=True, no_data_text=u'No task')
         chart.title = u'Scheduling of {0} tasks on {1}'.format(self.service_label, self.environment_label)
 
         for status in self.tasks_status:
@@ -316,8 +316,8 @@ class TasksThread(OsciedEnvironmentThread):
     @staticmethod
     def transform(api_client, medias, profiles, matrix, maximum, output_counter):
         u"""Transcode source media assets with chosen profiles limiting amount of running tasks."""
-        wip = OsciedDBTask.WORK_IN_PROGRESS_STATUS
-        output_count = sum(1 for t in api_client.transform_tasks.list(head=True) if t.status in wip)
+        pending = OsciedDBTask.PENDING_STATUS
+        output_count = sum(1 for t in api_client.transform_tasks.list(head=True) if t.status in pending)
         counter = maximum - output_count
         # FIXME I do not why but $in operator does not work !
         # api_client.transform_tasks.count(spec={'status': {'$in': OsciedDBTask.WORK_IN_PROGRESS_STATUS}})
@@ -369,7 +369,7 @@ class TasksThread(OsciedEnvironmentThread):
                 profiles = api_client.transform_profiles.list()
 
                 output_counter = TasksThread.transform(api_client, medias, profiles, env.transform_matrix,
-                                                       env.transform_max_wip_tasks, output_counter)
+                                                       env.transform_max_pending_tasks, output_counter)
 
                 TasksThread.cleanup_media_assets(api_client, env.max_output_media_assets)
 

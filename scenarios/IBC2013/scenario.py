@@ -56,7 +56,6 @@ class IBC2013(DeploymentScenario):
     TODO
 
     """
-
     def get_parser(self, statistics=False, scaling=False, tasks=False, **kwargs):
         HELP_I = u'Toggle charts / statistics threads.'
         HELP_S = u'Toggle pre-scheduled scaling threads.'

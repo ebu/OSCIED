@@ -23,7 +23,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import os, re, select, shlex, time
+import os, re, select, shlex, time, uuid
 from celery import current_task
 from celery.decorators import task
 from codecs import open
@@ -212,7 +212,7 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
                 raise ValueError(to_bytes(u'Unable to estimate # frames of input media asset'))
 
             # Create DashCast configuration file and subprocess
-            dashcast_conf = u'dashcast_{0}.conf'.format(request.id)
+            dashcast_conf = u'dashcast_{0}.conf'.format(uuid.uuid4())
             with open(dashcast_conf, u'w', u'utf-8') as f:
                 f.write(profile.dash_config)
             cmd = u'DashCast -conf {0} -av "{1}" {2} -out "{3}" -mpd "{4}"'.format(

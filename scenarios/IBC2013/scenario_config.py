@@ -84,5 +84,5 @@ for service in (u'oscied-transform', u'oscied-publisher'):
 
 TRANSFORM_MATRIX = ((u'CHSRF-Lausanne_Mens_200m-50368e4c43ca3', u'Tablet 480p/25'),
                     (u'EBU-2013_668629-dv25-1',                 u'Tablet DASH'),)
-TRANSFORM_MAX_WIP_TASKS = 10
+TRANSFORM_MAX_PENDING_TASKS = 5
 MAX_OUTPUT_MEDIA_ASSETS = 15
