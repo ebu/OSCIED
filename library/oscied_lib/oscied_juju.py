@@ -23,7 +23,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import pygal, random, shutil, threading, time
+import logging, pygal, random, shutil, threading, time
 import pyutils.py_juju as py_juju
 from os.path import join, splitext
 from collections import defaultdict, deque
@@ -34,6 +34,7 @@ from oscied_constants import (ENVIRONMENT_TO_LABEL, ENVIRONMENT_TO_TYPE, SERVICE
                               SERVICE_TO_TASKS_API)
 from oscied_models import Media, OsciedDBTask
 from pyutils.py_collections import pygal_deque
+from pyutils.py_console import confirm
 from pyutils.py_datetime import datetime_now
 from pyutils.py_juju import Environment, ERROR_STATES, juju_do
 from pyutils.py_serialization import PickleableObject
@@ -335,12 +336,11 @@ class TasksThread(OsciedEnvironmentThread):
             u'queue': u'transform_private', u'metadata': metadata
         })
 
-    def transform(self, api_client, cleanup_progress_time=20):
+    def transform(self, api_client):
         u"""Transcode source media assets with chosen profiles limiting amount of pending tasks."""
         medias = api_client.medias.list(head=True, spec={'status': {'$ne': Media.DELETED}})
         profiles = api_client.transform_profiles.list()
         tasks = api_client.transform_tasks.list(head=True)
-        new_time = time.time()
         counter = (self.environment.transform_max_pending_tasks -
                    sum(1 for task in tasks if task.status in OsciedDBTask.PENDING_STATUS))
         if counter <= 0:
@@ -356,17 +356,29 @@ class TasksThread(OsciedEnvironmentThread):
                                              u'Output {0}'.format(self.output_counter),
                                              u'_output_{0}'.format(self.output_counter))
                 self.output_counter += 1
-        # Cleanup transformation tasks
-        # if cleanup_progress_time and new_time - self.progress_tasks[0] > cleanup_progress_time:
-        #     progress_tasks = [task in tasks if task.status == OsciedDBTask.PROGRESS]
-        #     for task in progress_tasks[1]:
-        #         try:
-        #             prev_task = next(t for t in self.progress_tasks if t._id == task._id)
-        #             if task.statistic.get('eta_time') == prev_task.statistic.get('eta_time'):
-        #                 print(u'PROGRESS task stuck', task.statistic.get('eta_time'))
-        #         except StopIteration:
-        #             pass
-        #     self.progress_tasks = (new_time, progress_tasks)
+
+    def cleanup_transform_tasks(self, api_client, auto=False, cleanup_progress_time=20):
+        u"""Cleanup transformation tasks that stuck in progress status without updating the eta_time."""
+        tasks, new_time = api_client.transform_tasks.list(head=True), time.time()
+        progress_tasks = [t for t in tasks if t.status == OsciedDBTask.PROGRESS]
+        delta_time = new_time - self.progress_tasks[0]
+        if cleanup_progress_time and delta_time > cleanup_progress_time:
+            for task in progress_tasks:
+                try:
+                    prev_task = next(t for t in self.progress_tasks[1] if t._id == task._id)
+                    prev_eta_time = prev_task.statistic.get('eta_time')
+                    eta_time = task.statistic.get('eta_time')
+                    logging.debug(u'PROGRESS task {0} previous eta_time {1}, current {2}'.format(
+                                 task._id, prev_eta_time, eta_time))
+                    if eta_time == prev_eta_time:
+                        logging.warning(u"PROGRESS task {0} hasn't updated is eta_time for at least {1} seconds.".
+                                        format(task._id, delta_time))
+                        logging.info(task.__dict__)
+                        if auto or confirm(u'Revoke the task now ?'):
+                            del api_client.transform_tasks[task._id]
+                except StopIteration:
+                    pass
+        self.progress_tasks = (new_time, progress_tasks)
 
     def cleanup_media_assets(self, api_client):
         u"""Limit output media assets in shared storage by deleting the oldest."""
@@ -397,6 +409,7 @@ class TasksThread(OsciedEnvironmentThread):
                 api_client = self.environment.api_client
                 api_client.auth = self.environment.daemons_auth
                 self.transform(api_client)
+                self.cleanup_transform_tasks(api_client, auto=True, cleanup_progress_time=60)
                 self.cleanup_media_assets(api_client)
 
             except (ConnectionError, Timeout) as e:
