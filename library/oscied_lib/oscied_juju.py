@@ -206,7 +206,7 @@ class ServiceStatistics(PickleableObject):
             chart.add(u'{0} {1}'.format(units_number, states[0]), units_number)
         return self._write_chart(chart, charts_path, u'pie_units', add_x_labels=False)
 
-    def generate_units_line_chart(self, charts_path, width=700, height=300):
+    def generate_units_line_chart(self, charts_path, width=1900, height=300):
         chart = pygal.Line(width=width, height=height, show_dots=True, no_data_text=u'No unit')
         chart.title = u'Number of {0} nodes'.format(self.service_label)
         planned_list, current_list = self.units_planned.list, self.units_current[py_juju.STARTED].list
@@ -306,7 +306,7 @@ class StatisticsThread(OsciedEnvironmentThread):
 
 
 class TasksThread(OsciedEnvironmentThread):
-    u"""Drives a deployed OSCIED setup to transcode, publish and cleanup media assets."""
+    u"""Drives a deployed OSCIED setup to transcode, publish and cleanup media assets for demo purposes."""
 
     @staticmethod
     def get_media_or_raise(medias, media_title):
