@@ -42,7 +42,7 @@ from library.oscied_lib.pyutils.py_unicode import configure_unicode
 
 from scenario_config import (
     CONFIG_AMAZ, EVENTS_AMAZ, STATS_AMAZ, CONFIG_MAAS, EVENTS_MAAS, STATS_MAAS, CHARTS_PATH, SCENARIO_PATH,
-    ENABLE_UNITS_API, TRANSFORM_MATRIX, TRANSFORM_MAX_WIP_TASKS, MAX_OUTPUT_MEDIA_ASSETS
+    ENABLE_UNITS_API, TRANSFORM_MATRIX, TRANSFORM_MAX_PENDING_TASKS, MAX_OUTPUT_MEDIA_ASSETS
 )
 
 
@@ -133,7 +133,7 @@ class IBC2013(DeploymentScenario):
         for environment in self.environments:
             environment.enable_units_api = ENABLE_UNITS_API
             environment.transform_matrix = TRANSFORM_MATRIX
-            environment.transform_max_wip_tasks = TRANSFORM_MAX_WIP_TASKS
+            environment.transform_max_pending_tasks = TRANSFORM_MAX_PENDING_TASKS
             environment.max_output_media_assets = MAX_OUTPUT_MEDIA_ASSETS
             if environment.name == u'maas':  # Cheat code
                 environment.enable_units_status = False
