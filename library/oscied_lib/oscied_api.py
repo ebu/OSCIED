@@ -229,9 +229,14 @@ class OrchestraAPIClient(object):
         host = u'ubuntu@{0}'.format(self.api_url.split(u':')[0])
 
         cfg, get = self.api_local_config, self.get_unit_local_config
-        p = self.storage_path       = self.storage_path       or get(service, number, cfg, option=u'storage_path')
-        a = self.storage_address    = self.storage_address    or get(service, number, cfg, option=u'storage_address')
-        m = self.storage_mountpoint = self.storage_mountpoint or get(service, number, cfg, option=u'storage_mountpoint')
+        if self.environment == u'maas':
+            p = self.storage_path = u'/mnt/storage'
+            a = self.storage_address = u'192.168.0.9'
+            m = self.storage_mountpoint = u'medias_volume_0'
+        else:
+            p = self.storage_path       = self.storage_path       or get(service, number, cfg, option=u'storage_path')
+            a = self.storage_address    = self.storage_address    or get(service, number, cfg, option=u'storage_address')
+            m = self.storage_mountpoint = self.storage_mountpoint or get(service, number, cfg, option=u'storage_mountpoint')
         bkp_path = os.path.join(p, u'uploads_bkp/')
         dst_path = os.path.join(p, u'uploads/')
 
@@ -251,7 +256,10 @@ class OrchestraAPIClient(object):
         host = u'ubuntu@{0}'.format(self.api_url.split(u':')[0])
 
         cfg, get = self.api_local_config, self.get_unit_local_config
-        p = self.storage_path = self.storage_path or get(service, number, cfg, option=u'storage_path')
+        if self.environment == u'maas':
+            p = self.storage_path = u'/mnt/storage'
+        else:
+            p = self.storage_path = self.storage_path or get(service, number, cfg, option=u'storage_path')
         medias_path = os.path.join(p, u'medias/*')
 
         ssh(host, id=self.id_rsa, remote_cmd=u'sudo rm -rf {0}'.format(medias_path))

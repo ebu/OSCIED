@@ -59,6 +59,21 @@ class OsciedEnvironment(Environment):
         self.max_output_media_assets = max_output_media_assets
         self._api_client = self._statistics_thread = self._scaling_thread = self._tasks_thread = None
 
+    def get_service_config(self, service, **kwargs):
+        if self.name == u'maas':
+            if service == u'oscied-orchestra':
+                return {u'settings': {u'root_secret': {u'value': u'CBIj67T514SEZZiP'}}}
+            raise NotImplementedError('Thing not implemented')
+        return super(OsciedEnvironment, self).get_service_config(service, **kwargs)
+
+    def get_unit(self, service, number):
+        if self.name == u'maas':
+            unit_name = u'{0}/{1}'.format(service, number)
+            if unit_name == u'oscied-orchestra/0':
+                return {u'public-address': u'192.168.0.5'}
+            raise NotImplementedError('Thing not implemented')
+        return super(OsciedEnvironment, self).get_unit(service, number)
+
     @property
     def api_client(self):
         if not self._api_client:
@@ -320,7 +335,7 @@ class TasksThread(OsciedEnvironmentThread):
             u'queue': u'transform_private', u'metadata': metadata
         })
 
-    def transform(self, api_client, medias, profiles, cleanup_progress_time=20):
+    def transform(self, api_client, cleanup_progress_time=20):
         u"""Transcode source media assets with chosen profiles limiting amount of pending tasks."""
         medias = api_client.medias.list(head=True, spec={'status': {'$ne': Media.DELETED}})
         profiles = api_client.transform_profiles.list()
@@ -329,7 +344,7 @@ class TasksThread(OsciedEnvironmentThread):
         counter = (self.environment.transform_max_pending_tasks -
                    sum(1 for task in tasks if task.status in OsciedDBTask.PENDING_STATUS))
         if counter <= 0:
-            print(u'No need to create any media asset, already {0} pending.'.format(self.output_count))
+            print(u'No need to create any media asset, already {0} pending.'.format(self.output_counter))
         else:
             s = u's' if counter > 1 else u''
             print(u'Launch {0} transcoding task{1} to create media assets.'.format(counter, s))
@@ -353,7 +368,7 @@ class TasksThread(OsciedEnvironmentThread):
         #             pass
         #     self.progress_tasks = (new_time, progress_tasks)
 
-    def cleanup_media_assets(api_client):
+    def cleanup_media_assets(self, api_client):
         u"""Limit output media assets in shared storage by deleting the oldest."""
         maximum = self.environment.max_output_media_assets
         medias = api_client.medias.list(head=True, sort=[(u'metadata.add_date', 1)])
@@ -379,9 +394,9 @@ class TasksThread(OsciedEnvironmentThread):
             now, now_string = datetime_now(format=None), datetime_now()
             try:
                 self.environment.auto = True  # Really better like that ;-)
-                api_client = env.api_client
-                api_client.auth = env.daemons_auth
-                self.transform(api_client, medias, profiles)
+                api_client = self.environment.api_client
+                api_client.auth = self.environment.daemons_auth
+                self.transform(api_client)
                 self.cleanup_media_assets(api_client)
 
             except (ConnectionError, Timeout) as e:

@@ -70,11 +70,15 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
 
     @property
     def transform_queues(self):
-        return (u'transform_private', u'transform_amazon',)
+        tunits = (u'k7cex', u'7t44d', u'xg7xd', u'tjr84')
+        return tuple([u'transform_private'] + [u'transform_{0}.master'.format(t) for t in tunits])
+        #return (u'transform_private', u'transform_amazon',)
 
     @property
     def publisher_queues(self):
-        return (u'publisher_private', u'publisher_amazon',)
+        punits = (u'xg7xd', u'tjr84')
+        return tuple([u'publisher_private'] + [u'publisher_{0}.master'.format(t) for t in punits])
+        #return (u'publisher_private', u'publisher_amazon',)
 
     @property
     def orchestra_service(self):
