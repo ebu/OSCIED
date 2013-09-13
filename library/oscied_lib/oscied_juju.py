@@ -35,7 +35,7 @@ from oscied_constants import (ENVIRONMENT_TO_LABEL, ENVIRONMENT_TO_TYPE, SERVICE
 from oscied_models import Media, OsciedDBTask
 from pyutils.py_collections import pygal_deque
 from pyutils.py_datetime import datetime_now
-from pyutils.py_juju import Environment
+from pyutils.py_juju import Environment, ERROR_STATES, juju_do
 from pyutils.py_serialization import PickleableObject
 
 
@@ -240,6 +240,12 @@ class ScalingThread(OsciedEnvironmentThread):
                         env.cleanup_machines()  # Safer way to terminate machines !
                     else:
                         print(u'[{0}] Nothing to do !'.format(self.name))
+                    # Recover faulty units
+                    # FIXME only once and then destroy and warn admin by mail ...
+                    for number, unit_dict in units:
+                        if unit_dict.get(u'agent-state') in ERROR_STATES:
+                            unit = u'{0}/{1}'.format(service, number)
+                            juju_do(u'resolved', environment=env.name, options=[u'--retry', unit], fail=False)
             except (ConnectionError, Timeout) as e:
                 # FIXME do something here ...
                 print(u'[{0}] WARNING! Communication error, details: {1}.'.format(self.name, e))
