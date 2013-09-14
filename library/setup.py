@@ -69,7 +69,7 @@ Programming Language :: Python :: 3.3
 """
 
 setup(name=u'oscied-lib',
-      version=u'2.19.20',
+      version=u'2.29.40',
       packages=['oscied_lib'],
       description=u'Library of EBU/UER OSCIED Project',
       long_description=open(os.path.join(os.path.dirname(__file__), u'README.rst'), u'r', encoding=u'utf-8').read(),
