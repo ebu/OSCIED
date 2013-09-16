@@ -95,6 +95,7 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
             self.info(u'Install GPAC/DashCast from debian package {0}'.format(self.config.gpac_origin))
             self.cmd(u'dpkg -i {0}'.format(self.config.gpac_origin), fail=False)
             self.cmd(u'apt-get -y -f install')
+            self.cmd(u'dpkg -i {0}'.format(self.config.gpac_origin), fail=False)  # Reinstall package if removed !
         else:
             self.info(u'Install GPAC/DashCast')
             self.cmd(u'apt-get -y install gpac')
