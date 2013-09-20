@@ -3,6 +3,8 @@ OSCIED
 
 Open Source Cloud Infrastructure for Encoding and Distribution
 
+.. tip:: Do not hesitate to read the `wiki <https://github.com/ebu/OSCIED/wiki>`_ of this project.
+
 Paths
 -----
 
