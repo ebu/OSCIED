@@ -5,6 +5,7 @@ import socket, struct
 from datetime import datetime, timedelta
 from flask import Flask, jsonify, request, send_from_directory, make_response, abort, send_file
 from flask.views import View
+from kitchen.text.converters import to_bytes
 from werkzeug.exceptions import HTTPException
 from library.oscied_lib.pyutils.py_flask import json_response
 
@@ -81,15 +82,12 @@ class MetaView(View):
         response_obj[u'template_tag'] = (u'' if self.action.pi_api_template == u'' else
                                          md5Checksum(u'templates/{0}'.format(self.action.pi_api_template)))
 
-        for attribute in (
-            # User restriction
-            u'pi_api_only_logged_user', u'pi_api_only_member_user', u'pi_api_only_admin_user',
-            # Cache information
-            u'pi_api_cache_time', u'pi_api_cache_by_user',
-            # Only json
-            u'pi_api_user_info', u'pi_api_json_only'):
-            if hasattr(self.action, attribute):
-                response_obj[attribute] = getattr(self.action, attribute)
+        for attribute in (u'only_logged_user', u'only_member_user', u'only_admin_user',
+                          u'only_orga_member_user', u'only_orga_admin_user',  # User restrictions
+                          u'cache_time', u'cache_by_user',                    # Cache information
+                          u'user_info', u'json_only'):                        # Requested user infos + JSON-only
+            if hasattr(self.action, u'pi_api_' + attribute):
+                response_obj[attribute] = getattr(self.action, u'pi_api_' + attribute)
 
         # Add the cache headers and return final response
         response = make_response(jsonify(response_obj))
@@ -154,15 +152,15 @@ for act in dir(actions):
 
         # Meta
         app.add_url_rule(u'{0}meta{1}'.format(PI_BASE_URL, obj.pi_api_route),
-                         view_func=MetaView.as_view(u'meta_{0}'.format(act), action=obj))
+                         view_func=MetaView.as_view(to_bytes(u'meta_{0}'.format(act)), action=obj))
 
         # Template
         app.add_url_rule(u'{0}template{1}'.format(PI_BASE_URL, obj.pi_api_route),
-                         view_func=TemplateView.as_view(u'template_{0}'.format(act), action=obj))
+                         view_func=TemplateView.as_view(to_bytes(u'template_{0}'.format(act)), action=obj))
 
         # Action
         app.add_url_rule(u'{0}action{1}'.format(PI_BASE_URL, obj.pi_api_route),
-                         view_func=ActionView.as_view(u'action_{0}'.format(act), action=obj),
+                         view_func=ActionView.as_view(to_bytes(u'action_{0}'.format(act)), action=obj),
                          methods=obj.pi_api_methods)
 
 
@@ -206,4 +204,4 @@ def error_501(value=None):
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
-    actions.main(flask_app=app, mock=MOCK)
+    actions.main(flask_app=app, is_mock=MOCK)

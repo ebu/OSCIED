@@ -68,7 +68,7 @@ def main(flask_app, is_mock):
             logging.warning(u'RabbitMQ is not set in configuration ... exiting')
             sys.exit(0)
 
-        orchestra = get_test_api_core(u'../../scenarios/current/') if is_mock else OrchestraAPICore(config)
+        orchestra = get_test_api_core() if is_mock else OrchestraAPICore(config)
         logging.info(u'Start REST API')
         #app.config['PROPAGATE_EXCEPTIONS'] = True
         flask_app.run(host=u'0.0.0.0', debug=orchestra.config.verbose)

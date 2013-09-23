@@ -41,6 +41,21 @@ def only_admin_user():
         return function
     return real_decorator
 
+def only_orga_member_user():
+    u"""Decorator to specify the action must only be called by users members of the organization"""
+    def real_decorator(function):
+        function.pi_api_only_orga_member_user = True
+        return function
+    return real_decorator
+
+
+def only_orga_admin_user():
+    u"""Decorator to specify the action must only be called by admin users of the organization"""
+    def real_decorator(function):
+        function.pi_api_only_orga_admin_user = True
+        return function
+    return real_decorator
+
 
 def cache(time=0, byUser=None):
     u"""Decorator to specify the number of seconds the result should be cached, and if the cache can be shared between
