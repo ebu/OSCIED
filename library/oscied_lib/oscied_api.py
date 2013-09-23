@@ -511,7 +511,7 @@ class OrchestraAPICore(object):
         self.only_standalone()
         if fields is not None:
             fields[u'secret'] = 0  # Disable access to users secret !
-        users, sort = [], sort or [('last_name',  1), ('first_name', 1)]  # Sort by default, this is nicer like that !
+        users, sort = [], sort or [(u'last_name', 1), (u'first_name', 1)]  # Sort by default, this is nicer like that !
         for entity in list(self._db.users.find(spec=spec, fields=fields, skip=int(skip), limit=int(limit), sort=sort,
                                                **self.db_find_options)):
             user = dict2object(User, entity, inspect_constructor=True)
