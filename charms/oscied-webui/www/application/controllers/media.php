@@ -129,7 +129,7 @@ class Media extends MY_Controller
          $files = $this->tmp_files_model->get_files($form_id);
          $file = $files[0];
          // Add the media
-         $new_dir = $this->config->item('uploads_path');
+         $new_dir = $this->config->item('uploads_path').'/';
          $file['dir'] = $new_dir;
          rename($old_dir.$file['name'], $new_dir.$file['name']);
          // Remove files on the "tmp_files" table
@@ -202,7 +202,7 @@ class Media extends MY_Controller
       header('Content-type: application/json');
       echo json_encode($info);
    }
-   
+
    /**
     * TODO : comments
     */

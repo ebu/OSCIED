@@ -1,36 +1,56 @@
 options:
   verbose:
     type: string
-    default: "false"
-    description: Set verbose logging.  Can be set to true or false
+    default: "true"
+    description: Toogle verbose logging.
+  cleanup:
+    type: string
+    default: "true"
+    description: |
+        Toggle uninstall step of prerequisities by install hook.
+        Disable this if you planned to merge services into same unit, see ticket #87.
   max_upload_size:
     type: int
     default: 4294967296
-    description: Maximum size for file uploads.  Default value means 4GB
+    description: |
+        Maximum size for file uploads.
+        Default value means 4GB.
   max_execution_time:
     type: int
     default: 180
-    description: Maximum time for php scripts.  Default value means 3 minutes
+    description: |
+        Maximum time for php scripts.
+        Default value means 3 minutes
   max_input_time:
     type: int
     default: 600
-    description: Maximum time for http post.  Default value means 10 minutes
+    description: |
+        Maximum time for http post.
+        Default value means 10 minutes
   mysql_root_password:
     type: string
     default: "root"
-    description: Password of MySQL root user.  Please change it in production
+    description: |
+        Password of MySQL root user.
+        Please change it in production
   mysql_user_password:
     type: string
     default: "webui"
-    description: Password of MySQL webui user.  Please change it in production
+    description: |
+        Password of MySQL webui user.
+        Please change it in production
   api_url:
     type: string
     default: ""
-    description: Orchestrator REST API address.  This option override and disable api relation.
+    description: |
+        Orchestrator REST API address.
+        This option override and disable api relation.
   storage_address:
     type: string
     default: ""
-    description: Shared storage hostname / IP address (see interface mount of nfs charm).  The 'storage' options override and disable storage relation.
+    description: |
+        Shared storage hostname / IP address (see interface mount of nfs charm).
+        The 'storage' options override and disable storage relation.
   storage_nat_address:
     type: string
     default: ""
@@ -38,12 +58,12 @@ options:
   storage_fstype:
     type: string
     default: ""
-    description: Shared storage filesystem type (e.g. nfs)
+    description: Shared storage filesystem type (e.g. nfs).
   storage_mountpoint:
     type: string
     default: ""
-    description: Shared storage mountpoint (e.g. for nfs - /srv/data)
+    description: Shared storage mountpoint (e.g. for nfs - /srv/data).
   storage_options:
     type: string
     default: ""
-    description: Shared storage options (e.g. for nfs - rw,sync,no_subtree_check)
+    description: Shared storage options (e.g. for nfs - rw,sync,no_subtree_check).

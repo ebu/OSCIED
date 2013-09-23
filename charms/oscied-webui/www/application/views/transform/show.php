@@ -1,5 +1,9 @@
 <h1 class="page-header">Transform tasks</h1>
 
+<?php if ($this->user->is_logged()): ?>
+<?= $this->load->view('transform/launch_transform_form'); ?>
+<?php endif; ?>
+
 <div id="transform_tasks">
    <?= $this->load->view('transform/show_tasks'); ?>
 </div>
@@ -19,7 +23,3 @@ $('body').on('click', '.revoke', function () {
    return false;
 });
 </script>
-
-<?php if ($this->user->is_logged()): ?>
-<?= $this->load->view('transform/launch_transform_form'); ?>
-<?php endif; ?>

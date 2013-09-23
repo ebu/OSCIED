@@ -19,11 +19,70 @@
                   <a href="#" class="dropdown-toggle" data-toggle="dropdown">Links <b class="caret"></b></a>
                   <ul class="dropdown-menu">
                      <li><a href="http://tech.ebu.ch/" target="_blank">EBU Technical</a></li>
-                     <li><a href="https://claire-et-david.dyndns.org/prog/OSCIED" target="_blank">OSCIED SVN Repository</a></li>
-                     <li><a href="http://claire-et-david.dyndns.org/OSCIED" target="_blank">OSCIED TRAC Environment</a></li>
-                     <li><a href="https://help.ubuntu.com/community/UbuntuCloudInfrastructure" target="_blank">Ubuntu Cloud Infrastructure</a></li>
-                     <li><a href="https://juju.ubuntu.com/" target="_blank">Juju Cloud Orchestrator</a></li>
-                     <li><a href="http://www.openstack.org/" target="_blank">OpenStack IaaS</a></li>
+                     <li><a href="https://github.com/ebu/OSCIED" target="_blank">OSCIED GitHub Repository</a></li>
+                     <li><a href="https://github.com/davidfischer-ch" target="_blank">David Fischer on GitHub</a></li>
+                     <li><a href="https://github.com/ebu/OSCIED/tree/master/docs/david/master_thesis" target="_blank">David Fischer's Master Thesis</a></li>
+                     <li class="dropdown-submenu">
+                        <a tabindex="-1" href="#">Operational</a>
+                        <ul class="dropdown-menu">
+                           <li><a href="https://help.ubuntu.com/community/UbuntuCloudInfrastructure" target="_blank">Ubuntu Cloud Infrastructure</a></li>
+                           <li><a href="https://juju.ubuntu.com/" target="_blank">Juju Cloud Orchestrator</a></li>
+                           <li><a href="https://maas.ubuntu.com/" target="_blank">MAAS Provisioning</a></li>
+                           <li><a href="http://www.openstack.org/" target="_blank">OpenStack IaaS</a></li>
+                        </ul>
+                     </li>
+                     <li class="dropdown-submenu">
+                        <a tabindex="-1" href="#">Orchestra</a>
+                        <ul class="dropdown-menu">
+                           <li><a href="http://www.celeryproject.org/" target="_blank">Celery Distributed Task Queue</a></li>
+                           <li><a href="http://flask.pocoo.org/" target="_blank">Flask Python Micro Web Framework</a></li>
+                           <li><a href="http://www.gluster.org/" target="_blank">GlusterFS HA Storage</a></li>
+                           <li><a href="https://juju.ubuntu.com/" target="_blank">Juju Cloud Orchestrator</a></li>
+                           <li><a href="http://api.mongodb.org/python/current/" target="_blank">Module for working with MongoDB</a></li>
+                           <li><a href="http://www.mongodb.org/" target="_blank">MongoDB Scalable NoSQL DB</a></li>
+                           <li><a href="http://www.rabbitmq.com/" target="_blank">RabbitMQ Message Queue</a></li>
+                           <li><a href="https://github.com/davidfischer-ch/pyutils" target="_blank">pyutils Toolbox for Python Scripts</a></li>
+                        </ul>
+                     </li>
+                     <li class="dropdown-submenu">
+                        <a tabindex="-1" href="#">Publisher</a>
+                        <ul class="dropdown-menu">
+                           <li><a href="http://httpd.apache.org/" target="_blank">Apache 2 HTTP Server</a></li>
+                           <li><a href="http://www.celeryproject.org/" target="_blank">Celery Distributed Task Queue</a></li>
+                           <li><a href="http://www.gluster.org/" target="_blank">GlusterFS HA Storage</a></li>
+                           <li><a href="http://h264.code-shop.com/trac" target="_blank">H.264 Streaming Moduel</a></li>
+                           <li><a href="https://github.com/davidfischer-ch/pyutils" target="_blank">pyutils Toolbox for Python Scripts</a></li>
+                        </ul>
+                     </li>
+                     <li class="dropdown-submenu">
+                        <a tabindex="-1" href="#">Storage</a>
+                        <ul class="dropdown-menu">
+                           <li><a href="http://www.gluster.org/" target="_blank">GlusterFS HA Storage</a></li>
+                           <li><a href="https://github.com/davidfischer-ch/pyutils" target="_blank">pyutils Toolbox for Python Scripts</a></li>
+                        </ul>
+                     </li>
+                     <li class="dropdown-submenu">
+                        <a tabindex="-1" href="#">Transform</a>
+                        <ul class="dropdown-menu">
+                           <li><a href="http://www.celeryproject.org/" target="_blank">Celery Distributed Task Queue</a></li>
+                           <li><a href="http://www.ffmpeg.org/" target="_blank">FFmpeg Complete Multimedia Framework</a></li>
+                           <li><a href="http://gpac.wp.mines-telecom.fr/dashcast/" target="_blank">GPAC/DashCast MPEG-DASH Encoder</a></li>
+                           <li><a href="http://www.gluster.org/" target="_blank">GlusterFS HA Storage</a></li>
+                           <li><a href="https://github.com/OpenHEVC/openHEVC" target="_blank">openHEVC Light HEVC Decoding Library</a></li>
+                           <li><a href="https://github.com/davidfischer-ch/pyutils" target="_blank">pyutils Toolbox for Python Scripts</a></li>
+                           <li><a href="http://www.videolan.org/developers/x264.html" target="_blank">x264 H.264 Decoder/Encoder</a></li>
+                        </ul>
+                     </li>
+                     <li class="dropdown-submenu">
+                        <a tabindex="-1" href="#">Web UI</a>
+                        <ul class="dropdown-menu">
+                           <li><a href="http://httpd.apache.org/" target="_blank">Apache 2 HTTP Server</a></li>
+                           <li><a href="http://ellislab.com/codeigniter" target="_blank">Code Igniter PHP Web Framework</a></li>
+                           <li><a href="http://www.mysql.fr/" target="_blank">MySQL Database</a></li>
+                           <li><a href="https://github.com/davidfischer-ch/pyutils" target="_blank">pyutils Toolbox for Python Scripts</a></li>
+                           <li><a href="http://getbootstrap.com/" target="_blank">Twitter CSS Bootstrap</a></li>
+                        </ul>
+                     </li>
                   </ul>
                </li>
                <?php if ($page == 'contact'): ?>

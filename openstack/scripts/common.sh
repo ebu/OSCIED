@@ -1,28 +1,27 @@
 #!/usr/bin/env bash
 
-#**************************************************************************************************#
+#**********************************************************************************************************************#
 #              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : CLOUD
 #
-#  Authors   : David Fischer
-#  Contact   : david.fischer.ch@gmail.com / david.fischer@hesge.ch
-#  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
-#  Copyright : 2012-2013 OSCIED Team. All rights reserved.
-#**************************************************************************************************#
+#  Project Manager : Bram Tullemans (tullemans@ebu.ch)
+#  Main Developer  : David Fischer (david.fischer.ch@gmail.com)
+#  Copyright       : Copyright (c) 2012-2013 EBU. All rights reserved.
 #
-# This file is part of EBU/UER OSCIED Project.
+#**********************************************************************************************************************#
 #
-# This project is free software: you can redistribute it and/or modify it under the terms of the
-# GNU General Public License as published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
+# This file is part of EBU Technology & Innovation OSCIED Project.
 #
-# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
-# even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the GNU General Public License for more details.
+# This project is free software: you can redistribute it and/or modify it under the terms of the EUPL v. 1.1 as provided
+# by the European Commission. This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# You should have received a copy of the GNU General Public License along with this project.
-# If not, see <http://www.gnu.org/licenses/>
+# See the European Union Public License for more details.
 #
-# Retrieved from https://github.com/EBU-TI/OSCIED
+# You should have received a copy of the EUPL General Public License along with this project.
+# If not, see he EUPL licence v1.1 is available in 22 languages:
+#     22-07-2013, <https://joinup.ec.europa.eu/software/page/eupl/licence-eupl>
+#
+# Retrieved from https://github.com/ebu/OSCIED
 
 set -o nounset # will exit if an unitialized variable is used
 
@@ -346,7 +345,7 @@ cloudCommonImported()
 }
 fi
 # START OF LOGICIELS UBUNTU UTILS (licencing : LogicielsUbuntu project's licence)
-# Retrieved from https://github.com/EBU-TI/OSCIED
+# Retrieved from https://github.com/ebu/OSCIED
 #   git clone https://github.com/davidfischer-ch/logicielsUbuntu.git
 
 # Prevent importing N times the following (like C++ .h : #ifndef ... #endif)

@@ -1,5 +1,9 @@
 <h1 class="page-header">Publish(er) tasks</h1>
 
+<?php if ($this->user->is_logged()): ?>
+<?= $this->load->view('publisher/launch_publish_form'); ?>
+<?php endif; ?>
+
 <div id="publisher_tasks">
    <?= $this->load->view('publisher/show_tasks'); ?>
 </div>
@@ -19,7 +23,3 @@ $('body').on('click', '.revoke', function () {
    return false;
 });
 </script>
-
-<?php if ($this->user->is_logged()): ?>
-<?= $this->load->view('publisher/launch_publish_form'); ?>
-<?php endif; ?>

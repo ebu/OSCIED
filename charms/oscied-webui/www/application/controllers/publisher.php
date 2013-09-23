@@ -22,7 +22,7 @@ class Publisher extends MY_Controller
             'http_user' => $this->user->mail(), 'http_pass' => $this->user->secret()
          )
       );
-      $response = $this->rest->get('publish/task');
+      $response = $this->rest->get('publisher/task');
       if ($response->status != 200) {
          print_r($response->value);
          exit;
@@ -39,7 +39,7 @@ class Publisher extends MY_Controller
          $data['medias'][$media->_id] = $media->metadata->title.' - '.$media->filename;
       }
       // Get the queues for the dropdown
-      $response = $this->rest->get('publish/queue');
+      $response = $this->rest->get('publisher/queue');
       if ($response->status != 200) {
          print_r($response->value);
          exit;
@@ -69,7 +69,7 @@ class Publisher extends MY_Controller
             'http_user' => $this->user->mail(), 'http_pass' => $this->user->secret()
          )
       );
-      $response = $this->rest->get('publish/task');
+      $response = $this->rest->get('publisher/task');
       if ($response->status != 200) {
          print_r($response->value);
          exit;
@@ -97,7 +97,7 @@ class Publisher extends MY_Controller
             'http_user' => $this->user->mail(), 'http_pass' => $this->user->secret()
          )
       );
-      $response = $this->rest->delete('publish/task/id/'.$id);
+      $response = $this->rest->delete('publisher/task/id/'.$id);
       // Set error or information message
       if ($response->status == 200) {
          $this->session->set_flashdata('infos', $response->value);
@@ -137,10 +137,11 @@ class Publisher extends MY_Controller
          $params = json_encode(
             array(
                'media_id' => $this->input->post('media_id'),
+               'send_email' => 'true',
                'queue' => $this->input->post('queue')
             )
          );
-         $response = $this->rest->post('publish/task', $params, 'json');
+         $response = $this->rest->post('publisher/task', $params, 'json');
          if ($response->status == 200) {
             // Set the flash message
             $this->session->set_flashdata(

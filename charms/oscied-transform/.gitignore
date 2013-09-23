@@ -1,1 +1,3 @@
 dist/
+*.deb
+*.tar.bz2

@@ -1,0 +1,13 @@
+Transformation task is completed.
+
+Here are some informations about the task {_id}:
+  Status: {status}
+  Input media: {media_in.}
+          self._id = _id
+        self.user_id = user_id
+        self.media_in_id = media_in_id
+        self.media_out_id = media_out_id
+        self.profile_id = profile_id
+        self.statistic = statistic
+        self.revoked = revoked
+        self.send_email = send_email

@@ -22,7 +22,7 @@ class Transform extends MY_Controller
             'http_user' => $this->user->mail(), 'http_pass' => $this->user->secret()
          )
       );
-      $response = $this->rest->get('transform/task');
+      $response = $this->rest->get('transform/task?limit=50');
       if ($response->status != 200) {
          print_r($response->value);
          exit;
@@ -79,7 +79,7 @@ class Transform extends MY_Controller
             'http_user' => $this->user->mail(), 'http_pass' => $this->user->secret()
          )
       );
-      $response = $this->rest->get('transform/task');
+      $response = $this->rest->get('transform/task?limit=50');
       if ($response->status != 200) {
          print_r($response->value);
          exit;
@@ -146,6 +146,7 @@ class Transform extends MY_Controller
                'profile_id' => $this->input->post('profile_id'),
                'filename' => $this->input->post('filename'),
                'metadata' => array('title' => $this->input->post('title')),
+               'send_email' => 'true',  # FIXME hardcoded
                'queue' => $this->input->post('queue')
             )
          );
