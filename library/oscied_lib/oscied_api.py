@@ -31,24 +31,30 @@ from celery.task.control import revoke
 #from celery.events.state import state
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from flask import abort
 from jinja2 import Template
 from kitchen.text.converters import to_bytes
 from pymongo.errors import DuplicateKeyError
 from random import randint
 from requests import get, patch, post, delete
+
 import PublisherWorker, TransformWorker
 from oscied_config_test import ORCHESTRA_CONFIG_TEST
 from oscied_models import Media, User, TransformProfile, PublisherTask, TransformTask, ENCODERS_NAMES
 from oscied_util import Callback, Storage
+from plugit_api import PlugItAPI
+
 import pyutils.py_juju as juju
 from pyutils.pyutils import UUID_ZERO
 from pyutils.py_datetime import datetime_now
-from pyutils.py_flask import map_exceptions
+from pyutils.py_flask import json_response, map_exceptions
 from pyutils.py_juju import get_unit_path, juju_do
 from pyutils.py_serialization import dict2object, object2dict, object2json
 from pyutils.py_unicode import csv_reader
 from pyutils.py_subprocess import rsync, ssh
 from pyutils.py_validation import valid_uuid
+
+ABOUT = u"Orchestra : EBU's OSCIED Orchestrator by David Fischer 2012-2013"
 
 
 class OsciedCRUDMapper(object):
@@ -79,7 +85,7 @@ class OsciedCRUDMapper(object):
         return self.api_client.do_request(delete, self.get_url(index))
 
     def __contains__(self, value):
-        if hasattr(value, '_id'):
+        if hasattr(value, u'_id'):
             value = value._id
         try:
             return self.api_client.do_request(get, self.get_url(value))
@@ -286,12 +292,8 @@ class OrchestraAPICore(object):
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Properties >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     @property
-    def is_mock(self):
-        return not self.config.mongo_admin_connection
-
-    @property
     def about(self):
-        return (u"Orchestra : EBU's OSCIED Orchestrator by David Fischer 2012-2013")
+        return ABOUT
 
     @property
     def db_count_keys(self):
@@ -305,6 +307,18 @@ class OrchestraAPICore(object):
     def db_find_options(self):
         return {'timeout': True, 'snapshot': False}  # FIXME E12001 can't sort with $snapshot
 
+    @property
+    def is_mock(self):
+        return not self.config.mongo_admin_connection
+
+    @property
+    def is_standalone(self):
+        return self.config.plugit_api_url is None or not self.config.plugit_api_url.strip()
+
+    @property
+    def plugit_api(self):
+        return None if self.is_standalone else PlugItAPI(self.config.plugit_api_url)
+
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Functions >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     def config_db(self):
@@ -317,6 +331,10 @@ class OrchestraAPICore(object):
             self._db.drop_collection(collection)
         self.config_db()
         logging.info(u"Orchestra database's collections dropped !")
+
+    def only_standalone(self):
+        if not self.is_standalone:
+            raise RuntimeError(to_bytes(u'This method is only available in standalone mode.'))
 
     def send_email(self, to_addresses, subject, text_plain, text_html=None):
         if not self.config.email_server:
@@ -371,9 +389,95 @@ class OrchestraAPICore(object):
                 # FIXME YourFormatter().format(template_file.read(), task)
             self.send_email(task.user.mail, u'OSCIED - {0} task {1} {2}'.format(name, task._id, status), text_plain)
 
+    def ok_200(self, value, include_properties):
+        if self.is_standalone:
+            # FIXME include_properties not yet handled
+            return {u'status': 200, u'value': value}
+        return json_response(200, value=value, include_properties=include_properties)
+
+    # http://publish.luisrei.com/articles/flaskrest.html
+    def requires_auth(self, request, allow_root=False, allow_node=False, allow_any=False, role=None, id=None,
+                      mail=None):
+        """
+        This method implements Orchestra's RESTful API (standalone only) authentication logic. Here is ensured that an
+        access to a method of the API is filtered based on rules (this method's parameters). HTTP user agent must
+        authenticate through HTTP basic access authentication. The username must be user's email address and password
+        must be user's secret. This not apply for system-users like root or node as they do not have any e-mail address.
+
+        .. warning::
+
+            Username and password are passed as plaintext, SSL/TLS is one of the way to improve security although this was
+            not tested during my thesis.
+
+        This method will abort request with HTTP 401 error if HTTP user agent doesn't authenticate.
+
+        :param request: the request itself, credentials are retrieved from request authorization header
+        :param allow_root: if set to `True` root system-user will be allowed
+        :param allow_node: if set to `True` node system-user will be allowed
+        :param allow_any: if set to `True` any authenticated user will be allowed
+        :param role: if set to <name>, any user will "name" role set to `True` will be allowed
+        :param id: if set to <uuid>, any user with _id equal to "uuid" will be allowed
+        :param mail: if set to <mail>, any user with mail equal to "mail" will be allowed
+
+        This method will abort request with HTTP 403 error if none of the following conditions are met.
+
+        Example::
+
+            # Allow any authenticated user
+            @action(u'/my/example/route', methods=[u'GET'])
+            def api_my_example_route():
+                if request.method == u'GET':
+                    auth_user = orchestra.requires_auth(request=request, allow_any=True)
+                    ...
+                    return ok_200(u'my return value', True)
+
+            # Allow root system-user or any user with admin attribute set
+            @action(u'/my/restricted/route', methods=[u'GET'])
+            def api_my_restricted_route():
+                if request.method == u'GET':
+                    auth_user = orchestra.requires_auth(request=request, allow_root=True, allow_role='admin')
+                    ...
+                    return ok_200(u'my return value', True)
+        """
+        if not self.is_standalone:
+            return  # Bypass user authentication & authorization if not in standalone mode.
+        auth = request.authorization
+        if not auth or auth.username is None or auth.password is None:
+            abort(401, u'Authenticate.')  # Testing for None is maybe too much ... Security is like that
+        username = auth.username
+        password = auth.password
+        root = (username == u'root' and password == self.config.root_secret)
+        node = (username == u'node' and password == self.config.node_secret)
+        user = None
+        if not root and not node:
+            user = self.get_user({u'mail': username}, secret=password)
+            username = user.name if user else None
+        if not root and not user and not node:
+            abort(401, u'Authentication Failed.')
+        if root and allow_root:
+            logging.info(u'Allowed authenticated root')
+            return self.root_user
+        if node and allow_node:
+            logging.info(u'Allowed authenticated worker/node')
+            return self.node_user
+        if user and allow_any:
+            logging.info(u'Allowed authenticated user {0}'.format(user.name))
+            return user
+        if role and hasattr(user, role) and getattr(user, role):
+            logging.info(u'Allowed authenticated user {0} with role {1}'.format(user.name, role))
+            return user
+        if id and user._id == id:
+            logging.info(u'Allowed authenticated user {0} with id {1}'.format(user.name, id))
+            return user
+        if mail and user.mail == mail:
+            logging.info(u'Allowed authenticated user {0} with mail {1}'.format(user.name, mail))
+            return user
+        abort(403, username)
+
     # ------------------------------------------------------------------------------------------------------------------
 
     def save_user(self, user, hash_secret):
+        self.only_standalone()
         user.is_valid(True)
         if hash_secret:
             user.hash_secret()
@@ -383,6 +487,7 @@ class OrchestraAPICore(object):
             raise ValueError(to_bytes(u'The email address {0} is already used by another user.'.format(user.mail)))
 
     def get_user(self, spec, fields=None, secret=None):
+        self.only_standalone()
         entity = self._db.users.find_one(spec, fields)
         if not entity:
             return None
@@ -390,6 +495,7 @@ class OrchestraAPICore(object):
         return user if secret is None or user.verify_secret(secret) else None
 
     def delete_user(self, user):
+        self.only_standalone()
         # FIXME issue #16 (https://github.com/ebu/OSCIED/issues/16)
         # entity = self.get_user({'_id': user_id}, {'secret': 0})
         # if not entity:
@@ -402,6 +508,7 @@ class OrchestraAPICore(object):
         self._db.users.remove({u'_id': user._id})
 
     def get_users(self, spec=None, fields=None, skip=0, limit=0, sort=None):
+        self.only_standalone()
         if fields is not None:
             fields[u'secret'] = 0  # Disable access to users secret !
         users, sort = [], sort or [('last_name',  1), ('first_name', 1)]  # Sort by default, this is nicer like that !
@@ -412,6 +519,7 @@ class OrchestraAPICore(object):
         return users
 
     def get_users_count(self, spec=None):
+        self.only_standalone()
         return self._db.users.find(spec, {u'_id': 1}).count()
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -445,6 +553,10 @@ class OrchestraAPICore(object):
         if load_fields:
             media.load_fields(self.get_user({u'_id': media.user_id}, {u'secret': 0}),
                               self.get_media({u'_id': media.parent_id}))
+
+        # Add read path to the media asset
+        media.api_uri = self.config.storage_medias_path(media, generate=False)
+
         return media
 
     def delete_media(self, media):
@@ -947,6 +1059,16 @@ class OrchestraAPICore(object):
 
 # ----------------------------------------------------------------------------------------------------------------------
 
+def get_test_api_core():
+    orchestra = OrchestraAPICore(ORCHESTRA_CONFIG_TEST)
+    init_api(orchestra, u'../../scenarios/current')
+    print(u'There are {0} registered users.'.format(len(orchestra.get_users())))
+    print(u'There are {0} available media assets.'.format(len(orchestra.get_medias())))
+    print(u'There are {0} available transformation profiles.'.format(len(orchestra.get_transform_profiles())))
+    print(u'There are {0} launched transformation tasks.'.format(len(orchestra.get_transform_tasks())))
+    return orchestra
+
+
 def init_api(api_core_or_client, api_init_csv_directory, flush=False, add_users=True, add_profiles=True,
              add_medias=True, add_tasks=True):
 
@@ -1035,9 +1157,4 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False, add_users=
 if __name__ == u'__main__':
     from pyutils.py_unicode import configure_unicode
     configure_unicode()
-    orchestra = OrchestraAPICore(ORCHESTRA_CONFIG_TEST)
-    init_api(orchestra, u'../../scenarios/current')
-    print(u'There are {0} registered users.'.format(len(orchestra.get_users())))
-    print(u'There are {0} available media assets.'.format(len(orchestra.get_medias())))
-    print(u'There are {0} available transformation profiles.'.format(len(orchestra.get_transform_profiles())))
-    print(u'There are {0} launched transformation tasks.'.format(len(orchestra.get_transform_tasks())))
+    get_test_orchestra()

@@ -42,7 +42,7 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
                  charms_release=u'raring', charms_repository=u'charms', email_server=u'', email_tls=False,
                  email_username=u'', email_password=u'', email_address=u'',
                  email_ttask_template=u'templates/ttask_mail.template',
-                 email_ptask_template=u'templates/ptask_mail.template', **kwargs):
+                 email_ptask_template=u'templates/ptask_mail.template', plugit_api_url='',**kwargs):
         super(OrchestraLocalConfig, self).__init__(**kwargs)
         self.api_url = api_url
         self.root_secret = root_secret
@@ -67,6 +67,7 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
         self.email_password = email_password
         self.email_ttask_template = email_ttask_template
         self.email_ptask_template = email_ptask_template
+        self.plugit_api_url = plugit_api_url
 
     @property
     def transform_queues(self):
