@@ -46,7 +46,7 @@ Intended Audience :: Developers
 Intended Audience :: Science/Research
 Intended Audience :: Information Technology
 Intended Audience :: Telecommunications Industry
-License :: OSI Approved :: GNU GPLv3
+License :: OSI Approved :: European Union Public Licence 1.1 (EUPL 1.1)
 Natural Language :: English
 Operating System :: POSIX :: Linux
 Programming Language :: Python
@@ -76,7 +76,7 @@ setup(name=u'oscied-lib',
       author=u'David Fischer',
       author_email=u'david.fischer.ch@gmail.com',
       url=u'https://github.com/ebu/OSCIED',
-      license=u'GNU GPLv3',  # FIXME update license
+      license=u'EUPL 1.1',
       install_requires=[
             u'configobj',    # FIXME version
             u'celery',       # FIXME version
@@ -88,7 +88,7 @@ setup(name=u'oscied-lib',
             #'pyutils',     # installed by setup.sh
             u'requests',     # FIXME version
             u'six'],         # FIXME version
-      #dependency_links=[u'https://github.com/davidfischer-ch/pyutils/tarball/master#egg=pyutils-2.0.1-beta'],
+      #dependency_links=['git+https://github.com/davidfischer-ch/pyutils.git@v4.8.7-beta#egg=pyutils'],
       setup_requires=[u'coverage', u'mock', u'nose'],
       tests_require=[u'coverage', u'mock', u'nose'],
       # Thanks to https://github.com/graingert/django-browserid/commit/46c763f11f76b2f3ba365b164196794a37494f44
