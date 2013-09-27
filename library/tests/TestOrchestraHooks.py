@@ -110,7 +110,3 @@ class TestOrchestraHooks(object):
             call(u'rabbitmqctl add_user node "Alice_in_wonderland"', fail=False),
             call(u'rabbitmqctl add_vhost celery',                    fail=False),
             call(u'rabbitmqctl set_permissions -p celery node ".*" ".*" ".*"', fail=False)])
-
-if __name__ == u'__main__':
-    import nose
-    nose.runmodule(argv=[__file__], exit=False)

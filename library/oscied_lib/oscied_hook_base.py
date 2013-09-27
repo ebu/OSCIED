@@ -27,10 +27,10 @@
 
 import os, pymongo.uri_parser, shutil, time
 from codecs import open
-from kitchen.text.converters import to_bytes
 from pyutils.py_filesystem import try_makedirs
 from pyutils.py_juju import CharmHooks
 from pyutils.py_subprocess import screen_launch, screen_list, screen_kill
+from pyutils.py_unicode import to_bytes
 
 
 class CharmHooks_Storage(CharmHooks):

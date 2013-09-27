@@ -28,7 +28,6 @@ from celery import current_task
 from celery.decorators import task
 from codecs import open
 #from celery.signals import celeryd_after_setup, worker_shutdown
-from kitchen.text.converters import to_bytes
 from subprocess import Popen, PIPE
 from oscied_config import TransformLocalConfig
 from oscied_models import Media, TransformProfile, TransformTask
@@ -38,7 +37,7 @@ from pyutils.py_ffmpeg import get_media_duration, get_media_tracks
 from pyutils.py_filesystem import get_size, recursive_copy, try_makedirs, try_remove
 from pyutils.py_serialization import object2json
 from pyutils.py_subprocess import make_async, read_async
-from pyutils.py_unicode import configure_unicode
+from pyutils.py_unicode import configure_unicode, to_bytes
 
 configure_unicode()
 

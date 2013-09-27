@@ -26,7 +26,6 @@
 
 import os, shutil, socket, string
 from codecs import open
-from kitchen.text.converters import to_bytes
 from random import choice
 from oscied_config import WebuiLocalConfig
 from oscied_config_base import MEDIAS_PATH, UPLOADS_PATH
@@ -34,6 +33,7 @@ from oscied_hook_base import CharmHooks_Storage, CharmHooks_Website
 from pyutils.py_filesystem import chown, first_that_exist, try_makedirs, try_symlink
 from pyutils.py_juju import DEFAULT_OS_ENV
 from pyutils.py_subprocess import rsync
+from pyutils.py_unicode import to_bytes
 
 
 class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):

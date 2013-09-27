@@ -32,7 +32,6 @@ from celery.task.control import revoke
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from jinja2 import Template
-from kitchen.text.converters import to_bytes
 from pymongo.errors import DuplicateKeyError
 from random import randint
 from requests import get, patch, post, delete
@@ -48,6 +47,7 @@ from pyutils.py_juju import get_unit_path, juju_do
 from pyutils.py_serialization import dict2object, object2dict, object2json
 from pyutils.py_unicode import csv_reader
 from pyutils.py_subprocess import rsync, ssh
+from pyutils.py_unicode import to_bytes
 from pyutils.py_validation import valid_uuid
 
 

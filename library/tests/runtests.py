@@ -24,7 +24,7 @@
 
 def main():
     from oscied_lib.pyutils.py_unittest import runtests
-    return runtests(__file__, cover_packages=[u'oscied_lib'], packages=[u'oscied_lib'], ignore='py_django.py')
+    return runtests(__file__, cover_packages=[u'oscied_lib'], packages=[u'oscied_lib'], ignore=u'py_django.py')
 
-if __name__ == '__main__':
+if __name__ == u'__main__':
     main()

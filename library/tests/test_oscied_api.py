@@ -105,8 +105,3 @@ class TestOrchestraAPIClient(object):
         assert_len(client, client.transform_profiles, [call(get, u'http://a.ch:6000/transform/profile/count')])
         #assert_len(client, client.transform_units, [call(get, u'http://a.ch:6000/transform/unit/count')])
         assert_len(client, client.transform_tasks, [call(get, u'http://a.ch:6000/transform/task/count')])
-
-
-if __name__ == u'__main__':
-    import nose
-    nose.runmodule(argv=[__file__], exit=False)

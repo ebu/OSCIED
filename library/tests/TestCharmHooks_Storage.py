@@ -129,7 +129,3 @@ class TestCharmHooks_Storage(object):
         assert_equal(self.hooks.cmd.call_args_list,
             [call([u'mount', u'-t', u'glusterfs', u'home.ch:/my_vol_0', u'/mnt/storage'])])
         assert_equal(system_hosts, open(self.hooks.local_config.hosts_file, u'r', u'utf-8').readlines())
-
-if __name__ == u'__main__':
-    import nose
-    nose.runmodule(argv=[__file__], exit=False)

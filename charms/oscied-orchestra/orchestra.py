@@ -26,13 +26,12 @@
 
 # FIXME mongo concurrency : http://emptysquare.net/blog/requests-in-python-and-mongodb/
 
-import logging
-import sys
+import logging, sys
 from flask import Flask, abort, request
-from kitchen.text.converters import to_bytes
 from library.oscied_lib.pyutils.py_flask import check_id, get_request_data, json_response, map_exceptions
 from library.oscied_lib.pyutils.py_logging import setup_logging
 from library.oscied_lib.pyutils.py_serialization import object2json
+from library.oscied_lib.pyutils.py_unicode import to_bytes
 from library.oscied_lib.oscied_api import OrchestraAPICore
 from library.oscied_lib.oscied_config import OrchestraLocalConfig
 from library.oscied_lib.oscied_models import Media, User, TransformProfile

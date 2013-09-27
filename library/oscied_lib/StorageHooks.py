@@ -25,10 +25,10 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 import os, re, shutil
-from kitchen.text.converters import to_bytes
 from oscied_config import StorageLocalConfig
 from pyutils.py_filesystem import first_that_exist
 from pyutils.py_juju import CharmHooks, DEFAULT_OS_ENV
+from pyutils.py_unicode import to_bytes
 
 
 class StorageHooks(CharmHooks):

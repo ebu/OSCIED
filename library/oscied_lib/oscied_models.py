@@ -23,94 +23,20 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import os, re, uuid
-from celery import states
-from celery.result import AsyncResult
-from kitchen.text.converters import to_bytes
+import os, re
 from passlib.hash import pbkdf2_sha512
 from passlib.utils import consteq
-from pyutils.py_serialization import dict2object, JsoneableObject
+from pyutils.py_serialization import dict2object
+from pyutils.py_mongo import Model, TaskModel
+from pyutils.py_unicode import to_bytes
 from pyutils.py_validation import valid_email, valid_filename, valid_secret, valid_uuid
-
 
 ENCODERS_NAMES = (u'copy', u'ffmpeg', u'dashcast')
 
 
-class OsciedDBModel(JsoneableObject):
-
-    def __init__(self, _id=None):
-        self._id = _id or unicode(uuid.uuid4())
-
-    def is_valid(self, raise_exception):
-        if not valid_uuid(self._id, none_allowed=False):
-            self._E(raise_exception, u'_id is not a valid uuid string')
-        return True
-
-    def _E(self, raise_exception, message):
-        if raise_exception:
-            raise TypeError(to_bytes(u'{0} : {1}'.format(self.__class__.__name__, message)))
-        return False
-
-
-class OsciedDBTask(OsciedDBModel):
-
-    ALL_STATUS = PENDING, RECEIVED, STARTED, PROGRESS, SUCCESS, FAILURE, REVOKING, REVOKED, RETRY, IGNORED, UNKNOWN = \
-        states.PENDING, states.RECEIVED, states.STARTED, u'PROGRESS', states.SUCCESS, states.FAILURE, u'REVOKING', \
-        states.REVOKED, states.RETRY, states.IGNORED, u'UNKNOWN'
-
-    PENDING_STATUS  = (PENDING, RECEIVED)
-    RUNNING_STATUS  = (STARTED, PROGRESS, RETRY)
-    SUCCESS_STATUS  = (SUCCESS, )
-    CANCELED_STATUS = (REVOKING, REVOKED)
-    ERROR_STATUS    = (FAILURE, )
-    UNDEF_STATUS    = (IGNORED, UNKNOWN)
-    FINAL_SATUS     = SUCCESS_STATUS + CANCELED_STATUS + ERROR_STATUS
-    WORK_IN_PROGRESS_STATUS = PENDING_STATUS + RUNNING_STATUS
-
-    def __init__(self, _id=None, statistic=None, status=UNKNOWN):
-        super(OsciedDBTask, self).__init__(_id)
-        self.statistic = statistic or {}
-        self.status = status
-
-    def is_valid(self, raise_exception):
-        if not super(OsciedDBTask, self).is_valid(raise_exception):
-            return False
-        # FIXME check statistic
-        # FIXME check status
-        return True
-
-    def get_hostname(self):
-        try:
-            return AsyncResult(self._id).result['hostname']
-        except:
-            return None
-
-    def add_statistic(self, key, value, overwrite):
-        if overwrite or not key in self.statistic:
-            self.statistic[key] = value
-
-    def get_statistic(self, key):
-        return self.statistic[key] if key in self.statistic else None
-
-    def append_async_result(self):
-        async_result = AsyncResult(self._id)
-        if async_result:
-            try:
-                if self.status not in (OsciedDBTask.REVOKED, OsciedDBTask.REVOKING):
-                    self.status = async_result.status
-                try:
-                    self.statistic.update(async_result.result)
-                except:
-                    self.statistic[u'error'] = unicode(async_result.result)
-            except NotImplementedError:
-                self.status = OsciedDBTask.UNKNOWN
-        else:
-            self.status = OsciedDBTask.UNKNOWN
-
-
 # ----------------------------------------------------------------------------------------------------------------------
 
-class Media(OsciedDBModel):
+class Media(Model):
 
     ALL_STATUS = PENDING, READY, DELETED = u'PENDING', u'READY', u'DELETED'
 
@@ -190,7 +116,7 @@ class Media(OsciedDBModel):
         del self.parent_id
 
 
-class User(OsciedDBModel):
+class User(Model):
 
     def __init__(self, first_name=None, last_name=None, mail=None, secret=None, admin_platform=False, _id=None):
         super(User, self).__init__(_id)
@@ -276,7 +202,7 @@ class User(OsciedDBModel):
         return consteq(secret, self.secret)
 
 
-class TransformProfile(OsciedDBModel):
+class TransformProfile(Model):
 
     def __init__(self, title=None, description=None, encoder_name=None, encoder_string=None, _id=None):
         super(TransformProfile, self).__init__(_id)
@@ -387,10 +313,10 @@ class TransformProfile(OsciedDBModel):
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-class PublisherTask(OsciedDBTask):
+class PublisherTask(TaskModel):
 
     def __init__(self, user=None, user_id=None, media=None, media_id=None, publish_uri=None, revoke_task_id=None,
-                 send_email=False, _id=None, statistic=None, status=OsciedDBTask.UNKNOWN):
+                 send_email=False, _id=None, statistic=None, status=TaskModel.UNKNOWN):
         super(PublisherTask, self).__init__(_id, statistic, status)
         self.user = dict2object(User, user, inspect_constructor=True) if isinstance(user, dict) else user
         if user is None:  # User attribute overrides user_id
@@ -430,11 +356,11 @@ class PublisherTask(OsciedDBTask):
         del self.media_id
 
 
-class TransformTask(OsciedDBTask):
+class TransformTask(TaskModel):
 
     def __init__(self, user=None, user_id=None, media_in=None, media_in_id=None, media_out=None, media_out_id=None,
                  profile=None, profile_id=None, send_email=False, _id=None, statistic=None,
-                 status=OsciedDBTask.UNKNOWN):
+                 status=TaskModel.UNKNOWN):
         super(TransformTask, self).__init__(_id, statistic, status)
         self.user = dict2object(User, user, inspect_constructor=True) if isinstance(user, dict) else user
         if user is None:  # User attribute overrides user_id

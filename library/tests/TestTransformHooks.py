@@ -94,7 +94,3 @@ class TestTransformHooks(object):
             u'host': u'home.ch', u'port': u'27017', u'user': u'tabby', u'password': u'miaow',
             u'database': u'mydb', u'taskmeta_collection': u'taskmeta'})
         assert_equal(celeryconfig[u'CELERYD_CONCURRENCY'], CONFIG_TRANSFORM[u'concurrency'])
-
-if __name__ == u'__main__':
-    import nose
-    nose.runmodule(argv=[__file__], exit=False)
