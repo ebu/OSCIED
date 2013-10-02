@@ -38,7 +38,7 @@ CONFIG = {
     u'rabbit_password': u'Alice_in_wonderland', u'email_server': u'', u'email_tls': True,
     u'email_address': u'someone@oscied.org', u'email_username': u'someone', u'email_password': u'',
     u'storage_address': u'', u'storage_nat_address': u'', u'storage_fstype': u'', 'storage_mountpoint': u'',
-    u'storage_options': u''
+    u'storage_options': u'', u'plugit_api_url': u''
 }
 
 OS_ENV, RETURNS = copy(DEFAULT_OS_ENV), []

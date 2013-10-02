@@ -163,7 +163,7 @@ class OrchestraHooks(CharmHooks_Storage):
         self.local_config.email_address = self.config.email_address
         self.local_config.email_username = self.config.email_username
         self.local_config.email_password = self.config.email_password
-        self.local_config.plugit_api_url = self.plugit_api_url
+        self.local_config.plugit_api_url = self.config.plugit_api_url
         self.remark(u'Orchestrator successfully configured')
         self.storage_remount()
 
