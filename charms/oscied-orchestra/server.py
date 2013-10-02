@@ -1,16 +1,40 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+#**********************************************************************************************************************#
+#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : ORCHESTRA
+#
+#  Project Manager  : Bram Tullemans (tullemans@ebu.ch)
+#  Main Developer   : David Fischer (david.fischer.ch@gmail.com)
+#  PlugIt Developer : Maximilien Cuony (maximilien@theglu.org)
+#  Copyright        : Copyright (c) 2012-2013 EBU. All rights reserved.
+#
+#**********************************************************************************************************************#
+#
+# This file is part of EBU Technology & Innovation OSCIED + PlugIt Projects.
+#
+# This project is free software: you can redistribute it and/or modify it under the terms of the EUPL v. 1.1 as provided
+# by the European Commission. This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# See the European Union Public License for more details.
+#
+# You should have received a copy of the EUPL General Public License along with this project.
+# If not, see he EUPL licence v1.1 is available in 22 languages:
+#     22-07-2013, <https://joinup.ec.europa.eu/software/page/eupl/licence-eupl>
+#
+# Retrieved from https://github.com/ebu/OSCIED
+
 import socket, struct
 from datetime import datetime, timedelta
 from flask import Flask, jsonify, request, send_from_directory, make_response, abort, send_file
 from flask.views import View
 from kitchen.text.converters import to_bytes
 from werkzeug.exceptions import HTTPException
-from library.oscied_lib.pyutils.py_flask import json_response
 
 import actions
-from utils import md5Checksum, PlugItRedirect, PlugItSendFile
+from plugit_utils import md5Checksum, PlugItRedirect, PlugItSendFile
+from oscied_lib.pyutils.flask import json_response
 
 # Global parameters
 DEBUG = True

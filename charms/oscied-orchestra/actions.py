@@ -1,41 +1,40 @@
 # -*- coding: utf-8 -*-
 
-#**************************************************************************************************#
+#**********************************************************************************************************************#
 #              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : ORCHESTRA
 #
-#  Authors   : David Fischer
-#  Contact   : david.fischer.ch@gmail.com / david.fischer@hesge.ch
-#  Project   : OSCIED (OS Cloud Infrastructure for Encoding and Distribution)
-#  Copyright : 2012-2013 OSCIED Team. All rights reserved.
-#**************************************************************************************************#
+#  Project Manager : Bram Tullemans (tullemans@ebu.ch)
+#  Main Developer  : David Fischer (david.fischer.ch@gmail.com)
+#  Copyright       : Copyright (c) 2012-2013 EBU. All rights reserved.
 #
-# This file is part of EBU/UER OSCIED Project.
+#**********************************************************************************************************************#
 #
-# This project is free software: you can redistribute it and/or modify it under the terms of the
-# GNU General Public License as published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
+# This file is part of EBU Technology & Innovation OSCIED Project.
 #
-# This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
-# even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the GNU General Public License for more details.
+# This project is free software: you can redistribute it and/or modify it under the terms of the EUPL v. 1.1 as provided
+# by the European Commission. This project is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
-# You should have received a copy of the GNU General Public License along with this project.
-# If not, see <http://www.gnu.org/licenses/>
+# See the European Union Public License for more details.
 #
-# Retrieved from https://github.com/EBU-TI/OSCIED
+# You should have received a copy of the EUPL General Public License along with this project.
+# If not, see he EUPL licence v1.1 is available in 22 languages:
+#     22-07-2013, <https://joinup.ec.europa.eu/software/page/eupl/licence-eupl>
+#
+# Retrieved from https://github.com/ebu/OSCIED
 
-import logging, random, string, sys, time
+import logging, os, random, string, sys, time
 from flask import abort
-from kitchen.text.converters import to_bytes
-from library.oscied_lib.oscied_api import ABOUT, get_test_api_core, OrchestraAPICore
-from library.oscied_lib.oscied_config import OrchestraLocalConfig
-from library.oscied_lib.oscied_config_test import ORCHESTRA_CONFIG_TEST
-from library.oscied_lib.oscied_models import Media, User, TransformProfile
-from library.oscied_lib.pyutils.py_flask import check_id, get_request_data, json_response2dict, map_exceptions
-from library.oscied_lib.pyutils.py_logging import setup_logging
-from library.oscied_lib.pyutils.py_serialization import object2json
-from library.oscied_lib.pyutils.py_unicode import configure_unicode
-from utils import action, json_only, only_logged_user, user_info, PlugItSendFile
+from werkzeug import secure_filename
+from library.oscied_lib.api import ABOUT, get_test_api_core, OrchestraAPICore
+from library.oscied_lib.config import OrchestraLocalConfig
+from library.oscied_lib.config_test import ORCHESTRA_CONFIG_TEST
+from library.oscied_lib.models import Media, User, TransformProfile
+from library.oscied_lib.pytoolbox.encoding import configure_unicode, to_bytes
+from library.oscied_lib.pytoolbox.flask import check_id, get_request_data, json_response2dict, map_exceptions
+from library.oscied_lib.pytoolbox.logging import setup_logging
+from library.oscied_lib.pytoolbox.serialization import object2json
+from plugit_utils import action, json_only, only_logged_user, user_info, PlugItSendFile
 
 
 # Global variables -----------------------------------------------------------------------------------------------------
@@ -1035,7 +1034,7 @@ def api_publisher_task_id_delete(request, id):
         if auth_user._id != task.user_id:
             abort(403, u'You are not allowed to revoke publication task with id {0}.'.format(id))
         orchestra.revoke_publisher_task(task=task, callback_url=u'/publisher/revoke/callback', terminate=True,
-                                      remove=False)
+                                        remove=False)
         return orchestra.ok_200(u'The publication task "{0}" has been revoked. Corresponding media asset will be unpubl'
                                 'ished from here.'.format(task._id), include_properties=False)
     except Exception as e:
@@ -1079,9 +1078,7 @@ def api_publisher_task_hook(request):
     try:
         orchestra.requires_auth(request=request, allow_node=True)
         data = get_request_data(request, qs_only_first_value=True)
-        task_id = data[u'task_id']
-        publish_uri = data[u'publish_uri'] if u'publish_uri' in data else None
-        status = data[u'status']
+        task_id, publish_uri, status = data[u'task_id'], data.get(u'publish_uri'), data[u'status']
         logging.debug(u'task {0}, publish_uri {1}, status {2}'.format(task_id, publish_uri, status))
         orchestra.publisher_callback(task_id, publish_uri, status)
         return orchestra.ok_200(u'Your work is much appreciated, thanks !', include_properties=False)
@@ -1101,9 +1098,7 @@ def api_revoke_publisher_task_hook(request):
     try:
         orchestra.requires_auth(request=request, allow_node=True)
         data = get_request_data(request, qs_only_first_value=True)
-        task_id = data[u'task_id']
-        publish_uri = data[u'publish_uri'] if u'publish_uri' in data else None
-        status = data[u'status']
+        task_id, publish_uri, status = data[u'task_id'], data.get(u'publish_uri'), data[u'status']
         logging.debug(u'task {0}, revoked publish_uri {1}, status {2}'.format(task_id, publish_uri, status))
         orchestra.publisher_revoke_callback(task_id, publish_uri, status)
         return orchestra.ok_200(u'Your work is much appreciated, thanks !', include_properties=False)
@@ -1133,9 +1128,8 @@ def view_medias_list(request):
 def get_medias(request, id):
     u"""Download a media asset."""
     medias = api_media_id_get(request, id)
-    uri = medias[u'value'].api_uri
-    filename = medias[u'value'].filename
-    return PlugItSendFile(uri, None, as_attachment=True, attachment_filename=filename)
+    return PlugItSendFile(medias[u'value'].api_uri, None, as_attachment=True,
+                          attachment_filename=medias[u'value'].filename)
 
 @action(route=u'/upload_files/upload_video', template=u'medias/uploaded_done.html', methods=[u'POST'])
 @only_logged_user()
@@ -1144,21 +1138,18 @@ def upload_media(request):
     u"""Upload a media asset."""
     try:
         auth_user = request.args.get(u'ebuio_u_pk') or request.form.get(u'ebuio_u_pk')
-        metadata = {u'title': request.form.get(u'title', u'')}
-        filename = request.form.get(u'filename')
-        random_temp_name = (u''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(42)) +
-                            str(time.time()))  # Probably random enough
+        # FIXME use temporary filename generator from python standard library ?
+        random_temp_name = (u''.join(random.choice(string.digits + string.ascii_uppercase) for x in range(42)) +
+                            unicode(time.time()))
 
-        tmp_file = orchestra.config.storage_medias_path() + '/' + random_temp_name
-        tmp_uri = orchestra.config.storage_medias_uri() + '/' + random_temp_name
+        tmp_filename = os.path.join(orchestra.config.storage_medias_path(), random_temp_name)
+        tmp_uri = os.path.join(orchestra.config.storage_medias_uri(), random_temp_name)
 
-        file = request.files[u'file']
-        file.save(tmp_file)
+        tmp_file = request.files[u'file']
+        tmp_file.save(tmp_filename)
 
-        from werkzeug import secure_filename
-        filename = secure_filename(file.filename)
-
-        media = Media(None, auth_user, None, tmp_uri, None, filename, metadata, u'READY')
+        media = Media(auth_user, uri=tmp_uri, filename=secure_filename(tmp_file.filename),
+                      metadata={u'title': request.form.get(u'title', u'')}, status=Media.READY)
         orchestra.save_media(media)
 
         return {u'success': True}
