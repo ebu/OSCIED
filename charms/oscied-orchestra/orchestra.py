@@ -26,15 +26,17 @@
 
 # FIXME mongo concurrency : http://emptysquare.net/blog/requests-in-python-and-mongodb/
 
+from __future__ import absolute_path
+
 import logging, sys
 from flask import Flask, abort, request
-from library.oscied_lib.api import OrchestraAPICore
-from library.oscied_lib.config import OrchestraLocalConfig
-from library.oscied_lib.models import Media, User, TransformProfile
-from library.oscied_lib.pytoolbox.encoding import to_bytes
-from library.oscied_lib.pytoolbox.flask import check_id, get_request_data, json_response, map_exceptions
-from library.oscied_lib.pytoolbox.logging import setup_logging
-from library.oscied_lib.pytoolbox.serialization import object2json
+from .library.oscied_lib.api import OrchestraAPICore
+from .library.oscied_lib.config import OrchestraLocalConfig
+from .library.oscied_lib.models import Media, User, TransformProfile
+from .library.oscied_lib.pytoolbox.encoding import to_bytes
+from .library.oscied_lib.pytoolbox.flask import check_id, get_request_data, json_response, map_exceptions
+from .library.oscied_lib.pytoolbox.logging import setup_logging
+from .library.oscied_lib.pytoolbox.serialization import object2json
 
 
 # Global variables -----------------------------------------------------------------------------------------------------
@@ -2828,7 +2830,7 @@ def api_revoke_publisher_task_hook():
 
 if __name__ == u'__main__':
 
-    from library.oscied_lib.pytoolbox.encoding import configure_unicode
+    from .library.oscied_lib.pytoolbox.encoding import configure_unicode
     configure_unicode()
 
     try:
