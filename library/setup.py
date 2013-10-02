@@ -87,7 +87,7 @@ install_requires=[
 
 setup(name=u'oscied-lib',
       version='2.29.40',
-      packages=find_packages(exclude=['*.pytoolbox', '*.pytoolbox.*', 'tests', 'tests.*']),
+      packages=find_packages(exclude=['tests', 'tests.*']),
       description='Library of EBU/UER OSCIED Project',
       long_description=open('README.rst', 'r', encoding='utf-8').read(),
       author='David Fischer',

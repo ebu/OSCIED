@@ -28,20 +28,20 @@ from __future__ import absolute_import
 import logging, pygal, random, shutil, threading, time
 from os.path import join, splitext
 from collections import defaultdict, deque
+from pytoolbox import juju
+from pytoolbox.collections import pygal_deque
+from pytoolbox.console import confirm
+from pytoolbox.datetime import datetime_now
+from pytoolbox.encoding import to_bytes
+from pytoolbox.mongo import TaskModel
+from pytoolbox.juju import Environment, ERROR_STATES, juju_do
+from pytoolbox.serialization import PickleableObject
 from requests.exceptions import ConnectionError, Timeout
 
 from .api import OrchestraAPIClient, init_api
 from .constants import (ENVIRONMENT_TO_LABEL, ENVIRONMENT_TO_TYPE, SERVICE_TO_LABEL, SERVICE_TO_UNITS_API,
                         SERVICE_TO_TASKS_API)
 from .models import Media
-from .pytoolbox import juju
-from .pytoolbox.collections import pygal_deque
-from .pytoolbox.console import confirm
-from .pytoolbox.datetime import datetime_now
-from .pytoolbox.encoding import to_bytes
-from .pytoolbox.mongo import TaskModel
-from .pytoolbox.juju import Environment, ERROR_STATES, juju_do
-from .pytoolbox.serialization import PickleableObject
 
 
 class OsciedEnvironment(Environment):

@@ -29,6 +29,7 @@ from __future__ import absolute_import
 import re
 from os.path import expanduser, join
 from urlparse import urlparse
+
 from .config_base import CharmLocalConfig, CharmLocalConfig_Subordinate, CharmLocalConfig_Storage, MEDIAS_PATH
 
 
@@ -202,7 +203,7 @@ class WebuiLocalConfig(CharmLocalConfig_Storage):
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
-    from .pytoolbox.encoding import configure_unicode
+    from pytoolbox.encoding import configure_unicode
     configure_unicode()
     print(u'Test configuration module with doctest')
     import doctest

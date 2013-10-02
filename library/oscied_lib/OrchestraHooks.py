@@ -29,12 +29,13 @@ from __future__ import absolute_import
 import os, re, shutil, time
 from codecs import open
 from configobj import ConfigObj
+from pytoolbox.encoding import to_bytes
+from pytoolbox.filesystem import first_that_exist, try_makedirs
+from pytoolbox.juju import DEFAULT_OS_ENV
+from pytoolbox.subprocess import rsync, screen_launch, screen_list, screen_kill
+
 from .config import OrchestraLocalConfig
 from .hooks_base import CharmHooks_Storage
-from .pytoolbox.encoding import to_bytes
-from .pytoolbox.filesystem import first_that_exist, try_makedirs
-from .pytoolbox.juju import DEFAULT_OS_ENV
-from .pytoolbox.subprocess import rsync, screen_launch, screen_list, screen_kill
 
 
 class OrchestraHooks(CharmHooks_Storage):
@@ -247,7 +248,7 @@ class OrchestraHooks(CharmHooks_Storage):
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
-    from .pytoolbox.encoding import configure_unicode
+    from pytoolbox.encoding import configure_unicode
     configure_unicode()
     OrchestraHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-orchestra/metadata.yaml'),
                    first_that_exist(u'config.yaml',      u'../../charms/oscied-orchestra/config.yaml'),

@@ -27,9 +27,9 @@ from codecs import open
 from copy import copy
 from mock import call
 from nose.tools import assert_equal
-import oscied_lib.pytoolbox.unittest as py_unittest
-from oscied_lib.pytoolbox.juju import DEFAULT_OS_ENV
-from oscied_lib.pytoolbox.unittest import mock_cmd, mock_side_effect
+import pytoolbox.unittest as py_unittest
+from pytoolbox.juju import DEFAULT_OS_ENV
+from pytoolbox.unittest import mock_cmd, mock_side_effect
 from oscied_lib.config import TransformLocalConfig
 from oscied_lib.hooks_base import CharmHooks_Storage
 

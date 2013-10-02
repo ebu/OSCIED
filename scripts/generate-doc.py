@@ -30,10 +30,10 @@ import glob, re, shutil, os
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from codecs import open
 from os.path import basename, dirname, join, splitext
-from library.oscied_lib.pytoolbox.console import print_error
-from library.oscied_lib.pytoolbox.encoding import configure_unicode
-from library.oscied_lib.pytoolbox.filesystem import try_makedirs, try_remove
-from library.oscied_lib.pytoolbox.subprocess import cmd
+from pytoolbox.console import print_error
+from pytoolbox.encoding import configure_unicode
+from pytoolbox.filesystem import try_makedirs, try_remove
+from pytoolbox.subprocess import cmd
 
 SCRIPTS_PATH = os.getcwd()
 BASE_PATH = dirname(SCRIPTS_PATH)

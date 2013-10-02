@@ -25,7 +25,7 @@
 import os
 from copy import copy
 from nose.tools import assert_equal
-from oscied_lib.pytoolbox.juju import DEFAULT_OS_ENV
+from pytoolbox.juju import DEFAULT_OS_ENV
 from oscied_lib.config import TransformLocalConfig
 from oscied_lib.TransformHooks import TransformHooks
 

@@ -27,7 +27,7 @@ from __future__ import absolute_import
 
 import logging
 from os.path import join, sep
-from .pytoolbox.serialization import PickleableObject
+from pytoolbox.serialization import PickleableObject
 
 MEDIAS_PATH, UPLOADS_PATH = u'medias', u'uploads'
 

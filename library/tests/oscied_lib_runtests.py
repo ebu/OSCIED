@@ -23,7 +23,7 @@
 #     22-07-2013, <https://joinup.ec.europa.eu/software/page/eupl/licence-eupl>
 
 def main():
-    from oscied_lib.pytoolbox.unittest import runtests
+    from pytoolbox.unittest import runtests
     return runtests(__file__, cover_packages=[u'oscied_lib'], packages=[u'oscied_lib', u'tests'], ignore='django.py')
 
 if __name__ == u'__main__':
