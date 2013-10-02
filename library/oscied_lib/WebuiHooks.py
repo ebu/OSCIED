@@ -24,16 +24,18 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+from __future__ import absolute_import
+
 import os, shutil, socket, string
 from codecs import open
 from random import choice
-from oscied_config import WebuiLocalConfig
-from oscied_config_base import MEDIAS_PATH, UPLOADS_PATH
-from oscied_hook_base import CharmHooks_Storage, CharmHooks_Website
-from pyutils.py_filesystem import chown, first_that_exist, try_makedirs, try_symlink
-from pyutils.py_juju import DEFAULT_OS_ENV
-from pyutils.py_subprocess import rsync
-from pyutils.py_unicode import to_bytes
+from .config import WebuiLocalConfig
+from .config_base import MEDIAS_PATH, UPLOADS_PATH
+from .hooks_base import CharmHooks_Storage, CharmHooks_Website
+from .pytoolbox.encoding import to_bytes
+from .pytoolbox.filesystem import chown, first_that_exist, try_makedirs, try_symlink
+from .pytoolbox.juju import DEFAULT_OS_ENV
+from .pytoolbox.subprocess import rsync
 
 
 class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
@@ -195,7 +197,7 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
-    from pyutils.py_unicode import configure_unicode
+    from pytoolbox.py_unicode import configure_unicode
     configure_unicode()
     WebuiHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-webui/metadata.yaml'),
                first_that_exist(u'config.yaml',      u'../../charms/oscied-webui/config.yaml'),

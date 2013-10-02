@@ -24,14 +24,14 @@
 import os, sys
 from os.path import abspath, dirname, join
 sys.path.append(abspath(dirname(dirname(__file__))))
-sys.path.append(abspath(join(dirname(dirname(__file__)), u'pyutils')))
+sys.path.append(abspath(join(dirname(dirname(__file__)), u'pytoolbox')))
 
 from celery.task.control import inspect
-import lib.Transform
+import oscied_lib.Transform
 #from celery.task.sets import TaskSet
-from lib.Media import MEDIA_TEST
-from lib.TransformProfile import TRANSFORM_PROFILE_TEST
-from lib.User import USER_TEST
+from oscied_lib.Media import MEDIA_TEST
+from oscied_lib.TransformProfile import TRANSFORM_PROFILE_TEST
+from oscied_lib.User import USER_TEST
 
 #def make_pi_tasks():
 #    taskset = TaskSet(lib.Publisher.make_pi.subtask((x, )) for x in NUM_CALCS)

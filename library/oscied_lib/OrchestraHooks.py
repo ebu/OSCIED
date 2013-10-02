@@ -24,15 +24,17 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+from __future__ import absolute_import
+
 import os, re, shutil, time
 from codecs import open
 from configobj import ConfigObj
-from oscied_config import OrchestraLocalConfig
-from oscied_hook_base import CharmHooks_Storage
-from pyutils.py_filesystem import first_that_exist, try_makedirs
-from pyutils.py_juju import DEFAULT_OS_ENV
-from pyutils.py_subprocess import rsync, screen_launch, screen_list, screen_kill
-from pyutils.py_unicode import to_bytes
+from .config import OrchestraLocalConfig
+from .hooks_base import CharmHooks_Storage
+from .pytoolbox.encoding import to_bytes
+from .pytoolbox.filesystem import first_that_exist, try_makedirs
+from .pytoolbox.juju import DEFAULT_OS_ENV
+from .pytoolbox.subprocess import rsync, screen_launch, screen_list, screen_kill
 
 
 class OrchestraHooks(CharmHooks_Storage):
@@ -245,7 +247,7 @@ class OrchestraHooks(CharmHooks_Storage):
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
-    from pyutils.py_unicode import configure_unicode
+    from .pytoolbox.encoding import configure_unicode
     configure_unicode()
     OrchestraHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-orchestra/metadata.yaml'),
                    first_that_exist(u'config.yaml',      u'../../charms/oscied-orchestra/config.yaml'),

@@ -23,14 +23,14 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-# Charmhelpers : /usr/share/pyshared/charmhelpers/__init__.py
+from __future__ import absolute_import
 
 import os, pymongo.uri_parser, shutil, time
 from codecs import open
-from pyutils.py_filesystem import try_makedirs
-from pyutils.py_juju import CharmHooks
-from pyutils.py_subprocess import screen_launch, screen_list, screen_kill
-from pyutils.py_unicode import to_bytes
+from .pytoolbox.encoding import to_bytes
+from .pytoolbox.filesystem import try_makedirs
+from .pytoolbox.juju import CharmHooks
+from .pytoolbox.subprocess import screen_launch, screen_list, screen_kill
 
 
 class CharmHooks_Storage(CharmHooks):

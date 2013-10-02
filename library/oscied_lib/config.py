@@ -24,10 +24,12 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+from __future__ import absolute_import
+
 import re
 from os.path import expanduser, join
 from urlparse import urlparse
-from oscied_config_base import CharmLocalConfig, CharmLocalConfig_Subordinate, CharmLocalConfig_Storage, MEDIAS_PATH
+from .config_base import CharmLocalConfig, CharmLocalConfig_Subordinate, CharmLocalConfig_Storage, MEDIAS_PATH
 
 
 class OrchestraLocalConfig(CharmLocalConfig_Storage):
@@ -130,10 +132,10 @@ class PublisherLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinat
     def publish_uri_to_path(self, uri):
         u"""Convert a URI to a publication path or None if the URI does not start with self.publish_uri.
 
-        **Example usage**:
+        **Example usage**
 
         >>> import copy
-        >>> from oscied_config_test import PUBLISHER_CONFIG_TEST
+        >>> from .config_test import PUBLISHER_CONFIG_TEST
         >>> config = copy.copy(PUBLISHER_CONFIG_TEST)
         >>> print(config.publish_uri, config.publish_uri_to_path(u'test.mp4'))
         (u'', None)
@@ -200,7 +202,7 @@ class WebuiLocalConfig(CharmLocalConfig_Storage):
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
-    from pyutils.py_unicode import configure_unicode
+    from .pytoolbox.encoding import configure_unicode
     configure_unicode()
     print(u'Test configuration module with doctest')
     import doctest

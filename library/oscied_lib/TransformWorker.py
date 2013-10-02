@@ -23,21 +23,22 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+from __future__ import absolute_import
+
 import os, re, select, shlex, time, uuid
 from celery import current_task
 from celery.decorators import task
 from codecs import open
-#from celery.signals import celeryd_after_setup, worker_shutdown
 from subprocess import Popen, PIPE
-from oscied_config import TransformLocalConfig
-from oscied_models import Media, TransformProfile, TransformTask
-from oscied_util import Callback
-from pyutils.py_datetime import datetime_now, total_seconds
-from pyutils.py_ffmpeg import get_media_duration, get_media_tracks
-from pyutils.py_filesystem import get_size, recursive_copy, try_makedirs, try_remove
-from pyutils.py_serialization import object2json
-from pyutils.py_subprocess import make_async, read_async
-from pyutils.py_unicode import configure_unicode, to_bytes
+from .config import TransformLocalConfig
+from .models import Media, TransformProfile, TransformTask
+from .utils import Callback
+from .pytoolbox.datetime import datetime_now, total_seconds
+from .pytoolbox.encoding import configure_unicode, to_bytes
+from .pytoolbox.ffmpeg import get_media_duration, get_media_tracks
+from .pytoolbox.filesystem import get_size, recursive_copy, try_makedirs, try_remove
+from .pytoolbox.serialization import object2json
+from .pytoolbox.subprocess import make_async, read_async
 
 configure_unicode()
 

@@ -24,11 +24,13 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+from __future__ import absolute_import
+
 import os, re, shutil
-from oscied_config import StorageLocalConfig
-from pyutils.py_filesystem import first_that_exist
-from pyutils.py_juju import CharmHooks, DEFAULT_OS_ENV
-from pyutils.py_unicode import to_bytes
+from .config import StorageLocalConfig
+from .pytoolbox.encoding import to_bytes
+from .pytoolbox.filesystem import first_that_exist
+from .pytoolbox.juju import CharmHooks, DEFAULT_OS_ENV
 
 
 class StorageHooks(CharmHooks):
@@ -241,7 +243,7 @@ class StorageHooks(CharmHooks):
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
-    from pyutils.py_unicode import configure_unicode
+    from .pytoolbox.encoding import configure_unicode
     configure_unicode()
     StorageHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-storage/metadata.yaml'),
                  first_that_exist(u'config.yaml',      u'../../charms/oscied-storage/config.yaml'),

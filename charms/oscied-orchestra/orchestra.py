@@ -28,13 +28,13 @@
 
 import logging, sys
 from flask import Flask, abort, request
-from library.oscied_lib.pyutils.py_flask import check_id, get_request_data, json_response, map_exceptions
-from library.oscied_lib.pyutils.py_logging import setup_logging
-from library.oscied_lib.pyutils.py_serialization import object2json
-from library.oscied_lib.pyutils.py_unicode import to_bytes
-from library.oscied_lib.oscied_api import OrchestraAPICore
-from library.oscied_lib.oscied_config import OrchestraLocalConfig
-from library.oscied_lib.oscied_models import Media, User, TransformProfile
+from library.oscied_lib.api import OrchestraAPICore
+from library.oscied_lib.config import OrchestraLocalConfig
+from library.oscied_lib.models import Media, User, TransformProfile
+from library.oscied_lib.pytoolbox.encoding import to_bytes
+from library.oscied_lib.pytoolbox.flask import check_id, get_request_data, json_response, map_exceptions
+from library.oscied_lib.pytoolbox.logging import setup_logging
+from library.oscied_lib.pytoolbox.serialization import object2json
 
 
 # Global variables -----------------------------------------------------------------------------------------------------
@@ -2828,7 +2828,7 @@ def api_revoke_publisher_task_hook():
 
 if __name__ == u'__main__':
 
-    from library.oscied_lib.pyutils.py_unicode import configure_unicode
+    from library.oscied_lib.pytoolbox.encoding import configure_unicode
     configure_unicode()
 
     try:

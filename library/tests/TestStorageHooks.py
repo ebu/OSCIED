@@ -22,17 +22,14 @@
 # If not, see he EUPL licence v1.1 is available in 22 languages:
 #     22-07-2013, <https://joinup.ec.europa.eu/software/page/eupl/licence-eupl>
 
-import os, sys
-from os.path import abspath, dirname
-sys.path.append(abspath(dirname(dirname(__file__))))
-
+import os
 from copy import copy
 from mock import call, Mock
 from nose.tools import assert_equal, raises
-from oscied_lib.pyutils.py_juju import DEFAULT_OS_ENV
-import oscied_lib.pyutils.py_unittest as py_unittest
-from oscied_lib.pyutils.py_unittest import mock_cmd, mock_side_effect
-from oscied_lib.oscied_config import StorageLocalConfig
+import oscied_lib.pytoolbox.unittest as py_unittest
+from oscied_lib.pytoolbox.juju import DEFAULT_OS_ENV
+from oscied_lib.pytoolbox.unittest import mock_cmd, mock_side_effect
+from oscied_lib.config import StorageLocalConfig
 from oscied_lib.StorageHooks import StorageHooks
 
 CONFIG = {u'verbose': False, u'replica_count': 1, u'allowed_ips': u'*', u'bricks_root_path': u'/mnt/somewhere'}

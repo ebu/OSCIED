@@ -22,17 +22,13 @@
 # If not, see he EUPL licence v1.1 is available in 22 languages:
 #     22-07-2013, <https://joinup.ec.europa.eu/software/page/eupl/licence-eupl>
 
-import os, sys
-from os.path import abspath, dirname, expanduser
-sys.path.append(abspath(dirname(dirname(__file__))))
-
-import shutil
+import os, shutil
 from copy import copy
 from mock import call
 from nose.tools import assert_equal
-from oscied_lib.pyutils.py_juju import DEFAULT_OS_ENV
-from oscied_lib.pyutils.py_unittest import mock_cmd
-from oscied_lib.oscied_config import OrchestraLocalConfig
+from oscied_lib.pytoolbox.juju import DEFAULT_OS_ENV
+from oscied_lib.pytoolbox.unittest import mock_cmd
+from oscied_lib.config import OrchestraLocalConfig
 from oscied_lib.OrchestraHooks import OrchestraHooks
 
 CONFIG = {
@@ -62,8 +58,8 @@ class OrchestraHooks_tmp(OrchestraHooks):
         return [u'celery']
 
 
-import oscied_lib.pyutils.py_subprocess
-oscied_lib.pyutils.py_subprocess.cmd = mock_cmd()
+import oscied_lib.pytoolbox.subprocess as py_subprocess
+py_subprocess.cmd = mock_cmd()
 
 class TestOrchestraHooks(object):
 
@@ -91,13 +87,13 @@ class TestOrchestraHooks(object):
         self.hooks.cmd = mock_cmd()
         self.hooks.hook_config_changed()
         # Check calls of cmd done by rsync
-        assert_equal(len(oscied_lib.pyutils.py_subprocess.cmd.call_args_list), 2)
-        assert_equal(oscied_lib.pyutils.py_subprocess.cmd.call_args_list[0][0],
-                     ([u'rsync', u'-a', u'-r', u'../../charms/oscied-orchestra/ssh/', expanduser(u'~/.ssh/')],))
-        assert_equal(oscied_lib.pyutils.py_subprocess.cmd.call_args_list[0][1]['fail'], True)
-        assert_equal(oscied_lib.pyutils.py_subprocess.cmd.call_args_list[1][0],
-                     ([u'rsync', u'-a', u'-r', u'juju', expanduser(u'~/.juju/')],))
-        assert_equal(oscied_lib.pyutils.py_subprocess.cmd.call_args_list[1][1]['fail'], True)
+        assert_equal(len(py_subprocess.cmd.call_args_list), 2)
+        assert_equal(py_subprocess.cmd.call_args_list[0][0],
+                     ([u'rsync', u'-a', u'-r', u'../../charms/oscied-orchestra/ssh/', os.path.expanduser(u'~/.ssh/')],))
+        assert_equal(py_subprocess.cmd.call_args_list[0][1]['fail'], True)
+        assert_equal(py_subprocess.cmd.call_args_list[1][0],
+                     ([u'rsync', u'-a', u'-r', u'juju', os.path.expanduser(u'~/.juju/')],))
+        assert_equal(py_subprocess.cmd.call_args_list[1][1]['fail'], True)
         # Check calls of cmd done by OrchestraHooks
         assert_equal(self.hooks.cmd.call_args_list, [
             call(u'service mongodb start',         fail=False),

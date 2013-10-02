@@ -30,8 +30,9 @@ oscied_install()
   echo '1/3 - Install Python modules prerequisites'
   apt-get -y install build-essential git-core libyaml-dev libxml2-dev libxslt-dev libz-dev python-dev python-kitchen \
     python-pip
-  echo '2/3 - Install Python module called pyutils'
-  cd "$base/pyutils-source" && ./setup.py develop || { echo 'Unable to install pyutils module' 1>&2; exit 2; }
+  echo '2/3 - Install Python module called pytoolbox'
+  cd "$base/pytoolbox-source" && pip install --upgrade -e .[flask,mongo] || \
+    { echo 'Unable to install pytoolbox module' 1>&2; exit 2; }
   echo '3/3 - Install Python module called oscied_lib'
   cd "$base" && ./setup.py develop || { echo 'Unable to install oscied_lib module' 1>&2; exit 3; }
 }

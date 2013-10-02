@@ -23,9 +23,11 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+from __future__ import absolute_import
+
 import uuid
-from oscied_config_test import ORCHESTRA_CONFIG_TEST
-from oscied_models import Media, User, TransformProfile, PublisherTask, TransformTask
+from .config_test import ORCHESTRA_CONFIG_TEST
+from .models import Media, User, TransformProfile, PublisherTask, TransformTask
 
 
 MEDIA_TEST = Media(user_id=unicode(uuid.uuid4()), parent_id=unicode(uuid.uuid4()), filename=u'tabby.mpg',

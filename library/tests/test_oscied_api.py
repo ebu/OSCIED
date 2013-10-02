@@ -22,16 +22,13 @@
 # If not, see he EUPL licence v1.1 is available in 22 languages:
 #     22-07-2013, <https://joinup.ec.europa.eu/software/page/eupl/licence-eupl>
 
-import sys
-from os.path import abspath, dirname
-from requests import get, post
-sys.path.append(abspath(dirname(dirname(__file__))))
-
 from mock import call
 from nose.tools import assert_equal, assert_raises
-from oscied_lib.pyutils.py_unittest import mock_cmd
-from oscied_lib.oscied_api import OsciedCRUDMapper, OrchestraAPIClient
-from oscied_lib.oscied_models import User
+from requests import get, post
+
+from oscied_lib.api import OsciedCRUDMapper, OrchestraAPIClient
+from oscied_lib.models import User
+from oscied_lib.pytoolbox.unittest import mock_cmd
 
 
 class FakeAPIClient(object):

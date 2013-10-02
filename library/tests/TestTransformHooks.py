@@ -22,14 +22,11 @@
 # If not, see he EUPL licence v1.1 is available in 22 languages:
 #     22-07-2013, <https://joinup.ec.europa.eu/software/page/eupl/licence-eupl>
 
-import os, sys
-from os.path import abspath, dirname
-sys.path.append(abspath(dirname(dirname(__file__))))
-
+import os
 from copy import copy
 from nose.tools import assert_equal
-from oscied_lib.pyutils.py_juju import DEFAULT_OS_ENV
-from oscied_lib.oscied_config import TransformLocalConfig
+from oscied_lib.pytoolbox.juju import DEFAULT_OS_ENV
+from oscied_lib.config import TransformLocalConfig
 from oscied_lib.TransformHooks import TransformHooks
 
 CONFIG_DEFAULT = {

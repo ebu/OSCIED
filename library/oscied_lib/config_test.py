@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 #**********************************************************************************************************************#
@@ -21,10 +20,29 @@
 # You should have received a copy of the EUPL General Public License along with this project.
 # If not, see he EUPL licence v1.1 is available in 22 languages:
 #     22-07-2013, <https://joinup.ec.europa.eu/software/page/eupl/licence-eupl>
+#
+# Retrieved from https://github.com/ebu/OSCIED
 
-def main():
-    from oscied_lib.pyutils.py_unittest import runtests
-    return runtests(__file__, cover_packages=[u'oscied_lib'], packages=[u'oscied_lib'], ignore=u'py_django.py')
+from __future__ import absolute_import
 
-if __name__ == u'__main__':
-    main()
+from .config import (
+    OrchestraLocalConfig, PublisherLocalConfig, StorageLocalConfig, TransformLocalConfig, WebuiLocalConfig)
+
+ORCHESTRA_CONFIG_TEST = OrchestraLocalConfig(
+    storage_address=u'127.0.0.1', storage_fstype=u'glusterfs', storage_mountpoint=u'medias_volume_0',
+    api_url=u'http://127.0.0.1:5000', root_secret=u'toto', node_secret=u'abcd', mongo_admin_connection=u'',
+    mongo_node_connection=u'...', rabbit_connection=u'...')
+
+PUBLISHER_CONFIG_TEST = PublisherLocalConfig(
+    api_nat_socket=u'129.194.185.47:5000', storage_address=u'10.1.1.2', storage_fstype=u'glusterfs',
+    storage_mountpoint=u'medias_volume')
+
+STORAGE_CONFIG_TEST = StorageLocalConfig(u'*', False)
+
+TRANSFORM_CONFIG_TEST = TransformLocalConfig(
+    api_nat_socket=u'129.194.185.47:5000', storage_address=u'10.1.1.2', storage_fstype=u'glusterfs',
+    storage_mountpoint=u'medias_volume')
+
+WEBUI_CONFIG_TEST = WebuiLocalConfig(
+    api_url=u'10.10.4.3:5000', storage_address=u'10.1.1.2', storage_fstype=u'glusterfs',
+    storage_mountpoint=u'medias_volume')

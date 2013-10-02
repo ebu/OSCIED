@@ -23,22 +23,25 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+from __future__ import absolute_import
+
 import logging, pygal, random, shutil, threading, time
-import pyutils.py_juju as py_juju
 from os.path import join, splitext
 from collections import defaultdict, deque
 from requests.exceptions import ConnectionError, Timeout
-from oscied_api import OrchestraAPIClient, init_api
-from oscied_constants import (ENVIRONMENT_TO_LABEL, ENVIRONMENT_TO_TYPE, SERVICE_TO_LABEL, SERVICE_TO_UNITS_API,
-                              SERVICE_TO_TASKS_API)
-from oscied_models import Media
-from pyutils.py_collections import pygal_deque
-from pyutils.py_console import confirm
-from pyutils.py_datetime import datetime_now
-from pyutils.py_mongo import TaskModel
-from pyutils.py_juju import Environment, ERROR_STATES, juju_do
-from pyutils.py_serialization import PickleableObject
-from pyutils.py_unicode import to_bytes
+
+from .api import OrchestraAPIClient, init_api
+from .constants import (ENVIRONMENT_TO_LABEL, ENVIRONMENT_TO_TYPE, SERVICE_TO_LABEL, SERVICE_TO_UNITS_API,
+                        SERVICE_TO_TASKS_API)
+from .models import Media
+from .pytoolbox import juju
+from .pytoolbox.collections import pygal_deque
+from .pytoolbox.console import confirm
+from .pytoolbox.datetime import datetime_now
+from .pytoolbox.encoding import to_bytes
+from .pytoolbox.mongo import TaskModel
+from .pytoolbox.juju import Environment, ERROR_STATES, juju_do
+from .pytoolbox.serialization import PickleableObject
 
 
 class OsciedEnvironment(Environment):

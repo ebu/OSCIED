@@ -25,9 +25,6 @@
 [submodule "tools/sqlalchemy-source"]
 	path = tools/sqlalchemy-source
 	url = https://github.com/zzzeek/sqlalchemy
-[submodule "library/pyutils-source"]
-	path = library/pyutils-source
-	url = git://github.com/davidfischer-ch/pyutils.git
-[submodule "tools/pygal-source"]
-	path = tools/pygal-source
-	url = git@github.com:davidfischer-ch/pygal.git
+[submodule "library/pytoolbox-source"]
+	path = library/pytoolbox-source
+	url = git://github.com/davidfischer-ch/pytoolbox.git

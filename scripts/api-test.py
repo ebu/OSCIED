@@ -28,10 +28,10 @@ if __name__ == '__main__':
     import uuid
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     from nose.tools import assert_raises
-    from library.oscied_lib.oscied_api import OrchestraAPIClient
-    from library.oscied_lib.oscied_models import User
-    from library.oscied_lib.pyutils.py_exception import assert_raises_item
-    from library.oscied_lib.pyutils.py_unicode import configure_unicode
+    from library.oscied_lib.api import OrchestraAPIClient
+    from library.oscied_lib.models import User
+    from library.oscied_lib.pytoolbox.encoding import configure_unicode
+    from library.oscied_lib.pytoolbox.exception import assert_raises_item
 
     configure_unicode()
 

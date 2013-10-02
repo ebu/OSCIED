@@ -23,13 +23,15 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+from __future__ import absolute_import
+
 import os, re
 from passlib.hash import pbkdf2_sha512
 from passlib.utils import consteq
-from pyutils.py_serialization import dict2object
-from pyutils.py_mongo import Model, TaskModel
-from pyutils.py_unicode import to_bytes
-from pyutils.py_validation import valid_email, valid_filename, valid_secret, valid_uuid
+from .pytoolbox.encoding import to_bytes
+from .pytoolbox.serialization import dict2object
+from .pytoolbox.mongo import Model, TaskModel
+from .pytoolbox.validation import valid_email, valid_filename, valid_secret, valid_uuid
 
 ENCODERS_NAMES = (u'copy', u'ffmpeg', u'dashcast')
 
@@ -65,10 +67,10 @@ class Media(Model):
         u"""
         Returns True if the media's filename point to a MPEG-DASH MPD.
 
-        **Example usage**:
+        **Example usage**
 
         >>> import copy
-        >>> from oscied_models_test import MEDIA_TEST
+        >>> from .models_test import MEDIA_TEST
         >>> media = copy.copy(MEDIA_TEST)
         >>> assert(not media.is_dash)
         >>> media.filename = u'test.mpd'
@@ -156,10 +158,10 @@ class User(Model):
         u"""
         Hashes user's secret if it is not already hashed.
 
-        **Example usage**:
+        **Example usage**
 
         >>> import copy
-        >>> from oscied_models_test import USER_TEST
+        >>> from .models_test import USER_TEST
         >>> user = copy.copy(USER_TEST)
         >>> user.is_secret_hashed
         False
@@ -182,10 +184,10 @@ class User(Model):
         u"""
         Returns True if secret is equal to user's secret.
 
-        **Example usage**:
+        **Example usage**
 
         >>> import copy
-        >>> from oscied_models_test import USER_TEST
+        >>> from .models_test import USER_TEST
         >>> user = copy.copy(USER_TEST)
         >>> user.verify_secret(u'bad_secret')
         False
@@ -215,7 +217,7 @@ class TransformProfile(Model):
     def is_dash(self):
         u"""
         >>> import copy
-        >>> from oscied_models_test import TRANSFORM_PROFILE_TEST
+        >>> from .models_test import TRANSFORM_PROFILE_TEST
         >>> profile = copy.copy(TRANSFORM_PROFILE_TEST)
         >>> assert(not profile.is_dash)
         >>> profile.encoder_name = u'dashcast'

@@ -24,11 +24,9 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import os, sys
+import sys
 from codecs import open
-from setuptools import setup
-
-os.chdir(os.path.abspath(os.path.dirname(__file__)))
+from setuptools import setup, find_packages
 
 major, minor = sys.version_info[:2]
 kwargs = {}
@@ -70,7 +68,9 @@ Programming Language :: Python :: 3.2
 Programming Language :: Python :: 3.3
 """
 
-keywords = ['TODO', 'TODO']
+keywords = [
+    'amazon', 'api', 'cloud', 'distribution', 'mpeg-dash', 'juju', 'hybrid cloud', 'maas', 'restful', 'transcoding'
+]
 
 install_requires=[
       'configobj',  # FIXME version
@@ -80,14 +80,14 @@ install_requires=[
       'passlib',    # FIXME version
       'pyaml',      # FIXME version
       'pymongo',    # FIXME version
-      #'pyutils',   # installed by setup.sh
+      #'pytoolbox>=v5.1.9-beta',  # installed by setup.sh
       'requests',   # FIXME version
       'six'         # FIXME version
 ]
 
 setup(name=u'oscied-lib',
       version='2.29.40',
-      packages=['oscied_lib'],
+      packages=find_packages(exclude=['*.pytoolbox', '*.pytoolbox.*', 'tests', 'tests.*']),
       description='Library of EBU/UER OSCIED Project',
       long_description=open('README.rst', 'r', encoding='utf-8').read(),
       author='David Fischer',
@@ -97,8 +97,6 @@ setup(name=u'oscied-lib',
       classifiers=filter(None, classifiers.split('\n')),
       keywords=keywords,
       install_requires=install_requires,
-      #dependency_links=['git+https://github.com/davidfischer-ch/pyutils.git@v4.8.7-beta#egg=pyutils'],
-      setup_requires=['coverage', 'mock', 'nose'],
       tests_require=['coverage', 'mock', 'nose'],
       # Thanks to https://github.com/graingert/django-browserid/commit/46c763f11f76b2f3ba365b164196794a37494f44
-      test_suite='tests.runtests.main', **kwargs)
+      test_suite='tests.oscied_lib_runtests.main', **kwargs)
