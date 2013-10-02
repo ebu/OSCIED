@@ -24,35 +24,32 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+from __future__ import absolute_import
+
 import logging, mongomock, os, pymongo, re, smtplib, uuid
-#from celery import current_app
-#from celery.task.control import inspect
 from celery.task.control import revoke
-#from celery.events.state import state
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from flask import abort
 from jinja2 import Template
-from kitchen.text.converters import to_bytes
 from pymongo.errors import DuplicateKeyError
 from random import randint
 from requests import get, patch, post, delete
 
-import PublisherWorker, TransformWorker
-from oscied_config_test import ORCHESTRA_CONFIG_TEST
-from oscied_models import Media, User, TransformProfile, PublisherTask, TransformTask, ENCODERS_NAMES
-from oscied_util import Callback, Storage
-from plugit_api import PlugItAPI
-
-import pyutils.py_juju as juju
-from pyutils.pyutils import UUID_ZERO
-from pyutils.py_datetime import datetime_now
-from pyutils.py_flask import json_response, map_exceptions
-from pyutils.py_juju import get_unit_path, juju_do
-from pyutils.py_serialization import dict2object, object2dict, object2json
-from pyutils.py_unicode import csv_reader
-from pyutils.py_subprocess import rsync, ssh
-from pyutils.py_validation import valid_uuid
+from . import PublisherWorker, TransformWorker
+from .config_test import ORCHESTRA_CONFIG_TEST
+from .models import Media, User, TransformProfile, PublisherTask, TransformTask, ENCODERS_NAMES
+from .utils import Callback, Storage
+from .plugit_api import PlugItAPI
+from .pytoolbox import juju
+from .pytoolbox.datetime import datetime_now
+from .pytoolbox.encoding import csv_reader, to_bytes
+from .pytoolbox.flask import json_response, map_exceptions
+from .pytoolbox.juju import get_unit_path, juju_do
+from .pytoolbox.pyutils import UUID_ZERO
+from .pytoolbox.serialization import dict2object, object2dict, object2json
+from .pytoolbox.subprocess import rsync, ssh
+from .pytoolbox.validation import valid_uuid
 
 ABOUT = u"Orchestra : EBU's OSCIED Orchestrator by David Fischer 2012-2013"
 
@@ -1155,6 +1152,6 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False, add_users=
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
-    from pyutils.py_unicode import configure_unicode
+    from .pytoolbox.encoding import configure_unicode
     configure_unicode()
-    get_test_orchestra()
+    get_test_api_core()

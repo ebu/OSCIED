@@ -25,10 +25,10 @@
 # Retrieved from https://github.com/ebu/OSCIED
 
 from os.path import dirname, join
-from library.oscied_lib.oscied_juju import OsciedEnvironment
-from library.oscied_lib.pyutils.py_console import confirm
-from library.oscied_lib.pyutils.py_juju import DeploymentScenario
-from library.oscied_lib.pyutils.py_unicode import configure_unicode
+from library.oscied_lib.juju import OsciedEnvironment
+from library.oscied_lib.pytoolbox.console import confirm
+from library.oscied_lib.pytoolbox.encoding import configure_unicode
+from library.oscied_lib.pytoolbox.juju import DeploymentScenario
 
 description = u'Launch oscied (minimal setup) locally (LXC provider)'
 

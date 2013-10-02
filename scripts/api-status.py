@@ -27,8 +27,8 @@
 if __name__ == '__main__':
     from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
     from pprint import pprint
-    from library.oscied_lib.oscied_api import OrchestraAPIClient
-    from library.oscied_lib.pyutils.py_unicode import configure_unicode
+    from library.oscied_lib.api import OrchestraAPIClient
+    from library.oscied_lib.pytoolbox.encoding import configure_unicode
 
     configure_unicode()
 

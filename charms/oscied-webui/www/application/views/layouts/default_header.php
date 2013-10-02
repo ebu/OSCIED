@@ -41,7 +41,7 @@
                            <li><a href="http://api.mongodb.org/python/current/" target="_blank">Module for working with MongoDB</a></li>
                            <li><a href="http://www.mongodb.org/" target="_blank">MongoDB Scalable NoSQL DB</a></li>
                            <li><a href="http://www.rabbitmq.com/" target="_blank">RabbitMQ Message Queue</a></li>
-                           <li><a href="https://github.com/davidfischer-ch/pyutils" target="_blank">pyutils Toolbox for Python Scripts</a></li>
+                           <li><a href="https://github.com/davidfischer-ch/pytoolbox" target="_blank">pytoolbox Toolbox for Python Scripts</a></li>
                         </ul>
                      </li>
                      <li class="dropdown-submenu">
@@ -51,14 +51,14 @@
                            <li><a href="http://www.celeryproject.org/" target="_blank">Celery Distributed Task Queue</a></li>
                            <li><a href="http://www.gluster.org/" target="_blank">GlusterFS HA Storage</a></li>
                            <li><a href="http://h264.code-shop.com/trac" target="_blank">H.264 Streaming Moduel</a></li>
-                           <li><a href="https://github.com/davidfischer-ch/pyutils" target="_blank">pyutils Toolbox for Python Scripts</a></li>
+                           <li><a href="https://github.com/davidfischer-ch/pytoolbox" target="_blank">pytoolbox Toolbox for Python Scripts</a></li>
                         </ul>
                      </li>
                      <li class="dropdown-submenu">
                         <a tabindex="-1" href="#">Storage</a>
                         <ul class="dropdown-menu">
                            <li><a href="http://www.gluster.org/" target="_blank">GlusterFS HA Storage</a></li>
-                           <li><a href="https://github.com/davidfischer-ch/pyutils" target="_blank">pyutils Toolbox for Python Scripts</a></li>
+                           <li><a href="https://github.com/davidfischer-ch/pytoolbox" target="_blank">pytoolbox Toolbox for Python Scripts</a></li>
                         </ul>
                      </li>
                      <li class="dropdown-submenu">
@@ -69,7 +69,7 @@
                            <li><a href="http://gpac.wp.mines-telecom.fr/dashcast/" target="_blank">GPAC/DashCast MPEG-DASH Encoder</a></li>
                            <li><a href="http://www.gluster.org/" target="_blank">GlusterFS HA Storage</a></li>
                            <li><a href="https://github.com/OpenHEVC/openHEVC" target="_blank">openHEVC Light HEVC Decoding Library</a></li>
-                           <li><a href="https://github.com/davidfischer-ch/pyutils" target="_blank">pyutils Toolbox for Python Scripts</a></li>
+                           <li><a href="https://github.com/davidfischer-ch/pytoolbox" target="_blank">pytoolbox Toolbox for Python Scripts</a></li>
                            <li><a href="http://www.videolan.org/developers/x264.html" target="_blank">x264 H.264 Decoder/Encoder</a></li>
                         </ul>
                      </li>
@@ -79,7 +79,7 @@
                            <li><a href="http://httpd.apache.org/" target="_blank">Apache 2 HTTP Server</a></li>
                            <li><a href="http://ellislab.com/codeigniter" target="_blank">Code Igniter PHP Web Framework</a></li>
                            <li><a href="http://www.mysql.fr/" target="_blank">MySQL Database</a></li>
-                           <li><a href="https://github.com/davidfischer-ch/pyutils" target="_blank">pyutils Toolbox for Python Scripts</a></li>
+                           <li><a href="https://github.com/davidfischer-ch/pytoolbox" target="_blank">pytoolbox Toolbox for Python Scripts</a></li>
                            <li><a href="http://getbootstrap.com/" target="_blank">Twitter CSS Bootstrap</a></li>
                         </ul>
                      </li>

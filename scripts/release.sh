@@ -1,7 +1,7 @@
-# -*- coding: utf-8 -*-
+#!/usr/bin/env bash
 
 #**********************************************************************************************************************#
-#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARY
+#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : SCRIPTS
 #
 #  Project Manager : Bram Tullemans (tullemans@ebu.ch)
 #  Main Developer  : David Fischer (david.fischer.ch@gmail.com)
@@ -23,24 +23,12 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from oscied_config import (
-    OrchestraLocalConfig, PublisherLocalConfig, StorageLocalConfig, TransformLocalConfig, WebuiLocalConfig)
-
-ORCHESTRA_CONFIG_TEST = OrchestraLocalConfig(
-    storage_address=u'127.0.0.1', storage_fstype=u'glusterfs', storage_mountpoint=u'medias_volume_0',
-    api_url=u'http://127.0.0.1:5000', root_secret=u'toto', node_secret=u'abcd', mongo_admin_connection=u'',
-    mongo_node_connection=u'...', rabbit_connection=u'...')
-
-PUBLISHER_CONFIG_TEST = PublisherLocalConfig(
-    api_nat_socket=u'129.194.185.47:5000', storage_address=u'10.1.1.2', storage_fstype=u'glusterfs',
-    storage_mountpoint=u'medias_volume')
-
-STORAGE_CONFIG_TEST = StorageLocalConfig(u'*', False)
-
-TRANSFORM_CONFIG_TEST = TransformLocalConfig(
-    api_nat_socket=u'129.194.185.47:5000', storage_address=u'10.1.1.2', storage_fstype=u'glusterfs',
-    storage_mountpoint=u'medias_volume')
-
-WEBUI_CONFIG_TEST = WebuiLocalConfig(
-    api_url=u'10.10.4.3:5000', storage_address=u'10.1.1.2', storage_fstype=u'glusterfs',
-    storage_mountpoint=u'medias_volume')
+cd ../library || { echo '[ERROR] Unable to find directory ../library'; exit 1; }
+sudo python2 setup.py test || { echo '[ERROR] Python 2 unit-test of oscied_lib failed'; exit 2; }
+#sudo python3 setup.py test || { echo '[ERROR] Python 3 unit-test of oscied_lib failed'; exit 3; }
+version=$(cat setup.py | grep version= | cut -d'=' -f2 | sed "s:',*::g")
+echo "Release version $version, press enter to continue ..."
+read a
+git push || { echo '[ERROR] Unable to push to GitHub'; exit 4; }
+git tag "$version" && git push origin "$version" || { echo '[ERROR] Unable to add release tag'; exit 5; }
+#sudo python setup.py register && sudo python setup.py sdist upload

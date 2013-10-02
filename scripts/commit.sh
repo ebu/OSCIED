@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #**********************************************************************************************************************#
-#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARY
+#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : SCRIPTS
 #
 #  Project Manager : Bram Tullemans (tullemans@ebu.ch)
 #  Main Developer  : David Fischer (david.fischer.ch@gmail.com)
@@ -23,18 +23,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-oscied_install()
-{
-  base=$(cd "$(dirname "$0")"; pwd)
-  echo 'Install OSCIED Library'
-  echo '1/3 - Install Python modules prerequisites'
-  apt-get -y install build-essential git-core libyaml-dev libxml2-dev libxslt-dev libz-dev python-dev python-kitchen \
-    python-pip
-  echo '2/3 - Install Python module called pytoolbox'
-  cd "$base/pytoolbox-source" && pip install --upgrade -e .[flask,mongo] || \
-    { echo 'Unable to install pytoolbox module' 1>&2; exit 2; }
-  echo '3/3 - Install Python module called oscied_lib'
-  cd "$base" && ./setup.py develop || { echo 'Unable to install oscied_lib module' 1>&2; exit 3; }
-}
-
-oscied_install 2>&1 3>&1 > 'setup.log'
+cd ../library || { echo '[ERROR] Unable to find directory ../library'; exit 1; }
+sudo python2 setup.py test || { echo '[ERROR] Python 2 unit-test of oscied_lib failed'; exit 2; }
+#sudo python3 setup.py test || { echo '[ERROR] Python 3 unit-test of oscied_lib failed'; exit 3; }
+git commit

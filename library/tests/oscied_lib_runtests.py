@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 #**********************************************************************************************************************#
@@ -20,9 +21,10 @@
 # You should have received a copy of the EUPL General Public License along with this project.
 # If not, see he EUPL licence v1.1 is available in 22 languages:
 #     22-07-2013, <https://joinup.ec.europa.eu/software/page/eupl/licence-eupl>
-#
-# Retrieved from https://github.com/ebu/OSCIED
 
-from oscied_util import Callback
+def main():
+    from oscied_lib.pytoolbox.unittest import runtests
+    return runtests(__file__, cover_packages=[u'oscied_lib'], packages=[u'oscied_lib', u'tests'], ignore='django.py')
 
-CALLBACK_TEST = Callback(u'http://127.0.0.1:5000/media', u'toto', u'1234')
+if __name__ == u'__main__':
+    main()

@@ -1,5 +1,6 @@
 build/
 cover/
 dist/
+*.egg/
 .coverage
 setup.log

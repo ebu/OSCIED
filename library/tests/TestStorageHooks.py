@@ -22,17 +22,14 @@
 # If not, see he EUPL licence v1.1 is available in 22 languages:
 #     22-07-2013, <https://joinup.ec.europa.eu/software/page/eupl/licence-eupl>
 
-import os, sys
-from os.path import abspath, dirname
-sys.path.append(abspath(dirname(dirname(__file__))))
-
+import os
 from copy import copy
 from mock import call, Mock
 from nose.tools import assert_equal, raises
-from oscied_lib.pyutils.py_juju import DEFAULT_OS_ENV
-import oscied_lib.pyutils.py_unittest as py_unittest
-from oscied_lib.pyutils.py_unittest import mock_cmd, mock_side_effect
-from oscied_lib.oscied_config import StorageLocalConfig
+import oscied_lib.pytoolbox.unittest as py_unittest
+from oscied_lib.pytoolbox.juju import DEFAULT_OS_ENV
+from oscied_lib.pytoolbox.unittest import mock_cmd, mock_side_effect
+from oscied_lib.config import StorageLocalConfig
 from oscied_lib.StorageHooks import StorageHooks
 
 CONFIG = {u'verbose': False, u'replica_count': 1, u'allowed_ips': u'*', u'bricks_root_path': u'/mnt/somewhere'}
@@ -95,27 +92,30 @@ class TestStorageHooks(object):
         self.hooks.local_config.allowed_ips = []
 
         py_unittest.MOCK_SIDE_EFFECT_RETURNS = [
-            u'', u'', u'', u'',  # apt-get + ntp
+            u'', u'', u'', u'', u'',  # apt-get + ntp
             u'', u'',  # volume_create_or_expand
             {u'stdout': u'\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started'
             u'\nNumber of Bricks: 1\nTransport-type: tcp\nBricks:'
-            u'\nBrick1: 10.1.1.10:/exp14\n'}, {'stdout': ''}]
+            u'\nBrick1: 10.1.1.10:/exp14\n'}, {u'stdout': u''}]
 
-        self.hooks.private_address = '10.1.1.10'
+        self.hooks.private_address = u'10.1.1.10'
         self.hooks.hook_uninstall = Mock(return_value=None)
         self.hooks.cmd = Mock(side_effect=mock_side_effect)
         self.hooks.volume_set_allowed_ips = Mock(return_value=None)
-        self.hooks.trigger(hook_name='install')
+        self.hooks.trigger(hook_name=u'install')
         self.hooks.volume_set_allowed_ips.assert_called_once()
-        assert_equal(self.hooks.cmd.call_args_list, [
-            call(u'apt-get -y update', fail=False),
-            call(u'apt-get -y upgrade'),
-            call(u'apt-get -y install ntp glusterfs-server nfs-common'),
-            call(u'service ntp restart'),
-            call(u'gluster volume create medias_volume_14  10.1.1.10:/mnt/somewhere/bricks/exp14', fail=True, input=None, cli_input=None),
-            call(u'gluster volume start medias_volume_14 ', fail=True, input=None, cli_input=None),
-            call(u'gluster volume info medias_volume_14 ', fail=False, input=None, cli_input=None),
-            call(u'gluster volume rebalance medias_volume_14 status', fail=False, input=None, cli_input=None)])
+        calls = self.hooks.cmd.call_args_list
+        assert_equal(calls[0], call(u'apt-get -y update', fail=False))
+        assert_equal(calls[1], call(u'apt-get -y -f install'))
+        assert_equal(calls[2], call(u'apt-get -y upgrade'))
+        assert_equal(calls[3], call(u'apt-get -y install ntp glusterfs-server nfs-common'))
+        assert_equal(calls[4], call(u'service ntp restart'))
+        assert_equal(calls[5], call(u'gluster volume create medias_volume_14  10.1.1.10:/mnt/somewhere/bricks/exp14',
+                     fail=True, input=None, cli_input=None))
+        assert_equal(calls[6], call(u'gluster volume start medias_volume_14 ', fail=True, input=None, cli_input=None))
+        assert_equal(calls[7], call(u'gluster volume info medias_volume_14 ', fail=False, input=None, cli_input=None))
+        assert_equal(calls[8], call(u'gluster volume rebalance medias_volume_14 status', fail=False, input=None,
+                     cli_input=None))
 
         self.hooks.relation_set = Mock(return_value=None)
         self.hooks.relation_get = Mock(return_value=u'129.194.185.47')
@@ -142,7 +142,3 @@ class TestStorageHooks(object):
         # self.hooks.peer_probe = Mock(return_value=None)
         # self.hooks.trigger(hook_name=u'peer_relation_joined')
         # self.hooks.trigger(hook_name=u'peer_relation_changed')
-
-if __name__ == u'__main__':
-    import nose
-    nose.runmodule(argv=[__file__], exit=False)

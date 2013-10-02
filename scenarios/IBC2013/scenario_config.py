@@ -32,9 +32,9 @@ TODO
 """
 
 import os
-from library.oscied_lib.oscied_constants import SERVICE_TO_LABEL
-from library.oscied_lib.oscied_juju import ServiceStatistics
-from library.oscied_lib.pyutils.py_collections import EventsTable
+from library.oscied_lib.constants import SERVICE_TO_LABEL
+from library.oscied_lib.juju import ServiceStatistics
+from library.oscied_lib.pytoolbox.collections import EventsTable
 
 SCENARIO_PATH = os.path.abspath(os.path.expanduser(os.path.dirname(__file__)))
 CHARTS_PATH = os.path.join(SCENARIO_PATH, 'charts')

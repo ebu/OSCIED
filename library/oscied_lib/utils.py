@@ -23,13 +23,15 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+from __future__ import absolute_import
+
 import os, requests, shutil, time
-from kitchen.text.converters import to_bytes
 from urlparse import urlparse, ParseResult
-from oscied_models import Media
-from pyutils.py_ffmpeg import get_media_duration
-from pyutils.py_filesystem import get_size, try_makedirs
-from pyutils.py_serialization import JsoneableObject
+from .models import Media
+from .pytoolbox.encoding import to_bytes
+from .pytoolbox.ffmpeg import get_media_duration
+from .pytoolbox.filesystem import get_size, try_makedirs
+from .pytoolbox.serialization import JsoneableObject
 
 
 class Callback(JsoneableObject):
@@ -46,10 +48,10 @@ class Callback(JsoneableObject):
         u"""
         Replace network location of the media asset URI.
 
-        **Example usage**:
+        **Example usage**
 
         >>> import copy
-        >>> from oscied_util_test import CALLBACK_TEST
+        >>> from .utils_test import CALLBACK_TEST
         >>> callback = copy.copy(CALLBACK_TEST)
         >>> callback.is_valid(True)
         True

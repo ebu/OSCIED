@@ -23,21 +23,25 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+from __future__ import absolute_import
+
 import logging, pygal, random, shutil, threading, time
-import pyutils.py_juju as py_juju
 from os.path import join, splitext
 from collections import defaultdict, deque
-from kitchen.text.converters import to_bytes
 from requests.exceptions import ConnectionError, Timeout
-from oscied_api import OrchestraAPIClient, init_api
-from oscied_constants import (ENVIRONMENT_TO_LABEL, ENVIRONMENT_TO_TYPE, SERVICE_TO_LABEL, SERVICE_TO_UNITS_API,
-                              SERVICE_TO_TASKS_API)
-from oscied_models import Media, OsciedDBTask
-from pyutils.py_collections import pygal_deque
-from pyutils.py_console import confirm
-from pyutils.py_datetime import datetime_now
-from pyutils.py_juju import Environment, ERROR_STATES, juju_do
-from pyutils.py_serialization import PickleableObject
+
+from .api import OrchestraAPIClient, init_api
+from .constants import (ENVIRONMENT_TO_LABEL, ENVIRONMENT_TO_TYPE, SERVICE_TO_LABEL, SERVICE_TO_UNITS_API,
+                        SERVICE_TO_TASKS_API)
+from .models import Media
+from .pytoolbox import juju
+from .pytoolbox.collections import pygal_deque
+from .pytoolbox.console import confirm
+from .pytoolbox.datetime import datetime_now
+from .pytoolbox.encoding import to_bytes
+from .pytoolbox.mongo import TaskModel
+from .pytoolbox.juju import Environment, ERROR_STATES, juju_do
+from .pytoolbox.serialization import PickleableObject
 
 
 class OsciedEnvironment(Environment):
@@ -152,7 +156,7 @@ class ServiceStatistics(PickleableObject):
 
     @property
     def tasks_status(self):
-        return (OsciedDBTask.PROGRESS,) # OsciedDBTask.PENDING, OsciedDBTask.SUCCESS, 
+        return (TaskModel.PROGRESS,) # TaskModel.PENDING, TaskModel.SUCCESS,
 
     def update(self, now_string, planned, units, tasks):
         self.units_planned.append(planned)
@@ -169,12 +173,12 @@ class ServiceStatistics(PickleableObject):
             current = defaultdict(int)
             for task in tasks:
                 status = task.status
-                if status in OsciedDBTask.PENDING_STATUS:
-                    current[OsciedDBTask.PENDING] += 1
-                elif status in OsciedDBTask.RUNNING_STATUS:
-                    current[OsciedDBTask.PROGRESS] += 1
-                elif status in OsciedDBTask.SUCCESS_STATUS:
-                    current[OsciedDBTask.SUCCESS] += 1
+                if status in TaskModel.PENDING_STATUS:
+                    current[TaskModel.PENDING] += 1
+                elif status in TaskModel.RUNNING_STATUS:
+                    current[TaskModel.PROGRESS] += 1
+                elif status in TaskModel.SUCCESS_STATUS:
+                    current[TaskModel.SUCCESS] += 1
                 # ... else do not add to statistics.
         for status, history in self.tasks_current.items():
             history.append(current[status])
@@ -342,7 +346,7 @@ class TasksThread(OsciedEnvironmentThread):
         profiles = api_client.transform_profiles.list()
         tasks = api_client.transform_tasks.list(head=True)
         counter = (self.environment.transform_max_pending_tasks -
-                   sum(1 for task in tasks if task.status in OsciedDBTask.PENDING_STATUS))
+                   sum(1 for task in tasks if task.status in TaskModel.PENDING_STATUS))
         if counter <= 0:
             print(u'No need to create any media asset, already {0} pending.'.format(self.output_counter))
         else:
@@ -360,7 +364,7 @@ class TasksThread(OsciedEnvironmentThread):
     def cleanup_transform_tasks(self, api_client, auto=False, cleanup_progress_time=20):
         u"""Cleanup transformation tasks that stuck in progress status without updating the eta_time."""
         tasks, new_time = api_client.transform_tasks.list(head=True), time.time()
-        progress_tasks = [t for t in tasks if t.status == OsciedDBTask.PROGRESS]
+        progress_tasks = [t for t in tasks if t.status == TaskModel.PROGRESS]
         delta_time = new_time - self.progress_tasks[0]
         if cleanup_progress_time and delta_time > cleanup_progress_time:
             for task in progress_tasks:

@@ -24,19 +24,19 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import os
+import sys
 from codecs import open
-from setuptools import setup, sys
+from setuptools import setup, find_packages
 
 major, minor = sys.version_info[:2]
 kwargs = {}
 if major >= 3:
-    print(u'Converting code to Python 3 helped by 2to3')
-    kwargs[u'use_2to3'] = True
+    print('Converting code to Python 3 helped by 2to3')
+    kwargs['use_2to3'] = True
 
 # https://pypi.python.org/pypi?%3Aaction=list_classifiers
 
-classifiers = u"""
+classifiers = """
 Development Status :: 4 - Beta
 Environment :: Console
 Environment :: OpenStack
@@ -46,7 +46,7 @@ Intended Audience :: Developers
 Intended Audience :: Science/Research
 Intended Audience :: Information Technology
 Intended Audience :: Telecommunications Industry
-License :: OSI Approved :: GNU GPLv3
+License :: OSI Approved :: European Union Public Licence 1.1 (EUPL 1.1)
 Natural Language :: English
 Operating System :: POSIX :: Linux
 Programming Language :: Python
@@ -61,36 +61,42 @@ Topic :: Internet :: WWW/HTTP :: WSGI :: Application
 Topic :: Multimedia :: Video
 """
 
-not_yet_tested = u"""
+not_yet_tested = """
 Topic :: Multimedia :: Sound/Audio
 Programming Language :: Python :: 3
 Programming Language :: Python :: 3.2
 Programming Language :: Python :: 3.3
 """
 
+keywords = [
+    'amazon', 'api', 'cloud', 'distribution', 'mpeg-dash', 'juju', 'hybrid cloud', 'maas', 'restful', 'transcoding'
+]
+
+install_requires=[
+      'configobj',  # FIXME version
+      'celery',     # FIXME version
+      'flask',      # FIXME version
+      'mongomock',  # FIXME version
+      'passlib',    # FIXME version
+      'pyaml',      # FIXME version
+      'pymongo',    # FIXME version
+      #'pytoolbox>=v5.1.9-beta',  # installed by setup.sh
+      'requests',   # FIXME version
+      'six'         # FIXME version
+]
+
 setup(name=u'oscied-lib',
-      version=u'2.29.40',
-      packages=['oscied_lib'],
-      description=u'Library of EBU/UER OSCIED Project',
-      long_description=open(os.path.join(os.path.dirname(__file__), u'README.rst'), u'r', encoding=u'utf-8').read(),
-      author=u'David Fischer',
-      author_email=u'david.fischer.ch@gmail.com',
-      url=u'https://github.com/ebu/OSCIED',
-      license=u'GNU GPLv3',  # FIXME update license
-      install_requires=[
-            u'configobj',    # FIXME version
-            u'celery',       # FIXME version
-            u'flask',        # FIXME version
-            u'mongomock',    # FIXME version
-            u'passlib',      # FIXME version
-            u'pyaml',        # FIXME version
-            u'pymongo',      # FIXME version
-            #'pyutils',     # installed by setup.sh
-            u'requests',     # FIXME version
-            u'six'],         # FIXME version
-      #dependency_links=[u'https://github.com/davidfischer-ch/pyutils/tarball/master#egg=pyutils-2.0.1-beta'],
-      setup_requires=[u'coverage', u'mock', u'nose'],
-      tests_require=[u'coverage', u'mock', u'nose'],
+      version='2.29.40',
+      packages=find_packages(exclude=['*.pytoolbox', '*.pytoolbox.*', 'tests', 'tests.*']),
+      description='Library of EBU/UER OSCIED Project',
+      long_description=open('README.rst', 'r', encoding='utf-8').read(),
+      author='David Fischer',
+      author_email='david.fischer.ch@gmail.com',
+      url='https://github.com/ebu/OSCIED',
+      license='EUPL 1.1',
+      classifiers=filter(None, classifiers.split('\n')),
+      keywords=keywords,
+      install_requires=install_requires,
+      tests_require=['coverage', 'mock', 'nose'],
       # Thanks to https://github.com/graingert/django-browserid/commit/46c763f11f76b2f3ba365b164196794a37494f44
-      test_suite="tests.runtests.main",
-      **kwargs)
+      test_suite='tests.oscied_lib_runtests.main', **kwargs)

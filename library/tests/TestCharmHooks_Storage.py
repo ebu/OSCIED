@@ -22,20 +22,16 @@
 # If not, see he EUPL licence v1.1 is available in 22 languages:
 #     22-07-2013, <https://joinup.ec.europa.eu/software/page/eupl/licence-eupl>
 
-import os, sys
-from os.path import abspath, dirname
-sys.path.append(abspath(dirname(dirname(__file__))))
-
-import shutil
-import oscied_lib.pyutils.py_unittest
+import os, shutil
 from codecs import open
 from copy import copy
 from mock import call
 from nose.tools import assert_equal
-from oscied_lib.pyutils.py_juju import DEFAULT_OS_ENV
-from oscied_lib.pyutils.py_unittest import mock_cmd, mock_side_effect
-from oscied_lib.oscied_config import TransformLocalConfig
-from oscied_lib.oscied_hook_base import CharmHooks_Storage
+import oscied_lib.pytoolbox.unittest as py_unittest
+from oscied_lib.pytoolbox.juju import DEFAULT_OS_ENV
+from oscied_lib.pytoolbox.unittest import mock_cmd, mock_side_effect
+from oscied_lib.config import TransformLocalConfig
+from oscied_lib.hooks_base import CharmHooks_Storage
 
 CONFIG_DEFAULT = {
     u'storage_address': u'', u'storage_nat_address': u'', u'storage_fstype': u'', u'storage_mountpoint': u'',
@@ -90,7 +86,7 @@ class TestCharmHooks_Storage(object):
     def test_storage_remount_storage_config_nat_hosts_updated(self):
         self.hooks, system_hosts = self.create_hooks(CharmHooks_Storage_tmp, CONFIG_STORAGE_NAT)
         self.hooks.cmd = mock_cmd()
-        oscied_lib.pyutils.py_unittest.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
+        py_unittest.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
         self.hooks.storage_remount()
         assert_equal(self.hooks.cmd.call_args_list,
             [call([u'mount', u'-t', u'glusterfs', u'proxy.ch:/medias_volume_0', u'/mnt/storage'])])
@@ -100,7 +96,7 @@ class TestCharmHooks_Storage(object):
     def test_storage_remount_storage_config(self):
         self.hooks, system_hosts = self.create_hooks(CharmHooks_Storage_tmp, CONFIG_STORAGE)
         self.hooks.cmd = mock_cmd()
-        oscied_lib.pyutils.py_unittest.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
+        py_unittest.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
         self.hooks.storage_remount()
         assert_equal(self.hooks.cmd.call_args_list,
             [call([u'mount', u'-t', u'glusterfs', u'home.ch:/medias_volume_0', u'/mnt/storage'])])
@@ -109,9 +105,9 @@ class TestCharmHooks_Storage(object):
     def test_storage_remount_storage_config_do_not_re_re_mount(self):
         self.hooks, system_hosts = self.create_hooks(CharmHooks_Storage_tmp, CONFIG_STORAGE)
         self.hooks.cmd = mock_cmd()
-        oscied_lib.pyutils.py_unittest.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
+        py_unittest.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
         self.hooks.storage_remount()
-        oscied_lib.pyutils.py_unittest.MOCK_SIDE_EFFECT_RETURNS = [Exception(u'oups')]
+        py_unittest.MOCK_SIDE_EFFECT_RETURNS = [Exception(u'oups')]
         self.hooks.storage_remount()
         self.hooks.storage_remount()
         assert_equal(self.hooks.cmd.call_args_list,
@@ -121,15 +117,11 @@ class TestCharmHooks_Storage(object):
     def test_storage_remount_do_not_re_re_mount(self):
         self.hooks, system_hosts = self.create_hooks(CharmHooks_Storage_tmp, CONFIG_DEFAULT)
         self.hooks.cmd = mock_cmd()
-        oscied_lib.pyutils.py_unittest.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
+        py_unittest.MOCK_SIDE_EFFECT_RETURNS = [False, False, True, True]
         self.hooks.storage_remount(address=u'home.ch', fstype=u'glusterfs', mountpoint=u'my_vol_0')
-        oscied_lib.pyutils.py_unittest.MOCK_SIDE_EFFECT_RETURNS = [Exception(u'oups')]
+        py_unittest.MOCK_SIDE_EFFECT_RETURNS = [Exception(u'oups')]
         self.hooks.storage_remount(address=u'home.ch', fstype=u'glusterfs', mountpoint=u'my_vol_0')
         self.hooks.storage_remount(address=u'home.ch', fstype=u'glusterfs', mountpoint=u'my_vol_0')
         assert_equal(self.hooks.cmd.call_args_list,
             [call([u'mount', u'-t', u'glusterfs', u'home.ch:/my_vol_0', u'/mnt/storage'])])
         assert_equal(system_hosts, open(self.hooks.local_config.hosts_file, u'r', u'utf-8').readlines())
-
-if __name__ == u'__main__':
-    import nose
-    nose.runmodule(argv=[__file__], exit=False)

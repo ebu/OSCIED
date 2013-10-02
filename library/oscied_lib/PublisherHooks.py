@@ -24,12 +24,14 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+from __future__ import absolute_import
+
 import os, multiprocessing, setuptools.archive_util, shutil
 from codecs import open
-from oscied_config import PublisherLocalConfig
-from oscied_hook_base import CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Website
-from pyutils.py_filesystem import chown, first_that_exist
-from pyutils.py_juju import DEFAULT_OS_ENV
+from .config import PublisherLocalConfig
+from .hooks_base import CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Website
+from .pytoolbox.filesystem import chown, first_that_exist
+from .pytoolbox.juju import DEFAULT_OS_ENV
 
 
 class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Website):
@@ -127,7 +129,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
-    from pyutils.py_unicode import configure_unicode
+    from .pytoolbox.encoding import configure_unicode
     configure_unicode()
     PublisherHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-publisher/metadata.yaml'),
                    first_that_exist(u'config.yaml',      u'../../charms/oscied-publisher/config.yaml'),

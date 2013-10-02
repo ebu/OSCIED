@@ -23,9 +23,11 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+from __future__ import absolute_import
+
 import logging
 from os.path import join, sep
-from pyutils.py_serialization import PickleableObject
+from .pytoolbox.serialization import PickleableObject
 
 MEDIAS_PATH, UPLOADS_PATH = u'medias', u'uploads'
 
@@ -46,7 +48,7 @@ class CharmLocalConfig(PickleableObject):
         u"""
         Reset attributes to theirs default values.
 
-        **Example usage**:
+        **Example usage**
 
         >>> config = CharmLocalConfig(verbose=True)
         >>> config._pickle_filename = u'my_file.pkl'
@@ -90,10 +92,10 @@ class CharmLocalConfig_Storage(CharmLocalConfig):
         u"""
         Returns storage path of a media stored into medias directory.
 
-        **Example usage**:
+        **Example usage**
 
         >>> import copy
-        >>> from oscied_models_test import MEDIA_TEST
+        >>> from .models_test import MEDIA_TEST
         >>> media = copy.copy(MEDIA_TEST)
         >>> config = CharmLocalConfig_Storage()
         >>> config.storage_address = u'10.1.1.2'
@@ -123,7 +125,7 @@ class CharmLocalConfig_Storage(CharmLocalConfig):
         u"""
         Returns storage URI.
 
-        **Example usage**:
+        **Example usage**
 
         >>> config = CharmLocalConfig_Storage()
         >>> config.storage_address = u'10.1.1.2'
@@ -153,9 +155,9 @@ class CharmLocalConfig_Storage(CharmLocalConfig):
         u"""
         Returns storage URI.
 
-        **Example usage**:
+        **Example usage**
 
-        >>> from oscied_models_test import MEDIA_TEST
+        >>> from .models_test import MEDIA_TEST
         >>> config = CharmLocalConfig_Storage()
         >>> config.storage_address = u'10.1.1.2'
         >>> config.storage_fstype = u'glusterfs'

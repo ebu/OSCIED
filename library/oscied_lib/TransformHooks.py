@@ -24,12 +24,14 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+from __future__ import absolute_import
+
 import os
-from oscied_config import TransformLocalConfig
-from oscied_hook_base import CharmHooks_Storage, CharmHooks_Subordinate
-from pyutils.py_filesystem import first_that_exist
-from pyutils.py_juju import DEFAULT_OS_ENV
-from pyutils.py_subprocess import make
+from .config import TransformLocalConfig
+from .hooks_base import CharmHooks_Storage, CharmHooks_Subordinate
+from .pytoolbox.filesystem import first_that_exist
+from .pytoolbox.juju import DEFAULT_OS_ENV
+from .pytoolbox.subprocess import make
 
 
 class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
@@ -131,7 +133,7 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
-    from pyutils.py_unicode import configure_unicode
+    from pytoolbox.py_unicode import configure_unicode
     configure_unicode()
     TransformHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-transform/metadata.yaml'),
                    first_that_exist(u'config.yaml',      u'../../charms/oscied-transform/config.yaml'),
