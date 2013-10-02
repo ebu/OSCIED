@@ -27,11 +27,12 @@
 from __future__ import absolute_import
 
 import os
+from pytoolbox.filesystem import first_that_exist
+from pytoolbox.juju import DEFAULT_OS_ENV
+from pytoolbox.subprocess import make
+
 from .config import TransformLocalConfig
 from .hooks_base import CharmHooks_Storage, CharmHooks_Subordinate
-from .pytoolbox.filesystem import first_that_exist
-from .pytoolbox.juju import DEFAULT_OS_ENV
-from .pytoolbox.subprocess import make
 
 
 class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):

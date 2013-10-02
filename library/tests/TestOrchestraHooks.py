@@ -26,8 +26,8 @@ import os, shutil
 from copy import copy
 from mock import call
 from nose.tools import assert_equal
-from oscied_lib.pytoolbox.juju import DEFAULT_OS_ENV
-from oscied_lib.pytoolbox.unittest import mock_cmd
+from pytoolbox.juju import DEFAULT_OS_ENV
+from pytoolbox.unittest import mock_cmd
 from oscied_lib.config import OrchestraLocalConfig
 from oscied_lib.OrchestraHooks import OrchestraHooks
 
@@ -58,7 +58,7 @@ class OrchestraHooks_tmp(OrchestraHooks):
         return [u'celery']
 
 
-import oscied_lib.pytoolbox.subprocess as py_subprocess
+import pytoolbox.subprocess as py_subprocess
 py_subprocess.cmd = mock_cmd()
 
 class TestOrchestraHooks(object):

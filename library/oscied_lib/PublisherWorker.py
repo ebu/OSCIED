@@ -28,14 +28,16 @@ from __future__ import absolute_import
 import os, shutil, time
 from celery import current_task
 from celery.decorators import task
+from pytoolbox.datetime import datetime_now
+from pytoolbox.encoding import configure_unicode, to_bytes
+from pytoolbox.filesystem import recursive_copy
+from pytoolbox.serialization import object2json
+from pytoolbox.validation import valid_uri
+
 from .config import PublisherLocalConfig
 from .models import Media, PublisherTask
 from .utils import Callback
-from .pytoolbox.datetime import datetime_now
-from .pytoolbox.encoding import configure_unicode, to_bytes
-from .pytoolbox.filesystem import recursive_copy
-from .pytoolbox.serialization import object2json
-from .pytoolbox.validation import valid_uri
+
 
 configure_unicode()
 

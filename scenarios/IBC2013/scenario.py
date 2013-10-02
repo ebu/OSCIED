@@ -34,11 +34,11 @@ TODO
 # http://docs.mongodb.org/manual/reference/operator/
 # http://pygal.org/custom_styles/
 
+from pytoolbox.console import confirm
+from pytoolbox.encoding import configure_unicode
+from pytoolbox.juju import DeploymentScenario, M1_SMALL, C1_MEDIUM
 from library.oscied_lib.juju import OsciedEnvironment
 from library.oscied_lib.models import User
-from library.oscied_lib.pytoolbox.console import confirm
-from library.oscied_lib.pytoolbox.encoding import configure_unicode
-from library.oscied_lib.pytoolbox.juju import DeploymentScenario, M1_SMALL, C1_MEDIUM
 
 from scenario_config import (
     CONFIG_AMAZ, EVENTS_AMAZ, STATS_AMAZ, CONFIG_MAAS, EVENTS_MAAS, STATS_MAAS, CHARTS_PATH, SCENARIO_PATH,

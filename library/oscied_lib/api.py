@@ -33,6 +33,15 @@ from email.mime.text import MIMEText
 from flask import abort
 from jinja2 import Template
 from pymongo.errors import DuplicateKeyError
+from pytoolbox import juju
+from pytoolbox.datetime import datetime_now
+from pytoolbox.encoding import csv_reader, to_bytes
+from pytoolbox.flask import json_response, map_exceptions
+from pytoolbox.juju import get_unit_path, juju_do
+from pytoolbox.pyutils import UUID_ZERO
+from pytoolbox.serialization import dict2object, object2dict, object2json
+from pytoolbox.subprocess import rsync, ssh
+from pytoolbox.validation import valid_uuid
 from random import randint
 from requests import get, patch, post, delete
 
@@ -41,15 +50,7 @@ from .config_test import ORCHESTRA_CONFIG_TEST
 from .models import Media, User, TransformProfile, PublisherTask, TransformTask, ENCODERS_NAMES
 from .utils import Callback, Storage
 from .plugit_api import PlugItAPI
-from .pytoolbox import juju
-from .pytoolbox.datetime import datetime_now
-from .pytoolbox.encoding import csv_reader, to_bytes
-from .pytoolbox.flask import json_response, map_exceptions
-from .pytoolbox.juju import get_unit_path, juju_do
-from .pytoolbox.pyutils import UUID_ZERO
-from .pytoolbox.serialization import dict2object, object2dict, object2json
-from .pytoolbox.subprocess import rsync, ssh
-from .pytoolbox.validation import valid_uuid
+
 
 ABOUT = u"Orchestra : EBU's OSCIED Orchestrator by David Fischer 2012-2013"
 
@@ -1152,6 +1153,6 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False, add_users=
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
-    from .pytoolbox.encoding import configure_unicode
+    from pytoolbox.encoding import configure_unicode
     configure_unicode()
     get_test_api_core()

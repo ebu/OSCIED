@@ -24,11 +24,11 @@
 
 from mock import call
 from nose.tools import assert_equal, assert_raises
+from pytoolbox.unittest import mock_cmd
 from requests import get, post
 
 from oscied_lib.api import OsciedCRUDMapper, OrchestraAPIClient
 from oscied_lib.models import User
-from oscied_lib.pytoolbox.unittest import mock_cmd
 
 
 class FakeAPIClient(object):
