@@ -30,11 +30,11 @@ from datetime import datetime, timedelta
 from flask import Flask, jsonify, request, send_from_directory, make_response, abort, send_file
 from flask.views import View
 from kitchen.text.converters import to_bytes
+from pytoolbox.flask import json_response
 from werkzeug.exceptions import HTTPException
 
 import actions
 from plugit_utils import md5Checksum, PlugItRedirect, PlugItSendFile
-from oscied_lib.pyutils.flask import json_response
 
 # Global parameters
 DEBUG = True
