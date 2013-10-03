@@ -388,10 +388,6 @@ install()
 
   pecho 'Download tools'
 
-  cd "$TOOLS_PATH"|| xecho "Unable to find path $TOOLS_PATH"
-  clonezilla='http://switch.dl.sourceforge.net/project/clonezilla'
-  wget -N $clonezilla/clonezilla_live_stable/2.1.1-25/clonezilla-live-2.1.1-25-amd64.zip
-
   if [ -d 'juju-core-source' ]; then cd 'juju-core-source' && bzr merge && cd ..
   else bzr branch lp:juju-core 'juju-core-source'
   fi
