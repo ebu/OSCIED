@@ -161,17 +161,14 @@ class User(Model):
         **Example usage**
 
         >>> import copy
+        >>> from nose.tools import assert_equal
         >>> from .models_test import USER_TEST
         >>> user = copy.copy(USER_TEST)
-        >>> user.is_secret_hashed
-        False
-        >>> len(user.secret)
-        8
+        >>> assert(not user.is_secret_hashed)
+        >>> assert_equal(len(user.secret), 8)
         >>> user.hash_secret()
-        >>> user.is_secret_hashed
-        True
-        >>> len(user.secret)
-        130
+        >>> assert(user.is_secret_hashed)
+        >>> assert_equal(len(user.secret), 130)
         >>> secret = user.secret
         >>> user.hash_secret()
         >>> assert(user.secret == secret)
@@ -189,15 +186,11 @@ class User(Model):
         >>> import copy
         >>> from .models_test import USER_TEST
         >>> user = copy.copy(USER_TEST)
-        >>> user.verify_secret(u'bad_secret')
-        False
-        >>> user.verify_secret(u'Secr4taB')
-        True
+        >>> assert(not user.verify_secret(u'bad_secret'))
+        >>> assert(user.verify_secret(u'Secr4taB'))
         >>> user.hash_secret()
-        >>> user.verify_secret(u'bad_secret')
-        False
-        >>> user.verify_secret(u'Secr4taB')
-        True
+        >>> assert(not user.verify_secret(u'bad_secret'))
+        >>> assert(user.verify_secret(u'Secr4taB'))
         """
         if self.is_secret_hashed:
             return pbkdf2_sha512.verify(secret, self.secret)
@@ -269,10 +262,7 @@ class TransformProfile(Model):
     def is_valid(self, raise_exception):
         u"""
         >>> p = TransformProfile(title=u'test', encoder_name=u'ffmpeg')
-        >>> print(p.dash_options)
-        None
-        >>> print(p.dash_config)
-        None
+        >>> assert(p.dash_options is None and p.dash_config is None)
         >>> p.encoder_name = u'dashcast'
         >>> p.encoder_string = u'--seg-dur 1000 --frag-dur 200 / [v1] type=video width=960 height=540 bitrate=1536000 [v2] type=video width=640 height=360 bitrate=819200 [v3] type=video width=480 height=270 bitrate=512000 [v4] type=video width=160 height=90 bitrate=256000 [a1] type=audio bitrate=98304'
         >>> print(p.dash_options)
