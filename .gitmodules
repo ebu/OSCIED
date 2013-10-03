@@ -13,12 +13,6 @@
 [submodule "tools/flask-source"]
 	path = tools/flask-source
 	url = git://github.com/mitsuhiko/flask.git
-[submodule "tools/rabbitmq-tutorials"]
-	path = tools/rabbitmq-tutorials
-	url = git://github.com/rabbitmq/rabbitmq-tutorials.git
-[submodule "tools/logicielsUbuntu"]
-	path = tools/logicielsUbuntu
-	url = git://github.com/davidfischer-ch/logicielsUbuntu.git
 [submodule "docs/wiki/build"]
 	path = docs/wiki/build
 	url = git@github.com:ebu/OSCIED.wiki.git

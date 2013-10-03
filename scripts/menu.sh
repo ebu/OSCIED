@@ -409,17 +409,6 @@ install()
   wget -N $plantuml/plantuml.jar
   wget -N $plantuml/PlantUML%20Language%20Reference%20Guide.pdf
 
-  if cd "$TOOLS_PATH/rabbitmq-tutorials"; then
-    readLine 'Please enter local RabbitMQ guest user password [default=guest]'
-    [ "$CHOICE" ] && pass=$CHOICE || pass='guest'
-    a='amqp://.*localhost/'
-    b="amqp://guest:$pass@localhost/"
-    find . -type f -exec sed -i "s#$a#$b#g" {} \;
-    git status
-  else
-    recho 'Unable to find RabbitMQ tutorials path'
-  fi
-
   pecho 'Fixes bitbucket.org/birkenfeld/sphinx/pull-request/98/fixes-typeerror-raised-from/diff'
   $udo find /usr/local/lib/ -type f -name latex.py -path "*/sphinx/writers/*" -exec \
     sed -i 's:letter.translate(tex_escape_map)):unicode(letter).translate(tex_escape_map)):g' {} \;
