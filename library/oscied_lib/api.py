@@ -389,9 +389,9 @@ class OrchestraAPICore(object):
 
     def ok_200(self, value, include_properties):
         if self.is_standalone:
-            # FIXME include_properties not yet handled
-            return {u'status': 200, u'value': value}
-        return json_response(200, value=value, include_properties=include_properties)
+            return json_response(200, value=value, include_properties=include_properties)
+        # FIXME include_properties not yet handled
+        return {u'status': 200, u'value': value}
 
     # http://publish.luisrei.com/articles/flaskrest.html
     def requires_auth(self, request, allow_root=False, allow_node=False, allow_any=False, role=None, id=None,
