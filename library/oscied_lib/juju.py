@@ -28,7 +28,8 @@ from __future__ import absolute_import
 import logging, pygal, random, shutil, threading, time
 from os.path import join, splitext
 from collections import defaultdict, deque
-from pytoolbox import juju
+
+from pytoolbox import juju as py_juju
 from pytoolbox.collections import pygal_deque
 from pytoolbox.console import confirm
 from pytoolbox.datetime import datetime_now
