@@ -67,7 +67,7 @@ Local Deployment
 
 .. only:: html
 
-    .. figure:: ../schematics/OSCIED-Deployment_local.png
+    .. figure:: ../../schematics/OSCIED-Deployment_local.png
         :width: 600px
         :align: center
         :alt: |oscied_deployment_local|
@@ -76,7 +76,7 @@ Local Deployment
 
 .. only:: latex
 
-    .. figure:: ../schematics/OSCIED-Deployment_local.png
+    .. figure:: ../../schematics/OSCIED-Deployment_local.png
         :scale: 50 %
         :alt: |oscied_deployment_local|
 
@@ -131,7 +131,7 @@ Cloud Deployment
 
 .. only:: html
 
-    .. figure:: ../schematics/OSCIED-Deployment_cloud.png
+    .. figure:: ../../schematics/OSCIED-Deployment_cloud.png
         :width: 600px
         :align: center
         :alt: |oscied_deployment_cloud|
@@ -140,7 +140,7 @@ Cloud Deployment
 
 .. only:: latex
 
-    .. figure:: ../schematics/OSCIED-Deployment_cloud.png
+    .. figure:: ../../schematics/OSCIED-Deployment_cloud.png
         :scale: 50 %
         :alt: |oscied_deployment_cloud|
 
@@ -197,7 +197,7 @@ Multi-Environment Deployment
 
 .. only:: html
 
-    .. figure:: ../schematics/OSCIED-Deployment_multi.png
+    .. figure:: ../../schematics/OSCIED-Deployment_multi.png
         :width: 1500px
         :align: center
         :alt: |oscied_deployment_multi|
@@ -206,7 +206,7 @@ Multi-Environment Deployment
 
 .. only:: latex
 
-    .. figure:: ../schematics/OSCIED-Deployment_multi.png
+    .. figure:: ../../schematics/OSCIED-Deployment_multi.png
         :scale: 100 %
         :alt: |oscied_deployment_multi|
 

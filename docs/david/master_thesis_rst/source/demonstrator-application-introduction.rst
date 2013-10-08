@@ -9,7 +9,7 @@ The application is composed of charms deployable with JuJu_ the cloud orchestrat
 
 .. only:: html
 
-    .. figure:: ../uml/component-application.png
+    .. figure:: ../../uml/component-application.png
         :width: 1078px
         :align: center
         :alt: |component_application|
@@ -18,7 +18,7 @@ The application is composed of charms deployable with JuJu_ the cloud orchestrat
 
 .. only:: latex
 
-    .. figure:: ../uml/component-application.png
+    .. figure:: ../../uml/component-application.png
         :scale: 100 %
         :alt: |component_application|
 
@@ -26,13 +26,13 @@ The application is composed of charms deployable with JuJu_ the cloud orchestrat
 
 .. only:: html
 
-    .. |petit-lu| image:: ../../../common/images/petit-LU.jpg
+    .. |petit-lu| image:: ../../images/petit-LU.jpg
         :width: 350px
         :alt: Petit-LU
 
 .. only:: latex
 
-    .. |petit-lu| image:: ../../../common/images/petit-LU.jpg
+    .. |petit-lu| image:: ../../images/petit-LU.jpg
         :scale: 15 %
         :alt: Petit-LU
 
@@ -60,7 +60,7 @@ The *provides* and *requires* columns are the name of the relations required or 
 
 .. only:: html
 
-    .. figure:: ../schematics/OSCIED-Components_2.png
+    .. figure:: ../../schematics/OSCIED-Components_2.png
         :width: 1200px
         :align: center
         :alt: |components_2|
@@ -69,7 +69,7 @@ The *provides* and *requires* columns are the name of the relations required or 
 
 .. only:: latex
 
-    .. figure:: ../schematics/OSCIED-Components_2.png
+    .. figure:: ../../schematics/OSCIED-Components_2.png
         :scale: 80 %
         :alt: |components_2|
 
@@ -97,7 +97,7 @@ As you can imagine, next diagram will be a little bit more complicated, as it en
 
 .. only:: html
 
-    .. figure:: ../uml/component-application_inside.png
+    .. figure:: ../../uml/component-application_inside.png
         :width: 1454px
         :align: center
         :alt: |component_application_inside|
@@ -106,7 +106,7 @@ As you can imagine, next diagram will be a little bit more complicated, as it en
 
 .. only:: latex
 
-    .. figure:: ../uml/component-application_inside.png
+    .. figure:: ../../uml/component-application_inside.png
         :scale: 100 %
         :alt: |component_application_inside|
 
@@ -136,7 +136,7 @@ Here are some example of what one can use for the storage service :
 
 .. only:: html
 
-    .. figure:: ../schematics/OSCIED-Storage.png
+    .. figure:: ../../schematics/OSCIED-Storage.png
         :width: 1200px
         :align: center
         :alt: |oscied_storage|
@@ -145,7 +145,7 @@ Here are some example of what one can use for the storage service :
 
 .. only:: latex
 
-    .. figure:: ../schematics/OSCIED-Storage.png
+    .. figure:: ../../schematics/OSCIED-Storage.png
         :scale: 100 %
         :alt: |oscied_storage|
 
@@ -209,7 +209,7 @@ It may seem obvious but the application not only stores media files into the sha
 
 .. only:: html
 
-    .. figure:: ../uml/state-media.png
+    .. figure:: ../../uml/state-media.png
         :width: 658px
         :align: center
         :alt: |state_media|
@@ -218,7 +218,7 @@ It may seem obvious but the application not only stores media files into the sha
 
 .. only:: latex
 
-    .. figure:: ../uml/state-media.png
+    .. figure:: ../../uml/state-media.png
         :scale: 70 %
         :alt: |state_media|
 

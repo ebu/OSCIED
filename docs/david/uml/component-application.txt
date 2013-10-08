@@ -1,0 +1,61 @@
+@startuml
+
+skinparam component {
+    FontColor          black
+    AttributeFontColor black
+    FontSize           17
+    AttributeFontSize  15
+    AttributeFontname  Droid Sans Mono
+    BackgroundColor    #6A9EFF
+    BorderColor        black
+    ArrowColor         #222266
+}
+
+title OSCIED & Store Charms Relations
+skinparam componentStyle uml2
+
+interface "(ui)" as ui
+interface "(play)" as stream
+interface "(juju)" as juju
+
+note right of stream : Audience play-out medias
+note top of ui : Broadcasters uses\nthe application
+note top of juju : Sysadmin manage\ninstances of charms
+
+cloud {
+
+    interface api
+    interface storage
+    interface streaming
+    interface transform
+    interface publisher
+    interface website
+
+    juju -left- [JuJu]
+
+    ui -right- [HAProxy]
+    [HAProxy] .right.> website
+
+    website -right- [WebUI]
+    [WebUI] ..> storage
+    [WebUI] .right.> api
+
+    api -right- [Orchestra]
+    transform -up- [Orchestra]
+    publisher -left- [Orchestra]
+    [Orchestra] ..> storage
+
+    [Transform] ..> storage
+    [Transform] .up.> transform
+
+    streaming -- [Publisher]
+    [Publisher] ..> storage
+    [Publisher] .left.> publisher
+
+    stream - [Nginx]
+    [Nginx] .right.> streaming
+
+    storage - [Storage]
+}
+
+@enduml

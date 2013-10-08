@@ -29,7 +29,7 @@ Then, I invite you to open a terminal and run the nice old-fashioned project's m
 
 .. only:: html
 
-    .. figure:: ../screenshots/screen/scripts_menus.png
+    .. figure:: ../../screenshots/scripts_menus.png
             :width: 1500px
             :align: center
             :alt: On the left : OSCIED Main Menu (:file:`menu.sh`) // On the right : OSCIED JuJu Menu (:file:`juju-menu.sh`)
@@ -38,7 +38,7 @@ Then, I invite you to open a terminal and run the nice old-fashioned project's m
 
 .. only:: latex
 
-    .. figure:: ../screenshots/screen/scripts_menus.png
+    .. figure:: ../../screenshots/scripts_menus.png
             :width: 100 %
             :alt: On the left : OSCIED Main Menu // On the right : OSCIED JuJu Menu
 

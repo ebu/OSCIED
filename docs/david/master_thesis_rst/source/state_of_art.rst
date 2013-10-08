@@ -26,7 +26,7 @@ Official Description
 
 .. only:: html
 
-    .. figure:: ../../../common/external/qtube-overview.jpg
+    .. figure:: ../../external/qtube-overview.jpg
         :width: 600px
         :align: center
         :alt: |qtube_overview|
@@ -35,7 +35,7 @@ Official Description
 
 .. only:: latex
 
-    .. figure:: ../../../common/external/qtube-overview.jpg
+    .. figure:: ../../external/qtube-overview.jpg
         :scale: 40 %
         :alt: |qtube_overview|
 
@@ -53,7 +53,7 @@ Official Description
 
 .. only:: html
 
-    .. figure:: ../../../common/external/zencoder-transcoding.png
+    .. figure:: ../../external/zencoder-transcoding.png
         :width: 600px
         :align: center
         :alt: |zencoder_transcoding|
@@ -62,7 +62,7 @@ Official Description
 
 .. only:: latex
 
-    .. figure:: ../../../common/external/zencoder-transcoding.png
+    .. figure:: ../../external/zencoder-transcoding.png
         :scale: 40 %
         :alt: |zencoder_transcoding|
 
@@ -88,7 +88,7 @@ Official Description
 
 .. only:: html
 
-    .. figure:: ../../../common/images/aws.png
+    .. figure:: ../../images/aws.png
         :width: 300px
         :align: center
         :alt: |aws|
@@ -97,7 +97,7 @@ Official Description
 
 .. only:: latex
 
-    .. figure:: ../../../common/images/aws.png
+    .. figure:: ../../images/aws.png
         :scale: 20 %
         :alt: |aws|
 
@@ -115,7 +115,7 @@ Official Description
 
 .. only:: html
 
-    .. figure:: ../../../common/images/hp_cloud.png
+    .. figure:: ../../images/hp_cloud.png
         :width: 300px
         :align: center
         :alt: |hpcloud|
@@ -124,7 +124,7 @@ Official Description
 
 .. only:: latex
 
-    .. figure:: ../../../common/images/hp_cloud.png
+    .. figure:: ../../images/hp_cloud.png
         :scale: 20 %
         :alt: |hpcloud|
 
@@ -142,7 +142,7 @@ Official Description
 
 .. only:: html
 
-    .. figure:: ../../../common/images/rackspace_cloud.jpg
+    .. figure:: ../../images/rackspace_cloud.jpg
         :width: 300px
         :align: center
         :alt: |hpcloud|
@@ -151,7 +151,7 @@ Official Description
 
 .. only:: latex
 
-    .. figure:: ../../../common/images/rackspace_cloud.jpg
+    .. figure:: ../../images/rackspace_cloud.jpg
         :scale: 20 %
         :alt: |rackspace_cloud|
 
@@ -184,7 +184,7 @@ Official Description
 
 .. only:: html
 
-    .. figure:: ../../../common/images/kvm.png
+    .. figure:: ../../images/kvm.png
         :width: 250px
         :align: center
         :alt: |kvm_logo|
@@ -193,7 +193,7 @@ Official Description
 
 .. only:: latex
 
-    .. figure:: ../../../common/images/kvm.png
+    .. figure:: ../../images/kvm.png
         :scale: 18 %
         :alt: |kvm_logo|
 
@@ -241,7 +241,7 @@ Official Description
 
 .. only:: html
 
-    .. figure:: ../../../common/images/OpenVZ.png
+    .. figure:: ../../images/OpenVZ.png
         :width: 300px
         :align: center
         :alt: |openvz_logo|
@@ -250,7 +250,7 @@ Official Description
 
 .. only:: latex
 
-    .. figure:: ../../../common/images/OpenVZ.png
+    .. figure:: ../../images/OpenVZ.png
         :scale: 20 %
         :alt: |openvz_logo|
 
@@ -277,7 +277,7 @@ Official Description
 
 .. only:: html
 
-    .. figure:: ../../../common/external/proxmox_example.png
+    .. figure:: ../../external/proxmox_example.png
         :width: 750px
         :align: center
         :alt: |proxmox_example|
@@ -286,7 +286,7 @@ Official Description
 
 .. only:: latex
 
-    .. figure:: ../../../common/external/proxmox_example.png
+    .. figure:: ../../external/proxmox_example.png
         :scale: 50 %
         :alt: |proxmox_example|
 
@@ -310,7 +310,7 @@ Official Description
 
 .. only:: html
 
-    .. figure:: ../../../common/external/cloudstack-oss-architecture.png
+    .. figure:: ../../external/cloudstack-oss-architecture.png
         :width: 400px
         :align: center
         :alt: |cloudstack_oss_architecture|
@@ -319,7 +319,7 @@ Official Description
 
 .. only:: latex
 
-    .. figure:: ../../../common/external/cloudstack-oss-architecture.png
+    .. figure:: ../../external/cloudstack-oss-architecture.png
         :scale: 30 %
         :alt: |cloudstack_oss_architecture|
 
@@ -345,7 +345,7 @@ Official Description
 
 .. only:: html
 
-    .. figure:: ../../../common/images/openstack.png
+    .. figure:: ../../images/openstack.png
         :width: 200px
         :align: center
         :alt: |opentsack_logo|
@@ -354,7 +354,7 @@ Official Description
 
 .. only:: latex
 
-    .. figure:: ../../../common/images/openstack.png
+    .. figure:: ../../images/openstack.png
         :scale: 20 %
         :alt: |opentsack_logo|
 
@@ -384,7 +384,7 @@ HP CloudSystem
 
 .. only:: html
 
-    .. figure:: ../../../common/external/endpointe.png
+    .. figure:: ../../external/endpointe.png
         :width: 750px
         :align: center
         :alt: |endpointe|
@@ -393,7 +393,7 @@ HP CloudSystem
 
 .. only:: latex
 
-    .. figure:: ../../../common/external/endpointe.png
+    .. figure:: ../../external/endpointe.png
         :scale: 50 %
         :alt: |endpointe|
 
@@ -421,7 +421,7 @@ Official Description
 
 .. only:: html
 
-    .. figure:: ../../../common/external/slipstream-cloud-overview.png
+    .. figure:: ../../external/slipstream-cloud-overview.png
         :width: 600px
         :align: center
         :alt: |slipstream_cloud_overview|
@@ -430,7 +430,7 @@ Official Description
 
 .. only:: latex
 
-    .. figure:: ../../../common/external/slipstream-cloud-overview.png
+    .. figure:: ../../external/slipstream-cloud-overview.png
         :scale: 40 %
         :alt: |slipstream_cloud_overview|
 
@@ -467,7 +467,7 @@ Official Description
 
 .. only:: html
 
-    .. figure:: ../schematics/JUJU-Targets.png
+    .. figure:: ../../schematics/JUJU-Targets.png
         :width: 1200px
         :align: center
         :alt: |juju_targets|
@@ -476,7 +476,7 @@ Official Description
 
 .. only:: latex
 
-    .. figure:: ../schematics/JUJU-Targets.png
+    .. figure:: ../../schematics/JUJU-Targets.png
         :scale: 100 %
         :alt: |juju_targets|
 
@@ -515,7 +515,7 @@ Official Description
 
 .. only:: html
 
-    .. figure:: ../../../common/external/swift_install_arch.png
+    .. figure:: ../../external/swift_install_arch.png
         :width: 600px
         :align: center
         :alt: |swift_install_arch|
@@ -524,7 +524,7 @@ Official Description
 
 .. only:: latex
 
-    .. figure:: ../../../common/external/swift_install_arch.png
+    .. figure:: ../../external/swift_install_arch.png
         :scale: 40 %
         :alt: |swift_install_arch|
 
@@ -542,7 +542,7 @@ Official Description
 
 .. only:: html
 
-    .. figure:: ../../../common/images/ceph.png
+    .. figure:: ../../images/ceph.png
         :width: 150px
         :align: center
         :alt: |ceph_logo|
@@ -551,7 +551,7 @@ Official Description
 
 .. only:: latex
 
-    .. figure:: ../../../common/images/ceph.png
+    .. figure:: ../../images/ceph.png
         :scale: 15 %
         :alt: |ceph_logo|
 
@@ -590,7 +590,7 @@ Official Description
 
 .. only:: html
 
-    .. figure:: ../../../common/images/GlusterFS.png
+    .. figure:: ../../images/GlusterFS.png
         :width: 200px
         :align: center
         :alt: |glusterfs_logo|
@@ -599,7 +599,7 @@ Official Description
 
 .. only:: latex
 
-    .. figure:: ../../../common/images/GlusterFS.png
+    .. figure:: ../../images/GlusterFS.png
         :scale: 15 %
         :alt: |glusterfs_logo|
 
@@ -609,7 +609,7 @@ Official Description
 
 .. only:: html
 
-    .. figure:: ../../../common/external/GlusterFS.jpg
+    .. figure:: ../../external/GlusterFS.jpg
         :width: 600px
         :align: center
         :alt: |glusterfs_example|
@@ -618,7 +618,7 @@ Official Description
 
 .. only:: latex
 
-    .. figure:: ../../../common/external/GlusterFS.jpg
+    .. figure:: ../../external/GlusterFS.jpg
         :scale: 40 %
         :alt: |glusterfs_example|
 
@@ -643,7 +643,7 @@ Official Description
 
 .. only:: html
 
-    .. figure:: ../../../common/images/LS4.png
+    .. figure:: ../../images/LS4.png
         :width: 200px
         :align: center
         :alt: |ls4_logo|
@@ -652,7 +652,7 @@ Official Description
 
 .. only:: latex
 
-    .. figure:: ../../../common/images/LS4.png
+    .. figure:: ../../images/LS4.png
         :scale: 20 %
         :alt: |ls4_logo|
 
@@ -688,7 +688,7 @@ Official Description
 
 .. only:: html
 
-    .. figure:: ../../../common/images/mongodb.png
+    .. figure:: ../../images/mongodb.png
         :width: 400px
         :align: center
         :alt: |mongodb_logo|
@@ -697,7 +697,7 @@ Official Description
 
 .. only:: latex
 
-    .. figure:: ../../../common/images/mongodb.png
+    .. figure:: ../../images/mongodb.png
         :scale: 30 %
         :alt: |mongodb_logo|
 

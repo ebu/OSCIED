@@ -1,0 +1,24 @@
+@startuml
+
+skinparam activity {
+    FontColor          white
+    AttributeFontColor white
+    FontSize           17
+    AttributeFontSize  15
+    AttributeFontname  Droid Sans Mono
+    BackgroundColor    #527BC6
+    BorderColor        black
+    ArrowColor         #222266
+}
+
+partition config-changed {
+note right: <b>BOLD</b> actions are\nmethods calls
+(*) --> "<b>STOP</b>"
+--> "configure Web UI"
+--> "<b>(RE)MOUNT</b> storage\nif configured"
+--> "<b>REGISTER</b> API\nif configured"
+--> "<b>START</b>"
+--> (*)
+}
+
+@enduml

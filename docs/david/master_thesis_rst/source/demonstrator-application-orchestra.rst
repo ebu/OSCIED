@@ -41,7 +41,7 @@ The orchestrator is developed in Python_ and I actually choose this programming 
 
 .. only:: html
 
-    .. figure:: ../schematics/OSCIED-Components_orchestra.png
+    .. figure:: ../../schematics/OSCIED-Components_orchestra.png
         :width: 1200px
         :align: center
         :alt: |components_o|
@@ -50,7 +50,7 @@ The orchestrator is developed in Python_ and I actually choose this programming 
 
 .. only:: latex
 
-    .. figure:: ../schematics/OSCIED-Components_orchestra.png
+    .. figure:: ../../schematics/OSCIED-Components_orchestra.png
         :scale: 80 %
         :alt: |components_o|
 
@@ -87,7 +87,7 @@ Charm's Hooks Activity Diagrams
 
 .. only:: html
 
-    .. figure:: ../uml/activity-orchestra-hooks.png
+    .. figure:: ../../uml/activity-orchestra-hooks.png
         :width: 1500px
         :align: center
         :target: juju_unit_startup_
@@ -97,7 +97,7 @@ Charm's Hooks Activity Diagrams
 
 .. only:: latex
 
-    .. figure:: ../uml/activity-orchestra-hooks.png
+    .. figure:: ../../uml/activity-orchestra-hooks.png
         :scale: 100 %
         :target: juju_unit_startup_
         :alt: |activity_orchestra_hooks|

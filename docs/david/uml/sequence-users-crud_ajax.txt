@@ -1,0 +1,74 @@
+@startuml
+
+skin BlueModern
+
+title Users CRUD (Create Read Update Delete)
+
+actor User
+participant "WebUI" as W
+participant "Orchestra" as O
+'participant "Storage" as S
+'participant "Transform" as T
+'participant "Publisher" as P
+
+User -> W: Login
+activate W
+W -> O: GET /user/login (auth d@f.com:pass)
+activate O
+O -> O: Get user from MongoDB
+O --> W: <b>OK 200</b> {"status"=200 "value"={"_id": "<uuid>", "name": "David Fischer", ...}}
+deactivate O
+W --> User: 'Successfull login'
+deactivate W
+
+User -> W: Users Tab
+activate W
+loop every N seconds (AJAX)
+    W -> O: GET /user/id/<uuid> (auth d@f.com:pass)
+    activate O
+    O -> O: Get user from MongoDB
+    O --> W: <b>OK 200</b> {"status"=200, "value"={"_id": "<uuid>", "name": "David Fischer", ...}}
+    deactivate O
+    alt if authenticated user has the admin_platform attribute
+        W -> O: GET /user (auth d@f.com:pass)
+        activate O
+        O -> O: Get users from MongoDB
+        O --> W: <b>OK 200</b> {"status"=200, "value"=[{"_id": "<uuid>", "name": "David Fischer", ...}, ...]}
+        deactivate O
+    end
+    W --> User: << Show/update the user and users list if authenticated user ... >>
+end
+deactivate W
+
+alt if authenticated user has the admin_platform attribute
+    User -> W: Add an user (with add form)
+    activate W
+    W -> O: POST /user {"first_name": "Adi", "last_name": "Kouadio", ...} (auth d@f.com:pass)
+    activate O
+    O -> O: Save user to MongoDB
+    O --> W: <b>OK 200</b> {"status"=200, "value"={"_id": "<uuid_of_adi>", "name": "Adi Kouadio", ...}}
+    deactivate O
+    W --> User: << Flash info message 'The user "Adi Kouadio" has been added.' >>
+    deactivate W
+
+    User -> W: Edit an user
+    activate W
+    W -> O: PUT /user/id/<uuid_of_andres> {"admin_platform": false} (auth d@f.com:pass)
+    activate O
+    O -> O: Update user into MongoDB
+    O --> W: <b>OK 200</b> {"status"=200, "value"="The user \\"Andrés Revuelta\\" has been updated."}
+    deactivate O
+    W --> User: << Flash info message 'The user "Andrés Revuelta" has been updated.' >>
+    deactivate W
+
+    User -> W: Remove an user
+    activate W
+    W -> O: DELETE /user/id/<uuid_of_bram> (auth d@f.com:pass)
+    activate O
+    O -> O: Remove user from MongoDB
+    O --> W: <b>OK 200</b> {"status"=200, "value"="The user \\"Bram Tullemans\\" has been deleted."}
+    deactivate O
+    W --> User: << Flash info message 'The user "Bram Tullemans" has been deleted.' >>
+    deactivate W
+end
+@enduml

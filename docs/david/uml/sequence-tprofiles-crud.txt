@@ -1,0 +1,55 @@
+@startuml
+
+skin BlueModern
+
+title Transform Profiles CRUD (Create Read <s>Update</s> Delete)
+
+actor User
+participant "WebUI" as W
+participant "Orchestra" as O
+'participant "Storage" as S
+'participant "Transform" as T
+'participant "Publisher" as P
+
+User -> W: Login
+activate W
+W -> O: GET /user/login (auth m@f.com:pass)
+activate O
+O -> O: Get user from MongoDB
+O --> W: <b>OK 200</b> {"status"=200\n  "value"={"_id": "<uuid>", "name": "Michaël Fischer", ...}}
+deactivate O
+W --> User: 'Successfull login'
+deactivate W
+
+User -> W: Profiles Tab
+activate W
+loop every N seconds (AJAX)
+    W -> O: GET /transform/profile (auth m@f.com:pass)
+    activate O
+    O -> O: Get profiles from MongoDB
+    O --> W: <b>OK 200</b> {"status"=200,\n  "value"=[{"_id": "<uuid>", "encoder_name": "ffmpeg", ...}, ...]}
+    deactivate O
+    W --> User: << Show/update profiles list >>
+end
+deactivate W
+
+User -> W: Add a profile (with add form)
+activate W
+W -> O: POST /transform/profile (auth m@f.com:pass)\n  {"title": "HD 1080p", "description": "...", ...}
+activate O
+O -> O: Save profile to MongoDB
+O --> W: <b>OK 200</b> {"status"=200,\n  "value"={"_id": "<uuid_of_profile>", "title": "HD 1080p", ...}}
+deactivate O
+W --> User: << Flash info message\n'The transform profile "HD 1080p" has been added.' >>
+deactivate W
+
+User -> W: Remove a profile
+activate W
+W -> O: DELETE /transform/profile/id/<uuid_of_profile> (auth m@f.com:pass)
+activate O
+O -> O: Remove profile from MongoDB
+O --> W: <b>OK 200</b> {"status"=200,\n  "value"="The transform profile \\"YouTube SD\\" has been deleted."}
+deactivate O
+W --> User: << Flash info message\n'The transform profile "YouTube SD" has been deleted.' >>
+deactivate W
+@enduml

@@ -1,0 +1,80 @@
+@startuml
+
+skin BlueModern
+
+title Medias CRUD (Create Read <s>Update</s> Delete)
+
+actor User
+participant "WebUI" as W
+participant "Orchestra" as O
+participant "Storage" as S
+'participant "Transform" as T
+'participant "Publisher" as P
+
+User -> W: Login
+activate W
+W -> O: GET /user/login (auth d@f.com:pass)
+activate O
+O -> O: Get user from MongoDB
+O --> W: <b>OK 200</b> {"status"=200\n  "value"={"_id": "<uuid>", "name": "David Fischer", ...}}
+deactivate O
+W --> User: 'Successfull login'
+deactivate W
+
+User -> W: Medias Tab
+activate W
+loop every N seconds (AJAX)
+    W -> O: GET /media (auth d@f.com:pass)
+    activate O
+    O -> O: Get medias from MongoDB
+    O --> W: <b>OK 200</b> {"status"=200,\n  "value"=[{"_id": "<uuid>", "user_id": "<uuid>", ...}, ...]}
+    deactivate O
+    W --> User: << Show/update medias list >>
+end
+deactivate W
+
+User -> W: Add a media (with upload form, file transfer not shown)
+activate W
+W -> S: << copy file into uploads path >>
+activate S
+S --> W: << operation terminated >>
+deactivate S
+W -> O: POST /media (auth d@f.com:pass)\n  {"uri": "glusterfs://...", "metadata": {"title": "Tabby"}, ...}
+activate O
+O -> S: << check if file exist + rename & move it to medias path >>
+activate S
+S --> O: << operation terminated >>
+deactivate S
+O -> O: Save media (not the content (!)) to MongoDB
+O --> W: <b>OK 200</b> {"status"=200,\n  "value"={"_id": "<uuid_of_media>", "status": "READY", ...}}
+deactivate O
+W --> User: << Flash info message\n'The media "Tabby" has been added.' >>
+deactivate W
+
+User -> W: Download a media
+activate W
+W -> S: << read file from medias path >>
+activate S
+W --> User: << chunk 1/N of the file >>
+W --> User: << chunk 2/N of the file >>
+W --> User: << chunk N/N of the file >>
+S --> W: << end of file >>
+deactivate S
+deactivate W
+
+alt if auth. user is media's author (user._id == media.user_id)
+    User -> W: Remove a media
+    activate W
+    activate O
+    W -> O: DELETE (auth d@f.com:pass) /media/id/<uuid_of_media>
+    O -> O: Set media status=DELETED into MongoDB
+    O -> S: << delete file from medias path >>
+    activate S
+    S --> O: << operation terminated >>
+    deactivate S
+    O --> W: <b>OK 200</b> {"status"=200,\n  "value"="The media \\"Hotel Transylvania\\" has been deleted."}
+    deactivate O
+    W --> User: << Flash info message\n'The media "Hotel Transylvania" has been deleted.' >>
+    deactivate W
+end
+@enduml

@@ -1,0 +1,438 @@
+david@GaViD:/mnt/DavidRUG/david/David/prog/OSCIED/scripts$ juju debug-log --environment local
+2013-03-08 19:03:46,840 INFO Enabling distributed debug log.
+2013-03-08 19:03:46,842 INFO Tailing logs - Ctrl-C to stop.
+2013-03-08 19:03:47,338 unit:oscied-transform/0: hook.output INFO: + screenRunning Transform
++ '[' 1 -ne 1 ']'
++ screen -list
++ awk '{print $1}'
+
+2013-03-08 19:03:47,339 unit:oscied-transform/0: hook.output INFO: + grep -q Transform
+
+2013-03-08 19:03:47,340 unit:oscied-transform/0: hook.output INFO: + recho 'Transform successfully started'
++ juju-log '[REMARK] Transform successfully started !'
+
+2013-03-08 19:03:47,451 unit:oscied-transform/0: unit.hook.api INFO: [REMARK] Transform successfully started !
+2013-03-08 19:03:47,462 unit:oscied-transform/0: hook.output DEBUG: hook start exited, exit code 0.
+2013-03-08 19:03:47,462 unit:oscied-transform/0: hook.executor DEBUG: Hook complete: /var/lib/juju/units/oscied-transform-0/charm/hooks/start
+2013-03-08 19:03:47,463 unit:oscied-transform/0: unit.lifecycle DEBUG: starting service relation watch
+2013-03-08 19:03:47,463 unit:oscied-transform/0: unit.lifecycle DEBUG: starting unit relation resolved watch
+2013-03-08 19:03:47,465 unit:oscied-transform/0: unit.lifecycle DEBUG: relation resolved changed
+2013-03-08 19:03:47,465 unit:oscied-transform/0: unit.lifecycle INFO: processing relation resolved changed
+2013-03-08 19:03:47,466 unit:oscied-transform/0: unit.lifecycle DEBUG: services changed old:None new:[]
+2013-03-08 19:03:47,467 unit:oscied-transform/0: unit.lifecycle DEBUG: processing relations changed
+2013-03-08 19:03:47,470 unit:oscied-transform/0: unit.lifecycle DEBUG: started unit lifecycle
+2013-03-08 19:03:47,472 unit:oscied-transform/0: statemachine DEBUG: unitworkflowstate: transition complete start (state started) {}
+2013-03-08 19:03:47,474 unit:oscied-transform/0: juju.agents.unit DEBUG: Configuration Changed
+2013-03-08 19:03:47,476 unit:oscied-transform/0: statemachine DEBUG: unitworkflowstate: transition configure (started -> started) {}
+2013-03-08 19:03:47,476 unit:oscied-transform/0: statemachine DEBUG: unitworkflowstate:  execute action do_configure
+2013-03-08 19:03:47,480 unit:oscied-transform/0: hook.output DEBUG: Cached relation hook contexts: []
+2013-03-08 19:03:47,484 unit:oscied-transform/0: hook.executor DEBUG: Running hook: /var/lib/juju/units/oscied-transform-0/charm/hooks/config-changed
+2013-03-08 19:03:47,609 unit:oscied-transform/0: hook.output INFO: +++ unit-get public-address
+
+2013-03-08 19:03:47,719 unit:oscied-transform/0: unit.hook.api DEBUG: Get unit setting: 'public-address'
+2013-03-08 19:03:47,732 unit:oscied-transform/0: hook.output INFO: ++ PUBLIC_ADDRESS=10.0.3.190
+
+2013-03-08 19:03:47,732 unit:oscied-transform/0: hook.output INFO: +++ config-get concurrency
+
+2013-03-08 19:03:47,853 unit:oscied-transform/0: hook.output INFO: ++ THE_CONCURRENCY=1
+
+2013-03-08 19:03:47,853 unit:oscied-transform/0: hook.output INFO: +++ config-get rabbit_queues
+
+2013-03-08 19:03:47,977 unit:oscied-transform/0: hook.output INFO: ++ RABBIT_QUEUES=transform_private,10.0.3.190
+
+2013-03-08 19:03:47,977 unit:oscied-transform/0: hook.output INFO: +++ config-get mongo_connection
+
+2013-03-08 19:03:48,096 unit:oscied-transform/0: hook.output INFO: ++ MONGO_CONNECTION=mongodb://nodes:M2qlif8rdtKtBYil@OSCIED-Node01.localdomain:27017/celery
+
+2013-03-08 19:03:48,096 unit:oscied-transform/0: hook.output INFO: +++ config-get rabbit_connection
+
+2013-03-08 19:03:48,217 unit:oscied-transform/0: hook.output INFO: ++ RABBIT_CONNECTION=amqp://nodes:OZy23iO0D4UpYS2k@OSCIED-Node01.localdomain:5672/celery
+
+2013-03-08 19:03:48,217 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_ip
+
+2013-03-08 19:03:48,346 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_IP=OSCIED-Node02.localdomain
+
+2013-03-08 19:03:48,346 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_fstype
+
+2013-03-08 19:03:48,481 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_FSTYPE=glusterfs
+
+2013-03-08 19:03:48,481 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_mountpoint
+
+2013-03-08 19:03:48,609 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_MOUNTPOINT=medias_volume
+
+2013-03-08 19:03:48,609 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_options
+
+2013-03-08 19:03:48,729 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_OPTIONS=
+
+2013-03-08 19:03:48,731 unit:oscied-transform/0: hook.output INFO: ++ logicielsUbuntuUtilsImported
+
+2013-03-08 19:03:48,732 unit:oscied-transform/0: hook.output INFO: ++ true=0
+++ false=1
+++ true_auto=2
+++ false_auto=3
+++ '[' -t 0 ']'
+++ TXT_BLD=
+++ TXT_BLK=
+++ TXT_RED=
+++ TXT_GREEN=
+++ TXT_YLW=
+++ TXT_BLUE=
+++ TXT_PURPLE=
+++ TXT_CYAN=
+++ TXT_WHITE=
+++ TXT_RESET=
+++ TECHO_COLOR='[TITLE] '
+++ PECHO_COLOR='[PARAGRAPH] '
+++ MECHO_COLOR='[MESSAGE] '
+++ CECHO_COLOR='[CODE] '
+++ RECHO_COLOR='[REMARK] '
+++ QECHO_COLOR='[QUESTION] '
+++ XECHO_COLOR=
+++ echo '\n'
+
+2013-03-08 19:03:48,732 unit:oscied-transform/0: hook.output INFO: ++ grep -q n
+
+2013-03-08 19:03:48,732 unit:oscied-transform/0: hook.output INFO: ++ e_=-e
+
+2013-03-08 19:03:48,732 unit:oscied-transform/0: hook.output INFO: ++ echo=juju-log
+++ '[' juju-log '!=' echo ']'
+++ e_=
+++ DIALOG=dialog
+
+2013-03-08 19:03:48,732 unit:oscied-transform/0: hook.output INFO: +++ id -u
+
+2013-03-08 19:03:48,734 unit:oscied-transform/0: hook.output INFO: +++ which sudo
+
+2013-03-08 19:03:48,735 unit:oscied-transform/0: hook.output INFO: ++ '[' 0 '!=' 0 -a /usr/bin/sudo '!=' '' ']'
+++ udo=
+
+2013-03-08 19:03:48,735 unit:oscied-transform/0: hook.output INFO: ++ service=' service'
+++ which service
+
+2013-03-08 19:03:48,735 unit:oscied-transform/0: hook.output INFO: ++ which apt-get
+
+2013-03-08 19:03:48,736 unit:oscied-transform/0: hook.output INFO: ++ installPack=' dpkg -i'
+++ install=' apt-get -fyq --force-yes install'
+
+2013-03-08 19:03:48,736 unit:oscied-transform/0: hook.output INFO: ++ buildDep=' apt-get -fyq --force-yes build-dep'
+++ update=' apt-get -fyq --force-yes update'
+++ upgrade=' apt-get -fyq --force-yes upgrade'
+++ distupgrade=' apt-get -fyq --force-yes dist-upgrade'
+++ remove=' apt-get -fyq --force-yes remove'
+++ autoremove=' apt-get -fyq --force-yes autoremove'
+++ purge=' apt-get -fyq --force-yes purge'
+++ key=' apt-key adv --keyserver keyserver.ubuntu.com --recv-keys'
+++ packages='dpkg --get-selections'
+
+2013-03-08 19:03:48,736 unit:oscied-transform/0: hook.output INFO: + hook_config_changed
+
+2013-03-08 19:03:48,736 unit:oscied-transform/0: hook.output INFO: + techo 'Transform - config changed'
++ juju-log '[TITLE] Transform - config changed'
+
+2013-03-08 19:03:48,845 unit:oscied-transform/0: unit.hook.api INFO: [TITLE] Transform - config changed
+2013-03-08 19:03:48,856 unit:oscied-transform/0: hook.output INFO: + hook_stop
++ techo 'Transform - stop'
++ juju-log '[TITLE] Transform - stop'
+
+2013-03-08 19:03:48,965 unit:oscied-transform/0: unit.hook.api INFO: [TITLE] Transform - stop
+2013-03-08 19:03:48,976 unit:oscied-transform/0: hook.output INFO: + screenRunning Transform
++ '[' 1 -ne 1 ']'
+
+2013-03-08 19:03:48,976 unit:oscied-transform/0: hook.output INFO: + screen -list
++ awk '{print $1}'
+
+2013-03-08 19:03:48,976 unit:oscied-transform/0: hook.output INFO: + grep -q Transform
+
+2013-03-08 19:03:48,977 unit:oscied-transform/0: hook.output INFO: + screenKill Transform
++ '[' 1 -ne 1 ']'
+
+2013-03-08 19:03:48,977 unit:oscied-transform/0: hook.output INFO: + screen -X -S Transform kill
+
+2013-03-08 19:03:48,978 unit:oscied-transform/0: hook.output INFO: + pecho 'Configure Transform : Set verbose, messaging queues and storage path'
+
+2013-03-08 19:03:48,978 unit:oscied-transform/0: hook.output INFO: + juju-log '[PARAGRAPH] Configure Transform : Set verbose, messaging queues and storage path'
+
+2013-03-08 19:03:49,092 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Configure Transform : Set verbose, messaging queues and storage path
+2013-03-08 19:03:49,102 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json public_address 10.0.3.190
++ '[' 3 -ne 3 ']'
++ sed -i 's<"public_address" *: *"[^"]*"<"public_address": "10.0.3.190"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:49,103 unit:oscied-transform/0: hook.output INFO: + grep -q '"public_address": "10.0.3.190"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:49,104 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_BOOLEAN /var/lib/juju/units/oscied-transform-0/charm/config.json verbose 0
++ '[' 3 -ne 3 ']'
++ '[' 0 -eq 0 ']'
++ value=true
++ sed -i 's<"verbose" *: *[a-zA-Z]*<"verbose": true<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:49,105 unit:oscied-transform/0: hook.output INFO: + grep -q '"verbose": true' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:49,106 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json rabbit_queues transform_private,10.0.3.190
++ '[' 3 -ne 3 ']'
++ sed -i 's<"rabbit_queues" *: *"[^"]*"<"rabbit_queues": "transform_private,10.0.3.190"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:49,107 unit:oscied-transform/0: hook.output INFO: + grep -q '"rabbit_queues": "transform_private,10.0.3.190"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:49,108 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_path /mnt/storage
++ '[' 3 -ne 3 ']'
+
+2013-03-08 19:03:49,108 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"storage_path" *: *"[^"]*"<"storage_path": "/mnt/storage"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:49,108 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_path": "/mnt/storage"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:49,109 unit:oscied-transform/0: hook.output INFO: + storage_remount
+
+2013-03-08 19:03:49,109 unit:oscied-transform/0: hook.output INFO: + storage_config_is_enabled
++ '[' OSCIED-Node02.localdomain -a glusterfs -a medias_volume ']'
++ ip=OSCIED-Node02.localdomain
++ fstype=glusterfs
++ mountpoint=medias_volume
++ options=
++ storage_umount
++ pecho 'Configure Transform : Unregister shared storage'
++ juju-log '[PARAGRAPH] Configure Transform : Unregister shared storage'
+
+2013-03-08 19:03:49,221 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Configure Transform : Unregister shared storage
+2013-03-08 19:03:49,231 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_ip ''
++ '[' 3 -ne 3 ']'
++ sed -i 's<"storage_ip" *: *"[^"]*"<"storage_ip": ""<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:49,232 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_ip": ""' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:49,233 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_fstype ''
+
+2013-03-08 19:03:49,233 unit:oscied-transform/0: hook.output INFO: + '[' 3 -ne 3 ']'
++ sed -i 's<"storage_fstype" *: *"[^"]*"<"storage_fstype": ""<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:49,234 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_fstype": ""' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:49,234 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_mountpoint ''
++ '[' 3 -ne 3 ']'
+
+2013-03-08 19:03:49,234 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"storage_mountpoint" *: *"[^"]*"<"storage_mountpoint": ""<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:49,235 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_mountpoint": ""' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:49,235 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_options ''
++ '[' 3 -ne 3 ']'
+
+2013-03-08 19:03:49,236 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"storage_options" *: *"[^"]*"<"storage_options": ""<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:49,236 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_options": ""' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:49,237 unit:oscied-transform/0: hook.output INFO: + storage_is_mounted
+
+2013-03-08 19:03:49,237 unit:oscied-transform/0: hook.output INFO: + grep -q /mnt/storage
+
+2013-03-08 19:03:49,237 unit:oscied-transform/0: hook.output INFO: + mount
+
+2013-03-08 19:03:49,238 unit:oscied-transform/0: hook.output INFO: + pecho 'Unmount shared storage (is actually mounted)'
+
+2013-03-08 19:03:49,238 unit:oscied-transform/0: hook.output INFO: + juju-log '[PARAGRAPH] Unmount shared storage (is actually mounted)'
+
+2013-03-08 19:03:49,360 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Unmount shared storage (is actually mounted)
+2013-03-08 19:03:49,371 unit:oscied-transform/0: hook.output INFO: + umount /mnt/storage
+
+2013-03-08 19:03:49,404 unit:oscied-transform/0: hook.output INFO: + recho 'Shared storage successfully unmounted'
++ juju-log '[REMARK] Shared storage successfully unmounted !'
+
+2013-03-08 19:03:49,517 unit:oscied-transform/0: unit.hook.api INFO: [REMARK] Shared storage successfully unmounted !
+2013-03-08 19:03:49,527 unit:oscied-transform/0: hook.output INFO: + pecho 'Mount shared storage OSCIED-Node02.localdomain:medias_volume type glusterfs options '\'''\'' -> /mnt/storage'
++ juju-log '[PARAGRAPH] Mount shared storage OSCIED-Node02.localdomain:medias_volume type glusterfs options '\'''\'' -> /mnt/storage'
+
+2013-03-08 19:03:49,637 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Mount shared storage OSCIED-Node02.localdomain:medias_volume type glusterfs options '' -> /mnt/storage
+2013-03-08 19:03:49,647 unit:oscied-transform/0: hook.output INFO: + '[' '!' -d /mnt/storage ']'
+
+2013-03-08 19:03:49,647 unit:oscied-transform/0: hook.output INFO: ++ seq 1 5
+
+2013-03-08 19:03:49,648 unit:oscied-transform/0: hook.output INFO: + for i in '$(seq 1 5)'
++ storage_is_mounted
+
+2013-03-08 19:03:49,648 unit:oscied-transform/0: hook.output INFO: + mount
+
+2013-03-08 19:03:49,648 unit:oscied-transform/0: hook.output INFO: + grep -q /mnt/storage
+
+2013-03-08 19:03:49,649 unit:oscied-transform/0: hook.output INFO: + '[' '' ']'
+
+2013-03-08 19:03:49,649 unit:oscied-transform/0: hook.output INFO: + mount -t glusterfs OSCIED-Node02.localdomain:medias_volume /mnt/storage
+
+2013-03-08 19:03:50,572 unit:oscied-publisher/0: hook.output INFO: + screenRunning Publisher
++ '[' 1 -ne 1 ']'
+
+2013-03-08 19:03:50,572 unit:oscied-publisher/0: hook.output INFO: + screen -list
++ awk '{print $1}'
++ grep -q Publisher
+
+2013-03-08 19:03:50,573 unit:oscied-publisher/0: hook.output INFO: + recho 'Publisher successfully started'
++ juju-log '[REMARK] Publisher successfully started !'
+
+2013-03-08 19:03:50,684 unit:oscied-publisher/0: unit.hook.api INFO: [REMARK] Publisher successfully started !
+2013-03-08 19:03:50,695 unit:oscied-publisher/0: hook.output DEBUG: hook start exited, exit code 0.
+2013-03-08 19:03:50,695 unit:oscied-publisher/0: hook.executor DEBUG: Hook complete: /var/lib/juju/units/oscied-publisher-0/charm/hooks/start
+2013-03-08 19:03:50,695 unit:oscied-publisher/0: unit.lifecycle DEBUG: starting service relation watch
+2013-03-08 19:03:50,695 unit:oscied-publisher/0: unit.lifecycle DEBUG: starting unit relation resolved watch
+2013-03-08 19:03:50,697 unit:oscied-publisher/0: unit.lifecycle DEBUG: relation resolved changed
+2013-03-08 19:03:50,697 unit:oscied-publisher/0: unit.lifecycle INFO: processing relation resolved changed
+2013-03-08 19:03:50,698 unit:oscied-publisher/0: unit.lifecycle DEBUG: services changed old:None new:[]
+2013-03-08 19:03:50,699 unit:oscied-publisher/0: unit.lifecycle DEBUG: processing relations changed
+2013-03-08 19:03:50,703 unit:oscied-publisher/0: unit.lifecycle DEBUG: started unit lifecycle
+2013-03-08 19:03:50,705 unit:oscied-publisher/0: statemachine DEBUG: unitworkflowstate: transition complete start (state started) {}
+2013-03-08 19:03:50,708 unit:oscied-publisher/0: juju.agents.unit DEBUG: Configuration Changed
+2013-03-08 19:03:50,710 unit:oscied-publisher/0: statemachine DEBUG: unitworkflowstate: transition configure (started -> started) {}
+2013-03-08 19:03:50,710 unit:oscied-publisher/0: statemachine DEBUG: unitworkflowstate:  execute action do_configure
+2013-03-08 19:03:50,715 unit:oscied-publisher/0: hook.output DEBUG: Cached relation hook contexts: []
+2013-03-08 19:03:50,719 unit:oscied-publisher/0: hook.executor INFO: Hook does not exist, skipping /var/lib/juju/units/oscied-publisher-0/charm/hooks/config-changed
+2013-03-08 19:03:50,719 unit:oscied-publisher/0: unit.lifecycle DEBUG: configured unit
+2013-03-08 19:03:50,722 unit:oscied-publisher/0: statemachine DEBUG: unitworkflowstate: transition complete configure (state started) {}
+2013-03-08 19:03:50,724 unit:oscied-publisher/0: juju.agents.unit INFO: No upgrade flag set.
+2013-03-08 19:03:52,682 unit:oscied-transform/0: hook.output INFO: + sleep 5
+
+2013-03-08 19:03:57,682 unit:oscied-transform/0: hook.output INFO: + for i in '$(seq 1 5)'
++ storage_is_mounted
+
+2013-03-08 19:03:57,683 unit:oscied-transform/0: hook.output INFO: + mount
++ grep -q /mnt/storage
+
+2013-03-08 19:03:57,684 unit:oscied-transform/0: hook.output INFO: + break
++ storage_is_mounted
+
+2013-03-08 19:03:57,684 unit:oscied-transform/0: hook.output INFO: + mount
+
+2013-03-08 19:03:57,684 unit:oscied-transform/0: hook.output INFO: + grep -q /mnt/storage
+
+2013-03-08 19:03:57,685 unit:oscied-transform/0: hook.output INFO: + pecho 'Configure Transform : Register shared storage'
++ juju-log '[PARAGRAPH] Configure Transform : Register shared storage'
+
+2013-03-08 19:03:57,799 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Configure Transform : Register shared storage
+2013-03-08 19:03:57,810 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_ip OSCIED-Node02.localdomain
++ '[' 3 -ne 3 ']'
++ sed -i 's<"storage_ip" *: *"[^"]*"<"storage_ip": "OSCIED-Node02.localdomain"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:57,810 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_ip": "OSCIED-Node02.localdomain"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:57,811 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_fstype glusterfs
++ '[' 3 -ne 3 ']'
++ sed -i 's<"storage_fstype" *: *"[^"]*"<"storage_fstype": "glusterfs"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:57,812 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_fstype": "glusterfs"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:57,813 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_mountpoint medias_volume
++ '[' 3 -ne 3 ']'
+
+2013-03-08 19:03:57,813 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"storage_mountpoint" *: *"[^"]*"<"storage_mountpoint": "medias_volume"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:57,813 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_mountpoint": "medias_volume"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:57,814 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_options ''
++ '[' 3 -ne 3 ']'
+
+2013-03-08 19:03:57,814 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"storage_options" *: *"[^"]*"<"storage_options": ""<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:57,815 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_options": ""' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:57,816 unit:oscied-transform/0: hook.output INFO: + transform_register
+
+2013-03-08 19:03:57,816 unit:oscied-transform/0: hook.output INFO: + transform_config_is_enabled
++ '[' mongodb://nodes:M2qlif8rdtKtBYil@OSCIED-Node01.localdomain:27017/celery -a amqp://nodes:OZy23iO0D4UpYS2k@OSCIED-Node01.localdomain:5672/celery ']'
++ mongo=mongodb://nodes:M2qlif8rdtKtBYil@OSCIED-Node01.localdomain:27017/celery
++ rabbit=amqp://nodes:OZy23iO0D4UpYS2k@OSCIED-Node01.localdomain:5672/celery
++ pecho 'Configure Transform : Register the Orchestrator'
++ juju-log '[PARAGRAPH] Configure Transform : Register the Orchestrator'
+
+2013-03-08 19:03:57,928 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Configure Transform : Register the Orchestrator
+2013-03-08 19:03:57,938 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json mongo_connection mongodb://nodes:M2qlif8rdtKtBYil@OSCIED-Node01.localdomain:27017/celery
++ '[' 3 -ne 3 ']'
+
+2013-03-08 19:03:57,938 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"mongo_connection" *: *"[^"]*"<"mongo_connection": "mongodb://nodes:M2qlif8rdtKtBYil@OSCIED-Node01.localdomain:27017/celery"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:57,939 unit:oscied-transform/0: hook.output INFO: + grep -q '"mongo_connection": "mongodb://nodes:M2qlif8rdtKtBYil@OSCIED-Node01.localdomain:27017/celery"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:57,940 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json rabbit_connection amqp://nodes:OZy23iO0D4UpYS2k@OSCIED-Node01.localdomain:5672/celery
++ '[' 3 -ne 3 ']'
+
+2013-03-08 19:03:57,940 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"rabbit_connection" *: *"[^"]*"<"rabbit_connection": "amqp://nodes:OZy23iO0D4UpYS2k@OSCIED-Node01.localdomain:5672/celery"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:57,941 unit:oscied-transform/0: hook.output INFO: + grep -q '"rabbit_connection": "amqp://nodes:OZy23iO0D4UpYS2k@OSCIED-Node01.localdomain:5672/celery"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-08 19:03:57,942 unit:oscied-transform/0: hook.output INFO: ++ expr match mongodb://nodes:M2qlif8rdtKtBYil@OSCIED-Node01.localdomain:27017/celery '.*mongodb://[^:]*:[^@]*@\([^:]*\):[0-9]*/[a-z]*.*'
+
+2013-03-08 19:03:57,942 unit:oscied-transform/0: hook.output INFO: + host=OSCIED-Node01.localdomain
+
+2013-03-08 19:03:57,943 unit:oscied-transform/0: hook.output INFO: ++ expr match mongodb://nodes:M2qlif8rdtKtBYil@OSCIED-Node01.localdomain:27017/celery '.*mongodb://[^:]*:[^@]*@[^:]*:\([0-9]*\)/[a-z]*.*'
+
+2013-03-08 19:03:57,943 unit:oscied-transform/0: hook.output INFO: + port=27017
+
+2013-03-08 19:03:57,944 unit:oscied-transform/0: hook.output INFO: ++ expr match mongodb://nodes:M2qlif8rdtKtBYil@OSCIED-Node01.localdomain:27017/celery '.*mongodb://\([^:]*\):[^@]*@[^:]*:[0-9]*/[a-z]*.*'
+
+2013-03-08 19:03:57,944 unit:oscied-transform/0: hook.output INFO: + user=nodes
+
+2013-03-08 19:03:57,944 unit:oscied-transform/0: hook.output INFO: ++ expr match mongodb://nodes:M2qlif8rdtKtBYil@OSCIED-Node01.localdomain:27017/celery '.*mongodb://[^:]*:\([^@]*\)@[^:]*:[0-9]*/[a-z]*.*'
+
+2013-03-08 19:03:57,945 unit:oscied-transform/0: hook.output INFO: + password=M2qlif8rdtKtBYil
+
+2013-03-08 19:03:57,945 unit:oscied-transform/0: hook.output INFO: ++ expr match mongodb://nodes:M2qlif8rdtKtBYil@OSCIED-Node01.localdomain:27017/celery '.*mongodb://[^:]*:[^@]*@[^:]*:[0-9]*/\([a-z]*\).*'
+
+2013-03-08 19:03:57,945 unit:oscied-transform/0: hook.output INFO: + database=celery
+
+2013-03-08 19:03:57,946 unit:oscied-transform/0: hook.output INFO: + mecho 'MongoDB host=OSCIED-Node01.localdomain, port=27017, user=nodes, password=M2qlif8rdtKtBYil, database=celery'
++ juju-log '[MESSAGE] MongoDB host=OSCIED-Node01.localdomain, port=27017, user=nodes, password=M2qlif8rdtKtBYil, database=celery'
+
+2013-03-08 19:03:58,058 unit:oscied-transform/0: unit.hook.api INFO: [MESSAGE] MongoDB host=OSCIED-Node01.localdomain, port=27017, user=nodes, password=M2qlif8rdtKtBYil, database=celery
+2013-03-08 19:03:58,068 unit:oscied-transform/0: hook.output INFO: + '[' '!' OSCIED-Node01.localdomain -o '!' 27017 -o '!' nodes -o '!' M2qlif8rdtKtBYil -o '!' celery ']'
++ a='s<RABBIT_CONNECTION<amqp://nodes:OZy23iO0D4UpYS2k@OSCIED-Node01.localdomain:5672/celery<g'
++ b='s<MONGO_HOST<OSCIED-Node01.localdomain<g'
++ c='s<MONGO_PORT<27017<g'
++ d='s<MONGO_USER<nodes<g'
++ e='s<MONGO_PASSWORD<M2qlif8rdtKtBYil<g'
++ f='s<MONGO_DATABASE<celery<g'
++ g='s<THE_CONCURRENCY<1<g'
+
+2013-03-08 19:03:58,068 unit:oscied-transform/0: hook.output INFO: + sed 's<RABBIT_CONNECTION<amqp://nodes:OZy23iO0D4UpYS2k@OSCIED-Node01.localdomain:5672/celery<g;s<MONGO_HOST<OSCIED-Node01.localdomain<g;s<MONGO_PORT<27017<g;s<MONGO_USER<nodes<g;s<MONGO_PASSWORD<M2qlif8rdtKtBYil<g;s<MONGO_DATABASE<celery<g;s<THE_CONCURRENCY<1<g' /var/lib/juju/units/oscied-transform-0/charm/templates/celeryconfig.py.template
+
+2013-03-08 19:03:58,069 unit:oscied-transform/0: hook.output INFO: + recho 'Orchestrator successfully registered, it'\''s time to wake-up'
+
+2013-03-08 19:03:58,069 unit:oscied-transform/0: hook.output INFO: + juju-log '[REMARK] Orchestrator successfully registered, it'\''s time to wake-up !'
+
+2013-03-08 19:03:58,213 unit:oscied-transform/0: unit.hook.api INFO: [REMARK] Orchestrator successfully registered, it's time to wake-up !
+2013-03-08 19:03:58,224 unit:oscied-transform/0: hook.output INFO: + hook_start
++ techo 'Transform - start'
++ juju-log '[TITLE] Transform - start'
+
+2013-03-08 19:03:58,338 unit:oscied-transform/0: unit.hook.api INFO: [TITLE] Transform - start
+2013-03-08 19:03:58,348 unit:oscied-transform/0: hook.output INFO: + storage_is_mounted
+
+2013-03-08 19:03:58,349 unit:oscied-transform/0: hook.output INFO: + mount
++ grep -q /mnt/storage
+
+2013-03-08 19:03:58,349 unit:oscied-transform/0: hook.output INFO: + '[' '!' -f /var/lib/juju/units/oscied-transform-0/charm/celeryconfig.py ']'
+
+2013-03-08 19:03:58,350 unit:oscied-transform/0: hook.output INFO: + '[' '!' transform_private,10.0.3.190 ']'
++ screenRunning Transform
++ '[' 1 -ne 1 ']'
+
+2013-03-08 19:03:58,350 unit:oscied-transform/0: hook.output INFO: + screen -list
++ awk '{print $1}'
+
+2013-03-08 19:03:58,350 unit:oscied-transform/0: hook.output INFO: + grep -q Transform
+
+2013-03-08 19:03:58,351 unit:oscied-transform/0: hook.output INFO: + sleep 5
+
+2013-03-08 19:04:03,352 unit:oscied-transform/0: hook.output INFO: + screenRunning Transform
++ '[' 1 -ne 1 ']'
+
+2013-03-08 19:04:03,352 unit:oscied-transform/0: hook.output INFO: + screen -list
++ awk '{print $1}'
+
+2013-03-08 19:04:03,352 unit:oscied-transform/0: hook.output INFO: + grep -q Transform
+
+2013-03-08 19:04:03,353 unit:oscied-transform/0: hook.output INFO: + recho 'Transform successfully started'
++ juju-log '[REMARK] Transform successfully started !'
+
+2013-03-08 19:04:03,466 unit:oscied-transform/0: unit.hook.api INFO: [REMARK] Transform successfully started !
+2013-03-08 19:04:03,477 unit:oscied-transform/0: hook.output DEBUG: hook config-changed exited, exit code 0.
+2013-03-08 19:04:03,477 unit:oscied-transform/0: hook.executor DEBUG: Hook complete: /var/lib/juju/units/oscied-transform-0/charm/hooks/config-changed
+2013-03-08 19:04:03,477 unit:oscied-transform/0: unit.lifecycle DEBUG: configured unit
+2013-03-08 19:04:03,480 unit:oscied-transform/0: statemachine DEBUG: unitworkflowstate: transition complete configure (state started) {}
+2013-03-08 19:04:03,482 unit:oscied-transform/0: juju.agents.unit INFO: No upgrade flag set.
+
+

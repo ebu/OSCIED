@@ -8,19 +8,19 @@ OpenStack in a Nutshell
 
 .. only:: html
 
-    .. |NASA_logo_img| image:: ../../../common/images/nasa.jpg
+    .. |NASA_logo_img| image:: ../../images/nasa.jpg
         :width: 150px
         :alt: NASA Logo
-    .. |Rackspace_logo_img| image:: ../../../common/images/rackspace.jpg
+    .. |Rackspace_logo_img| image:: ../../images/rackspace.jpg
         :width: 120px
         :alt: Rackspace Logo
 
 .. only:: latex
 
-    .. |NASA_logo_img| image:: ../../../common/images/nasa.jpg
+    .. |NASA_logo_img| image:: ../../images/nasa.jpg
         :scale: 6 %
         :alt: NASA Logo
-    .. |Rackspace_logo_img| image:: ../../../common/images/rackspace.jpg
+    .. |Rackspace_logo_img| image:: ../../images/rackspace.jpg
         :scale: 5 %
         :alt: Rackspace Logo
 
@@ -32,7 +32,7 @@ Th cloud infrastructure's users will consume computing resources in their abstra
 
 .. only:: html
 
-    .. figure:: ../../../common/external/Cloud_computing.png
+    .. figure:: ../../external/Cloud_computing.png
         :width: 1000px
         :align: center
         :alt: Cloud Computing
@@ -41,7 +41,7 @@ Th cloud infrastructure's users will consume computing resources in their abstra
 
 .. only:: latex
 
-    .. figure:: ../../../common/external/Cloud_computing.png
+    .. figure:: ../../external/Cloud_computing.png
         :scale: 70 %
         :alt: Cloud Computing
 
@@ -108,7 +108,7 @@ The Main Components
 
 .. only:: html
 
-    .. figure:: ../../../common/external/openstack-software-diagram.png
+    .. figure:: ../../external/openstack-software-diagram.png
         :width: 748px
         :align: center
         :alt: |openstack_software_diagram|
@@ -117,7 +117,7 @@ The Main Components
 
 .. only:: latex
 
-    .. figure:: ../../../common/external/openstack-software-diagram.png
+    .. figure:: ../../external/openstack-software-diagram.png
         :scale: 75 %
         :alt: |openstack_software_diagram|
 
@@ -127,13 +127,13 @@ The Main Components
 
 .. only:: html
 
-    .. figure:: ../../../common/external/openstack-object-storage-icon.png
+    .. figure:: ../../external/openstack-object-storage-icon.png
         :width: 111px
         :align: center
 
 .. only:: latex
 
-    .. figure:: ../../../common/external/openstack-object-storage-icon.png
+    .. figure:: ../../external/openstack-object-storage-icon.png
         :scale: 25 %
 
 * Images Service (codename Glance_). This component provides a way to register, discover and retrieve virtual machine images and images metadata. One can access to Glance_ functionalities through the glance_ command-line client or by using the RESTful API directly. Glance_ can use various storage technologies to store the images, from simple filesystem to object-based storages like Swift_ or AmazonS3_.
@@ -144,26 +144,26 @@ The Main Components
 
 .. only:: html
 
-    .. figure:: ../../../common/external/openstack-networking-icon.png
+    .. figure:: ../../external/openstack-networking-icon.png
         :width: 111px
         :align: center
 
 .. only:: latex
 
-    .. figure:: ../../../common/external/openstack-networking-icon.png
+    .. figure:: ../../external/openstack-networking-icon.png
         :scale: 25 %
 
 * Network Service (codename Quantum_) originally developed by NASA_ and known as nova-network in previous OpenStack_ releases. This component provides flexible, virtual/physical networks connectivity to virtual machines instances. Quantum_ is a tool aimed by the goal of providing network administrators with a simple but yet powerful approach to manage next-generation networks. One can access to Quantum_ functionalities through the quantum_ command-line client or by using the RESTful API directly. This component is ideal for managing highly-complex networking models mixing physical and virtual network and equipments. The pluggable design of Quantum_ (and of OpenStack_ in general) allow administrators to choose tools around Quantum_ such as the underlying network virtualization technology like |vSwitch|_ or |BridgeUtils|_.
 
 .. only:: html
 
-    .. figure:: ../../../common/external/openstack-compute-icon.png
+    .. figure:: ../../external/openstack-compute-icon.png
         :width: 111px
         :align: center
 
 .. only:: latex
 
-    .. figure:: ../../../common/external/openstack-compute-icon.png
+    .. figure:: ../../external/openstack-compute-icon.png
         :scale: 25 %
 
 * Compute Service (codename Nova_) originally developed by NASA_. This component provides on-demand computing resources in the form of virtual machines instances managed by this cloud computing fabric controller (the main part an IaaS_). One can access to Nova_ functionalities through the nova_/nova-manage command-line clients or by using the RESTful API directly. In previous release, this component was also responsible of the network and volume services, each of these two services are now the responsibility of Quantum_ and Cinder_ projects. The flexible design of Nova_ let you choose tools and hardware around Nova_ such as the underlying hypervisor and the kind of computer's configuration (e.g. bare metal / HPC ...). The hypervisor choice is really a good thing, you may choose to use the widely used full-(para)virtualization hypervisor called KVM_ or to switch to a low overhead, high-density container-based isolation called LXC_.
@@ -172,7 +172,7 @@ The Main Components
 
 .. only:: html
 
-    .. figure:: ../../../common/external/openstack-launching-instances.jpg
+    .. figure:: ../../external/openstack-launching-instances.jpg
         :width: 773px
         :align: center
         :alt: |openstack_launching_instances|
@@ -181,7 +181,7 @@ The Main Components
 
 .. only:: latex
 
-    .. figure:: ../../../common/external/openstack-launching-instances.jpg
+    .. figure:: ../../external/openstack-launching-instances.jpg
         :scale: 75 %
         :alt: |openstack_launching_instances|
 
@@ -209,7 +209,7 @@ So, conceptually, you can picture the relationships between the services as such
 
 .. only:: html
 
-    .. figure:: ../../../common/external/openstack-conceptual-arch-folsom.jpg
+    .. figure:: ../../external/openstack-conceptual-arch-folsom.jpg
         :width: 1500px
         :align: center
         :alt: |openstack_folsom_conceptual_arch|
@@ -218,7 +218,7 @@ So, conceptually, you can picture the relationships between the services as such
 
 .. only:: latex
 
-    .. figure:: ../../../common/external/openstack-conceptual-arch-folsom.jpg
+    .. figure:: ../../external/openstack-conceptual-arch-folsom.jpg
         :scale: 100 %
         :alt: |openstack_folsom_conceptual_arch|
 
@@ -241,7 +241,7 @@ Logical Architecture
 
 .. only:: html
 
-    .. figure:: ../../../common/external/openstack-logical-arch-folsom.jpg
+    .. figure:: ../../external/openstack-logical-arch-folsom.jpg
         :width: 1500px
         :align: center
         :alt: |openstack_folsom_logical_arch|
@@ -250,7 +250,7 @@ Logical Architecture
 
 .. only:: latex
 
-    .. figure:: ../../../common/external/openstack-logical-arch-folsom.jpg
+    .. figure:: ../../external/openstack-logical-arch-folsom.jpg
         :scale: 98 %
         :alt: |openstack_folsom_logical_arch|
 
@@ -294,7 +294,7 @@ A More Scalable Setup
 
 .. only:: html
 
-    .. figure:: ../../../common/schematics/openstack-folsom-gre-2nic.jpg
+    .. figure:: ../../../schematics/openstack-folsom-gre-2nic.jpg
         :width: 1200px
         :align: center
         :alt: |openstack_folsom_gre_2nic|
@@ -303,7 +303,7 @@ A More Scalable Setup
 
 .. only:: latex
 
-    .. figure:: ../../../common/schematics/openstack-folsom-gre-2nic.jpg
+    .. figure:: ../../../schematics/openstack-folsom-gre-2nic.jpg
         :scale: 100 %
         :alt: |openstack_folsom_gre_2nic|
 
@@ -379,7 +379,7 @@ Here is the setup I suggest to deploy at |EBU|_, strongly inspired by |OS_folsom
 
 .. only:: html
 
-    .. figure:: ../schematics/OSCIED-Servers.png
+    .. figure:: ../../schematics/OSCIED-Servers.png
         :width: 1500px
         :align: center
         :alt: |oscied_servers|
@@ -388,7 +388,7 @@ Here is the setup I suggest to deploy at |EBU|_, strongly inspired by |OS_folsom
 
 .. only:: latex
 
-    .. figure:: ../schematics/OSCIED-Servers.png
+    .. figure:: ../../schematics/OSCIED-Servers.png
         :scale: 100 %
         :alt: |oscied_servers|
 

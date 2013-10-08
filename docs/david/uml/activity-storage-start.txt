@@ -1,0 +1,28 @@
+@startuml
+
+skinparam activity {
+    FontColor          white
+    AttributeFontColor white
+    FontSize           17
+    AttributeFontSize  15
+    AttributeFontname  Droid Sans Mono
+    BackgroundColor    #527BC6
+    BorderColor        black
+    ArrowColor         #222266
+}
+
+partition start {
+(*) --> if "GlusterFS\nrunning ?" then
+    -right-> [No] "start GlusterFS"
+    if "started" then
+        --> [No] "exit 1"
+        --> (*)
+    else
+        --> [Yes] (*)
+    endif
+else
+    --> [Yes] (*)
+endif
+}
+
+@enduml

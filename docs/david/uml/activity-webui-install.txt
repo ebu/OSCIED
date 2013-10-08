@@ -1,0 +1,53 @@
+@startuml
+
+skinparam activity {
+    FontColor          white
+    AttributeFontColor white
+    FontSize           17
+    AttributeFontSize  15
+    AttributeFontname  Droid Sans Mono
+    BackgroundColor    #527BC6
+    BorderColor        black
+    ArrowColor         #222266
+}
+
+partition install {
+note right: <b>BOLD</b> actions are\nmethods calls
+(*) --> "upgrade system"
+--> "install MySQL, GlusterFS client"
+--> "configure MySQL"
+if "ok" then
+    -left-> [No] "exit 1"
+    --> (*)
+else
+    --> "restart MySQL"
+    if "ok" then
+        -right-> [No] "exit 2"
+        --> (*)
+    else
+        --> "import DB & create DB user"
+        if "ok" then
+            -right-> [No] "exit 3-4"
+            --> (*)
+        else
+            --> "install & configure Apache2 + PHP"
+            if "ok" then
+                -right-> [No] "exit 5"
+                --> (*)
+            else
+                --> "copy & configure Web UI code"
+                if "ok" then
+                    -left-> [No] "exit 6-12"
+                    --> (*)
+                else
+                    --> "expose Apache 2"
+                    --> "<b>CONFIG-CHANGED</b>"
+                    --> (*)
+                endif
+            endif
+        endif
+    endif
+endif
+}
+
+@enduml

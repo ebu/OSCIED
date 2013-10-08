@@ -29,7 +29,7 @@ Kind Regards,
 
 .. only:: html
 
-    .. figure:: ../../../common/images/EBU-UER.png
+    .. figure:: ../../images/EBU-UER.png
         :width: 675px
         :align: center
         :target: http://tech.ebu.ch/
@@ -37,7 +37,7 @@ Kind Regards,
 
 .. only:: latex
 
-    .. figure:: ../../../common/images/EBU-UER.png
+    .. figure:: ../../images/EBU-UER.png
         :scale: 45 %
         :target: http://tech.ebu.ch/
         :alt: EBU/UER Logo

@@ -1,0 +1,41 @@
+@startuml
+
+skinparam activity {
+    FontColor          white
+    AttributeFontColor white
+    FontSize           17
+    AttributeFontSize  15
+    AttributeFontname  Droid Sans Mono
+    BackgroundColor    #527BC6
+    BorderColor        black
+    ArrowColor         #222266
+}
+
+partition install {
+note right: <b>BOLD</b> actions are\nmethods calls
+(*) --> "upgrade system"
+--> "install Apache2, python,\nGlusterFS client"
+if "ok" then
+    -right-> [No] "exit 1"
+    --> (*)
+else
+    --> "get & compile\nH.264 streaming\nApache 2 module"
+    if "ok" then
+        -right-> [No] "exit 2-3"
+        --> (*)
+    else
+        --> "enable module"
+        --> "install Celery, pyMongo"
+        if "ok" then
+            -left-> [No] "exit 4"
+            --> (*)
+        else
+            --> "expose Apache 2"
+            --> "<b>CONFIG-CHANGED</b>"
+            --> (*)
+        endif
+    endif
+endif
+}
+
+@enduml

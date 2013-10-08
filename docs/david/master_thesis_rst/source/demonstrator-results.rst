@@ -95,7 +95,7 @@ This scenario represent a typical *public cloud only* deployment of the plaftorm
 
 .. only:: html
 
-    .. figure:: ../deployments/1056_amazon/status.png
+    .. figure:: ../../deployments/1056_amazon/status.png
         :width: 1500px
         :align: center
         :alt: |juju_status|
@@ -104,7 +104,7 @@ This scenario represent a typical *public cloud only* deployment of the plaftorm
 
 .. only:: latex
 
-    .. figure:: ../deployments/1056_amazon/status.png
+    .. figure:: ../../deployments/1056_amazon/status.png
         :scale: 100 %
         :alt: |juju_status|
 
@@ -114,7 +114,7 @@ This scenario represent a typical *public cloud only* deployment of the plaftorm
 
 .. only:: html
 
-    .. figure:: ../deployments/1056_amazon/aws_ec2.png
+    .. figure:: ../../deployments/1056_amazon/aws_ec2.png
         :width: 1500px
         :align: center
         :alt: |amazon_ec2_screen|
@@ -123,7 +123,7 @@ This scenario represent a typical *public cloud only* deployment of the plaftorm
 
 .. only:: latex
 
-    .. figure:: ../deployments/1056_amazon/aws_ec2.png
+    .. figure:: ../../deployments/1056_amazon/aws_ec2.png
         :scale: 100 %
         :alt: |amazon_ec2_screen|
 
@@ -131,8 +131,8 @@ This scenario represent a typical *public cloud only* deployment of the plaftorm
 
 :date: 2013-01-26 19:13:24,322
 :revision: 1056
-:juju: :download:`debug.log<../deployments/1056_amazon/debug.log>`
-:menu: :download:`menu.log<../deployments/1056_amazon/menu.log>`
+:juju: :download:`debug.log<../../deployments/1056_amazon/debug.log>`
+:menu: :download:`menu.log<../../deployments/1056_amazon/menu.log>`
 
 Local with 3 Transform and 2 Publisher
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -141,7 +141,7 @@ This scenario represent a typical *development purposes only* local deployment o
 
 .. only:: html
 
-    .. figure:: ../deployments/1110_lxc_3_2/status.png
+    .. figure:: ../../deployments/1110_lxc_3_2/status.png
         :width: 1500px
         :align: center
         :alt: |juju_status|
@@ -150,7 +150,7 @@ This scenario represent a typical *development purposes only* local deployment o
 
 .. only:: latex
 
-    .. figure:: ../deployments/1110_lxc_3_2/status.png
+    .. figure:: ../../deployments/1110_lxc_3_2/status.png
         :scale: 100 %
         :alt: |juju_status|
 
@@ -158,8 +158,8 @@ This scenario represent a typical *development purposes only* local deployment o
 
 :date: 2013-01-27 18:57:01,994
 :revision: 1110
-:juju: :download:`debug.log<../deployments/1110_lxc_3_2/debug.log>`
-:screen: :download:`init_and_tasks.mp4<../deployments/1110_lxc_3_2/init_and_tasks.mp4>`
+:juju: :download:`debug.log<../../deployments/1110_lxc_3_2/debug.log>`
+:screen: :download:`init_and_tasks.mp4<../../deployments/1110_lxc_3_2/init_and_tasks.mp4>`
 
 Parallel deployment MaaS, Desktop, Amazon
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -172,7 +172,7 @@ In parallel are running two completelly separated OSCIED : One of them is fully 
 
 .. only:: html
 
-    .. figure:: ../schematics/OSCIED-Deployment_demo_bis.png
+    .. figure:: ../../schematics/OSCIED-Deployment_demo_bis.png
         :width: 1200px
         :align: center
         :alt: OSCIED made available as two completelly separated platforms running in parallel.
@@ -181,7 +181,7 @@ In parallel are running two completelly separated OSCIED : One of them is fully 
 
 .. only:: latex
 
-    .. figure:: ../schematics/OSCIED-Deployment_demo_bis.png
+    .. figure:: ../../schematics/OSCIED-Deployment_demo_bis.png
         :scale: 80 %
         :alt: OSCIED made available as two completelly separated platforms running in parallel.
 
@@ -189,7 +189,7 @@ In parallel are running two completelly separated OSCIED : One of them is fully 
 
 .. only:: html
 
-    .. figure:: ../deployments/1278_multi/firewall.png
+    .. figure:: ../../deployments/1278_multi/firewall.png
         :width: 1200px
         :align: center
         :alt: Configuration of our FW
@@ -198,7 +198,7 @@ In parallel are running two completelly separated OSCIED : One of them is fully 
 
 .. only:: latex
 
-    .. figure:: ../deployments/1278_multi/firewall.png
+    .. figure:: ../../deployments/1278_multi/firewall.png
         :scale: 80 %
         :alt: Configuration of our FW
 
@@ -213,7 +213,7 @@ OpenStack_ is not required in such scenario as Canonical's MaaS_ provisioning he
 
 .. only:: html
 
-    .. figure:: ../deployments/1278_multi/maas.png
+    .. figure:: ../../deployments/1278_multi/maas.png
         :width: 1200px
         :align: center
         :alt: |juju_status|
@@ -222,14 +222,14 @@ OpenStack_ is not required in such scenario as Canonical's MaaS_ provisioning he
 
 .. only:: latex
 
-    .. figure:: ../deployments/1278_multi/maas.png
+    .. figure:: ../../deployments/1278_multi/maas.png
         :scale: 80 %
         :alt: |juju_status|
 
         |juju_status|
 
-:menu maas: :download:`maas_menu.log<../deployments/1278_multi/maas_menu.log>`
-:juju maas: :download:`maas_juju.log<../deployments/1278_multi/maas_juju.log>`
+:menu maas: :download:`maas_menu.log<../../deployments/1278_multi/maas_menu.log>`
+:juju maas: :download:`maas_juju.log<../../deployments/1278_multi/maas_juju.log>`
 
 Local
 +++++
@@ -238,7 +238,7 @@ Some transform units were started on my workstation at hepia_.
 
 .. only:: html
 
-    .. figure:: ../deployments/1278_multi/local.png
+    .. figure:: ../../deployments/1278_multi/local.png
         :width: 500px
         :align: center
         :alt: |juju_status|
@@ -247,14 +247,14 @@ Some transform units were started on my workstation at hepia_.
 
 .. only:: latex
 
-    .. figure:: ../deployments/1278_multi/local.png
+    .. figure:: ../../deployments/1278_multi/local.png
         :scale: 33 %
         :alt: |juju_status|
 
         |juju_status|
 
-:menu local: :download:`local_menu.log<../deployments/1278_multi/local_menu.log>`
-:juju local: :download:`local_juju.log<../deployments/1278_multi/local_juju.log>`
+:menu local: :download:`local_menu.log<../../deployments/1278_multi/local_menu.log>`
+:juju local: :download:`local_juju.log<../../deployments/1278_multi/local_juju.log>`
 
 Bernex
 ++++++
@@ -263,7 +263,7 @@ Some transform units were started on my personnal desktop computer at home.
 
 .. only:: html
 
-    .. figure:: ../deployments/1278_multi/bernex.png
+    .. figure:: ../../deployments/1278_multi/bernex.png
         :width: 500px
         :align: center
         :alt: |juju_status|
@@ -272,14 +272,14 @@ Some transform units were started on my personnal desktop computer at home.
 
 .. only:: latex
 
-    .. figure:: ../deployments/1278_multi/bernex.png
+    .. figure:: ../../deployments/1278_multi/bernex.png
         :scale: 33 %
         :alt: |juju_status|
 
         |juju_status|
 
-:menu bernex: :download:`bernex_menu.log<../deployments/1278_multi/bernex_menu.log>`
-:juju bernex: :download:`bernex_juju.log<../deployments/1278_multi/bernex_juju.log>`
+:menu bernex: :download:`bernex_menu.log<../../deployments/1278_multi/bernex_menu.log>`
+:juju bernex: :download:`bernex_juju.log<../../deployments/1278_multi/bernex_juju.log>`
 
 Amazon
 ++++++
@@ -288,7 +288,7 @@ This public-cloud provider has been used to deploy transcoder and publication po
 
 .. only:: html
 
-    .. figure:: ../deployments/1278_multi/amazon.png
+    .. figure:: ../../deployments/1278_multi/amazon.png
         :width: 500px
         :align: center
         :alt: |juju_status|
@@ -297,18 +297,18 @@ This public-cloud provider has been used to deploy transcoder and publication po
 
 .. only:: latex
 
-    .. figure:: ../deployments/1278_multi/amazon.png
+    .. figure:: ../../deployments/1278_multi/amazon.png
         :scale: 33 %
         :alt: |juju_status|
 
         |juju_status|
 
-:menu amazon: :download:`amazon_menu.log<../deployments/1278_multi/amazon_menu.log>`
-:juju amazon: :download:`amazon_juju.log<../deployments/1278_multi/amazon_juju.log>`
+:menu amazon: :download:`amazon_menu.log<../../deployments/1278_multi/amazon_menu.log>`
+:juju amazon: :download:`amazon_juju.log<../../deployments/1278_multi/amazon_juju.log>`
 
 .. only:: html
 
-    .. figure:: ../deployments/1278_multi/amazon_aws.png
+    .. figure:: ../../deployments/1278_multi/amazon_aws.png
         :width: 1500px
         :align: center
         :alt: Amazon Web Services Console
@@ -317,7 +317,7 @@ This public-cloud provider has been used to deploy transcoder and publication po
 
 .. only:: latex
 
-    .. figure:: ../deployments/1278_multi/amazon_aws.png
+    .. figure:: ../../deployments/1278_multi/amazon_aws.png
         :scale: 100 %
         :alt: Amazon Web Services Console
 

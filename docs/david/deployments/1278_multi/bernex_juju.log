@@ -1,0 +1,2414 @@
+famille@Gtx:~/David/prog/OSCIED/scripts$ juju debug-log --environment bernex
+2013-03-09 15:02:40,229 INFO Enabling distributed debug log.
+2013-03-09 15:02:40,239 INFO Tailing logs - Ctrl-C to stop.
+2013-03-09 15:02:43,293 Machine:0: unit.deploy INFO: Created container famille-bernex-oscied-transform-0
+2013-03-09 15:02:43,305 Machine:0: unit.deploy DEBUG: Charm extracted into container
+2013-03-09 15:02:43,306 Machine:0: unit.deploy DEBUG: Starting container...
+2013-03-09 15:02:44,359 Machine:0: unit.deploy INFO: Started container for oscied-transform/0
+2013-03-09 15:02:44,360 Machine:0: unit.deploy INFO: Started service unit oscied-transform/0
+2013-03-09 15:03:24,185 unit:oscied-transform/0: hook.executor DEBUG: started
+2013-03-09 15:03:24,217 unit:oscied-transform/0: statemachine DEBUG: unitworkflowstate: transition install (None -> installed) {}
+2013-03-09 15:03:24,217 unit:oscied-transform/0: statemachine DEBUG: unitworkflowstate:  execute action do_install
+2013-03-09 15:03:24,245 unit:oscied-transform/0: hook.output DEBUG: Cached relation hook contexts: []
+2013-03-09 15:03:24,255 unit:oscied-transform/0: hook.executor DEBUG: Running hook: /var/lib/juju/units/oscied-transform-0/charm/hooks/install
+2013-03-09 15:03:24,451 unit:oscied-transform/0: hook.output INFO: +++ unit-get public-address
+
+2013-03-09 15:03:24,610 unit:oscied-transform/0: unit.hook.api DEBUG: Get unit setting: 'public-address'
+2013-03-09 15:03:24,634 unit:oscied-transform/0: hook.output INFO: ++ PUBLIC_ADDRESS=10.0.3.53
+
+2013-03-09 15:03:24,635 unit:oscied-transform/0: hook.output INFO: +++ config-get concurrency
+
+2013-03-09 15:03:24,807 unit:oscied-transform/0: hook.output INFO: ++ THE_CONCURRENCY=1
+
+2013-03-09 15:03:24,807 unit:oscied-transform/0: hook.output INFO: +++ config-get rabbit_queues
+
+2013-03-09 15:03:24,976 unit:oscied-transform/0: hook.output INFO: ++ RABBIT_QUEUES=transform_amazon,10.0.3.53
+
+2013-03-09 15:03:24,976 unit:oscied-transform/0: hook.output INFO: +++ config-get mongo_connection
+
+2013-03-09 15:03:25,148 unit:oscied-transform/0: hook.output INFO: ++ MONGO_CONNECTION=mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery
+
+2013-03-09 15:03:25,149 unit:oscied-transform/0: hook.output INFO: +++ config-get rabbit_connection
+
+2013-03-09 15:03:25,318 unit:oscied-transform/0: hook.output INFO: ++ RABBIT_CONNECTION=amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery
+
+2013-03-09 15:03:25,319 unit:oscied-transform/0: hook.output INFO: +++ config-get api_nat_socket
+
+2013-03-09 15:03:25,492 unit:oscied-transform/0: hook.output INFO: ++ API_NAT_SOCKET=129.194.185.47:5000
+
+2013-03-09 15:03:25,492 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_ip
+
+2013-03-09 15:03:25,663 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_IP=OSCIED-Node02.localdomain
+
+2013-03-09 15:03:25,663 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_nat_ip
+
+2013-03-09 15:03:25,834 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_NAT_IP=129.194.185.47
+
+2013-03-09 15:03:25,835 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_fstype
+
+2013-03-09 15:03:26,003 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_FSTYPE=glusterfs
+
+2013-03-09 15:03:26,003 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_mountpoint
+
+2013-03-09 15:03:26,176 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_MOUNTPOINT=medias_volume
+
+2013-03-09 15:03:26,176 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_options
+
+2013-03-09 15:03:26,347 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_OPTIONS=
+
+2013-03-09 15:03:26,353 unit:oscied-transform/0: hook.output INFO: ++ logicielsUbuntuUtilsImported
+
+2013-03-09 15:03:26,354 unit:oscied-transform/0: hook.output INFO: ++ true=0
+++ false=1
+++ true_auto=2
+++ false_auto=3
+++ '[' -t 0 ']'
+++ TXT_BLD=
+++ TXT_BLK=
+++ TXT_RED=
+++ TXT_GREEN=
+++ TXT_YLW=
+++ TXT_BLUE=
+++ TXT_PURPLE=
+++ TXT_CYAN=
+++ TXT_WHITE=
+
+2013-03-09 15:03:26,354 unit:oscied-transform/0: hook.output INFO: ++ TXT_RESET=
+++ TECHO_COLOR='[TITLE] '
+++ PECHO_COLOR='[PARAGRAPH] '
+++ MECHO_COLOR='[MESSAGE] '
+++ CECHO_COLOR='[CODE] '
+++ RECHO_COLOR='[REMARK] '
+++ QECHO_COLOR='[QUESTION] '
+++ XECHO_COLOR=
+
+2013-03-09 15:03:26,354 unit:oscied-transform/0: hook.output INFO: ++ echo '\n'
+++ grep -q n
+
+2013-03-09 15:03:26,355 unit:oscied-transform/0: hook.output INFO: ++ e_=-e
+++ echo=juju-log
+++ '[' juju-log '!=' echo ']'
+++ e_=
+++ DIALOG=dialog
+
+2013-03-09 15:03:26,356 unit:oscied-transform/0: hook.output INFO: +++ id -u
+
+2013-03-09 15:03:26,358 unit:oscied-transform/0: hook.output INFO: +++ which sudo
+
+2013-03-09 15:03:26,359 unit:oscied-transform/0: hook.output INFO: ++ '[' 0 '!=' 0 -a /usr/bin/sudo '!=' '' ']'
+++ udo=
+
+2013-03-09 15:03:26,359 unit:oscied-transform/0: hook.output INFO: ++ service=' service'
+++ which service
+
+2013-03-09 15:03:26,360 unit:oscied-transform/0: hook.output INFO: ++ which apt-get
+
+2013-03-09 15:03:26,361 unit:oscied-transform/0: hook.output INFO: ++ installPack=' dpkg -i'
+++ install=' apt-get -fyq --force-yes install'
+++ buildDep=' apt-get -fyq --force-yes build-dep'
+++ update=' apt-get -fyq --force-yes update'
+++ upgrade=' apt-get -fyq --force-yes upgrade'
+
+2013-03-09 15:03:26,362 unit:oscied-transform/0: hook.output INFO: ++ distupgrade=' apt-get -fyq --force-yes dist-upgrade'
+++ remove=' apt-get -fyq --force-yes remove'
+++ autoremove=' apt-get -fyq --force-yes autoremove'
+++ purge=' apt-get -fyq --force-yes purge'
+++ key=' apt-key adv --keyserver keyserver.ubuntu.com --recv-keys'
+++ packages='dpkg --get-selections'
+
+2013-03-09 15:03:26,362 unit:oscied-transform/0: hook.output INFO: + hook_install
++ techo 'Transform - install'
+
+2013-03-09 15:03:26,362 unit:oscied-transform/0: hook.output INFO: + juju-log '[TITLE] Transform - install'
+
+2013-03-09 15:03:26,523 unit:oscied-transform/0: unit.hook.api INFO: [TITLE] Transform - install
+2013-03-09 15:03:26,540 unit:oscied-transform/0: hook.output INFO: + eval apt-get -fyq --force-yes purge grub-pc grub-common
+++ apt-get -fyq --force-yes purge grub-pc grub-common
+
+2013-03-09 15:03:26,544 unit:oscied-transform/0: hook.output INFO: Reading package lists...
+2013-03-09 15:03:26,547 unit:oscied-transform/0: hook.output INFO: 
+
+2013-03-09 15:03:26,553 unit:oscied-transform/0: hook.output INFO: Building dependency tree...
+2013-03-09 15:03:26,766 unit:oscied-transform/0: hook.output INFO: 
+Reading state information...
+2013-03-09 15:03:26,766 unit:oscied-transform/0: hook.output INFO: 
+
+2013-03-09 15:03:27,043 unit:oscied-transform/0: hook.output INFO: The following packages will be REMOVED:
+  grub-common* grub-gfxpayload-lists* grub-pc* grub-pc-bin* grub2-common*
+
+2013-03-09 15:03:27,191 unit:oscied-transform/0: hook.output INFO: 0 upgraded, 0 newly installed, 5 to remove and 0 not upgraded.
+After this operation, 7755 kB disk space will be freed.
+
+2013-03-09 15:03:27,320 unit:oscied-transform/0: hook.output INFO: (Reading database ... 
+2013-03-09 15:03:27,340 unit:oscied-transform/0: hook.output INFO: 50659 files and directories currently installed.)
+
+2013-03-09 15:03:27,342 unit:oscied-transform/0: hook.output INFO: Removing grub-pc ...
+
+2013-03-09 15:03:27,459 unit:oscied-transform/0: hook.output INFO: Saving menu.lst backup in /boot/grub/menu.lst_backup_by_grub2_prerm
+
+2013-03-09 15:03:27,460 unit:oscied-transform/0: hook.output INFO: Running update-grub Legacy to remove our core.img in it
+
+2013-03-09 15:03:27,526 unit:oscied-transform/0: hook.output INFO:     Searching for GRUB installation directory ... found: /boot/grub
+    /usr/lib/grub-legacy/update-grub: line 116: grub: command not found
+
+2013-03-09 15:03:27,694 unit:oscied-transform/0: hook.output INFO: Purging configuration files for grub-pc ...
+
+2013-03-09 15:03:28,200 unit:oscied-transform/0: hook.output INFO: Removing grub-gfxpayload-lists ...
+
+2013-03-09 15:03:28,348 unit:oscied-transform/0: hook.output INFO: Removing grub2-common ...
+
+2013-03-09 15:03:28,497 unit:oscied-transform/0: hook.output INFO: Removing grub-pc-bin ...
+
+2013-03-09 15:03:29,053 unit:oscied-transform/0: hook.output INFO: Removing grub-common ...
+
+2013-03-09 15:03:29,564 unit:oscied-transform/0: hook.output INFO: Purging configuration files for grub-common ...
+
+2013-03-09 15:03:29,704 unit:oscied-transform/0: hook.output INFO: Processing triggers for man-db ...
+
+2013-03-09 15:03:30,045 unit:oscied-transform/0: hook.output INFO: Processing triggers for install-info ...
+
+2013-03-09 15:03:30,223 unit:oscied-transform/0: hook.output INFO: Processing triggers for ureadahead ...
+
+2013-03-09 15:03:30,622 unit:oscied-transform/0: hook.output INFO: + apt-add-repository -y ppa:jon-severinsson/ffmpeg
+
+2013-03-09 15:03:31,138 unit:oscied-transform/0: hook.output INFO: gpg: keyring `/tmp/tmpp9waTH/secring.gpg' created
+
+2013-03-09 15:03:31,138 unit:oscied-transform/0: hook.output INFO: gpg: keyring `/tmp/tmpp9waTH/pubring.gpg' created
+gpg: requesting key CFCA9579 from hkp server keyserver.ubuntu.com
+
+2013-03-09 15:03:31,236 unit:oscied-transform/0: hook.output INFO: gpg: /tmp/tmpp9waTH/trustdb.gpg: trustdb created
+
+2013-03-09 15:03:31,236 unit:oscied-transform/0: hook.output INFO: gpg: key CFCA9579: public key "Launchpad Jon Severinsson's PPA" imported
+gpg: Total number processed: 1
+gpg:               imported: 1  (RSA: 1)
+
+2013-03-09 15:03:31,274 unit:oscied-transform/0: hook.output INFO: OK
+
+2013-03-09 15:03:31,332 unit:oscied-transform/0: hook.output INFO: + eval apt-get -fyq --force-yes update
+++ apt-get -fyq --force-yes update
+
+2013-03-09 15:03:31,631 unit:oscied-transform/0: hook.output INFO: Ign http://ppa.launchpad.net precise InRelease
+
+2013-03-09 15:03:31,663 unit:oscied-transform/0: hook.output INFO: Ign http://security.ubuntu.com precise-security InRelease
+
+2013-03-09 15:03:31,703 unit:oscied-transform/0: hook.output INFO: Get:1 http://security.ubuntu.com precise-security Release.gpg [198 B]
+
+2013-03-09 15:03:31,736 unit:oscied-transform/0: hook.output INFO: Get:2 http://security.ubuntu.com precise-security Release [49.6 kB]
+
+2013-03-09 15:03:31,774 unit:oscied-transform/0: hook.output INFO: Get:3 http://security.ubuntu.com precise-security/main Sources [64.0 kB]
+
+2013-03-09 15:03:31,799 unit:oscied-transform/0: hook.output INFO: Ign http://archive.ubuntu.com precise InRelease
+
+2013-03-09 15:03:31,810 unit:oscied-transform/0: hook.output INFO: Get:4 http://security.ubuntu.com precise-security/universe Sources [22.2 kB]
+
+2013-03-09 15:03:31,843 unit:oscied-transform/0: hook.output INFO: Get:5 http://security.ubuntu.com precise-security/main amd64 Packages [229 kB]
+
+2013-03-09 15:03:31,871 unit:oscied-transform/0: hook.output INFO: Ign http://ppa.launchpad.net precise InRelease
+
+2013-03-09 15:03:31,880 unit:oscied-transform/0: hook.output INFO: Get:6 http://security.ubuntu.com precise-security/universe amd64 Packages [68.2 kB]
+
+2013-03-09 15:03:31,905 unit:oscied-transform/0: hook.output INFO: Get:7 http://ppa.launchpad.net precise Release.gpg [316 B]
+
+2013-03-09 15:03:31,919 unit:oscied-transform/0: hook.output INFO: Get:8 http://security.ubuntu.com precise-security/main i386 Packages [239 kB]
+
+2013-03-09 15:03:31,939 unit:oscied-transform/0: hook.output INFO: Get:9 http://ppa.launchpad.net precise Release.gpg [316 B]
+
+2013-03-09 15:03:31,974 unit:oscied-transform/0: hook.output INFO: Get:10 http://security.ubuntu.com precise-security/universe i386 Packages [69.9 kB]
+
+2013-03-09 15:03:31,980 unit:oscied-transform/0: hook.output INFO: Get:11 http://ppa.launchpad.net precise Release [11.9 kB]
+
+2013-03-09 15:03:32,012 unit:oscied-transform/0: hook.output INFO: Get:12 http://ppa.launchpad.net precise Release [11.9 kB]
+
+2013-03-09 15:03:32,042 unit:oscied-transform/0: hook.output INFO: Get:13 http://security.ubuntu.com precise-security/main TranslationIndex [74 B]
+
+2013-03-09 15:03:32,044 unit:oscied-transform/0: hook.output INFO: Get:14 http://ppa.launchpad.net precise/main Sources [1916 B]
+
+2013-03-09 15:03:32,081 unit:oscied-transform/0: hook.output INFO: Get:15 http://security.ubuntu.com precise-security/universe TranslationIndex [73 B]
+
+2013-03-09 15:03:32,092 unit:oscied-transform/0: hook.output INFO: Get:16 http://ppa.launchpad.net precise/main amd64 Packages [8823 B]
+
+2013-03-09 15:03:32,111 unit:oscied-transform/0: hook.output INFO: Get:17 http://security.ubuntu.com precise-security/main Translation-en [112 kB]
+
+2013-03-09 15:03:32,125 unit:oscied-transform/0: hook.output INFO: Get:18 http://ppa.launchpad.net precise/main i386 Packages [8851 B]
+
+2013-03-09 15:03:32,143 unit:oscied-transform/0: hook.output INFO: Get:19 http://security.ubuntu.com precise-security/universe Translation-en [43.2 kB]
+
+2013-03-09 15:03:32,147 unit:oscied-transform/0: hook.output INFO: Ign http://archive.ubuntu.com precise-updates InRelease
+
+2013-03-09 15:03:32,167 unit:oscied-transform/0: hook.output INFO: Get:20 http://archive.ubuntu.com precise Release.gpg [198 B]
+
+2013-03-09 15:03:32,187 unit:oscied-transform/0: hook.output INFO: Get:21 http://archive.ubuntu.com precise-updates Release.gpg [198 B]
+
+2013-03-09 15:03:32,207 unit:oscied-transform/0: hook.output INFO: Get:22 http://archive.ubuntu.com precise Release [49.6 kB]
+
+2013-03-09 15:03:32,234 unit:oscied-transform/0: hook.output INFO: Get:23 http://archive.ubuntu.com precise-updates Release [49.6 kB]
+
+2013-03-09 15:03:32,263 unit:oscied-transform/0: hook.output INFO: Get:24 http://archive.ubuntu.com precise/main Sources [934 kB]
+
+2013-03-09 15:03:32,304 unit:oscied-transform/0: hook.output INFO: Get:25 http://archive.ubuntu.com precise/universe Sources [5019 kB]
+
+2013-03-09 15:03:32,363 unit:oscied-transform/0: hook.output INFO: Ign http://ppa.launchpad.net precise/main TranslationIndex
+
+2013-03-09 15:03:32,394 unit:oscied-transform/0: hook.output INFO: Get:26 http://ppa.launchpad.net precise/main Sources [2227 B]
+
+2013-03-09 15:03:32,426 unit:oscied-transform/0: hook.output INFO: Get:27 http://ppa.launchpad.net precise/main amd64 Packages [2446 B]
+
+2013-03-09 15:03:32,459 unit:oscied-transform/0: hook.output INFO: Get:28 http://ppa.launchpad.net precise/main i386 Packages [2456 B]
+
+2013-03-09 15:03:32,464 unit:oscied-transform/0: hook.output INFO: Get:29 http://archive.ubuntu.com precise/main amd64 Packages [1273 kB]
+
+2013-03-09 15:03:32,516 unit:oscied-transform/0: hook.output INFO: Get:30 http://archive.ubuntu.com precise/universe amd64 Packages [4786 kB]
+
+2013-03-09 15:03:32,658 unit:oscied-transform/0: hook.output INFO: Get:31 http://archive.ubuntu.com precise/main i386 Packages [1274 kB]
+
+2013-03-09 15:03:32,691 unit:oscied-transform/0: hook.output INFO: Ign http://ppa.launchpad.net precise/main TranslationIndex
+
+2013-03-09 15:03:32,720 unit:oscied-transform/0: hook.output INFO: Get:32 http://archive.ubuntu.com precise/universe i386 Packages [4796 kB]
+
+2013-03-09 15:03:32,859 unit:oscied-transform/0: hook.output INFO: Get:33 http://archive.ubuntu.com precise/main TranslationIndex [3706 B]
+
+2013-03-09 15:03:32,889 unit:oscied-transform/0: hook.output INFO: Get:34 http://archive.ubuntu.com precise/universe TranslationIndex [2922 B]
+
+2013-03-09 15:03:32,909 unit:oscied-transform/0: hook.output INFO: Get:35 http://archive.ubuntu.com precise-updates/main Sources [369 kB]
+
+2013-03-09 15:03:32,940 unit:oscied-transform/0: hook.output INFO: Get:36 http://archive.ubuntu.com precise-updates/universe Sources [79.7 kB]
+
+2013-03-09 15:03:33,002 unit:oscied-transform/0: hook.output INFO: Get:37 http://archive.ubuntu.com precise-updates/main amd64 Packages [584 kB]
+
+2013-03-09 15:03:33,036 unit:oscied-transform/0: hook.output INFO: Get:38 http://archive.ubuntu.com precise-updates/universe amd64 Packages [182 kB]
+
+2013-03-09 15:03:33,060 unit:oscied-transform/0: hook.output INFO: Get:39 http://archive.ubuntu.com precise-updates/main i386 Packages [595 kB]
+
+2013-03-09 15:03:33,107 unit:oscied-transform/0: hook.output INFO: Get:40 http://archive.ubuntu.com precise-updates/universe i386 Packages [185 kB]
+
+2013-03-09 15:03:33,135 unit:oscied-transform/0: hook.output INFO: Get:41 http://archive.ubuntu.com precise-updates/main TranslationIndex [3564 B]
+
+2013-03-09 15:03:33,154 unit:oscied-transform/0: hook.output INFO: Get:42 http://archive.ubuntu.com precise-updates/universe TranslationIndex [2850 B]
+
+2013-03-09 15:03:33,174 unit:oscied-transform/0: hook.output INFO: Get:43 http://archive.ubuntu.com precise/main Translation-en [726 kB]
+
+2013-03-09 15:03:33,217 unit:oscied-transform/0: hook.output INFO: Get:44 http://archive.ubuntu.com precise/universe Translation-en [3341 kB]
+
+2013-03-09 15:03:33,326 unit:oscied-transform/0: hook.output INFO: Get:45 http://archive.ubuntu.com precise-updates/main Translation-en [261 kB]
+
+2013-03-09 15:03:33,357 unit:oscied-transform/0: hook.output INFO: Get:46 http://archive.ubuntu.com precise-updates/universe Translation-en [108 kB]
+
+2013-03-09 15:03:34,855 unit:oscied-transform/0: hook.output INFO: Ign http://ppa.launchpad.net precise/main Translation-en
+
+2013-03-09 15:03:35,087 unit:oscied-transform/0: hook.output INFO: Ign http://ppa.launchpad.net precise/main Translation-en
+
+2013-03-09 15:03:37,946 unit:oscied-transform/0: hook.output INFO: Fetched 25.6 MB in 6s (3891 kB/s)
+Reading package lists...
+2013-03-09 15:03:40,660 unit:oscied-transform/0: hook.output INFO: 
+
+2013-03-09 15:03:40,662 unit:oscied-transform/0: hook.output INFO: + eval apt-get -fyq --force-yes upgrade
+++ apt-get -fyq --force-yes upgrade
+
+2013-03-09 15:03:40,668 unit:oscied-transform/0: hook.output INFO: Reading package lists...
+2013-03-09 15:03:40,671 unit:oscied-transform/0: hook.output INFO: 
+
+2013-03-09 15:03:40,677 unit:oscied-transform/0: hook.output INFO: Building dependency tree...
+2013-03-09 15:03:40,889 unit:oscied-transform/0: hook.output INFO: 
+Reading state information...
+2013-03-09 15:03:40,889 unit:oscied-transform/0: hook.output INFO: 
+
+2013-03-09 15:03:41,084 unit:oscied-transform/0: hook.output INFO: 0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+
+2013-03-09 15:03:41,084 unit:oscied-transform/0: hook.output INFO: + pecho 'Install and configure Network Time Protocol'
++ juju-log '[PARAGRAPH] Install and configure Network Time Protocol'
+
+2013-03-09 15:03:41,235 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Install and configure Network Time Protocol
+2013-03-09 15:03:41,248 unit:oscied-transform/0: hook.output INFO: + eval apt-get -fyq --force-yes install ntp
+++ apt-get -fyq --force-yes install ntp
+
+2013-03-09 15:03:41,253 unit:oscied-transform/0: hook.output INFO: Reading package lists...
+2013-03-09 15:03:41,255 unit:oscied-transform/0: hook.output INFO: 
+
+2013-03-09 15:03:41,259 unit:oscied-transform/0: hook.output INFO: Building dependency tree...
+2013-03-09 15:03:41,470 unit:oscied-transform/0: hook.output INFO: 
+Reading state information...
+2013-03-09 15:03:41,470 unit:oscied-transform/0: hook.output INFO: 
+
+2013-03-09 15:03:41,635 unit:oscied-transform/0: hook.output INFO: The following package was automatically installed and is no longer required:
+  os-prober
+Use 'apt-get autoremove' to remove them.
+
+2013-03-09 15:03:41,654 unit:oscied-transform/0: hook.output INFO: The following extra packages will be installed:
+  libcap2 libopts25
+
+2013-03-09 15:03:41,656 unit:oscied-transform/0: hook.output INFO: Suggested packages:
+  ntp-doc
+
+2013-03-09 15:03:41,660 unit:oscied-transform/0: hook.output INFO: The following NEW packages will be installed:
+  libcap2 libopts25 ntp
+
+2013-03-09 15:03:41,688 unit:oscied-transform/0: hook.output INFO: 0 upgraded, 3 newly installed, 0 to remove and 0 not upgraded.
+Need to get 684 kB of archives.
+After this operation, 1765 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu/ precise/main libcap2 amd64 1:2.22-1ubuntu3 [12.0 kB]
+
+2013-03-09 15:03:41,688 unit:oscied-transform/0: hook.output INFO: Get:2 http://archive.ubuntu.com/ubuntu/ precise/main libopts25 amd64 1:5.12-0.1ubuntu1 [59.9 kB]
+
+2013-03-09 15:03:41,691 unit:oscied-transform/0: hook.output INFO: Get:3 http://archive.ubuntu.com/ubuntu/ precise-updates/main ntp amd64 1:4.2.6.p3+dfsg-1ubuntu3.1 [612 kB]
+
+2013-03-09 15:03:41,857 unit:oscied-transform/0: hook.output INFO: Fetched 684 kB in 0s (27.6 MB/s)
+
+2013-03-09 15:03:41,897 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libcap2.
+(Reading database ... 
+2013-03-09 15:03:41,923 unit:oscied-transform/0: hook.output INFO: 50336 files and directories currently installed.)
+
+2013-03-09 15:03:41,925 unit:oscied-transform/0: hook.output INFO: Unpacking libcap2 (from .../libcap2_1%3a2.22-1ubuntu3_amd64.deb) ...
+
+2013-03-09 15:03:41,966 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libopts25.
+
+2013-03-09 15:03:41,971 unit:oscied-transform/0: hook.output INFO: Unpacking libopts25 (from .../libopts25_1%3a5.12-0.1ubuntu1_amd64.deb) ...
+
+2013-03-09 15:03:42,019 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package ntp.
+
+2013-03-09 15:03:42,025 unit:oscied-transform/0: hook.output INFO: Unpacking ntp (from .../ntp_1%3a4.2.6.p3+dfsg-1ubuntu3.1_amd64.deb) ...
+
+2013-03-09 15:03:42,087 unit:oscied-transform/0: hook.output INFO: Processing triggers for ureadahead ...
+
+2013-03-09 15:03:42,106 unit:oscied-transform/0: hook.output INFO: Processing triggers for man-db ...
+
+2013-03-09 15:03:42,654 unit:oscied-transform/0: hook.output INFO: Setting up libcap2 (1:2.22-1ubuntu3) ...
+
+2013-03-09 15:03:42,682 unit:oscied-transform/0: hook.output INFO: Setting up libopts25 (1:5.12-0.1ubuntu1) ...
+
+2013-03-09 15:03:42,700 unit:oscied-transform/0: hook.output INFO: Setting up ntp (1:4.2.6.p3+dfsg-1ubuntu3.1) ...
+
+2013-03-09 15:03:43,065 unit:oscied-transform/0: hook.output INFO: Unable to open /sys/kernel/security/apparmor/.replace - Permission denied
+apparmor_parser: Unable to replace "/usr/sbin/ntpd".  Permission denied; attempted to load a profile while confined?
+Warning failed to create cache: usr.sbin.ntpd
+
+2013-03-09 15:03:43,084 unit:oscied-transform/0: hook.output INFO:  * Starting NTP server ntpd
+
+2013-03-09 15:03:43,087 unit:oscied-transform/0: hook.output INFO:    ...done.
+
+2013-03-09 15:03:43,093 unit:oscied-transform/0: hook.output INFO: Processing triggers for libc-bin ...
+
+2013-03-09 15:03:43,096 unit:oscied-transform/0: hook.output INFO: ldconfig deferred processing now taking place
+
+2013-03-09 15:03:43,485 unit:oscied-transform/0: hook.output INFO: + eval service ntp restart
+++ service ntp restart
+
+2013-03-09 15:03:43,496 unit:oscied-transform/0: hook.output INFO:  * Stopping NTP server ntpd
+
+2013-03-09 15:03:43,496 unit:oscied-transform/0: hook.output INFO:    ...done.
+
+2013-03-09 15:03:45,503 unit:oscied-transform/0: hook.output INFO:  * Starting NTP server ntpd
+
+2013-03-09 15:03:45,507 unit:oscied-transform/0: hook.output INFO:    ...done.
+
+2013-03-09 15:03:45,508 unit:oscied-transform/0: hook.output INFO: + pecho 'Install python, (the real) FFmpeg, x264 and Gluster Fileystem'
++ juju-log '[PARAGRAPH] Install python, (the real) FFmpeg, x264 and Gluster Fileystem'
+
+2013-03-09 15:03:45,666 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Install python, (the real) FFmpeg, x264 and Gluster Fileystem
+2013-03-09 15:03:45,678 unit:oscied-transform/0: hook.output INFO: + eval apt-get -fyq --force-yes install ffmpeg x264 python python-dev python-pip glusterfs-client nfs-common
+++ apt-get -fyq --force-yes install ffmpeg x264 python python-dev python-pip glusterfs-client nfs-common
+
+2013-03-09 15:03:45,683 unit:oscied-transform/0: hook.output INFO: Reading package lists...
+2013-03-09 15:03:45,686 unit:oscied-transform/0: hook.output INFO: 
+
+2013-03-09 15:03:45,692 unit:oscied-transform/0: hook.output INFO: Building dependency tree...
+2013-03-09 15:03:45,902 unit:oscied-transform/0: hook.output INFO: 
+Reading state information...
+2013-03-09 15:03:45,903 unit:oscied-transform/0: hook.output INFO: 
+
+2013-03-09 15:03:46,072 unit:oscied-transform/0: hook.output INFO: python is already the newest version.
+The following package was automatically installed and is no longer required:
+  os-prober
+Use 'apt-get autoremove' to remove them.
+
+2013-03-09 15:03:46,092 unit:oscied-transform/0: hook.output INFO: The following extra packages will be installed:
+  binutils cpp cpp-4.6 fuse-utils gcc gcc-4.6 glusterfs-common libasound2
+  libasyncns0 libavcodec53 libavdevice53 libavfilter2 libavformat53
+  libavutil51 libc-dev-bin libc6-dev libcaca0 libcdio-cdda1 libcdio-paranoia1
+  libcdio13 libdc1394-22 libexpat1-dev libffms2-2 libflac8 libgomp1 libgsm1
+  libgssglue1 libibverbs1 libjack-jackd2-0 libjson0 libmp3lame0 libmpc2
+  libmpfr4 libnfsidmap2 libogg0 libopencv-core2.3 libopencv-imgproc2.3
+  libopenjpeg2 liborc-0.4-0 libpostproc52 libpulse0 libquadmath0 libraw1394-11
+  libsamplerate0 libschroedinger-1.0-0 libsdl1.2debian libsndfile1 libspeex1
+  libssl-dev libssl-doc libswresample0 libswscale2 libtheora0 libtirpc1 libva1
+  libvorbis0a libvorbisenc2 libvpx1 libx264-120 libxfixes3 linux-libc-dev
+  manpages-dev python2.7-dev rpcbind zlib1g-dev
+
+2013-03-09 15:03:46,094 unit:oscied-transform/0: hook.output INFO: Suggested packages:
+  binutils-doc cpp-doc gcc-4.6-locales gcc-multilib make autoconf automake1.9
+  libtool flex bison gdb gcc-doc gcc-4.6-multilib libmudflap0-4.6-dev
+  gcc-4.6-doc libgcc1-dbg libgomp1-dbg libquadmath0-dbg libmudflap0-dbg
+  binutils-gold glusterfs-examples libasound2-plugins libasound2-python
+  glibc-doc jackd2 pulseaudio libraw1394-doc speex
+
+2013-03-09 15:03:46,099 unit:oscied-transform/0: hook.output INFO: The following NEW packages will be installed:
+  binutils cpp cpp-4.6 ffmpeg fuse-utils gcc gcc-4.6 glusterfs-client
+  glusterfs-common libasound2 libasyncns0 libavcodec53 libavdevice53
+  libavfilter2 libavformat53 libavutil51 libc-dev-bin libc6-dev libcaca0
+  libcdio-cdda1 libcdio-paranoia1 libcdio13 libdc1394-22 libexpat1-dev
+  libffms2-2 libflac8 libgomp1 libgsm1 libgssglue1 libibverbs1
+  libjack-jackd2-0 libjson0 libmp3lame0 libmpc2 libmpfr4 libnfsidmap2 libogg0
+  libopencv-core2.3 libopencv-imgproc2.3 libopenjpeg2 liborc-0.4-0
+  libpostproc52 libpulse0 libquadmath0 libraw1394-11 libsamplerate0
+  libschroedinger-1.0-0 libsdl1.2debian libsndfile1 libspeex1 libssl-dev
+  libssl-doc libswresample0 libswscale2 libtheora0 libtirpc1 libva1
+  libvorbis0a libvorbisenc2 libvpx1 libx264-120 libxfixes3 linux-libc-dev
+  manpages-dev nfs-common python-dev python-pip python2.7-dev rpcbind x264
+  zlib1g-dev
+
+2013-03-09 15:03:46,142 unit:oscied-transform/0: hook.output INFO: 0 upgraded, 71 newly installed, 0 to remove and 0 not upgraded.
+Need to get 74.8 MB of archives.
+After this operation, 173 MB of additional disk space will be used.
+Get:1 http://ppa.launchpad.net/jon-severinsson/ffmpeg/ubuntu/ precise/main libavutil51 amd64 6:0.10.6-0ubuntu0jon1~precise1 [99.5 kB]
+Get:2 http://archive.ubuntu.com/ubuntu/ precise/main libgsm1 amd64 1.0.13-3 [29.3 kB]
+
+2013-03-09 15:03:46,144 unit:oscied-transform/0: hook.output INFO: Get:3 http://archive.ubuntu.com/ubuntu/ precise/universe libmp3lame0 amd64 3.99.3+repack1-1 [178 kB]
+
+2013-03-09 15:03:46,147 unit:oscied-transform/0: hook.output INFO: Get:4 http://ppa.launchpad.net/jon-severinsson/ffmpeg/ubuntu/ precise/main libavcodec53 amd64 6:0.10.6-0ubuntu0jon1~precise1 [2544 kB]
+
+2013-03-09 15:03:46,155 unit:oscied-transform/0: hook.output INFO: Get:5 http://archive.ubuntu.com/ubuntu/ precise/universe libopenjpeg2 amd64 1.3+dfsg-4 [81.2 kB]
+
+2013-03-09 15:03:46,156 unit:oscied-transform/0: hook.output INFO: Get:6 http://archive.ubuntu.com/ubuntu/ precise/main liborc-0.4-0 amd64 1:0.4.16-1ubuntu2 [176 kB]
+
+2013-03-09 15:03:46,161 unit:oscied-transform/0: hook.output INFO: Get:7 http://archive.ubuntu.com/ubuntu/ precise/main libschroedinger-1.0-0 amd64 1.0.11-1 [287 kB]
+
+2013-03-09 15:03:46,168 unit:oscied-transform/0: hook.output INFO: Get:8 http://archive.ubuntu.com/ubuntu/ precise/main libspeex1 amd64 1.2~rc1-3ubuntu2 [57.5 kB]
+
+2013-03-09 15:03:46,170 unit:oscied-transform/0: hook.output INFO: Get:9 http://archive.ubuntu.com/ubuntu/ precise/main libogg0 amd64 1.2.2~dfsg-1ubuntu1 [17.2 kB]
+
+2013-03-09 15:03:46,208 unit:oscied-transform/0: hook.output INFO: Get:10 http://archive.ubuntu.com/ubuntu/ precise/main libtheora0 amd64 1.1.1+dfsg.1-3ubuntu2 [363 kB]
+
+2013-03-09 15:03:46,210 unit:oscied-transform/0: hook.output INFO: Get:11 http://ppa.launchpad.net/jon-severinsson/ffmpeg/ubuntu/ precise/main libavformat53 amd64 6:0.10.6-0ubuntu0jon1~precise1 [498 kB]
+
+2013-03-09 15:03:46,217 unit:oscied-transform/0: hook.output INFO: Get:12 http://archive.ubuntu.com/ubuntu/ precise/main libva1 amd64 1.0.15-4 [38.7 kB]
+
+2013-03-09 15:03:46,218 unit:oscied-transform/0: hook.output INFO: Get:13 http://archive.ubuntu.com/ubuntu/ precise/main libvorbis0a amd64 1.3.2-1ubuntu3 [103 kB]
+
+2013-03-09 15:03:46,221 unit:oscied-transform/0: hook.output INFO: Get:14 http://archive.ubuntu.com/ubuntu/ precise/main libvorbisenc2 amd64 1.3.2-1ubuntu3 [136 kB]
+
+2013-03-09 15:03:46,223 unit:oscied-transform/0: hook.output INFO: Get:15 http://ppa.launchpad.net/jon-severinsson/ffmpeg/ubuntu/ precise/main libswresample0 amd64 6:0.10.6-0ubuntu0jon1~precise1 [61.4 kB]
+
+2013-03-09 15:03:46,225 unit:oscied-transform/0: hook.output INFO: Get:16 http://archive.ubuntu.com/ubuntu/ precise/main libvpx1 amd64 1.0.0-1 [269 kB]
+
+2013-03-09 15:03:46,225 unit:oscied-transform/0: hook.output INFO: Get:17 http://ppa.launchpad.net/jon-severinsson/ffmpeg/ubuntu/ precise/main libswscale2 amd64 6:0.10.6-0ubuntu0jon1~precise1 [128 kB]
+
+2013-03-09 15:03:46,229 unit:oscied-transform/0: hook.output INFO: Get:18 http://ppa.launchpad.net/jon-severinsson/ffmpeg/ubuntu/ precise/main libavfilter2 amd64 6:0.10.6-0ubuntu0jon1~precise1 [255 kB]
+
+2013-03-09 15:03:46,232 unit:oscied-transform/0: hook.output INFO: Get:19 http://archive.ubuntu.com/ubuntu/ precise/universe libx264-120 amd64 2:0.120.2151+gita3f4407-2 [431 kB]
+
+2013-03-09 15:03:46,236 unit:oscied-transform/0: hook.output INFO: Get:20 http://ppa.launchpad.net/jon-severinsson/ffmpeg/ubuntu/ precise/main libavdevice53 amd64 6:0.10.6-0ubuntu0jon1~precise1 [76.8 kB]
+
+2013-03-09 15:03:46,238 unit:oscied-transform/0: hook.output INFO: Get:21 http://ppa.launchpad.net/jon-severinsson/ffmpeg/ubuntu/ precise/main libpostproc52 amd64 6:0.10.6-0ubuntu0jon1~precise1 [95.7 kB]
+
+2013-03-09 15:03:46,241 unit:oscied-transform/0: hook.output INFO: Get:22 http://ppa.launchpad.net/jon-severinsson/ffmpeg/ubuntu/ precise/main ffmpeg amd64 6:0.10.6-0ubuntu0jon1~precise1 [441 kB]
+
+2013-03-09 15:03:46,242 unit:oscied-transform/0: hook.output INFO: Get:23 http://archive.ubuntu.com/ubuntu/ precise-updates/main libasound2 amd64 1.0.25-1ubuntu10.1 [428 kB]
+
+2013-03-09 15:03:46,253 unit:oscied-transform/0: hook.output INFO: Get:24 http://archive.ubuntu.com/ubuntu/ precise/universe libopencv-core2.3 amd64 2.3.1-7 [722 kB]
+
+2013-03-09 15:03:46,270 unit:oscied-transform/0: hook.output INFO: Get:25 http://archive.ubuntu.com/ubuntu/ precise/universe libopencv-imgproc2.3 amd64 2.3.1-7 [697 kB]
+
+2013-03-09 15:03:46,286 unit:oscied-transform/0: hook.output INFO: Get:26 http://archive.ubuntu.com/ubuntu/ precise/main libcdio13 amd64 0.83-1 [61.8 kB]
+
+2013-03-09 15:03:46,289 unit:oscied-transform/0: hook.output INFO: Get:27 http://archive.ubuntu.com/ubuntu/ precise/main libcdio-cdda1 amd64 0.83-1 [17.3 kB]
+
+2013-03-09 15:03:46,290 unit:oscied-transform/0: hook.output INFO: Get:28 http://archive.ubuntu.com/ubuntu/ precise/main libcdio-paranoia1 amd64 0.83-1 [16.7 kB]
+
+2013-03-09 15:03:46,291 unit:oscied-transform/0: hook.output INFO: Get:29 http://archive.ubuntu.com/ubuntu/ precise/main libraw1394-11 amd64 2.0.7-1ubuntu1 [33.9 kB]
+
+2013-03-09 15:03:46,328 unit:oscied-transform/0: hook.output INFO: Get:30 http://archive.ubuntu.com/ubuntu/ precise/main libdc1394-22 amd64 2.2.0-2 [89.5 kB]
+
+2013-03-09 15:03:46,372 unit:oscied-transform/0: hook.output INFO: Get:31 http://archive.ubuntu.com/ubuntu/ precise/main libsamplerate0 amd64 0.1.8-4 [1341 kB]
+
+2013-03-09 15:03:46,408 unit:oscied-transform/0: hook.output INFO: Get:32 http://archive.ubuntu.com/ubuntu/ precise/main libjack-jackd2-0 amd64 1.9.8~dfsg.1-1ubuntu1 [164 kB]
+
+2013-03-09 15:03:46,413 unit:oscied-transform/0: hook.output INFO: Get:33 http://archive.ubuntu.com/ubuntu/ precise/main libasyncns0 amd64 0.8-4 [13.2 kB]
+
+2013-03-09 15:03:46,413 unit:oscied-transform/0: hook.output INFO: Get:34 http://archive.ubuntu.com/ubuntu/ precise/main libjson0 amd64 0.9-1ubuntu1 [16.3 kB]
+
+2013-03-09 15:03:46,414 unit:oscied-transform/0: hook.output INFO: Get:35 http://archive.ubuntu.com/ubuntu/ precise/main libflac8 amd64 1.2.1-6 [144 kB]
+
+2013-03-09 15:03:46,420 unit:oscied-transform/0: hook.output INFO: Get:36 http://archive.ubuntu.com/ubuntu/ precise/main libsndfile1 amd64 1.0.25-4 [163 kB]
+
+2013-03-09 15:03:46,424 unit:oscied-transform/0: hook.output INFO: Get:37 http://archive.ubuntu.com/ubuntu/ precise-updates/main libpulse0 amd64 1:1.1-0ubuntu15.2 [289 kB]
+
+2013-03-09 15:03:46,437 unit:oscied-transform/0: hook.output INFO: Get:38 http://archive.ubuntu.com/ubuntu/ precise/main libcaca0 amd64 0.99.beta17-2.1ubuntu2 [246 kB]
+
+2013-03-09 15:03:46,448 unit:oscied-transform/0: hook.output INFO: Get:39 http://archive.ubuntu.com/ubuntu/ precise/main libsdl1.2debian amd64 1.2.14-6.4ubuntu3 [197 kB]
+
+2013-03-09 15:03:46,456 unit:oscied-transform/0: hook.output INFO: Get:40 http://archive.ubuntu.com/ubuntu/ precise/main libxfixes3 amd64 1:5.0-4ubuntu4 [12.6 kB]
+
+2013-03-09 15:03:46,457 unit:oscied-transform/0: hook.output INFO: Get:41 http://archive.ubuntu.com/ubuntu/ precise/main libgomp1 amd64 4.6.3-1ubuntu5 [25.5 kB]
+
+2013-03-09 15:03:46,496 unit:oscied-transform/0: hook.output INFO: Get:42 http://archive.ubuntu.com/ubuntu/ precise/main libmpfr4 amd64 3.1.0-3ubuntu2 [201 kB]
+
+2013-03-09 15:03:46,505 unit:oscied-transform/0: hook.output INFO: Get:43 http://archive.ubuntu.com/ubuntu/ precise/main libquadmath0 amd64 4.6.3-1ubuntu5 [126 kB]
+
+2013-03-09 15:03:46,509 unit:oscied-transform/0: hook.output INFO: Get:44 http://archive.ubuntu.com/ubuntu/ precise-updates/main libgssglue1 amd64 0.3-4ubuntu0.1 [22.5 kB]
+
+2013-03-09 15:03:46,511 unit:oscied-transform/0: hook.output INFO: Get:45 http://archive.ubuntu.com/ubuntu/ precise/main libtirpc1 amd64 0.2.2-5 [84.2 kB]
+
+2013-03-09 15:03:46,515 unit:oscied-transform/0: hook.output INFO: Get:46 http://archive.ubuntu.com/ubuntu/ precise-updates/main rpcbind amd64 0.2.0-7ubuntu1.2 [42.9 kB]
+
+2013-03-09 15:03:46,517 unit:oscied-transform/0: hook.output INFO: Get:47 http://archive.ubuntu.com/ubuntu/ precise/main libmpc2 amd64 0.9-4 [39.5 kB]
+
+2013-03-09 15:03:46,518 unit:oscied-transform/0: hook.output INFO: Get:48 http://archive.ubuntu.com/ubuntu/ precise/main binutils amd64 2.22-6ubuntu1 [2643 kB]
+
+2013-03-09 15:03:46,583 unit:oscied-transform/0: hook.output INFO: Get:49 http://archive.ubuntu.com/ubuntu/ precise/main cpp-4.6 amd64 4.6.3-1ubuntu5 [4836 kB]
+
+2013-03-09 15:03:46,701 unit:oscied-transform/0: hook.output INFO: Get:50 http://archive.ubuntu.com/ubuntu/ precise/main cpp amd64 4:4.6.3-1ubuntu5 [27.6 kB]
+
+2013-03-09 15:03:46,702 unit:oscied-transform/0: hook.output INFO: Get:51 http://archive.ubuntu.com/ubuntu/ precise/main fuse-utils all 2.8.6-2ubuntu2 [1616 B]
+
+2013-03-09 15:03:46,702 unit:oscied-transform/0: hook.output INFO: Get:52 http://archive.ubuntu.com/ubuntu/ precise/main gcc-4.6 amd64 4.6.3-1ubuntu5 [7572 kB]
+
+2013-03-09 15:03:46,912 unit:oscied-transform/0: hook.output INFO: Get:53 http://archive.ubuntu.com/ubuntu/ precise/main gcc amd64 4:4.6.3-1ubuntu5 [5114 B]
+
+2013-03-09 15:03:46,912 unit:oscied-transform/0: hook.output INFO: Get:54 http://archive.ubuntu.com/ubuntu/ precise/main libibverbs1 amd64 1.1.5-1ubuntu1 [27.3 kB]
+
+2013-03-09 15:03:46,913 unit:oscied-transform/0: hook.output INFO: Get:55 http://archive.ubuntu.com/ubuntu/ precise/universe glusterfs-common amd64 3.2.5-1ubuntu1 [9319 kB]
+
+2013-03-09 15:03:47,134 unit:oscied-transform/0: hook.output INFO: Get:56 http://archive.ubuntu.com/ubuntu/ precise/universe glusterfs-client amd64 3.2.5-1ubuntu1 [8076 B]
+
+2013-03-09 15:03:47,134 unit:oscied-transform/0: hook.output INFO: Get:57 http://archive.ubuntu.com/ubuntu/ precise-updates/main libc-dev-bin amd64 2.15-0ubuntu10.3 [84.5 kB]
+
+2013-03-09 15:03:47,137 unit:oscied-transform/0: hook.output INFO: Get:58 http://archive.ubuntu.com/ubuntu/ precise-updates/main linux-libc-dev amd64 3.2.0-38.61 [865 kB]
+
+2013-03-09 15:03:47,157 unit:oscied-transform/0: hook.output INFO: Get:59 http://archive.ubuntu.com/ubuntu/ precise-updates/main libc6-dev amd64 2.15-0ubuntu10.3 [2945 kB]
+
+2013-03-09 15:03:47,225 unit:oscied-transform/0: hook.output INFO: Get:60 http://archive.ubuntu.com/ubuntu/ precise-updates/main libexpat1-dev amd64 2.0.1-7.2ubuntu1.1 [216 kB]
+
+2013-03-09 15:03:47,233 unit:oscied-transform/0: hook.output INFO: Get:61 http://archive.ubuntu.com/ubuntu/ precise/universe libffms2-2 amd64 2.17-1 [86.6 kB]
+
+2013-03-09 15:03:47,272 unit:oscied-transform/0: hook.output INFO: Get:62 http://archive.ubuntu.com/ubuntu/ precise/main libnfsidmap2 amd64 0.25-1ubuntu2 [32.0 kB]
+
+2013-03-09 15:03:47,274 unit:oscied-transform/0: hook.output INFO: Get:63 http://archive.ubuntu.com/ubuntu/ precise/main zlib1g-dev amd64 1:1.2.3.4.dfsg-3ubuntu4 [165 kB]
+
+2013-03-09 15:03:47,281 unit:oscied-transform/0: hook.output INFO: Get:64 http://archive.ubuntu.com/ubuntu/ precise-updates/main libssl-dev amd64 1.0.1-4ubuntu5.7 [1525 kB]
+
+2013-03-09 15:03:47,356 unit:oscied-transform/0: hook.output INFO: Get:65 http://archive.ubuntu.com/ubuntu/ precise-updates/main libssl-doc all 1.0.1-4ubuntu5.7 [1035 kB]
+
+2013-03-09 15:03:47,390 unit:oscied-transform/0: hook.output INFO: Get:66 http://archive.ubuntu.com/ubuntu/ precise/main manpages-dev all 3.35-0.1ubuntu1 [1671 kB]
+
+2013-03-09 15:03:47,428 unit:oscied-transform/0: hook.output INFO: Get:67 http://archive.ubuntu.com/ubuntu/ precise-updates/main nfs-common amd64 1:1.2.5-3ubuntu3.1 [241 kB]
+
+2013-03-09 15:03:47,434 unit:oscied-transform/0: hook.output INFO: Get:68 http://archive.ubuntu.com/ubuntu/ precise-updates/main python2.7-dev amd64 2.7.3-0ubuntu3.1 [29.5 MB]
+
+2013-03-09 15:03:48,087 unit:oscied-transform/0: hook.output INFO: Get:69 http://archive.ubuntu.com/ubuntu/ precise/main python-dev amd64 2.7.3-0ubuntu2 [1088 B]
+
+2013-03-09 15:03:48,087 unit:oscied-transform/0: hook.output INFO: Get:70 http://archive.ubuntu.com/ubuntu/ precise/universe python-pip all 1.0-1build1 [95.1 kB]
+
+2013-03-09 15:03:48,092 unit:oscied-transform/0: hook.output INFO: Get:71 http://archive.ubuntu.com/ubuntu/ precise/universe x264 amd64 2:0.120.2151+gita3f4407-2 [294 kB]
+
+Extracting templates from packages: 42%nsform/0: hook.output INFO: 
+Extracting templates from packages: 84%nsform/0: hook.output INFO: 
+Extracting templates from packages: 100%sform/0: hook.output INFO: 
+
+2013-03-09 15:03:48,381 unit:oscied-transform/0: hook.output INFO: Fetched 74.8 MB in 1s (38.1 MB/s)
+
+2013-03-09 15:03:48,529 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libavutil51.
+(Reading database ... 
+2013-03-09 15:03:48,552 unit:oscied-transform/0: hook.output INFO: 50386 files and directories currently installed.)
+
+2013-03-09 15:03:48,553 unit:oscied-transform/0: hook.output INFO: Unpacking libavutil51 (from .../libavutil51_6%3a0.10.6-0ubuntu0jon1~precise1_amd64.deb) ...
+
+2013-03-09 15:03:48,616 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libgsm1.
+
+2013-03-09 15:03:48,621 unit:oscied-transform/0: hook.output INFO: Unpacking libgsm1 (from .../libgsm1_1.0.13-3_amd64.deb) ...
+
+2013-03-09 15:03:48,666 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libmp3lame0.
+
+2013-03-09 15:03:48,671 unit:oscied-transform/0: hook.output INFO: Unpacking libmp3lame0 (from .../libmp3lame0_3.99.3+repack1-1_amd64.deb) ...
+
+2013-03-09 15:03:48,726 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libopenjpeg2.
+
+2013-03-09 15:03:48,731 unit:oscied-transform/0: hook.output INFO: Unpacking libopenjpeg2 (from .../libopenjpeg2_1.3+dfsg-4_amd64.deb) ...
+
+2013-03-09 15:03:48,776 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package liborc-0.4-0.
+
+2013-03-09 15:03:48,781 unit:oscied-transform/0: hook.output INFO: Unpacking liborc-0.4-0 (from .../liborc-0.4-0_1%3a0.4.16-1ubuntu2_amd64.deb) ...
+
+2013-03-09 15:03:48,837 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libschroedinger-1.0-0.
+
+2013-03-09 15:03:48,842 unit:oscied-transform/0: hook.output INFO: Unpacking libschroedinger-1.0-0 (from .../libschroedinger-1.0-0_1.0.11-1_amd64.deb) ...
+
+2013-03-09 15:03:48,896 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libspeex1.
+
+2013-03-09 15:03:48,899 unit:oscied-transform/0: hook.output INFO: Unpacking libspeex1 (from .../libspeex1_1.2~rc1-3ubuntu2_amd64.deb) ...
+
+2013-03-09 15:03:48,947 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libogg0.
+
+2013-03-09 15:03:48,952 unit:oscied-transform/0: hook.output INFO: Unpacking libogg0 (from .../libogg0_1.2.2~dfsg-1ubuntu1_amd64.deb) ...
+
+2013-03-09 15:03:48,996 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libtheora0.
+
+2013-03-09 15:03:49,002 unit:oscied-transform/0: hook.output INFO: Unpacking libtheora0 (from .../libtheora0_1.1.1+dfsg.1-3ubuntu2_amd64.deb) ...
+
+2013-03-09 15:03:49,056 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libva1.
+
+2013-03-09 15:03:49,061 unit:oscied-transform/0: hook.output INFO: Unpacking libva1 (from .../libva1_1.0.15-4_amd64.deb) ...
+
+2013-03-09 15:03:49,107 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libvorbis0a.
+
+2013-03-09 15:03:49,112 unit:oscied-transform/0: hook.output INFO: Unpacking libvorbis0a (from .../libvorbis0a_1.3.2-1ubuntu3_amd64.deb) ...
+
+2013-03-09 15:03:49,166 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libvorbisenc2.
+
+2013-03-09 15:03:49,170 unit:oscied-transform/0: hook.output INFO: Unpacking libvorbisenc2 (from .../libvorbisenc2_1.3.2-1ubuntu3_amd64.deb) ...
+
+2013-03-09 15:03:49,282 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libvpx1.
+
+2013-03-09 15:03:49,286 unit:oscied-transform/0: hook.output INFO: Unpacking libvpx1 (from .../libvpx1_1.0.0-1_amd64.deb) ...
+
+2013-03-09 15:03:49,336 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libx264-120.
+
+2013-03-09 15:03:49,341 unit:oscied-transform/0: hook.output INFO: Unpacking libx264-120 (from .../libx264-120_2%3a0.120.2151+gita3f4407-2_amd64.deb) ...
+
+2013-03-09 15:03:49,396 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libavcodec53.
+
+2013-03-09 15:03:49,401 unit:oscied-transform/0: hook.output INFO: Unpacking libavcodec53 (from .../libavcodec53_6%3a0.10.6-0ubuntu0jon1~precise1_amd64.deb) ...
+
+2013-03-09 15:03:49,725 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libasound2.
+
+2013-03-09 15:03:49,731 unit:oscied-transform/0: hook.output INFO: Unpacking libasound2 (from .../libasound2_1.0.25-1ubuntu10.1_amd64.deb) ...
+
+2013-03-09 15:03:49,824 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libavformat53.
+
+2013-03-09 15:03:49,829 unit:oscied-transform/0: hook.output INFO: Unpacking libavformat53 (from .../libavformat53_6%3a0.10.6-0ubuntu0jon1~precise1_amd64.deb) ...
+
+2013-03-09 15:03:49,926 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libopencv-core2.3.
+
+2013-03-09 15:03:49,931 unit:oscied-transform/0: hook.output INFO: Unpacking libopencv-core2.3 (from .../libopencv-core2.3_2.3.1-7_amd64.deb) ...
+
+2013-03-09 15:03:50,006 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libopencv-imgproc2.3.
+
+2013-03-09 15:03:50,011 unit:oscied-transform/0: hook.output INFO: Unpacking libopencv-imgproc2.3 (from .../libopencv-imgproc2.3_2.3.1-7_amd64.deb) ...
+
+2013-03-09 15:03:50,086 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libswresample0.
+
+2013-03-09 15:03:50,091 unit:oscied-transform/0: hook.output INFO: Unpacking libswresample0 (from .../libswresample0_6%3a0.10.6-0ubuntu0jon1~precise1_amd64.deb) ...
+
+2013-03-09 15:03:50,146 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libswscale2.
+
+2013-03-09 15:03:50,151 unit:oscied-transform/0: hook.output INFO: Unpacking libswscale2 (from .../libswscale2_6%3a0.10.6-0ubuntu0jon1~precise1_amd64.deb) ...
+
+2013-03-09 15:03:50,216 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libavfilter2.
+
+2013-03-09 15:03:50,221 unit:oscied-transform/0: hook.output INFO: Unpacking libavfilter2 (from .../libavfilter2_6%3a0.10.6-0ubuntu0jon1~precise1_amd64.deb) ...
+
+2013-03-09 15:03:50,296 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libcdio13.
+
+2013-03-09 15:03:50,301 unit:oscied-transform/0: hook.output INFO: Unpacking libcdio13 (from .../libcdio13_0.83-1_amd64.deb) ...
+
+2013-03-09 15:03:50,346 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libcdio-cdda1.
+
+2013-03-09 15:03:50,351 unit:oscied-transform/0: hook.output INFO: Unpacking libcdio-cdda1 (from .../libcdio-cdda1_0.83-1_amd64.deb) ...
+
+2013-03-09 15:03:50,396 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libcdio-paranoia1.
+
+2013-03-09 15:03:50,401 unit:oscied-transform/0: hook.output INFO: Unpacking libcdio-paranoia1 (from .../libcdio-paranoia1_0.83-1_amd64.deb) ...
+
+2013-03-09 15:03:50,446 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libraw1394-11.
+
+2013-03-09 15:03:50,450 unit:oscied-transform/0: hook.output INFO: Unpacking libraw1394-11 (from .../libraw1394-11_2.0.7-1ubuntu1_amd64.deb) ...
+
+2013-03-09 15:03:50,496 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libdc1394-22.
+
+2013-03-09 15:03:50,501 unit:oscied-transform/0: hook.output INFO: Unpacking libdc1394-22 (from .../libdc1394-22_2.2.0-2_amd64.deb) ...
+
+2013-03-09 15:03:50,547 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libsamplerate0.
+
+2013-03-09 15:03:50,552 unit:oscied-transform/0: hook.output INFO: Unpacking libsamplerate0 (from .../libsamplerate0_0.1.8-4_amd64.deb) ...
+
+2013-03-09 15:03:50,636 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libjack-jackd2-0.
+
+2013-03-09 15:03:50,641 unit:oscied-transform/0: hook.output INFO: Unpacking libjack-jackd2-0 (from .../libjack-jackd2-0_1.9.8~dfsg.1-1ubuntu1_amd64.deb) ...
+
+2013-03-09 15:03:50,697 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libasyncns0.
+
+2013-03-09 15:03:50,702 unit:oscied-transform/0: hook.output INFO: Unpacking libasyncns0 (from .../libasyncns0_0.8-4_amd64.deb) ...
+
+2013-03-09 15:03:50,746 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libjson0.
+
+2013-03-09 15:03:50,751 unit:oscied-transform/0: hook.output INFO: Unpacking libjson0 (from .../libjson0_0.9-1ubuntu1_amd64.deb) ...
+
+2013-03-09 15:03:50,796 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libflac8.
+
+2013-03-09 15:03:50,801 unit:oscied-transform/0: hook.output INFO: Unpacking libflac8 (from .../libflac8_1.2.1-6_amd64.deb) ...
+
+2013-03-09 15:03:50,857 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libsndfile1.
+
+2013-03-09 15:03:50,862 unit:oscied-transform/0: hook.output INFO: Unpacking libsndfile1 (from .../libsndfile1_1.0.25-4_amd64.deb) ...
+
+2013-03-09 15:03:50,917 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libpulse0.
+
+2013-03-09 15:03:50,922 unit:oscied-transform/0: hook.output INFO: Unpacking libpulse0 (from .../libpulse0_1%3a1.1-0ubuntu15.2_amd64.deb) ...
+
+2013-03-09 15:03:50,976 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libcaca0.
+
+2013-03-09 15:03:50,981 unit:oscied-transform/0: hook.output INFO: Unpacking libcaca0 (from .../libcaca0_0.99.beta17-2.1ubuntu2_amd64.deb) ...
+
+2013-03-09 15:03:51,036 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libsdl1.2debian.
+
+2013-03-09 15:03:51,041 unit:oscied-transform/0: hook.output INFO: Unpacking libsdl1.2debian (from .../libsdl1.2debian_1.2.14-6.4ubuntu3_amd64.deb) ...
+
+2013-03-09 15:03:51,097 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libxfixes3.
+
+2013-03-09 15:03:51,102 unit:oscied-transform/0: hook.output INFO: Unpacking libxfixes3 (from .../libxfixes3_1%3a5.0-4ubuntu4_amd64.deb) ...
+
+2013-03-09 15:03:51,146 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libavdevice53.
+
+2013-03-09 15:03:51,151 unit:oscied-transform/0: hook.output INFO: Unpacking libavdevice53 (from .../libavdevice53_6%3a0.10.6-0ubuntu0jon1~precise1_amd64.deb) ...
+
+2013-03-09 15:03:51,202 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libpostproc52.
+
+2013-03-09 15:03:51,207 unit:oscied-transform/0: hook.output INFO: Unpacking libpostproc52 (from .../libpostproc52_6%3a0.10.6-0ubuntu0jon1~precise1_amd64.deb) ...
+
+2013-03-09 15:03:51,267 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package ffmpeg.
+
+2013-03-09 15:03:51,272 unit:oscied-transform/0: hook.output INFO: Unpacking ffmpeg (from .../ffmpeg_6%3a0.10.6-0ubuntu0jon1~precise1_amd64.deb) ...
+
+2013-03-09 15:03:51,376 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libgomp1.
+
+2013-03-09 15:03:51,382 unit:oscied-transform/0: hook.output INFO: Unpacking libgomp1 (from .../libgomp1_4.6.3-1ubuntu5_amd64.deb) ...
+
+2013-03-09 15:03:51,426 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libmpfr4.
+
+2013-03-09 15:03:51,431 unit:oscied-transform/0: hook.output INFO: Unpacking libmpfr4 (from .../libmpfr4_3.1.0-3ubuntu2_amd64.deb) ...
+
+2013-03-09 15:03:51,486 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libquadmath0.
+
+2013-03-09 15:03:51,491 unit:oscied-transform/0: hook.output INFO: Unpacking libquadmath0 (from .../libquadmath0_4.6.3-1ubuntu5_amd64.deb) ...
+
+2013-03-09 15:03:51,537 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libgssglue1.
+
+2013-03-09 15:03:51,542 unit:oscied-transform/0: hook.output INFO: Unpacking libgssglue1 (from .../libgssglue1_0.3-4ubuntu0.1_amd64.deb) ...
+
+2013-03-09 15:03:51,586 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libtirpc1.
+
+2013-03-09 15:03:51,591 unit:oscied-transform/0: hook.output INFO: Unpacking libtirpc1 (from .../libtirpc1_0.2.2-5_amd64.deb) ...
+
+2013-03-09 15:03:51,647 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package rpcbind.
+
+2013-03-09 15:03:51,652 unit:oscied-transform/0: hook.output INFO: Unpacking rpcbind (from .../rpcbind_0.2.0-7ubuntu1.2_amd64.deb) ...
+
+2013-03-09 15:03:51,706 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libmpc2.
+
+2013-03-09 15:03:51,712 unit:oscied-transform/0: hook.output INFO: Unpacking libmpc2 (from .../libmpc2_0.9-4_amd64.deb) ...
+
+2013-03-09 15:03:51,766 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package binutils.
+
+2013-03-09 15:03:51,771 unit:oscied-transform/0: hook.output INFO: Unpacking binutils (from .../binutils_2.22-6ubuntu1_amd64.deb) ...
+
+2013-03-09 15:03:51,924 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package cpp-4.6.
+
+2013-03-09 15:03:51,929 unit:oscied-transform/0: hook.output INFO: Unpacking cpp-4.6 (from .../cpp-4.6_4.6.3-1ubuntu5_amd64.deb) ...
+
+2013-03-09 15:03:52,136 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package cpp.
+
+2013-03-09 15:03:52,141 unit:oscied-transform/0: hook.output INFO: Unpacking cpp (from .../cpp_4%3a4.6.3-1ubuntu5_amd64.deb) ...
+
+2013-03-09 15:03:52,185 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package fuse-utils.
+
+2013-03-09 15:03:52,190 unit:oscied-transform/0: hook.output INFO: Unpacking fuse-utils (from .../fuse-utils_2.8.6-2ubuntu2_all.deb) ...
+
+2013-03-09 15:03:52,234 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package gcc-4.6.
+
+2013-03-09 15:03:52,239 unit:oscied-transform/0: hook.output INFO: Unpacking gcc-4.6 (from .../gcc-4.6_4.6.3-1ubuntu5_amd64.deb) ...
+
+2013-03-09 15:03:52,497 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package gcc.
+
+2013-03-09 15:03:52,502 unit:oscied-transform/0: hook.output INFO: Unpacking gcc (from .../gcc_4%3a4.6.3-1ubuntu5_amd64.deb) ...
+
+2013-03-09 15:03:52,547 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libibverbs1.
+
+2013-03-09 15:03:52,552 unit:oscied-transform/0: hook.output INFO: Unpacking libibverbs1 (from .../libibverbs1_1.1.5-1ubuntu1_amd64.deb) ...
+
+2013-03-09 15:03:52,593 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package glusterfs-common.
+
+2013-03-09 15:03:52,599 unit:oscied-transform/0: hook.output INFO: Unpacking glusterfs-common (from .../glusterfs-common_3.2.5-1ubuntu1_amd64.deb) ...
+
+2013-03-09 15:03:52,904 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package glusterfs-client.
+
+2013-03-09 15:03:52,909 unit:oscied-transform/0: hook.output INFO: Unpacking glusterfs-client (from .../glusterfs-client_3.2.5-1ubuntu1_amd64.deb) ...
+
+2013-03-09 15:03:52,954 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libc-dev-bin.
+
+2013-03-09 15:03:52,959 unit:oscied-transform/0: hook.output INFO: Unpacking libc-dev-bin (from .../libc-dev-bin_2.15-0ubuntu10.3_amd64.deb) ...
+
+2013-03-09 15:03:53,008 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package linux-libc-dev.
+
+2013-03-09 15:03:53,013 unit:oscied-transform/0: hook.output INFO: Unpacking linux-libc-dev (from .../linux-libc-dev_3.2.0-38.61_amd64.deb) ...
+
+2013-03-09 15:03:53,204 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libc6-dev.
+
+2013-03-09 15:03:53,210 unit:oscied-transform/0: hook.output INFO: Unpacking libc6-dev (from .../libc6-dev_2.15-0ubuntu10.3_amd64.deb) ...
+
+2013-03-09 15:03:53,404 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libexpat1-dev.
+
+2013-03-09 15:03:53,410 unit:oscied-transform/0: hook.output INFO: Unpacking libexpat1-dev (from .../libexpat1-dev_2.0.1-7.2ubuntu1.1_amd64.deb) ...
+
+2013-03-09 15:03:53,466 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libffms2-2.
+
+2013-03-09 15:03:53,472 unit:oscied-transform/0: hook.output INFO: Unpacking libffms2-2 (from .../libffms2-2_2.17-1_amd64.deb) ...
+
+2013-03-09 15:03:53,516 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libnfsidmap2.
+
+2013-03-09 15:03:53,522 unit:oscied-transform/0: hook.output INFO: Unpacking libnfsidmap2 (from .../libnfsidmap2_0.25-1ubuntu2_amd64.deb) ...
+
+2013-03-09 15:03:53,574 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package zlib1g-dev.
+
+2013-03-09 15:03:53,580 unit:oscied-transform/0: hook.output INFO: Unpacking zlib1g-dev (from .../zlib1g-dev_1%3a1.2.3.4.dfsg-3ubuntu4_amd64.deb) ...
+
+2013-03-09 15:03:53,634 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libssl-dev.
+
+2013-03-09 15:03:53,640 unit:oscied-transform/0: hook.output INFO: Unpacking libssl-dev (from .../libssl-dev_1.0.1-4ubuntu5.7_amd64.deb) ...
+
+2013-03-09 15:03:53,747 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package libssl-doc.
+
+2013-03-09 15:03:53,752 unit:oscied-transform/0: hook.output INFO: Unpacking libssl-doc (from .../libssl-doc_1.0.1-4ubuntu5.7_all.deb) ...
+
+2013-03-09 15:03:53,954 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package manpages-dev.
+
+2013-03-09 15:03:53,961 unit:oscied-transform/0: hook.output INFO: Unpacking manpages-dev (from .../manpages-dev_3.35-0.1ubuntu1_all.deb) ...
+
+2013-03-09 15:03:54,213 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package nfs-common.
+
+2013-03-09 15:03:54,220 unit:oscied-transform/0: hook.output INFO: Unpacking nfs-common (from .../nfs-common_1%3a1.2.5-3ubuntu3.1_amd64.deb) ...
+
+2013-03-09 15:03:54,406 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package python2.7-dev.
+
+2013-03-09 15:03:54,411 unit:oscied-transform/0: hook.output INFO: Unpacking python2.7-dev (from .../python2.7-dev_2.7.3-0ubuntu3.1_amd64.deb) ...
+
+2013-03-09 15:03:54,934 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package python-dev.
+
+2013-03-09 15:03:54,940 unit:oscied-transform/0: hook.output INFO: Unpacking python-dev (from .../python-dev_2.7.3-0ubuntu2_amd64.deb) ...
+
+2013-03-09 15:03:54,986 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package python-pip.
+
+2013-03-09 15:03:54,991 unit:oscied-transform/0: hook.output INFO: Unpacking python-pip (from .../python-pip_1.0-1build1_all.deb) ...
+
+2013-03-09 15:03:55,055 unit:oscied-transform/0: hook.output INFO: Selecting previously unselected package x264.
+
+2013-03-09 15:03:55,061 unit:oscied-transform/0: hook.output INFO: Unpacking x264 (from .../x264_2%3a0.120.2151+gita3f4407-2_amd64.deb) ...
+
+2013-03-09 15:03:55,093 unit:oscied-transform/0: hook.output INFO: Processing triggers for man-db ...
+
+2013-03-09 15:03:58,135 unit:oscied-transform/0: hook.output INFO: Processing triggers for ureadahead ...
+
+2013-03-09 15:03:59,686 unit:oscied-transform/0: hook.output INFO: Setting up libavutil51 (6:0.10.6-0ubuntu0jon1~precise1) ...
+
+2013-03-09 15:03:59,712 unit:oscied-transform/0: hook.output INFO: Setting up libgsm1 (1.0.13-3) ...
+
+2013-03-09 15:03:59,731 unit:oscied-transform/0: hook.output INFO: Setting up libmp3lame0 (3.99.3+repack1-1) ...
+
+2013-03-09 15:03:59,751 unit:oscied-transform/0: hook.output INFO: Setting up libopenjpeg2 (1.3+dfsg-4) ...
+
+2013-03-09 15:03:59,771 unit:oscied-transform/0: hook.output INFO: Setting up liborc-0.4-0 (1:0.4.16-1ubuntu2) ...
+
+2013-03-09 15:03:59,791 unit:oscied-transform/0: hook.output INFO: Setting up libschroedinger-1.0-0 (1.0.11-1) ...
+
+2013-03-09 15:03:59,811 unit:oscied-transform/0: hook.output INFO: Setting up libspeex1 (1.2~rc1-3ubuntu2) ...
+
+2013-03-09 15:03:59,831 unit:oscied-transform/0: hook.output INFO: Setting up libogg0 (1.2.2~dfsg-1ubuntu1) ...
+
+2013-03-09 15:03:59,851 unit:oscied-transform/0: hook.output INFO: Setting up libtheora0 (1.1.1+dfsg.1-3ubuntu2) ...
+
+2013-03-09 15:03:59,871 unit:oscied-transform/0: hook.output INFO: Setting up libva1 (1.0.15-4) ...
+
+2013-03-09 15:03:59,891 unit:oscied-transform/0: hook.output INFO: Setting up libvorbis0a (1.3.2-1ubuntu3) ...
+
+2013-03-09 15:03:59,912 unit:oscied-transform/0: hook.output INFO: Setting up libvorbisenc2 (1.3.2-1ubuntu3) ...
+
+2013-03-09 15:03:59,931 unit:oscied-transform/0: hook.output INFO: Setting up libvpx1 (1.0.0-1) ...
+
+2013-03-09 15:03:59,951 unit:oscied-transform/0: hook.output INFO: Setting up libx264-120 (2:0.120.2151+gita3f4407-2) ...
+
+2013-03-09 15:03:59,971 unit:oscied-transform/0: hook.output INFO: Setting up libavcodec53 (6:0.10.6-0ubuntu0jon1~precise1) ...
+
+2013-03-09 15:03:59,991 unit:oscied-transform/0: hook.output INFO: Setting up libasound2 (1.0.25-1ubuntu10.1) ...
+
+2013-03-09 15:04:00,011 unit:oscied-transform/0: hook.output INFO: Setting up libavformat53 (6:0.10.6-0ubuntu0jon1~precise1) ...
+
+2013-03-09 15:04:00,031 unit:oscied-transform/0: hook.output INFO: Setting up libopencv-core2.3 (2.3.1-7) ...
+
+2013-03-09 15:04:00,051 unit:oscied-transform/0: hook.output INFO: Setting up libopencv-imgproc2.3 (2.3.1-7) ...
+
+2013-03-09 15:04:00,071 unit:oscied-transform/0: hook.output INFO: Setting up libswresample0 (6:0.10.6-0ubuntu0jon1~precise1) ...
+
+2013-03-09 15:04:00,091 unit:oscied-transform/0: hook.output INFO: Setting up libswscale2 (6:0.10.6-0ubuntu0jon1~precise1) ...
+
+2013-03-09 15:04:00,111 unit:oscied-transform/0: hook.output INFO: Setting up libavfilter2 (6:0.10.6-0ubuntu0jon1~precise1) ...
+
+2013-03-09 15:04:00,131 unit:oscied-transform/0: hook.output INFO: Setting up libcdio13 (0.83-1) ...
+
+2013-03-09 15:04:00,151 unit:oscied-transform/0: hook.output INFO: Setting up libcdio-cdda1 (0.83-1) ...
+
+2013-03-09 15:04:00,171 unit:oscied-transform/0: hook.output INFO: Setting up libcdio-paranoia1 (0.83-1) ...
+
+2013-03-09 15:04:00,191 unit:oscied-transform/0: hook.output INFO: Setting up libraw1394-11 (2.0.7-1ubuntu1) ...
+
+2013-03-09 15:04:00,211 unit:oscied-transform/0: hook.output INFO: Setting up libdc1394-22 (2.2.0-2) ...
+
+2013-03-09 15:04:00,231 unit:oscied-transform/0: hook.output INFO: Setting up libsamplerate0 (0.1.8-4) ...
+
+2013-03-09 15:04:00,251 unit:oscied-transform/0: hook.output INFO: Setting up libjack-jackd2-0 (1.9.8~dfsg.1-1ubuntu1) ...
+
+2013-03-09 15:04:00,271 unit:oscied-transform/0: hook.output INFO: Setting up libasyncns0 (0.8-4) ...
+
+2013-03-09 15:04:00,291 unit:oscied-transform/0: hook.output INFO: Setting up libjson0 (0.9-1ubuntu1) ...
+
+2013-03-09 15:04:00,311 unit:oscied-transform/0: hook.output INFO: Setting up libflac8 (1.2.1-6) ...
+
+2013-03-09 15:04:00,331 unit:oscied-transform/0: hook.output INFO: Setting up libsndfile1 (1.0.25-4) ...
+
+2013-03-09 15:04:00,351 unit:oscied-transform/0: hook.output INFO: Setting up libpulse0 (1:1.1-0ubuntu15.2) ...
+
+2013-03-09 15:04:00,371 unit:oscied-transform/0: hook.output INFO: Setting up libcaca0 (0.99.beta17-2.1ubuntu2) ...
+
+2013-03-09 15:04:00,391 unit:oscied-transform/0: hook.output INFO: Setting up libsdl1.2debian (1.2.14-6.4ubuntu3) ...
+
+2013-03-09 15:04:00,411 unit:oscied-transform/0: hook.output INFO: Setting up libxfixes3 (1:5.0-4ubuntu4) ...
+
+2013-03-09 15:04:00,431 unit:oscied-transform/0: hook.output INFO: Setting up libavdevice53 (6:0.10.6-0ubuntu0jon1~precise1) ...
+
+2013-03-09 15:04:00,451 unit:oscied-transform/0: hook.output INFO: Setting up libpostproc52 (6:0.10.6-0ubuntu0jon1~precise1) ...
+
+2013-03-09 15:04:00,471 unit:oscied-transform/0: hook.output INFO: Setting up ffmpeg (6:0.10.6-0ubuntu0jon1~precise1) ...
+
+2013-03-09 15:04:00,486 unit:oscied-transform/0: hook.output INFO: Setting up libgomp1 (4.6.3-1ubuntu5) ...
+
+2013-03-09 15:04:00,502 unit:oscied-transform/0: hook.output INFO: Setting up libmpfr4 (3.1.0-3ubuntu2) ...
+
+2013-03-09 15:04:00,521 unit:oscied-transform/0: hook.output INFO: Setting up libquadmath0 (4.6.3-1ubuntu5) ...
+
+2013-03-09 15:04:00,541 unit:oscied-transform/0: hook.output INFO: Setting up libgssglue1 (0.3-4ubuntu0.1) ...
+
+2013-03-09 15:04:00,561 unit:oscied-transform/0: hook.output INFO: Setting up libtirpc1 (0.2.2-5) ...
+
+2013-03-09 15:04:00,581 unit:oscied-transform/0: hook.output INFO: Setting up rpcbind (0.2.0-7ubuntu1.2) ...
+
+2013-03-09 15:04:00,613 unit:oscied-transform/0: hook.output INFO:  Removing any system startup links for /etc/init.d/rpcbind ...
+
+2013-03-09 15:04:00,647 unit:oscied-transform/0: hook.output INFO: portmap start/running, process 12379
+
+2013-03-09 15:04:00,649 unit:oscied-transform/0: hook.output INFO: Setting up libmpc2 (0.9-4) ...
+
+2013-03-09 15:04:00,672 unit:oscied-transform/0: hook.output INFO: Setting up binutils (2.22-6ubuntu1) ...
+
+2013-03-09 15:04:00,691 unit:oscied-transform/0: hook.output INFO: Setting up cpp-4.6 (4.6.3-1ubuntu5) ...
+
+2013-03-09 15:04:00,697 unit:oscied-transform/0: hook.output INFO: Setting up cpp (4:4.6.3-1ubuntu5) ...
+
+2013-03-09 15:04:00,712 unit:oscied-transform/0: hook.output INFO: Setting up fuse-utils (2.8.6-2ubuntu2) ...
+
+2013-03-09 15:04:00,716 unit:oscied-transform/0: hook.output INFO: Setting up gcc-4.6 (4.6.3-1ubuntu5) ...
+
+2013-03-09 15:04:00,723 unit:oscied-transform/0: hook.output INFO: Setting up gcc (4:4.6.3-1ubuntu5) ...
+
+2013-03-09 15:04:00,741 unit:oscied-transform/0: hook.output INFO: Setting up libibverbs1 (1.1.5-1ubuntu1) ...
+
+2013-03-09 15:04:00,761 unit:oscied-transform/0: hook.output INFO: Setting up glusterfs-common (3.2.5-1ubuntu1) ...
+
+2013-03-09 15:04:00,781 unit:oscied-transform/0: hook.output INFO: Setting up glusterfs-client (3.2.5-1ubuntu1) ...
+
+2013-03-09 15:04:00,787 unit:oscied-transform/0: hook.output INFO: Setting up libc-dev-bin (2.15-0ubuntu10.3) ...
+
+2013-03-09 15:04:00,795 unit:oscied-transform/0: hook.output INFO: Setting up linux-libc-dev (3.2.0-38.61) ...
+
+2013-03-09 15:04:00,799 unit:oscied-transform/0: hook.output INFO: Setting up libc6-dev (2.15-0ubuntu10.3) ...
+
+2013-03-09 15:04:00,803 unit:oscied-transform/0: hook.output INFO: Setting up libexpat1-dev (2.0.1-7.2ubuntu1.1) ...
+
+2013-03-09 15:04:00,808 unit:oscied-transform/0: hook.output INFO: Setting up libffms2-2 (2.17-1) ...
+
+2013-03-09 15:04:00,832 unit:oscied-transform/0: hook.output INFO: Setting up libnfsidmap2 (0.25-1ubuntu2) ...
+
+2013-03-09 15:04:00,851 unit:oscied-transform/0: hook.output INFO: Setting up zlib1g-dev (1:1.2.3.4.dfsg-3ubuntu4) ...
+
+2013-03-09 15:04:00,857 unit:oscied-transform/0: hook.output INFO: Setting up libssl-dev (1.0.1-4ubuntu5.7) ...
+
+2013-03-09 15:04:00,863 unit:oscied-transform/0: hook.output INFO: Setting up libssl-doc (1.0.1-4ubuntu5.7) ...
+
+2013-03-09 15:04:00,868 unit:oscied-transform/0: hook.output INFO: Setting up manpages-dev (3.35-0.1ubuntu1) ...
+
+2013-03-09 15:04:00,872 unit:oscied-transform/0: hook.output INFO: Setting up nfs-common (1:1.2.5-3ubuntu3.1) ...
+
+2013-03-09 15:04:01,088 unit:oscied-transform/0: hook.output INFO: 
+Creating config file /etc/idmapd.conf with new version
+
+2013-03-09 15:04:01,403 unit:oscied-transform/0: hook.output INFO: 
+Creating config file /etc/default/nfs-common with new version
+
+2013-03-09 15:04:01,558 unit:oscied-transform/0: hook.output INFO: Adding system user `statd' (UID 107) ...
+Adding new user `statd' (UID 107) with group `nogroup' ...
+
+2013-03-09 15:04:01,667 unit:oscied-transform/0: hook.output INFO: Not creating home directory `/var/lib/nfs'.
+
+2013-03-09 15:04:01,717 unit:oscied-transform/0: hook.output INFO: statd start/running, process 12637
+
+2013-03-09 15:04:01,747 unit:oscied-transform/0: hook.output INFO: gssd stop/pre-start, process 12666
+
+2013-03-09 15:04:01,786 unit:oscied-transform/0: hook.output INFO: idmapd start/running, process 12706
+
+2013-03-09 15:04:01,790 unit:oscied-transform/0: hook.output INFO: Setting up python2.7-dev (2.7.3-0ubuntu3.1) ...
+
+2013-03-09 15:04:01,794 unit:oscied-transform/0: hook.output INFO: Setting up python-dev (2.7.3-0ubuntu2) ...
+
+2013-03-09 15:04:01,799 unit:oscied-transform/0: hook.output INFO: Setting up python-pip (1.0-1build1) ...
+
+2013-03-09 15:04:01,932 unit:oscied-transform/0: hook.output INFO: Setting up x264 (2:0.120.2151+gita3f4407-2) ...
+
+2013-03-09 15:04:01,937 unit:oscied-transform/0: hook.output INFO: Processing triggers for libc-bin ...
+
+2013-03-09 15:04:01,939 unit:oscied-transform/0: hook.output INFO: ldconfig deferred processing now taking place
+
+2013-03-09 15:04:02,398 unit:oscied-transform/0: hook.output INFO: + pecho 'Install BSON Binary JSON, Celery Distributed Task Queue, MongoDB API and Requests'
++ juju-log '[PARAGRAPH] Install BSON Binary JSON, Celery Distributed Task Queue, MongoDB API and Requests'
+
+2013-03-09 15:04:02,562 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Install BSON Binary JSON, Celery Distributed Task Queue, MongoDB API and Requests
+2013-03-09 15:04:02,574 unit:oscied-transform/0: hook.output INFO: + pip install --upgrade bson celery ipaddr pymongo requests
+
+2013-03-09 15:05:59,949 unit:oscied-transform/0: hook.output INFO: Downloading/unpacking bson
+  Downloading bson-0.3.3.tar.gz
+  Running setup.py egg_info for package bson
+    
+Downloading/unpacking celery
+  Running setup.py egg_info for package celery
+    Upgrade: no old version found.
+    
+    no previously-included directories found matching '*.pyc'
+Downloading/unpacking ipaddr
+  Downloading ipaddr-2.1.10.tar.gz
+  Running setup.py egg_info for package ipaddr
+    
+Downloading/unpacking pymongo
+  Running setup.py egg_info for package pymongo
+    
+Downloading/unpacking requests
+  Running setup.py egg_info for package requests
+    
+Downloading/unpacking pytz>=2010b (from bson)
+  Running setup.py egg_info for package pytz
+    
+    warning: no files found matching '*.pot' under directory 'pytz'
+    warning: no previously-included files found matching 'test_zdump.py'
+Downloading/unpacking billiard>=2.7.3.22,<3.0 (from celery)
+  Running setup.py egg_info for package billiard
+    
+    warning: no files found matching '*.py' under directory 'Lib'
+Downloading/unpacking python-dateutil>=1.5,<2.0 (from celery)
+  Running setup.py egg_info for package python-dateutil
+    
+Downloading/unpacking kombu>=2.5.7,<3.0 (from celery)
+  Running setup.py egg_info for package kombu
+    
+Downloading/unpacking anyjson>=0.3.3 (from kombu>=2.5.7,<3.0->celery)
+  Downloading anyjson-0.3.3.tar.gz
+  Running setup.py egg_info for package anyjson
+    
+Downloading/unpacking amqp>=1.0.9,<1.1.0 (from kombu>=2.5.7,<3.0->celery)
+  Running setup.py egg_info for package amqp
+    
+Installing collected packages: bson, celery, ipaddr, pymongo, requests, pytz, billiard, python-dateutil, kombu, anyjson, amqp
+  Running setup.py install for bson
+    
+  Running setup.py install for celery
+    Upgrade: no old version found.
+    
+    no previously-included directories found matching '*.pyc'
+    Installing celeryctl script to /usr/local/bin
+    Installing celeryd script to /usr/local/bin
+    Installing camqadm script to /usr/local/bin
+    Installing celeryev script to /usr/local/bin
+    Installing celery script to /usr/local/bin
+    Installing celeryd-multi script to /usr/local/bin
+    Installing celerybeat script to /usr/local/bin
+  Running setup.py install for ipaddr
+    
+  Running setup.py install for pymongo
+    building 'bson._cbson' extension
+    gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -Ibson -I/usr/include/python2.7 -c bson/_cbsonmodule.c -o build/temp.linux-x86_64-2.7/bson/_cbsonmodule.o
+    gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -Ibson -I/usr/include/python2.7 -c bson/time64.c -o build/temp.linux-x86_64-2.7/bson/time64.o
+    gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -Ibson -I/usr/include/python2.7 -c bson/buffer.c -o build/temp.linux-x86_64-2.7/bson/buffer.o
+    gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -Ibson -I/usr/include/python2.7 -c bson/encoding_helpers.c -o build/temp.linux-x86_64-2.7/bson/encoding_helpers.o
+    gcc -pthread -shared -Wl,-O1 -Wl,-Bsymbolic-functions -Wl,-Bsymbolic-functions -Wl,-z,relro build/temp.linux-x86_64-2.7/bson/_cbsonmodule.o build/temp.linux-x86_64-2.7/bson/time64.o build/temp.linux-x86_64-2.7/bson/buffer.o build/temp.linux-x86_64-2.7/bson/encoding_helpers.o -o build/lib.linux-x86_64-2.7/bson/_cbson.so
+    building 'pymongo._cmessage' extension
+    gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -Ibson -I/usr/include/python2.7 -c pymongo/_cmessagemodule.c -o build/temp.linux-x86_64-2.7/pymongo/_cmessagemodule.o
+    gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -Ibson -I/usr/include/python2.7 -c bson/buffer.c -o build/temp.linux-x86_64-2.7/bson/buffer.o
+    gcc -pthread -shared -Wl,-O1 -Wl,-Bsymbolic-functions -Wl,-Bsymbolic-functions -Wl,-z,relro build/temp.linux-x86_64-2.7/pymongo/_cmessagemodule.o build/temp.linux-x86_64-2.7/bson/buffer.o -o build/lib.linux-x86_64-2.7/pymongo/_cmessage.so
+    
+  Running setup.py instal
+2013-03-09 15:06:02,173 unit:oscied-transform/0: hook.output INFO: l for requests
+    
+  Running setup.py install for pytz
+    
+    warning: no files found matching '*.pot' under directory 'pytz'
+    warning: no previously-included files found matching 'test_zdump.py'
+  Running setup.py install for billiard
+    building '_billiard' extension
+    gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -DHAVE_SEM_OPEN=1 -DHAVE_FD_TRANSFER=1 -DHAVE_SEM_TIMEDWAIT=1 -IModules/_billiard -I/usr/include/python2.7 -c Modules/_billiard/multiprocessing.c -o build/temp.linux-x86_64-2.7/Modules/_billiard/multiprocessing.o
+    gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -DHAVE_SEM_OPEN=1 -DHAVE_FD_TRANSFER=1 -DHAVE_SEM_TIMEDWAIT=1 -IModules/_billiard -I/usr/include/python2.7 -c Modules/_billiard/socket_connection.c -o build/temp.linux-x86_64-2.7/Modules/_billiard/socket_connection.o
+    gcc -pthread -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall -Wstrict-prototypes -fPIC -DHAVE_SEM_OPEN=1 -DHAVE_FD_TRANSFER=1 -DHAVE_SEM_TIMEDWAIT=1 -IModules/_billiard -I/usr/include/python2.7 -c Modules/_billiard/semaphore.c -o build/temp.linux-x86_64-2.7/Modules/_billiard/semaphore.o
+    gcc -pthread -shared -Wl,-O1 -Wl,-Bsymbolic-functions -Wl,-Bsymbolic-functions -Wl,-z,relro build/temp.linux-x86_64-2.7/Modules/_billiard/multiprocessing.o build/temp.linux-x86_64-2.7/Modules/_billiard/socket_connection.o build/temp.linux-x86_64-2.7/Modules/_billiard/semaphore.o -lrt -o build/lib.linux-x86_64-2.7/_billiard.so
+    
+    warning: no files found matching '*.py' under directory 'Lib'
+  Found existing installation: python-dateutil 1.5
+    Uninstalling python-dateutil:
+      Successfully uninstalled python-dateutil
+  Running setup.py install for python-dateutil
+    
+  Running setup.py install for kombu
+    
+  Running setup.py install for anyjson
+    
+  Running setup.py install for amqp
+    
+Successfully installed bson celery ipaddr pymongo requests pytz billiard python-dateutil kombu anyjson amqp
+Cleaning up...
+
+2013-03-09 15:06:02,183 unit:oscied-transform/0: hook.output INFO: + hook_config_changed
++ techo 'Transform - config changed'
++ juju-log '[TITLE] Transform - config changed'
+
+2013-03-09 15:06:02,343 unit:oscied-transform/0: unit.hook.api INFO: [TITLE] Transform - config changed
+2013-03-09 15:06:02,359 unit:oscied-transform/0: hook.output INFO: + hook_stop
++ techo 'Transform - stop'
++ juju-log '[TITLE] Transform - stop'
+
+2013-03-09 15:06:02,523 unit:oscied-transform/0: unit.hook.api INFO: [TITLE] Transform - stop
+2013-03-09 15:06:02,540 unit:oscied-transform/0: hook.output INFO: + screenRunning Transform
++ '[' 1 -ne 1 ']'
+
+2013-03-09 15:06:02,541 unit:oscied-transform/0: hook.output INFO: + screen -list
+
+2013-03-09 15:06:02,541 unit:oscied-transform/0: hook.output INFO: + awk '{print $1}'
++ grep -q Transform
+
+2013-03-09 15:06:02,542 unit:oscied-transform/0: hook.output INFO: + pecho 'Configure Transform : Set verbose, messaging queues and storage path'
++ juju-log '[PARAGRAPH] Configure Transform : Set verbose, messaging queues and storage path'
+
+2013-03-09 15:06:02,708 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Configure Transform : Set verbose, messaging queues and storage path
+2013-03-09 15:06:02,727 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json public_address 10.0.3.53
++ '[' 3 -ne 3 ']'
++ sed -i 's<"public_address" *: *"[^"]*"<"public_address": "10.0.3.53"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:02,729 unit:oscied-transform/0: hook.output INFO: + grep -q '"public_address": "10.0.3.53"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:02,730 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_BOOLEAN /var/lib/juju/units/oscied-transform-0/charm/config.json verbose 0
++ '[' 3 -ne 3 ']'
+
+2013-03-09 15:06:02,731 unit:oscied-transform/0: hook.output INFO: + '[' 0 -eq 0 ']'
++ value=true
++ sed -i 's<"verbose" *: *[a-zA-Z]*<"verbose": true<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:02,732 unit:oscied-transform/0: hook.output INFO: + grep -q '"verbose": true' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:02,733 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json rabbit_queues transform_amazon,10.0.3.53
++ '[' 3 -ne 3 ']'
++ sed -i 's<"rabbit_queues" *: *"[^"]*"<"rabbit_queues": "transform_amazon,10.0.3.53"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:02,734 unit:oscied-transform/0: hook.output INFO: + grep -q '"rabbit_queues": "transform_amazon,10.0.3.53"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:02,736 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_path /mnt/storage
++ '[' 3 -ne 3 ']'
+
+2013-03-09 15:06:02,736 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"storage_path" *: *"[^"]*"<"storage_path": "/mnt/storage"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:02,737 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_path": "/mnt/storage"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:02,738 unit:oscied-transform/0: hook.output INFO: + storage_remount
++ storage_config_is_enabled
+
+2013-03-09 15:06:02,738 unit:oscied-transform/0: hook.output INFO: + '[' OSCIED-Node02.localdomain -a glusterfs -a medias_volume ']'
++ ip=OSCIED-Node02.localdomain
++ nat_ip=129.194.185.47
++ fstype=glusterfs
++ mountpoint=medias_volume
++ options=
++ '[' 129.194.185.47 ']'
++ pecho 'Update hosts file to map storage internal address OSCIED-Node02.localdomain to 129.194.185.47'
++ juju-log '[PARAGRAPH] Update hosts file to map storage internal address OSCIED-Node02.localdomain to 129.194.185.47'
+
+2013-03-09 15:06:02,897 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Update hosts file to map storage internal address OSCIED-Node02.localdomain to 129.194.185.47
+2013-03-09 15:06:02,913 unit:oscied-transform/0: hook.output INFO: + grep -q OSCIED-Node02.localdomain /etc/hosts
+
+2013-03-09 15:06:02,914 unit:oscied-transform/0: hook.output INFO: + echo '129.194.185.47 OSCIED-Node02.localdomain'
++ storage_umount
+
+2013-03-09 15:06:02,914 unit:oscied-transform/0: hook.output INFO: + pecho 'Configure Transform : Unregister shared storage'
++ juju-log '[PARAGRAPH] Configure Transform : Unregister shared storage'
+
+2013-03-09 15:06:03,069 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Configure Transform : Unregister shared storage
+2013-03-09 15:06:03,082 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_ip ''
++ '[' 3 -ne 3 ']'
+
+2013-03-09 15:06:03,083 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"storage_ip" *: *"[^"]*"<"storage_ip": ""<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:03,084 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_ip": ""' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:03,085 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_fstype ''
++ '[' 3 -ne 3 ']'
++ sed -i 's<"storage_fstype" *: *"[^"]*"<"storage_fstype": ""<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:03,087 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_fstype": ""' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:03,088 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_mountpoint ''
++ '[' 3 -ne 3 ']'
++ sed -i 's<"storage_mountpoint" *: *"[^"]*"<"storage_mountpoint": ""<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:03,089 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_mountpoint": ""' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:03,090 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_options ''
++ '[' 3 -ne 3 ']'
++ sed -i 's<"storage_options" *: *"[^"]*"<"storage_options": ""<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:03,092 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_options": ""' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:03,093 unit:oscied-transform/0: hook.output INFO: + storage_is_mounted
+
+2013-03-09 15:06:03,093 unit:oscied-transform/0: hook.output INFO: + mount
+
+2013-03-09 15:06:03,093 unit:oscied-transform/0: hook.output INFO: + grep -q /mnt/storage
+
+2013-03-09 15:06:03,094 unit:oscied-transform/0: hook.output INFO: + recho 'Shared storage already unmounted'
++ juju-log '[REMARK] Shared storage already unmounted !'
+
+2013-03-09 15:06:03,257 unit:oscied-transform/0: unit.hook.api INFO: [REMARK] Shared storage already unmounted !
+2013-03-09 15:06:03,270 unit:oscied-transform/0: hook.output INFO: + r=/mnt/storage
++ pecho 'Mount shared storage [129.194.185.47] OSCIED-Node02.localdomain:medias_volume type glusterfs options '\'''\'' -> /mnt/storage'
++ juju-log '[PARAGRAPH] Mount shared storage [129.194.185.47] OSCIED-Node02.localdomain:medias_volume type glusterfs options '\'''\'' -> /mnt/storage'
+
+2013-03-09 15:06:03,429 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Mount shared storage [129.194.185.47] OSCIED-Node02.localdomain:medias_volume type glusterfs options '' -> /mnt/storage
+2013-03-09 15:06:03,448 unit:oscied-transform/0: hook.output INFO: + '[' '!' -d /mnt/storage ']'
++ mkdir /mnt/storage
+
+2013-03-09 15:06:03,450 unit:oscied-transform/0: hook.output INFO: ++ seq 1 5
+
+2013-03-09 15:06:03,451 unit:oscied-transform/0: hook.output INFO: + for i in '$(seq 1 5)'
++ storage_is_mounted
+
+2013-03-09 15:06:03,451 unit:oscied-transform/0: hook.output INFO: + mount
+
+2013-03-09 15:06:03,451 unit:oscied-transform/0: hook.output INFO: + grep -q /mnt/storage
+
+2013-03-09 15:06:03,453 unit:oscied-transform/0: hook.output INFO: + '[' '' ']'
++ mount -t glusterfs 129.194.185.47:medias_volume /mnt/storage
+
+2013-03-09 15:06:06,511 unit:oscied-transform/0: hook.output INFO: + sleep 5
+
+2013-03-09 15:06:11,513 unit:oscied-transform/0: hook.output INFO: + for i in '$(seq 1 5)'
++ storage_is_mounted
+
+2013-03-09 15:06:11,513 unit:oscied-transform/0: hook.output INFO: + mount
+
+2013-03-09 15:06:11,513 unit:oscied-transform/0: hook.output INFO: + grep -q /mnt/storage
+
+2013-03-09 15:06:11,515 unit:oscied-transform/0: hook.output INFO: + break
++ storage_is_mounted
+
+2013-03-09 15:06:11,515 unit:oscied-transform/0: hook.output INFO: + mount
+
+2013-03-09 15:06:11,515 unit:oscied-transform/0: hook.output INFO: + grep -q /mnt/storage
+
+2013-03-09 15:06:11,517 unit:oscied-transform/0: hook.output INFO: + pecho 'Configure Transform : Register shared storage'
++ juju-log '[PARAGRAPH] Configure Transform : Register shared storage'
+
+2013-03-09 15:06:11,679 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Configure Transform : Register shared storage
+2013-03-09 15:06:11,693 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_ip OSCIED-Node02.localdomain
++ '[' 3 -ne 3 ']'
++ sed -i 's<"storage_ip" *: *"[^"]*"<"storage_ip": "OSCIED-Node02.localdomain"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:11,695 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_ip": "OSCIED-Node02.localdomain"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:11,696 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_fstype glusterfs
++ '[' 3 -ne 3 ']'
+
+2013-03-09 15:06:11,697 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"storage_fstype" *: *"[^"]*"<"storage_fstype": "glusterfs"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:11,698 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_fstype": "glusterfs"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:11,699 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_mountpoint medias_volume
++ '[' 3 -ne 3 ']'
+
+2013-03-09 15:06:11,699 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"storage_mountpoint" *: *"[^"]*"<"storage_mountpoint": "medias_volume"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:11,701 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_mountpoint": "medias_volume"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:11,702 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_options ''
++ '[' 3 -ne 3 ']'
++ sed -i 's<"storage_options" *: *"[^"]*"<"storage_options": ""<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:11,704 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_options": ""' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:11,705 unit:oscied-transform/0: hook.output INFO: + transform_register
++ transform_config_is_enabled
+
+2013-03-09 15:06:11,706 unit:oscied-transform/0: hook.output INFO: + '[' mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery -a amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery ']'
++ mongo=mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery
++ rabbit=amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery
++ socket=129.194.185.47:5000
++ pecho 'Configure Transform : Register the Orchestrator'
++ juju-log '[PARAGRAPH] Configure Transform : Register the Orchestrator'
+
+2013-03-09 15:06:11,868 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Configure Transform : Register the Orchestrator
+2013-03-09 15:06:11,884 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json mongo_connection mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery
++ '[' 3 -ne 3 ']'
++ sed -i 's<"mongo_connection" *: *"[^"]*"<"mongo_connection": "mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:11,885 unit:oscied-transform/0: hook.output INFO: + grep -q '"mongo_connection": "mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:11,886 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json rabbit_connection amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery
++ '[' 3 -ne 3 ']'
+
+2013-03-09 15:06:11,887 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"rabbit_connection" *: *"[^"]*"<"rabbit_connection": "amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:11,888 unit:oscied-transform/0: hook.output INFO: + grep -q '"rabbit_connection": "amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:11,889 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json api_nat_socket 129.194.185.47:5000
++ '[' 3 -ne 3 ']'
+
+2013-03-09 15:06:11,889 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"api_nat_socket" *: *"[^"]*"<"api_nat_socket": "129.194.185.47:5000"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:11,890 unit:oscied-transform/0: hook.output INFO: + grep -q '"api_nat_socket": "129.194.185.47:5000"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:11,892 unit:oscied-transform/0: hook.output INFO: ++ expr match mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery '.*mongodb://[^:]*:[^@]*@\([^:]*\):[0-9]*/[a-z]*.*'
+
+2013-03-09 15:06:11,893 unit:oscied-transform/0: hook.output INFO: + host=129.194.185.47
+
+2013-03-09 15:06:11,893 unit:oscied-transform/0: hook.output INFO: ++ expr match mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery '.*mongodb://[^:]*:[^@]*@[^:]*:\([0-9]*\)/[a-z]*.*'
+
+2013-03-09 15:06:11,894 unit:oscied-transform/0: hook.output INFO: + port=27017
+
+2013-03-09 15:06:11,895 unit:oscied-transform/0: hook.output INFO: ++ expr match mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery '.*mongodb://\([^:]*\):[^@]*@[^:]*:[0-9]*/[a-z]*.*'
+
+2013-03-09 15:06:11,896 unit:oscied-transform/0: hook.output INFO: + user=nodes
+
+2013-03-09 15:06:11,896 unit:oscied-transform/0: hook.output INFO: ++ expr match mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery '.*mongodb://[^:]*:\([^@]*\)@[^:]*:[0-9]*/[a-z]*.*'
+
+2013-03-09 15:06:11,897 unit:oscied-transform/0: hook.output INFO: + password=M2qlif8rdtKtBYil
+
+2013-03-09 15:06:11,898 unit:oscied-transform/0: hook.output INFO: ++ expr match mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery '.*mongodb://[^:]*:[^@]*@[^:]*:[0-9]*/\([a-z]*\).*'
+
+2013-03-09 15:06:11,899 unit:oscied-transform/0: hook.output INFO: + database=celery
++ mecho 'MongoDB host=129.194.185.47, port=27017, user=nodes, password=M2qlif8rdtKtBYil, database=celery'
+
+2013-03-09 15:06:11,900 unit:oscied-transform/0: hook.output INFO: + juju-log '[MESSAGE] MongoDB host=129.194.185.47, port=27017, user=nodes, password=M2qlif8rdtKtBYil, database=celery'
+
+2013-03-09 15:06:12,063 unit:oscied-transform/0: unit.hook.api INFO: [MESSAGE] MongoDB host=129.194.185.47, port=27017, user=nodes, password=M2qlif8rdtKtBYil, database=celery
+2013-03-09 15:06:12,077 unit:oscied-transform/0: hook.output INFO: + '[' '!' 129.194.185.47 -o '!' 27017 -o '!' nodes -o '!' M2qlif8rdtKtBYil -o '!' celery ']'
++ a='s<RABBIT_CONNECTION<amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery<g'
++ b='s<MONGO_HOST<129.194.185.47<g'
++ c='s<MONGO_PORT<27017<g'
++ d='s<MONGO_USER<nodes<g'
+
+2013-03-09 15:06:12,077 unit:oscied-transform/0: hook.output INFO: + e='s<MONGO_PASSWORD<M2qlif8rdtKtBYil<g'
++ f='s<MONGO_DATABASE<celery<g'
++ g='s<THE_CONCURRENCY<1<g'
++ sed 's<RABBIT_CONNECTION<amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery<g;s<MONGO_HOST<129.194.185.47<g;s<MONGO_PORT<27017<g;s<MONGO_USER<nodes<g;s<MONGO_PASSWORD<M2qlif8rdtKtBYil<g;s<MONGO_DATABASE<celery<g;s<THE_CONCURRENCY<1<g' /var/lib/juju/units/oscied-transform-0/charm/templates/celeryconfig.py.template
+
+2013-03-09 15:06:12,080 unit:oscied-transform/0: hook.output INFO: + recho 'Orchestrator successfully registered, it'\''s time to wake-up'
++ juju-log '[REMARK] Orchestrator successfully registered, it'\''s time to wake-up !'
+
+2013-03-09 15:06:12,241 unit:oscied-transform/0: unit.hook.api INFO: [REMARK] Orchestrator successfully registered, it's time to wake-up !
+2013-03-09 15:06:12,257 unit:oscied-transform/0: hook.output INFO: + hook_start
++ techo 'Transform - start'
++ juju-log '[TITLE] Transform - start'
+
+2013-03-09 15:06:12,420 unit:oscied-transform/0: unit.hook.api INFO: [TITLE] Transform - start
+2013-03-09 15:06:12,436 unit:oscied-transform/0: hook.output INFO: + storage_is_mounted
+
+2013-03-09 15:06:12,436 unit:oscied-transform/0: hook.output INFO: + mount
++ grep -q /mnt/storage
+
+2013-03-09 15:06:12,438 unit:oscied-transform/0: hook.output INFO: + '[' '!' -f /var/lib/juju/units/oscied-transform-0/charm/celeryconfig.py ']'
++ '[' '!' transform_amazon,10.0.3.53 ']'
++ screenRunning Transform
++ '[' 1 -ne 1 ']'
+
+2013-03-09 15:06:12,438 unit:oscied-transform/0: hook.output INFO: + screen -list
+
+2013-03-09 15:06:12,439 unit:oscied-transform/0: hook.output INFO: + awk '{print $1}'
++ grep -q Transform
+
+2013-03-09 15:06:12,441 unit:oscied-transform/0: hook.output INFO: + cd /var/lib/juju/units/oscied-transform-0/charm
++ screenLaunch Transform celeryd --config celeryconfig -Q transform_amazon,10.0.3.53
+
+2013-03-09 15:06:12,441 unit:oscied-transform/0: hook.output INFO: + '[' 6 -lt 2 ']'
++ screen -dmS Transform celeryd --config celeryconfig -Q transform_amazon,10.0.3.53
+
+2013-03-09 15:06:12,443 unit:oscied-transform/0: hook.output INFO: + sleep 5
+
+2013-03-09 15:06:17,444 unit:oscied-transform/0: hook.output INFO: + screenRunning Transform
++ '[' 1 -ne 1 ']'
+
+2013-03-09 15:06:17,444 unit:oscied-transform/0: hook.output INFO: + screen -list
+
+2013-03-09 15:06:17,444 unit:oscied-transform/0: hook.output INFO: + awk '{print $1}'
++ grep -q Transform
+
+2013-03-09 15:06:17,446 unit:oscied-transform/0: hook.output INFO: + recho 'Transform successfully started'
++ juju-log '[REMARK] Transform successfully started !'
+
+2013-03-09 15:06:17,598 unit:oscied-transform/0: unit.hook.api INFO: [REMARK] Transform successfully started !
+2013-03-09 15:06:17,612 unit:oscied-transform/0: hook.output DEBUG: hook install exited, exit code 0.
+2013-03-09 15:06:17,612 unit:oscied-transform/0: hook.executor DEBUG: Hook complete: /var/lib/juju/units/oscied-transform-0/charm/hooks/install
+2013-03-09 15:06:17,648 unit:oscied-transform/0: statemachine DEBUG: unitworkflowstate: transition complete install (state installed) {}
+2013-03-09 15:06:17,682 unit:oscied-transform/0: statemachine DEBUG: unitworkflowstate: transition start (installed -> started) {}
+2013-03-09 15:06:17,682 unit:oscied-transform/0: statemachine DEBUG: unitworkflowstate:  execute action do_start
+2013-03-09 15:06:17,682 unit:oscied-transform/0: unit.lifecycle DEBUG: pre-start acquire, running:False
+2013-03-09 15:06:17,683 unit:oscied-transform/0: unit.lifecycle DEBUG: start running, unit lifecycle
+2013-03-09 15:06:17,710 unit:oscied-transform/0: hook.output DEBUG: Cached relation hook contexts: []
+2013-03-09 15:06:17,726 unit:oscied-transform/0: hook.executor DEBUG: Running hook: /var/lib/juju/units/oscied-transform-0/charm/hooks/config-changed
+2013-03-09 15:06:17,910 unit:oscied-transform/0: hook.output INFO: +++ unit-get public-address
+
+2013-03-09 15:06:18,068 unit:oscied-transform/0: unit.hook.api DEBUG: Get unit setting: 'public-address'
+2013-03-09 15:06:18,098 unit:oscied-transform/0: hook.output INFO: ++ PUBLIC_ADDRESS=10.0.3.53
+
+2013-03-09 15:06:18,098 unit:oscied-transform/0: hook.output INFO: +++ config-get concurrency
+
+2013-03-09 15:06:18,263 unit:oscied-transform/0: hook.output INFO: ++ THE_CONCURRENCY=1
+
+2013-03-09 15:06:18,263 unit:oscied-transform/0: hook.output INFO: +++ config-get rabbit_queues
+
+2013-03-09 15:06:18,438 unit:oscied-transform/0: hook.output INFO: ++ RABBIT_QUEUES=transform_amazon,10.0.3.53
+
+2013-03-09 15:06:18,439 unit:oscied-transform/0: hook.output INFO: +++ config-get mongo_connection
+
+2013-03-09 15:06:18,604 unit:oscied-transform/0: hook.output INFO: ++ MONGO_CONNECTION=mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery
+
+2013-03-09 15:06:18,605 unit:oscied-transform/0: hook.output INFO: +++ config-get rabbit_connection
+
+2013-03-09 15:06:18,773 unit:oscied-transform/0: hook.output INFO: ++ RABBIT_CONNECTION=amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery
+
+2013-03-09 15:06:18,774 unit:oscied-transform/0: hook.output INFO: +++ config-get api_nat_socket
+
+2013-03-09 15:06:18,941 unit:oscied-transform/0: hook.output INFO: ++ API_NAT_SOCKET=129.194.185.47:5000
+
+2013-03-09 15:06:18,942 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_ip
+
+2013-03-09 15:06:19,110 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_IP=OSCIED-Node02.localdomain
+
+2013-03-09 15:06:19,110 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_nat_ip
+
+2013-03-09 15:06:19,290 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_NAT_IP=129.194.185.47
+
+2013-03-09 15:06:19,290 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_fstype
+
+2013-03-09 15:06:19,462 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_FSTYPE=glusterfs
+
+2013-03-09 15:06:19,463 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_mountpoint
+
+2013-03-09 15:06:19,636 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_MOUNTPOINT=medias_volume
+
+2013-03-09 15:06:19,637 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_options
+
+2013-03-09 15:06:19,810 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_OPTIONS=
+
+2013-03-09 15:06:19,815 unit:oscied-transform/0: hook.output INFO: ++ logicielsUbuntuUtilsImported
+
+2013-03-09 15:06:19,816 unit:oscied-transform/0: hook.output INFO: ++ true=0
+++ false=1
+++ true_auto=2
+++ false_auto=3
+++ '[' -t 0 ']'
+++ TXT_BLD=
+++ TXT_BLK=
+++ TXT_RED=
+++ TXT_GREEN=
+++ TXT_YLW=
+
+2013-03-09 15:06:19,816 unit:oscied-transform/0: hook.output INFO: ++ TXT_BLUE=
+++ TXT_PURPLE=
+++ TXT_CYAN=
+++ TXT_WHITE=
+++ TXT_RESET=
+++ TECHO_COLOR='[TITLE] '
+++ PECHO_COLOR='[PARAGRAPH] '
+++ MECHO_COLOR='[MESSAGE] '
+++ CECHO_COLOR='[CODE] '
+++ RECHO_COLOR='[REMARK] '
+++ QECHO_COLOR='[QUESTION] '
+++ XECHO_COLOR=
+
+2013-03-09 15:06:19,816 unit:oscied-transform/0: hook.output INFO: ++ echo '\n'
+++ grep -q n
+
+2013-03-09 15:06:19,817 unit:oscied-transform/0: hook.output INFO: ++ e_=-e
+++ echo=juju-log
+++ '[' juju-log '!=' echo ']'
+++ e_=
+++ DIALOG=dialog
+
+2013-03-09 15:06:19,818 unit:oscied-transform/0: hook.output INFO: +++ id -u
+
+2013-03-09 15:06:19,820 unit:oscied-transform/0: hook.output INFO: +++ which sudo
+
+2013-03-09 15:06:19,821 unit:oscied-transform/0: hook.output INFO: ++ '[' 0 '!=' 0 -a /usr/bin/sudo '!=' '' ']'
+++ udo=
+++ service=' service'
+++ which service
+
+2013-03-09 15:06:19,823 unit:oscied-transform/0: hook.output INFO: ++ which apt-get
+
+2013-03-09 15:06:19,824 unit:oscied-transform/0: hook.output INFO: ++ installPack=' dpkg -i'
+++ install=' apt-get -fyq --force-yes install'
+++ buildDep=' apt-get -fyq --force-yes build-dep'
+++ update=' apt-get -fyq --force-yes update'
+++ upgrade=' apt-get -fyq --force-yes upgrade'
+
+2013-03-09 15:06:19,824 unit:oscied-transform/0: hook.output INFO: ++ distupgrade=' apt-get -fyq --force-yes dist-upgrade'
+++ remove=' apt-get -fyq --force-yes remove'
+++ autoremove=' apt-get -fyq --force-yes autoremove'
+++ purge=' apt-get -fyq --force-yes purge'
+++ key=' apt-key adv --keyserver keyserver.ubuntu.com --recv-keys'
+++ packages='dpkg --get-selections'
+
+2013-03-09 15:06:19,825 unit:oscied-transform/0: hook.output INFO: + hook_config_changed
++ techo 'Transform - config changed'
++ juju-log '[TITLE] Transform - config changed'
+
+2013-03-09 15:06:19,982 unit:oscied-transform/0: unit.hook.api INFO: [TITLE] Transform - config changed
+2013-03-09 15:06:19,999 unit:oscied-transform/0: hook.output INFO: + hook_stop
++ techo 'Transform - stop'
++ juju-log '[TITLE] Transform - stop'
+
+2013-03-09 15:06:20,151 unit:oscied-transform/0: unit.hook.api INFO: [TITLE] Transform - stop
+2013-03-09 15:06:20,164 unit:oscied-transform/0: hook.output INFO: + screenRunning Transform
++ '[' 1 -ne 1 ']'
+
+2013-03-09 15:06:20,165 unit:oscied-transform/0: hook.output INFO: + screen -list
++ awk '{print $1}'
+
+2013-03-09 15:06:20,165 unit:oscied-transform/0: hook.output INFO: + grep -q Transform
+
+2013-03-09 15:06:20,167 unit:oscied-transform/0: hook.output INFO: + screenKill Transform
++ '[' 1 -ne 1 ']'
++ screen -X -S Transform kill
+
+2013-03-09 15:06:20,169 unit:oscied-transform/0: hook.output INFO: + pecho 'Configure Transform : Set verbose, messaging queues and storage path'
++ juju-log '[PARAGRAPH] Configure Transform : Set verbose, messaging queues and storage path'
+
+2013-03-09 15:06:20,331 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Configure Transform : Set verbose, messaging queues and storage path
+2013-03-09 15:06:20,344 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json public_address 10.0.3.53
++ '[' 3 -ne 3 ']'
+
+2013-03-09 15:06:20,345 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"public_address" *: *"[^"]*"<"public_address": "10.0.3.53"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:20,346 unit:oscied-transform/0: hook.output INFO: + grep -q '"public_address": "10.0.3.53"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:20,348 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_BOOLEAN /var/lib/juju/units/oscied-transform-0/charm/config.json verbose 0
++ '[' 3 -ne 3 ']'
++ '[' 0 -eq 0 ']'
++ value=true
+
+2013-03-09 15:06:20,348 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"verbose" *: *[a-zA-Z]*<"verbose": true<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:20,350 unit:oscied-transform/0: hook.output INFO: + grep -q '"verbose": true' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:20,351 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json rabbit_queues transform_amazon,10.0.3.53
++ '[' 3 -ne 3 ']'
+
+2013-03-09 15:06:20,351 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"rabbit_queues" *: *"[^"]*"<"rabbit_queues": "transform_amazon,10.0.3.53"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:20,353 unit:oscied-transform/0: hook.output INFO: + grep -q '"rabbit_queues": "transform_amazon,10.0.3.53"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:20,354 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_path /mnt/storage
++ '[' 3 -ne 3 ']'
++ sed -i 's<"storage_path" *: *"[^"]*"<"storage_path": "/mnt/storage"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:20,356 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_path": "/mnt/storage"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:20,357 unit:oscied-transform/0: hook.output INFO: + storage_remount
+
+2013-03-09 15:06:20,357 unit:oscied-transform/0: hook.output INFO: + storage_config_is_enabled
++ '[' OSCIED-Node02.localdomain -a glusterfs -a medias_volume ']'
++ ip=OSCIED-Node02.localdomain
++ nat_ip=129.194.185.47
++ fstype=glusterfs
++ mountpoint=medias_volume
++ options=
++ '[' 129.194.185.47 ']'
++ pecho 'Update hosts file to map storage internal address OSCIED-Node02.localdomain to 129.194.185.47'
++ juju-log '[PARAGRAPH] Update hosts file to map storage internal address OSCIED-Node02.localdomain to 129.194.185.47'
+
+2013-03-09 15:06:20,516 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Update hosts file to map storage internal address OSCIED-Node02.localdomain to 129.194.185.47
+2013-03-09 15:06:20,529 unit:oscied-transform/0: hook.output INFO: + grep -q OSCIED-Node02.localdomain /etc/hosts
+
+2013-03-09 15:06:20,530 unit:oscied-transform/0: hook.output INFO: + sed -i 's<129.194.185.47 .*<129.194.185.47 OSCIED-Node02.localdomain<' /etc/hosts
+
+2013-03-09 15:06:20,532 unit:oscied-transform/0: hook.output INFO: + storage_umount
++ pecho 'Configure Transform : Unregister shared storage'
+
+2013-03-09 15:06:20,532 unit:oscied-transform/0: hook.output INFO: + juju-log '[PARAGRAPH] Configure Transform : Unregister shared storage'
+
+2013-03-09 15:06:20,689 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Configure Transform : Unregister shared storage
+2013-03-09 15:06:20,705 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_ip ''
+
+2013-03-09 15:06:20,706 unit:oscied-transform/0: hook.output INFO: + '[' 3 -ne 3 ']'
++ sed -i 's<"storage_ip" *: *"[^"]*"<"storage_ip": ""<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:20,707 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_ip": ""' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:20,708 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_fstype ''
++ '[' 3 -ne 3 ']'
+
+2013-03-09 15:06:20,709 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"storage_fstype" *: *"[^"]*"<"storage_fstype": ""<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:20,710 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_fstype": ""' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:20,711 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_mountpoint ''
++ '[' 3 -ne 3 ']'
++ sed -i 's<"storage_mountpoint" *: *"[^"]*"<"storage_mountpoint": ""<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:20,712 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_mountpoint": ""' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:20,713 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_options ''
++ '[' 3 -ne 3 ']'
++ sed -i 's<"storage_options" *: *"[^"]*"<"storage_options": ""<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:20,715 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_options": ""' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:20,716 unit:oscied-transform/0: hook.output INFO: + storage_is_mounted
+
+2013-03-09 15:06:20,716 unit:oscied-transform/0: hook.output INFO: + mount
+
+2013-03-09 15:06:20,717 unit:oscied-transform/0: hook.output INFO: + grep -q /mnt/storage
+
+2013-03-09 15:06:20,718 unit:oscied-transform/0: hook.output INFO: + pecho 'Unmount shared storage (is actually mounted)'
++ juju-log '[PARAGRAPH] Unmount shared storage (is actually mounted)'
+
+2013-03-09 15:06:20,881 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Unmount shared storage (is actually mounted)
+2013-03-09 15:06:20,895 unit:oscied-transform/0: hook.output INFO: + umount /mnt/storage
+
+2013-03-09 15:06:20,909 unit:oscied-transform/0: hook.output INFO: + recho 'Shared storage successfully unmounted'
++ juju-log '[REMARK] Shared storage successfully unmounted !'
+
+2013-03-09 15:06:21,067 unit:oscied-transform/0: unit.hook.api INFO: [REMARK] Shared storage successfully unmounted !
+2013-03-09 15:06:21,082 unit:oscied-transform/0: hook.output INFO: + r=/mnt/storage
++ pecho 'Mount shared storage [129.194.185.47] OSCIED-Node02.localdomain:medias_volume type glusterfs options '\'''\'' -> /mnt/storage'
+
+2013-03-09 15:06:21,082 unit:oscied-transform/0: hook.output INFO: + juju-log '[PARAGRAPH] Mount shared storage [129.194.185.47] OSCIED-Node02.localdomain:medias_volume type glusterfs options '\'''\'' -> /mnt/storage'
+
+2013-03-09 15:06:21,241 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Mount shared storage [129.194.185.47] OSCIED-Node02.localdomain:medias_volume type glusterfs options '' -> /mnt/storage
+2013-03-09 15:06:21,256 unit:oscied-transform/0: hook.output INFO: + '[' '!' -d /mnt/storage ']'
+
+2013-03-09 15:06:21,257 unit:oscied-transform/0: hook.output INFO: ++ seq 1 5
+
+2013-03-09 15:06:21,258 unit:oscied-transform/0: hook.output INFO: + for i in '$(seq 1 5)'
++ storage_is_mounted
+
+2013-03-09 15:06:21,258 unit:oscied-transform/0: hook.output INFO: + mount
+
+2013-03-09 15:06:21,258 unit:oscied-transform/0: hook.output INFO: + grep -q /mnt/storage
+
+2013-03-09 15:06:21,260 unit:oscied-transform/0: hook.output INFO: + '[' '' ']'
++ mount -t glusterfs 129.194.185.47:medias_volume /mnt/storage
+
+2013-03-09 15:06:24,316 unit:oscied-transform/0: hook.output INFO: + sleep 5
+
+2013-03-09 15:06:29,317 unit:oscied-transform/0: hook.output INFO: + for i in '$(seq 1 5)'
++ storage_is_mounted
+
+2013-03-09 15:06:29,318 unit:oscied-transform/0: hook.output INFO: + mount
++ grep -q /mnt/storage
+
+2013-03-09 15:06:29,320 unit:oscied-transform/0: hook.output INFO: + break
++ storage_is_mounted
++ mount
++ grep -q /mnt/storage
+
+2013-03-09 15:06:29,321 unit:oscied-transform/0: hook.output INFO: + pecho 'Configure Transform : Register shared storage'
++ juju-log '[PARAGRAPH] Configure Transform : Register shared storage'
+
+2013-03-09 15:06:29,499 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Configure Transform : Register shared storage
+2013-03-09 15:06:29,514 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_ip OSCIED-Node02.localdomain
++ '[' 3 -ne 3 ']'
++ sed -i 's<"storage_ip" *: *"[^"]*"<"storage_ip": "OSCIED-Node02.localdomain"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:29,516 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_ip": "OSCIED-Node02.localdomain"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:29,517 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_fstype glusterfs
++ '[' 3 -ne 3 ']'
++ sed -i 's<"storage_fstype" *: *"[^"]*"<"storage_fstype": "glusterfs"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:29,518 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_fstype": "glusterfs"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:29,519 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_mountpoint medias_volume
++ '[' 3 -ne 3 ']'
++ sed -i 's<"storage_mountpoint" *: *"[^"]*"<"storage_mountpoint": "medias_volume"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:29,520 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_mountpoint": "medias_volume"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:29,521 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_options ''
++ '[' 3 -ne 3 ']'
++ sed -i 's<"storage_options" *: *"[^"]*"<"storage_options": ""<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:29,523 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_options": ""' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:29,524 unit:oscied-transform/0: hook.output INFO: + transform_register
++ transform_config_is_enabled
+
+2013-03-09 15:06:29,524 unit:oscied-transform/0: hook.output INFO: + '[' mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery -a amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery ']'
++ mongo=mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery
++ rabbit=amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery
++ socket=129.194.185.47:5000
++ pecho 'Configure Transform : Register the Orchestrator'
++ juju-log '[PARAGRAPH] Configure Transform : Register the Orchestrator'
+
+2013-03-09 15:06:29,680 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Configure Transform : Register the Orchestrator
+2013-03-09 15:06:29,698 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json mongo_connection mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery
++ '[' 3 -ne 3 ']'
++ sed -i 's<"mongo_connection" *: *"[^"]*"<"mongo_connection": "mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:29,700 unit:oscied-transform/0: hook.output INFO: + grep -q '"mongo_connection": "mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:29,702 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json rabbit_connection amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery
++ '[' 3 -ne 3 ']'
+
+2013-03-09 15:06:29,702 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"rabbit_connection" *: *"[^"]*"<"rabbit_connection": "amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:29,703 unit:oscied-transform/0: hook.output INFO: + grep -q '"rabbit_connection": "amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:29,705 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json api_nat_socket 129.194.185.47:5000
++ '[' 3 -ne 3 ']'
++ sed -i 's<"api_nat_socket" *: *"[^"]*"<"api_nat_socket": "129.194.185.47:5000"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:29,707 unit:oscied-transform/0: hook.output INFO: + grep -q '"api_nat_socket": "129.194.185.47:5000"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:29,709 unit:oscied-transform/0: hook.output INFO: ++ expr match mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery '.*mongodb://[^:]*:[^@]*@\([^:]*\):[0-9]*/[a-z]*.*'
+
+2013-03-09 15:06:29,710 unit:oscied-transform/0: hook.output INFO: + host=129.194.185.47
+
+2013-03-09 15:06:29,711 unit:oscied-transform/0: hook.output INFO: ++ expr match mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery '.*mongodb://[^:]*:[^@]*@[^:]*:\([0-9]*\)/[a-z]*.*'
+
+2013-03-09 15:06:29,712 unit:oscied-transform/0: hook.output INFO: + port=27017
+
+2013-03-09 15:06:29,712 unit:oscied-transform/0: hook.output INFO: ++ expr match mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery '.*mongodb://\([^:]*\):[^@]*@[^:]*:[0-9]*/[a-z]*.*'
+
+2013-03-09 15:06:29,713 unit:oscied-transform/0: hook.output INFO: + user=nodes
+
+2013-03-09 15:06:29,714 unit:oscied-transform/0: hook.output INFO: ++ expr match mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery '.*mongodb://[^:]*:\([^@]*\)@[^:]*:[0-9]*/[a-z]*.*'
+
+2013-03-09 15:06:29,715 unit:oscied-transform/0: hook.output INFO: + password=M2qlif8rdtKtBYil
+
+2013-03-09 15:06:29,716 unit:oscied-transform/0: hook.output INFO: ++ expr match mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery '.*mongodb://[^:]*:[^@]*@[^:]*:[0-9]*/\([a-z]*\).*'
+
+2013-03-09 15:06:29,717 unit:oscied-transform/0: hook.output INFO: + database=celery
++ mecho 'MongoDB host=129.194.185.47, port=27017, user=nodes, password=M2qlif8rdtKtBYil, database=celery'
+
+2013-03-09 15:06:29,717 unit:oscied-transform/0: hook.output INFO: + juju-log '[MESSAGE] MongoDB host=129.194.185.47, port=27017, user=nodes, password=M2qlif8rdtKtBYil, database=celery'
+
+2013-03-09 15:06:29,882 unit:oscied-transform/0: unit.hook.api INFO: [MESSAGE] MongoDB host=129.194.185.47, port=27017, user=nodes, password=M2qlif8rdtKtBYil, database=celery
+2013-03-09 15:06:29,897 unit:oscied-transform/0: hook.output INFO: + '[' '!' 129.194.185.47 -o '!' 27017 -o '!' nodes -o '!' M2qlif8rdtKtBYil -o '!' celery ']'
++ a='s<RABBIT_CONNECTION<amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery<g'
++ b='s<MONGO_HOST<129.194.185.47<g'
++ c='s<MONGO_PORT<27017<g'
++ d='s<MONGO_USER<nodes<g'
+
+2013-03-09 15:06:29,897 unit:oscied-transform/0: hook.output INFO: + e='s<MONGO_PASSWORD<M2qlif8rdtKtBYil<g'
++ f='s<MONGO_DATABASE<celery<g'
++ g='s<THE_CONCURRENCY<1<g'
++ sed 's<RABBIT_CONNECTION<amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery<g;s<MONGO_HOST<129.194.185.47<g;s<MONGO_PORT<27017<g;s<MONGO_USER<nodes<g;s<MONGO_PASSWORD<M2qlif8rdtKtBYil<g;s<MONGO_DATABASE<celery<g;s<THE_CONCURRENCY<1<g' /var/lib/juju/units/oscied-transform-0/charm/templates/celeryconfig.py.template
+
+2013-03-09 15:06:29,898 unit:oscied-transform/0: hook.output INFO: + recho 'Orchestrator successfully registered, it'\''s time to wake-up'
++ juju-log '[REMARK] Orchestrator successfully registered, it'\''s time to wake-up !'
+
+2013-03-09 15:06:30,051 unit:oscied-transform/0: unit.hook.api INFO: [REMARK] Orchestrator successfully registered, it's time to wake-up !
+2013-03-09 15:06:30,065 unit:oscied-transform/0: hook.output INFO: + hook_start
++ techo 'Transform - start'
++ juju-log '[TITLE] Transform - start'
+
+2013-03-09 15:06:30,228 unit:oscied-transform/0: unit.hook.api INFO: [TITLE] Transform - start
+2013-03-09 15:06:30,245 unit:oscied-transform/0: hook.output INFO: + storage_is_mounted
+
+2013-03-09 15:06:30,246 unit:oscied-transform/0: hook.output INFO: + mount
++ grep -q /mnt/storage
+
+2013-03-09 15:06:30,247 unit:oscied-transform/0: hook.output INFO: + '[' '!' -f /var/lib/juju/units/oscied-transform-0/charm/celeryconfig.py ']'
++ '[' '!' transform_amazon,10.0.3.53 ']'
++ screenRunning Transform
+
+2013-03-09 15:06:30,248 unit:oscied-transform/0: hook.output INFO: + '[' 1 -ne 1 ']'
+
+2013-03-09 15:06:30,248 unit:oscied-transform/0: hook.output INFO: + screen -list
++ awk '{print $1}'
+
+2013-03-09 15:06:30,248 unit:oscied-transform/0: hook.output INFO: + grep -q Transform
+
+2013-03-09 15:06:30,251 unit:oscied-transform/0: hook.output INFO: + sleep 5
+
+2013-03-09 15:06:35,252 unit:oscied-transform/0: hook.output INFO: + screenRunning Transform
++ '[' 1 -ne 1 ']'
+
+2013-03-09 15:06:35,252 unit:oscied-transform/0: hook.output INFO: + screen -list
++ awk '{print $1}'
+
+2013-03-09 15:06:35,253 unit:oscied-transform/0: hook.output INFO: + grep -q Transform
+
+2013-03-09 15:06:35,254 unit:oscied-transform/0: hook.output INFO: + recho 'Transform successfully started'
++ juju-log '[REMARK] Transform successfully started !'
+
+2013-03-09 15:06:35,419 unit:oscied-transform/0: unit.hook.api INFO: [REMARK] Transform successfully started !
+2013-03-09 15:06:35,434 unit:oscied-transform/0: hook.output DEBUG: hook config-changed exited, exit code 0.
+2013-03-09 15:06:35,434 unit:oscied-transform/0: hook.executor DEBUG: Hook complete: /var/lib/juju/units/oscied-transform-0/charm/hooks/config-changed
+2013-03-09 15:06:35,460 unit:oscied-transform/0: hook.output DEBUG: Cached relation hook contexts: []
+2013-03-09 15:06:35,474 unit:oscied-transform/0: hook.executor DEBUG: Running hook: /var/lib/juju/units/oscied-transform-0/charm/hooks/start
+2013-03-09 15:06:35,660 unit:oscied-transform/0: hook.output INFO: +++ unit-get public-address
+
+2013-03-09 15:06:35,824 unit:oscied-transform/0: unit.hook.api DEBUG: Get unit setting: 'public-address'
+2013-03-09 15:06:35,854 unit:oscied-transform/0: hook.output INFO: ++ PUBLIC_ADDRESS=10.0.3.53
+
+2013-03-09 15:06:35,854 unit:oscied-transform/0: hook.output INFO: +++ config-get concurrency
+
+2013-03-09 15:06:36,020 unit:oscied-transform/0: hook.output INFO: ++ THE_CONCURRENCY=1
+
+2013-03-09 15:06:36,020 unit:oscied-transform/0: hook.output INFO: +++ config-get rabbit_queues
+
+2013-03-09 15:06:36,186 unit:oscied-transform/0: hook.output INFO: ++ RABBIT_QUEUES=transform_amazon,10.0.3.53
+
+2013-03-09 15:06:36,187 unit:oscied-transform/0: hook.output INFO: +++ config-get mongo_connection
+
+2013-03-09 15:06:36,361 unit:oscied-transform/0: hook.output INFO: ++ MONGO_CONNECTION=mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery
+
+2013-03-09 15:06:36,362 unit:oscied-transform/0: hook.output INFO: +++ config-get rabbit_connection
+
+2013-03-09 15:06:36,531 unit:oscied-transform/0: hook.output INFO: ++ RABBIT_CONNECTION=amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery
+
+2013-03-09 15:06:36,532 unit:oscied-transform/0: hook.output INFO: +++ config-get api_nat_socket
+
+2013-03-09 15:06:36,714 unit:oscied-transform/0: hook.output INFO: ++ API_NAT_SOCKET=129.194.185.47:5000
+
+2013-03-09 15:06:36,714 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_ip
+
+2013-03-09 15:06:36,884 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_IP=OSCIED-Node02.localdomain
+
+2013-03-09 15:06:36,885 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_nat_ip
+
+2013-03-09 15:06:37,060 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_NAT_IP=129.194.185.47
+
+2013-03-09 15:06:37,060 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_fstype
+
+2013-03-09 15:06:37,229 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_FSTYPE=glusterfs
+
+2013-03-09 15:06:37,230 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_mountpoint
+
+2013-03-09 15:06:37,408 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_MOUNTPOINT=medias_volume
+
+2013-03-09 15:06:37,409 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_options
+
+2013-03-09 15:06:37,592 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_OPTIONS=
+
+2013-03-09 15:06:37,599 unit:oscied-transform/0: hook.output INFO: ++ logicielsUbuntuUtilsImported
+
+2013-03-09 15:06:37,600 unit:oscied-transform/0: hook.output INFO: ++ true=0
+++ false=1
+++ true_auto=2
+++ false_auto=3
+++ '[' -t 0 ']'
+++ TXT_BLD=
+++ TXT_BLK=
+++ TXT_RED=
+++ TXT_GREEN=
+
+2013-03-09 15:06:37,600 unit:oscied-transform/0: hook.output INFO: ++ TXT_YLW=
+++ TXT_BLUE=
+++ TXT_PURPLE=
+++ TXT_CYAN=
+++ TXT_WHITE=
+++ TXT_RESET=
+++ TECHO_COLOR='[TITLE] '
+++ PECHO_COLOR='[PARAGRAPH] '
+++ MECHO_COLOR='[MESSAGE] '
+++ CECHO_COLOR='[CODE] '
+++ RECHO_COLOR='[REMARK] '
+++ QECHO_COLOR='[QUESTION] '
+++ XECHO_COLOR=
+
+2013-03-09 15:06:37,600 unit:oscied-transform/0: hook.output INFO: ++ echo '\n'
+
+2013-03-09 15:06:37,600 unit:oscied-transform/0: hook.output INFO: ++ grep -q n
+
+2013-03-09 15:06:37,601 unit:oscied-transform/0: hook.output INFO: ++ e_=-e
+++ echo=juju-log
+++ '[' juju-log '!=' echo ']'
+
+2013-03-09 15:06:37,602 unit:oscied-transform/0: hook.output INFO: ++ e_=
+++ DIALOG=dialog
+
+2013-03-09 15:06:37,602 unit:oscied-transform/0: hook.output INFO: +++ id -u
+
+2013-03-09 15:06:37,604 unit:oscied-transform/0: hook.output INFO: +++ which sudo
+
+2013-03-09 15:06:37,605 unit:oscied-transform/0: hook.output INFO: ++ '[' 0 '!=' 0 -a /usr/bin/sudo '!=' '' ']'
+++ udo=
+
+2013-03-09 15:06:37,605 unit:oscied-transform/0: hook.output INFO: ++ service=' service'
+++ which service
+
+2013-03-09 15:06:37,607 unit:oscied-transform/0: hook.output INFO: ++ which apt-get
+
+2013-03-09 15:06:37,611 unit:oscied-transform/0: hook.output INFO: ++ installPack=' dpkg -i'
+++ install=' apt-get -fyq --force-yes install'
+++ buildDep=' apt-get -fyq --force-yes build-dep'
+++ update=' apt-get -fyq --force-yes update'
+
+2013-03-09 15:06:37,611 unit:oscied-transform/0: hook.output INFO: ++ upgrade=' apt-get -fyq --force-yes upgrade'
+++ distupgrade=' apt-get -fyq --force-yes dist-upgrade'
+++ remove=' apt-get -fyq --force-yes remove'
+++ autoremove=' apt-get -fyq --force-yes autoremove'
+++ purge=' apt-get -fyq --force-yes purge'
+++ key=' apt-key adv --keyserver keyserver.ubuntu.com --recv-keys'
+++ packages='dpkg --get-selections'
+
+2013-03-09 15:06:37,611 unit:oscied-transform/0: hook.output INFO: + hook_start
+
+2013-03-09 15:06:37,612 unit:oscied-transform/0: hook.output INFO: + techo 'Transform - start'
++ juju-log '[TITLE] Transform - start'
+
+2013-03-09 15:06:37,782 unit:oscied-transform/0: unit.hook.api INFO: [TITLE] Transform - start
+2013-03-09 15:06:37,794 unit:oscied-transform/0: hook.output INFO: + storage_is_mounted
+
+2013-03-09 15:06:37,794 unit:oscied-transform/0: hook.output INFO: + mount
++ grep -q /mnt/storage
+
+2013-03-09 15:06:37,796 unit:oscied-transform/0: hook.output INFO: + '[' '!' -f /var/lib/juju/units/oscied-transform-0/charm/celeryconfig.py ']'
++ '[' '!' transform_amazon,10.0.3.53 ']'
++ screenRunning Transform
+
+2013-03-09 15:06:37,796 unit:oscied-transform/0: hook.output INFO: + '[' 1 -ne 1 ']'
+
+2013-03-09 15:06:37,797 unit:oscied-transform/0: hook.output INFO: + screen -list
++ awk '{print $1}'
++ grep -q Transform
+
+2013-03-09 15:06:37,798 unit:oscied-transform/0: hook.output INFO: + sleep 5
+
+2013-03-09 15:06:42,800 unit:oscied-transform/0: hook.output INFO: + screenRunning Transform
++ '[' 1 -ne 1 ']'
+
+2013-03-09 15:06:42,800 unit:oscied-transform/0: hook.output INFO: + screen -list
+
+2013-03-09 15:06:42,800 unit:oscied-transform/0: hook.output INFO: + awk '{print $1}'
++ grep -q Transform
+
+2013-03-09 15:06:42,803 unit:oscied-transform/0: hook.output INFO: + recho 'Transform successfully started'
++ juju-log '[REMARK] Transform successfully started !'
+
+2013-03-09 15:06:42,967 unit:oscied-transform/0: unit.hook.api INFO: [REMARK] Transform successfully started !
+2013-03-09 15:06:42,984 unit:oscied-transform/0: hook.output DEBUG: hook start exited, exit code 0.
+2013-03-09 15:06:42,984 unit:oscied-transform/0: hook.executor DEBUG: Hook complete: /var/lib/juju/units/oscied-transform-0/charm/hooks/start
+2013-03-09 15:06:42,985 unit:oscied-transform/0: unit.lifecycle DEBUG: starting service relation watch
+2013-03-09 15:06:42,985 unit:oscied-transform/0: unit.lifecycle DEBUG: starting unit relation resolved watch
+2013-03-09 15:06:43,005 unit:oscied-transform/0: unit.lifecycle DEBUG: relation resolved changed
+2013-03-09 15:06:43,005 unit:oscied-transform/0: unit.lifecycle INFO: processing relation resolved changed
+2013-03-09 15:06:43,006 unit:oscied-transform/0: unit.lifecycle DEBUG: services changed old:None new:[]
+2013-03-09 15:06:43,026 unit:oscied-transform/0: unit.lifecycle DEBUG: processing relations changed
+2013-03-09 15:06:43,053 unit:oscied-transform/0: unit.lifecycle DEBUG: started unit lifecycle
+2013-03-09 15:06:43,082 unit:oscied-transform/0: statemachine DEBUG: unitworkflowstate: transition complete start (state started) {}
+2013-03-09 15:06:43,095 unit:oscied-transform/0: juju.agents.unit DEBUG: Configuration Changed
+2013-03-09 15:06:43,115 unit:oscied-transform/0: statemachine DEBUG: unitworkflowstate: transition configure (started -> started) {}
+2013-03-09 15:06:43,115 unit:oscied-transform/0: statemachine DEBUG: unitworkflowstate:  execute action do_configure
+2013-03-09 15:06:43,142 unit:oscied-transform/0: hook.output DEBUG: Cached relation hook contexts: []
+2013-03-09 15:06:43,161 unit:oscied-transform/0: hook.executor DEBUG: Running hook: /var/lib/juju/units/oscied-transform-0/charm/hooks/config-changed
+2013-03-09 15:06:43,361 unit:oscied-transform/0: hook.output INFO: +++ unit-get public-address
+
+2013-03-09 15:06:43,518 unit:oscied-transform/0: unit.hook.api DEBUG: Get unit setting: 'public-address'
+2013-03-09 15:06:43,544 unit:oscied-transform/0: hook.output INFO: ++ PUBLIC_ADDRESS=10.0.3.53
+
+2013-03-09 15:06:43,544 unit:oscied-transform/0: hook.output INFO: +++ config-get concurrency
+
+2013-03-09 15:06:43,715 unit:oscied-transform/0: hook.output INFO: ++ THE_CONCURRENCY=1
+
+2013-03-09 15:06:43,715 unit:oscied-transform/0: hook.output INFO: +++ config-get rabbit_queues
+
+2013-03-09 15:06:43,896 unit:oscied-transform/0: hook.output INFO: ++ RABBIT_QUEUES=transform_amazon,10.0.3.53
+
+2013-03-09 15:06:43,896 unit:oscied-transform/0: hook.output INFO: +++ config-get mongo_connection
+
+2013-03-09 15:06:44,069 unit:oscied-transform/0: hook.output INFO: ++ MONGO_CONNECTION=mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery
+
+2013-03-09 15:06:44,069 unit:oscied-transform/0: hook.output INFO: +++ config-get rabbit_connection
+
+2013-03-09 15:06:44,243 unit:oscied-transform/0: hook.output INFO: ++ RABBIT_CONNECTION=amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery
+
+2013-03-09 15:06:44,243 unit:oscied-transform/0: hook.output INFO: +++ config-get api_nat_socket
+
+2013-03-09 15:06:44,417 unit:oscied-transform/0: hook.output INFO: ++ API_NAT_SOCKET=129.194.185.47:5000
+
+2013-03-09 15:06:44,418 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_ip
+
+2013-03-09 15:06:44,601 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_IP=OSCIED-Node02.localdomain
+
+2013-03-09 15:06:44,601 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_nat_ip
+
+2013-03-09 15:06:44,771 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_NAT_IP=129.194.185.47
+
+2013-03-09 15:06:44,771 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_fstype
+
+2013-03-09 15:06:44,944 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_FSTYPE=glusterfs
+
+2013-03-09 15:06:44,945 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_mountpoint
+
+2013-03-09 15:06:45,124 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_MOUNTPOINT=medias_volume
+
+2013-03-09 15:06:45,124 unit:oscied-transform/0: hook.output INFO: +++ config-get storage_options
+
+2013-03-09 15:06:45,300 unit:oscied-transform/0: hook.output INFO: ++ STORAGE_OPTIONS=
+
+2013-03-09 15:06:45,305 unit:oscied-transform/0: hook.output INFO: ++ logicielsUbuntuUtilsImported
+
+2013-03-09 15:06:45,306 unit:oscied-transform/0: hook.output INFO: ++ true=0
+++ false=1
+++ true_auto=2
+++ false_auto=3
+++ '[' -t 0 ']'
+++ TXT_BLD=
+++ TXT_BLK=
+++ TXT_RED=
+
+2013-03-09 15:06:45,306 unit:oscied-transform/0: hook.output INFO: ++ TXT_GREEN=
+++ TXT_YLW=
+++ TXT_BLUE=
+++ TXT_PURPLE=
+++ TXT_CYAN=
+++ TXT_WHITE=
+++ TXT_RESET=
+++ TECHO_COLOR='[TITLE] '
+++ PECHO_COLOR='[PARAGRAPH] '
+++ MECHO_COLOR='[MESSAGE] '
+++ CECHO_COLOR='[CODE] '
+++ RECHO_COLOR='[REMARK] '
+++ QECHO_COLOR='[QUESTION] '
+++ XECHO_COLOR=
+
+2013-03-09 15:06:45,307 unit:oscied-transform/0: hook.output INFO: ++ grep -q n
+++ echo '\n'
+
+2013-03-09 15:06:45,308 unit:oscied-transform/0: hook.output INFO: ++ e_=-e
+++ echo=juju-log
+++ '[' juju-log '!=' echo ']'
+++ e_=
+++ DIALOG=dialog
+
+2013-03-09 15:06:45,308 unit:oscied-transform/0: hook.output INFO: +++ id -u
+
+2013-03-09 15:06:45,310 unit:oscied-transform/0: hook.output INFO: +++ which sudo
+
+2013-03-09 15:06:45,311 unit:oscied-transform/0: hook.output INFO: ++ '[' 0 '!=' 0 -a /usr/bin/sudo '!=' '' ']'
+++ udo=
+
+2013-03-09 15:06:45,312 unit:oscied-transform/0: hook.output INFO: ++ service=' service'
+++ which service
+
+2013-03-09 15:06:45,313 unit:oscied-transform/0: hook.output INFO: ++ which apt-get
+
+2013-03-09 15:06:45,314 unit:oscied-transform/0: hook.output INFO: ++ installPack=' dpkg -i'
+++ install=' apt-get -fyq --force-yes install'
+++ buildDep=' apt-get -fyq --force-yes build-dep'
+++ update=' apt-get -fyq --force-yes update'
+
+2013-03-09 15:06:45,314 unit:oscied-transform/0: hook.output INFO: ++ upgrade=' apt-get -fyq --force-yes upgrade'
+++ distupgrade=' apt-get -fyq --force-yes dist-upgrade'
+++ remove=' apt-get -fyq --force-yes remove'
+++ autoremove=' apt-get -fyq --force-yes autoremove'
+++ purge=' apt-get -fyq --force-yes purge'
+++ key=' apt-key adv --keyserver keyserver.ubuntu.com --recv-keys'
+++ packages='dpkg --get-selections'
+
+2013-03-09 15:06:45,315 unit:oscied-transform/0: hook.output INFO: + hook_config_changed
++ techo 'Transform - config changed'
++ juju-log '[TITLE] Transform - config changed'
+
+2013-03-09 15:06:45,472 unit:oscied-transform/0: unit.hook.api INFO: [TITLE] Transform - config changed
+2013-03-09 15:06:45,486 unit:oscied-transform/0: hook.output INFO: + hook_stop
++ techo 'Transform - stop'
+
+2013-03-09 15:06:45,487 unit:oscied-transform/0: hook.output INFO: + juju-log '[TITLE] Transform - stop'
+
+2013-03-09 15:06:45,642 unit:oscied-transform/0: unit.hook.api INFO: [TITLE] Transform - stop
+2013-03-09 15:06:45,654 unit:oscied-transform/0: hook.output INFO: + screenRunning Transform
++ '[' 1 -ne 1 ']'
+
+2013-03-09 15:06:45,655 unit:oscied-transform/0: hook.output INFO: + screen -list
+
+2013-03-09 15:06:45,655 unit:oscied-transform/0: hook.output INFO: + awk '{print $1}'
++ grep -q Transform
+
+2013-03-09 15:06:45,656 unit:oscied-transform/0: hook.output INFO: + screenKill Transform
++ '[' 1 -ne 1 ']'
+
+2013-03-09 15:06:45,657 unit:oscied-transform/0: hook.output INFO: + screen -X -S Transform kill
+
+2013-03-09 15:06:45,659 unit:oscied-transform/0: hook.output INFO: + pecho 'Configure Transform : Set verbose, messaging queues and storage path'
++ juju-log '[PARAGRAPH] Configure Transform : Set verbose, messaging queues and storage path'
+
+2013-03-09 15:06:45,817 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Configure Transform : Set verbose, messaging queues and storage path
+2013-03-09 15:06:45,831 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json public_address 10.0.3.53
++ '[' 3 -ne 3 ']'
++ sed -i 's<"public_address" *: *"[^"]*"<"public_address": "10.0.3.53"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:45,833 unit:oscied-transform/0: hook.output INFO: + grep -q '"public_address": "10.0.3.53"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:45,834 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_BOOLEAN /var/lib/juju/units/oscied-transform-0/charm/config.json verbose 0
++ '[' 3 -ne 3 ']'
++ '[' 0 -eq 0 ']'
++ value=true
+
+2013-03-09 15:06:45,834 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"verbose" *: *[a-zA-Z]*<"verbose": true<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:45,835 unit:oscied-transform/0: hook.output INFO: + grep -q '"verbose": true' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:45,836 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json rabbit_queues transform_amazon,10.0.3.53
++ '[' 3 -ne 3 ']'
+
+2013-03-09 15:06:45,837 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"rabbit_queues" *: *"[^"]*"<"rabbit_queues": "transform_amazon,10.0.3.53"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:45,838 unit:oscied-transform/0: hook.output INFO: + grep -q '"rabbit_queues": "transform_amazon,10.0.3.53"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:45,839 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_path /mnt/storage
++ '[' 3 -ne 3 ']'
+
+2013-03-09 15:06:45,840 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"storage_path" *: *"[^"]*"<"storage_path": "/mnt/storage"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:45,841 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_path": "/mnt/storage"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:45,842 unit:oscied-transform/0: hook.output INFO: + storage_remount
+
+2013-03-09 15:06:45,843 unit:oscied-transform/0: hook.output INFO: + storage_config_is_enabled
++ '[' OSCIED-Node02.localdomain -a glusterfs -a medias_volume ']'
++ ip=OSCIED-Node02.localdomain
++ nat_ip=129.194.185.47
++ fstype=glusterfs
++ mountpoint=medias_volume
++ options=
++ '[' 129.194.185.47 ']'
++ pecho 'Update hosts file to map storage internal address OSCIED-Node02.localdomain to 129.194.185.47'
++ juju-log '[PARAGRAPH] Update hosts file to map storage internal address OSCIED-Node02.localdomain to 129.194.185.47'
+
+2013-03-09 15:06:46,010 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Update hosts file to map storage internal address OSCIED-Node02.localdomain to 129.194.185.47
+2013-03-09 15:06:46,027 unit:oscied-transform/0: hook.output INFO: + grep -q OSCIED-Node02.localdomain /etc/hosts
+
+2013-03-09 15:06:46,028 unit:oscied-transform/0: hook.output INFO: + sed -i 's<129.194.185.47 .*<129.194.185.47 OSCIED-Node02.localdomain<' /etc/hosts
+
+2013-03-09 15:06:46,030 unit:oscied-transform/0: hook.output INFO: + storage_umount
++ pecho 'Configure Transform : Unregister shared storage'
+
+2013-03-09 15:06:46,030 unit:oscied-transform/0: hook.output INFO: + juju-log '[PARAGRAPH] Configure Transform : Unregister shared storage'
+
+2013-03-09 15:06:46,191 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Configure Transform : Unregister shared storage
+2013-03-09 15:06:46,205 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_ip ''
++ '[' 3 -ne 3 ']'
++ sed -i 's<"storage_ip" *: *"[^"]*"<"storage_ip": ""<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:46,206 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_ip": ""' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:46,208 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_fstype ''
++ '[' 3 -ne 3 ']'
+
+2013-03-09 15:06:46,208 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"storage_fstype" *: *"[^"]*"<"storage_fstype": ""<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:46,209 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_fstype": ""' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:46,210 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_mountpoint ''
++ '[' 3 -ne 3 ']'
+
+2013-03-09 15:06:46,211 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"storage_mountpoint" *: *"[^"]*"<"storage_mountpoint": ""<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:46,212 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_mountpoint": ""' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:46,213 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_options ''
++ '[' 3 -ne 3 ']'
+
+2013-03-09 15:06:46,213 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"storage_options" *: *"[^"]*"<"storage_options": ""<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:46,215 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_options": ""' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:46,219 unit:oscied-transform/0: hook.output INFO: + storage_is_mounted
+
+2013-03-09 15:06:46,219 unit:oscied-transform/0: hook.output INFO: + mount
++ grep -q /mnt/storage
+
+2013-03-09 15:06:46,221 unit:oscied-transform/0: hook.output INFO: + pecho 'Unmount shared storage (is actually mounted)'
++ juju-log '[PARAGRAPH] Unmount shared storage (is actually mounted)'
+
+2013-03-09 15:06:46,377 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Unmount shared storage (is actually mounted)
+2013-03-09 15:06:46,391 unit:oscied-transform/0: hook.output INFO: + umount /mnt/storage
+
+2013-03-09 15:06:46,408 unit:oscied-transform/0: hook.output INFO: + recho 'Shared storage successfully unmounted'
++ juju-log '[REMARK] Shared storage successfully unmounted !'
+
+2013-03-09 15:06:46,569 unit:oscied-transform/0: unit.hook.api INFO: [REMARK] Shared storage successfully unmounted !
+2013-03-09 15:06:46,585 unit:oscied-transform/0: hook.output INFO: + r=/mnt/storage
++ pecho 'Mount shared storage [129.194.185.47] OSCIED-Node02.localdomain:medias_volume type glusterfs options '\'''\'' -> /mnt/storage'
+
+2013-03-09 15:06:46,586 unit:oscied-transform/0: hook.output INFO: + juju-log '[PARAGRAPH] Mount shared storage [129.194.185.47] OSCIED-Node02.localdomain:medias_volume type glusterfs options '\'''\'' -> /mnt/storage'
+
+2013-03-09 15:06:46,742 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Mount shared storage [129.194.185.47] OSCIED-Node02.localdomain:medias_volume type glusterfs options '' -> /mnt/storage
+2013-03-09 15:06:46,756 unit:oscied-transform/0: hook.output INFO: + '[' '!' -d /mnt/storage ']'
+
+2013-03-09 15:06:46,757 unit:oscied-transform/0: hook.output INFO: ++ seq 1 5
+
+2013-03-09 15:06:46,758 unit:oscied-transform/0: hook.output INFO: + for i in '$(seq 1 5)'
++ storage_is_mounted
+
+2013-03-09 15:06:46,758 unit:oscied-transform/0: hook.output INFO: + mount
+
+2013-03-09 15:06:46,758 unit:oscied-transform/0: hook.output INFO: + grep -q /mnt/storage
+
+2013-03-09 15:06:46,759 unit:oscied-transform/0: hook.output INFO: + '[' '' ']'
++ mount -t glusterfs 129.194.185.47:medias_volume /mnt/storage
+
+2013-03-09 15:06:49,818 unit:oscied-transform/0: hook.output INFO: + sleep 5
+
+2013-03-09 15:06:54,820 unit:oscied-transform/0: hook.output INFO: + for i in '$(seq 1 5)'
++ storage_is_mounted
+
+2013-03-09 15:06:54,820 unit:oscied-transform/0: hook.output INFO: + mount
+
+2013-03-09 15:06:54,823 unit:oscied-transform/0: hook.output INFO: + grep -q /mnt/storage
++ break
++ storage_is_mounted
++ mount
++ grep -q /mnt/storage
+
+2013-03-09 15:06:54,824 unit:oscied-transform/0: hook.output INFO: + pecho 'Configure Transform : Register shared storage'
++ juju-log '[PARAGRAPH] Configure Transform : Register shared storage'
+
+2013-03-09 15:06:54,989 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Configure Transform : Register shared storage
+2013-03-09 15:06:55,002 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_ip OSCIED-Node02.localdomain
++ '[' 3 -ne 3 ']'
++ sed -i 's<"storage_ip" *: *"[^"]*"<"storage_ip": "OSCIED-Node02.localdomain"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:55,004 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_ip": "OSCIED-Node02.localdomain"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:55,005 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_fstype glusterfs
++ '[' 3 -ne 3 ']'
+
+2013-03-09 15:06:55,005 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"storage_fstype" *: *"[^"]*"<"storage_fstype": "glusterfs"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:55,007 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_fstype": "glusterfs"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:55,008 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_mountpoint medias_volume
++ '[' 3 -ne 3 ']'
+
+2013-03-09 15:06:55,008 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"storage_mountpoint" *: *"[^"]*"<"storage_mountpoint": "medias_volume"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:55,010 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_mountpoint": "medias_volume"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:55,011 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json storage_options ''
++ '[' 3 -ne 3 ']'
+
+2013-03-09 15:06:55,011 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"storage_options" *: *"[^"]*"<"storage_options": ""<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:55,012 unit:oscied-transform/0: hook.output INFO: + grep -q '"storage_options": ""' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:55,014 unit:oscied-transform/0: hook.output INFO: + transform_register
++ transform_config_is_enabled
+
+2013-03-09 15:06:55,014 unit:oscied-transform/0: hook.output INFO: + '[' mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery -a amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery ']'
++ mongo=mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery
++ rabbit=amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery
++ socket=129.194.185.47:5000
++ pecho 'Configure Transform : Register the Orchestrator'
++ juju-log '[PARAGRAPH] Configure Transform : Register the Orchestrator'
+
+2013-03-09 15:06:55,178 unit:oscied-transform/0: unit.hook.api INFO: [PARAGRAPH] Configure Transform : Register the Orchestrator
+2013-03-09 15:06:55,194 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json mongo_connection mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery
++ '[' 3 -ne 3 ']'
+
+2013-03-09 15:06:55,194 unit:oscied-transform/0: hook.output INFO: + sed -i 's<"mongo_connection" *: *"[^"]*"<"mongo_connection": "mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:55,196 unit:oscied-transform/0: hook.output INFO: + grep -q '"mongo_connection": "mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:55,198 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json rabbit_connection amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery
++ '[' 3 -ne 3 ']'
++ sed -i 's<"rabbit_connection" *: *"[^"]*"<"rabbit_connection": "amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:55,199 unit:oscied-transform/0: hook.output INFO: + grep -q '"rabbit_connection": "amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:55,201 unit:oscied-transform/0: hook.output INFO: + setSettingJSON_STRING /var/lib/juju/units/oscied-transform-0/charm/config.json api_nat_socket 129.194.185.47:5000
++ '[' 3 -ne 3 ']'
++ sed -i 's<"api_nat_socket" *: *"[^"]*"<"api_nat_socket": "129.194.185.47:5000"<g' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:55,202 unit:oscied-transform/0: hook.output INFO: + grep -q '"api_nat_socket": "129.194.185.47:5000"' /var/lib/juju/units/oscied-transform-0/charm/config.json
+
+2013-03-09 15:06:55,204 unit:oscied-transform/0: hook.output INFO: ++ expr match mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery '.*mongodb://[^:]*:[^@]*@\([^:]*\):[0-9]*/[a-z]*.*'
+
+2013-03-09 15:06:55,205 unit:oscied-transform/0: hook.output INFO: + host=129.194.185.47
+
+2013-03-09 15:06:55,206 unit:oscied-transform/0: hook.output INFO: ++ expr match mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery '.*mongodb://[^:]*:[^@]*@[^:]*:\([0-9]*\)/[a-z]*.*'
+
+2013-03-09 15:06:55,207 unit:oscied-transform/0: hook.output INFO: + port=27017
+
+2013-03-09 15:06:55,207 unit:oscied-transform/0: hook.output INFO: ++ expr match mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery '.*mongodb://\([^:]*\):[^@]*@[^:]*:[0-9]*/[a-z]*.*'
+
+2013-03-09 15:06:55,208 unit:oscied-transform/0: hook.output INFO: + user=nodes
+
+2013-03-09 15:06:55,209 unit:oscied-transform/0: hook.output INFO: ++ expr match mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery '.*mongodb://[^:]*:\([^@]*\)@[^:]*:[0-9]*/[a-z]*.*'
+
+2013-03-09 15:06:55,210 unit:oscied-transform/0: hook.output INFO: + password=M2qlif8rdtKtBYil
+
+2013-03-09 15:06:55,211 unit:oscied-transform/0: hook.output INFO: ++ expr match mongodb://nodes:M2qlif8rdtKtBYil@129.194.185.47:27017/celery '.*mongodb://[^:]*:[^@]*@[^:]*:[0-9]*/\([a-z]*\).*'
+
+2013-03-09 15:06:55,212 unit:oscied-transform/0: hook.output INFO: + database=celery
+
+2013-03-09 15:06:55,212 unit:oscied-transform/0: hook.output INFO: + mecho 'MongoDB host=129.194.185.47, port=27017, user=nodes, password=M2qlif8rdtKtBYil, database=celery'
++ juju-log '[MESSAGE] MongoDB host=129.194.185.47, port=27017, user=nodes, password=M2qlif8rdtKtBYil, database=celery'
+
+2013-03-09 15:06:55,371 unit:oscied-transform/0: unit.hook.api INFO: [MESSAGE] MongoDB host=129.194.185.47, port=27017, user=nodes, password=M2qlif8rdtKtBYil, database=celery
+2013-03-09 15:06:55,385 unit:oscied-transform/0: hook.output INFO: + '[' '!' 129.194.185.47 -o '!' 27017 -o '!' nodes -o '!' M2qlif8rdtKtBYil -o '!' celery ']'
++ a='s<RABBIT_CONNECTION<amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery<g'
++ b='s<MONGO_HOST<129.194.185.47<g'
++ c='s<MONGO_PORT<27017<g'
++ d='s<MONGO_USER<nodes<g'
++ e='s<MONGO_PASSWORD<M2qlif8rdtKtBYil<g'
++ f='s<MONGO_DATABASE<celery<g'
+
+2013-03-09 15:06:55,385 unit:oscied-transform/0: hook.output INFO: + g='s<THE_CONCURRENCY<1<g'
++ sed 's<RABBIT_CONNECTION<amqp://nodes:OZy23iO0D4UpYS2k@129.194.185.47:5672/celery<g;s<MONGO_HOST<129.194.185.47<g;s<MONGO_PORT<27017<g;s<MONGO_USER<nodes<g;s<MONGO_PASSWORD<M2qlif8rdtKtBYil<g;s<MONGO_DATABASE<celery<g;s<THE_CONCURRENCY<1<g' /var/lib/juju/units/oscied-transform-0/charm/templates/celeryconfig.py.template
+
+2013-03-09 15:06:55,387 unit:oscied-transform/0: hook.output INFO: + recho 'Orchestrator successfully registered, it'\''s time to wake-up'
++ juju-log '[REMARK] Orchestrator successfully registered, it'\''s time to wake-up !'
+
+2013-03-09 15:06:55,537 unit:oscied-transform/0: unit.hook.api INFO: [REMARK] Orchestrator successfully registered, it's time to wake-up !
+2013-03-09 15:06:55,552 unit:oscied-transform/0: hook.output INFO: + hook_start
++ techo 'Transform - start'
++ juju-log '[TITLE] Transform - start'
+
+2013-03-09 15:06:55,714 unit:oscied-transform/0: unit.hook.api INFO: [TITLE] Transform - start
+2013-03-09 15:06:55,730 unit:oscied-transform/0: hook.output INFO: + storage_is_mounted
+
+2013-03-09 15:06:55,730 unit:oscied-transform/0: hook.output INFO: + mount
++ grep -q /mnt/storage
+
+2013-03-09 15:06:55,732 unit:oscied-transform/0: hook.output INFO: + '[' '!' -f /var/lib/juju/units/oscied-transform-0/charm/celeryconfig.py ']'
++ '[' '!' transform_amazon,10.0.3.53 ']'
++ screenRunning Transform
+
+2013-03-09 15:06:55,732 unit:oscied-transform/0: hook.output INFO: + '[' 1 -ne 1 ']'
+
+2013-03-09 15:06:55,732 unit:oscied-transform/0: hook.output INFO: + screen -list
++ awk '{print $1}'
++ grep -q Transform
+
+2013-03-09 15:06:55,734 unit:oscied-transform/0: hook.output INFO: + sleep 5
+
+2013-03-09 15:07:00,735 unit:oscied-transform/0: hook.output INFO: + screenRunning Transform
++ '[' 1 -ne 1 ']'
+
+2013-03-09 15:07:00,736 unit:oscied-transform/0: hook.output INFO: + screen -list
+
+2013-03-09 15:07:00,736 unit:oscied-transform/0: hook.output INFO: + awk '{print $1}'
++ grep -q Transform
+
+2013-03-09 15:07:00,738 unit:oscied-transform/0: hook.output INFO: + recho 'Transform successfully started'
++ juju-log '[REMARK] Transform successfully started !'
+
+2013-03-09 15:07:00,900 unit:oscied-transform/0: unit.hook.api INFO: [REMARK] Transform successfully started !
+2013-03-09 15:07:00,918 unit:oscied-transform/0: hook.output DEBUG: hook config-changed exited, exit code 0.
+2013-03-09 15:07:00,919 unit:oscied-transform/0: hook.executor DEBUG: Hook complete: /var/lib/juju/units/oscied-transform-0/charm/hooks/config-changed
+2013-03-09 15:07:00,919 unit:oscied-transform/0: unit.lifecycle DEBUG: configured unit
+2013-03-09 15:07:00,959 unit:oscied-transform/0: statemachine DEBUG: unitworkflowstate: transition complete configure (state started) {}
+2013-03-09 15:07:00,971 unit:oscied-transform/0: juju.agents.unit INFO: No upgrade flag set.
+
+
