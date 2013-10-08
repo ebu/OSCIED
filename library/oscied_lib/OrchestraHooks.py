@@ -195,7 +195,7 @@ class OrchestraHooks(CharmHooks_Storage):
             self.configure_rabbitmq()  # (see ticket #205 of my private TRAC ticket system)
             if screen_list(u'Orchestra', log=self.debug) == []:
                 screen_launch(u'Orchestra', [u'python', u'orchestra.py'])
-            for start_delay in range(15):
+            for start_delay in xrange(15):
                 time.sleep(1)
                 if self.cmd(u'curl -s {0}'.format(self.api_url(local=True)), fail=False)[u'returncode'] == 0:
                     self.remark(u'Orchestra successfully started in {0} seconds'.format(start_delay))

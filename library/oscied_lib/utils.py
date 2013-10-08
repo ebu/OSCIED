@@ -85,7 +85,7 @@ class Storage(object):
                     media.uri = config.storage_medias_uri(media)
                     try_makedirs(os.path.dirname(media_dst_path))
                     the_error = None
-                    for i in range(5):
+                    for i in xrange(5):
                         try:
                             os.rename(media_src_path, media_dst_path)
                             # FIXME chown chmod

@@ -36,34 +36,6 @@ from pytoolbox.collections import EventsTable
 from library.oscied_lib.constants import SERVICE_TO_LABEL
 from library.oscied_lib.juju import ServiceStatistics
 
-SCENARIO_PATH = os.path.abspath(os.path.expanduser(os.path.dirname(__file__)))
-CHARTS_PATH = os.path.join(SCENARIO_PATH, 'charts')
-STATISTICS_PATH = os.path.join(SCENARIO_PATH, 'statistics')
-
-# Simulated hour : An hour that correspond to 1/TIME_SPEEDUP 'real-time' hours.
-ENABLE_UNITS_API = True
-ENABLE_TESTING = False
-TIME_RANGE = 24  # Simulated hours
-TIME_SPEEDUP = TIME_RANGE * 60 if ENABLE_TESTING else 12  # How many times per 'real-time' day the scenario will 'loop'
-DAEMONS_CHECKS_PER_HOUR = 12  # how many checks per simulated hour (3600 / 12 / 12 = every 25 'real-time' seconds)
-STATISTICS_MAXLEN = 30 * DAEMONS_CHECKS_PER_HOUR # Simulated hours
-
-CONFIG_AMAZ = os.path.join(SCENARIO_PATH, u'config_amazon.yaml')
-EVENTS_AMAZ = EventsTable({
-     0: {u'oscied-transform': 5, u'oscied-publisher': 0},
-     8: {u'oscied-transform': 0, u'oscied-publisher': 0},
-    17: {u'oscied-transform': 0, u'oscied-publisher': 2},
-    18: {u'oscied-transform': 3, u'oscied-publisher': 2},
-    20: {u'oscied-transform': 3, u'oscied-publisher': 2},
-    23: {u'oscied-transform': 3, u'oscied-publisher': 2}
-}, TIME_RANGE, TIME_SPEEDUP, sleep_factor=DAEMONS_CHECKS_PER_HOUR)
-
-
-CONFIG_MAAS = os.path.join(SCENARIO_PATH, u'config_maas.yaml')
-EVENTS_MAAS = EventsTable({
-    0: {u'oscied-transform': 4, u'oscied-publisher': 2}
-}, TIME_RANGE, TIME_SPEEDUP, sleep_factor=DAEMONS_CHECKS_PER_HOUR)
-
 
 def read_or_default(environment, service, **kwargs):
     label = SERVICE_TO_LABEL.get(service, service)
@@ -76,11 +48,44 @@ def read_or_default(environment, service, **kwargs):
     return statistics
 
 
-STATS_AMAZ, STATS_MAAS = {}, {}
-for service in (u'oscied-transform', u'oscied-publisher'):
-    STATS_AMAZ[service] = read_or_default(u'amazon', service, maxlen=STATISTICS_MAXLEN)
-    STATS_MAAS[service] = read_or_default(u'maas',   service, maxlen=STATISTICS_MAXLEN)
+SCENARIO_PATH = os.path.abspath(os.path.expanduser(os.path.dirname(__file__)))
+CHARTS_PATH = os.path.join(SCENARIO_PATH, 'charts')
+STATISTICS_PATH = os.path.join(SCENARIO_PATH, 'statistics')
 
+# Simulated hour : An hour that correspond to 1/TIME_SPEEDUP 'real-time' hours.
+ENABLE_UNITS_API = True
+ENABLE_TESTING = False
+TIME_RANGE = 24  # Simulated hours
+TIME_SPEEDUP = TIME_RANGE * 60 if ENABLE_TESTING else 12  # How many times per 'real-time' day the scenario will 'loop'
+DAEMONS_CHECKS_PER_HOUR = 12  # how many checks per simulated hour (3600 / 12 / 12 = every 25 'real-time' seconds)
+STATISTICS_MAXLEN = 30 * DAEMONS_CHECKS_PER_HOUR # Simulated hours
+
+ENVIRONMENTS = (AMAZON, MAAS) = (u'amazon', u'maas')
+SERVICES = (TRANSFORM, PUBLISHER) = (u'oscied-transform', u'oscied-publisher')
+
+CONFIG = {e: os.path.join(SCENARIO_PATH, u'config_{0}.yaml'.format(e)) for e in ENVIRONMENTS}
+
+EVENTS = {}
+EVENTS[u'amazon'] = EventsTable({
+     0: {u'oscied-transform': 5, u'oscied-publisher': 0},
+     8: {u'oscied-transform': 0, u'oscied-publisher': 0},
+    17: {u'oscied-transform': 0, u'oscied-publisher': 2},
+    18: {u'oscied-transform': 3, u'oscied-publisher': 2},
+    20: {u'oscied-transform': 3, u'oscied-publisher': 2},
+    23: {u'oscied-transform': 3, u'oscied-publisher': 2}
+}, TIME_RANGE, TIME_SPEEDUP, sleep_factor=DAEMONS_CHECKS_PER_HOUR)
+EVENTS[u'maas'] = EventsTable({
+    0: {u'oscied-transform': 4, u'oscied-publisher': 2}
+}, TIME_RANGE, TIME_SPEEDUP, sleep_factor=DAEMONS_CHECKS_PER_HOUR)
+
+STATS = {e: {s: read_or_default(e, s, maxlen=STATISTICS_MAXLEN) for s in SERVICES} for e in ENVIRONMENTS}
+
+# total = {
+#     i: {s: EVENTS_AMAZ.events[i].get(s, 0) + EVENTS_MAAS.events[i].get(s, 0) for s in SERVICES
+#     }
+#     for i in xrange(TIME_RANGE)
+# }
+# EVENTS_TOTAL = EventsTable(total, TIME_RANGE, TIME_SPEEDUP, sleep_factor=DAEMONS_CHECKS_PER_HOUR)
 
 TRANSFORM_MATRIX = ((u'CHSRF-Lausanne_Mens_200m-50368e4c43ca3', u'Tablet 480p/25'),
                     (u'EBU-2013_668629-dv25-1',                 u'Tablet DASH'),)

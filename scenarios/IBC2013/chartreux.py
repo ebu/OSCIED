@@ -30,30 +30,45 @@ u"""Generate nice charts to embed into presentations about the OSCIED / the demo
 # http://pygal.org/custom_styles/
 
 from datetime import timedelta
-from pytoolbox import juju as py_juju
 from pytoolbox.datetime import datetime_now
 from pytoolbox.encoding import configure_unicode
 from library.oscied_lib.juju import ServiceStatistics
-from scenario_config import DAEMONS_CHECKS_PER_HOUR, EVENTS_AMAZ, EVENTS_MAAS, STATISTICS_MAXLEN
+from scenario_config import (
+    DAEMONS_CHECKS_PER_HOUR, AMAZON, MAAS, ENVIRONMENTS, EVENTS, SERVICES, STATS, STATISTICS_MAXLEN
+)
 
-SERVICES = (PUBLISHER, TRANSFORM) = (u'oscied-publisher', u'oscied-transform')
+HOUR_SHIFT = 1
+
 
 def main():
     print(__doc__)
-    amazon, maas = {}, {}
+    # Initialize statistics of all services of all environments
+    for environment, services_statistics in STATS.items():
+        for service, statistics in services_statistics.items():
+            STATS[environment][service] =  ServiceStatistics(
+                environment=environment, service=service, maxlen=STATISTICS_MAXLEN, simulate=True,
+                simulated_units_start_latency_range=(10, 13), simulated_units_stop_latency_range=(1, 2),
+                simulated_tasks_per_unit_range=(2, 3), simulated_tasks_divider=3)
+    # Generate statistics of all services of all environments
+    for hour in xrange(STATISTICS_MAXLEN):
+        hour = hour + HOUR_SHIFT
+        for environment, events in EVENTS.iteritems():
+            for service, planned in events.events[hour % 24].iteritems():
+                for check in xrange(DAEMONS_CHECKS_PER_HOUR):
+                    now_string = datetime_now(offset=timedelta(hours=hour, minutes=(60*check)/DAEMONS_CHECKS_PER_HOUR),
+                                              append_utc=False)
+                    STATS[environment][service].update(now_string=now_string, planned=planned)
+    # Generate charts of all services of all environments
+    for services_statistics in STATS.itervalues():
+        for statistics in services_statistics.values():
+            statistics.generate_units_pie_chart_by_status(u'charts_simulated')
+            statistics.generate_units_line_chart(u'charts_simulated')
+            statistics.generate_tasks_line_chart(u'charts_simulated')
+    # Generate sum charts of all services
     for service in SERVICES:
-        amazon[service] = ServiceStatistics(environment=u'amazon', service=service, maxlen=STATISTICS_MAXLEN)
-        maas[service] = ServiceStatistics(environment=u'maas', service=service, maxlen=STATISTICS_MAXLEN)
-    for hour in range(STATISTICS_MAXLEN):
-        for service, planned in EVENTS_AMAZ.events[hour % 24].items():
-            # FIXME simulate latency of scaling (up & down)
-            units = {id: {u'agent-state': py_juju.STARTED} for id in range(planned)}
-            for check in range(DAEMONS_CHECKS_PER_HOUR):
-                now_string = datetime_now(offset=timedelta(hours=hour, minutes=(60*check)/DAEMONS_CHECKS_PER_HOUR),
-                                          append_utc=False)
-                amazon[service].update(now_string=now_string, planned=planned, units=units, tasks=None)
-    for service in amazon.values():
-        service.generate_units_line_chart(u'charts_simulated')
+        statistics_list = [s[service] for s in (STATS[MAAS], STATS[AMAZON])]
+        ServiceStatistics.generate_units_stacked_chart(statistics_list, u'charts_simulated', enable_current=False)
+
 
 if __name__ == u'__main__':
     configure_unicode()

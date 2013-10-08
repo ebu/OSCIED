@@ -41,7 +41,7 @@ from library.oscied_lib.juju import OsciedEnvironment
 from library.oscied_lib.models import User
 
 from scenario_config import (
-    CONFIG_AMAZ, EVENTS_AMAZ, STATS_AMAZ, CONFIG_MAAS, EVENTS_MAAS, STATS_MAAS, CHARTS_PATH, SCENARIO_PATH,
+    AMAZON, MAAS, CONFIG, EVENTS, STATS, CHARTS_PATH, SCENARIO_PATH,
     ENABLE_UNITS_API, TRANSFORM_MATRIX, TRANSFORM_MAX_PENDING_TASKS, MAX_OUTPUT_MEDIA_ASSETS
 )
 
@@ -135,7 +135,7 @@ class IBC2013(DeploymentScenario):
             environment.transform_matrix = TRANSFORM_MATRIX
             environment.transform_max_pending_tasks = TRANSFORM_MAX_PENDING_TASKS
             environment.max_output_media_assets = MAX_OUTPUT_MEDIA_ASSETS
-            if environment.name == u'maas':  # Cheat code
+            if environment.name == MAAS:  # Cheat code
                 environment.enable_units_status = False
             print(u'Register or retrieve an administrator in environment {0}.'.format(environment.name))
             admin = User(first_name=u'Mister admin', last_name=u'IBC2013', mail=u'admin.ibc2013@oscied.org',
@@ -155,6 +155,6 @@ class IBC2013(DeploymentScenario):
 if __name__ == u'__main__':
     configure_unicode()
     IBC2013().main(environments=[
-        OsciedEnvironment(u'amazon', EVENTS_AMAZ, STATS_AMAZ, CHARTS_PATH, config=CONFIG_AMAZ, release=u'raring'),
-        OsciedEnvironment(u'maas',   EVENTS_MAAS, STATS_MAAS, CHARTS_PATH, config=CONFIG_MAAS, release=u'precise')
+        OsciedEnvironment(AMAZON, EVENTS[AMAZON], STATS[AMAZON], CHARTS_PATH, config=CONFIG[AMAZON], release=u'raring'),
+        OsciedEnvironment(MAAS,   EVENTS[MAAS],   STATS[MAAS],   CHARTS_PATH, config=CONFIG[MAAS],   release=u'precise')
     ])

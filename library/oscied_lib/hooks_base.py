@@ -82,7 +82,7 @@ class CharmHooks_Storage(CharmHooks):
                        mountpoint, fstype, options, self.local_config.storage_path))
             try_makedirs(self.local_config.storage_path)
             # FIXME try X times, a better way to handle failure
-            for i in range(self.local_config.storage_mount_max_retry):
+            for i in xrange(self.local_config.storage_mount_max_retry):
                 if self.storage_is_mounted:
                     break
                 mount_address = u'{0}:/{1}'.format(nat_address or address, mountpoint)
@@ -212,7 +212,7 @@ class CharmHooks_Subordinate(CharmHooks):
         if screen_list(self.screen_name, log=self.debug) == []:
             screen_launch(self.screen_name, [u'celeryd', u'--config', u'celeryconfig',
                                              u'--hostname', self.rabbit_hostname, u'-Q', self.rabbit_queues])
-        for start_delay in range(retry_count):
+        for start_delay in xrange(retry_count):
             time.sleep(retry_delay)
             if screen_list(self.screen_name, log=self.debug) != []:
                 start_time = start_delay * retry_delay
