@@ -23,18 +23,29 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+xecho()
+{
+  echo "$1" 1>&2
+  exit "$2"
+}
+
 oscied_install()
 {
   base=$(cd "$(dirname "$0")"; pwd)
+
   echo 'Install OSCIED Library'
+
   echo '1/3 - Install Python modules prerequisites'
-  apt-get -y install build-essential git-core libyaml-dev libxml2-dev libxslt-dev libz-dev python-dev python-kitchen \
-    python-pip
+  apt-get -y update
+  apt-get -y upgrade || xecho 'Unable to upgrade packages with apt-get' 1
+  apt-get -y install build-essential git-core libyaml-dev libxml2-dev libxslt-dev libz-dev \
+    python-dev python-kitchen python-pip || xecho 'Unable to install required packages with apt-get' 2
+
   echo '2/3 - Install Python module called pytoolbox'
-  cd "$base/pytoolbox-source" && pip install --upgrade -e .[flask,mongo] || \
-    { echo 'Unable to install pytoolbox module' 1>&2; exit 2; }
+  cd "$base/pytoolbox-source" && pip install --upgrade -e .[flask,mongo] || xecho 'Unable to install pytoolbox module' 3
+
   echo '3/3 - Install Python module called oscied_lib'
-  cd "$base" && ./setup.py develop || { echo 'Unable to install oscied_lib module' 1>&2; exit 3; }
+  cd "$base" && ./setup.py develop || xecho 'Unable to install oscied_lib module' 4
 }
 
 oscied_install 2>&1 3>&1 > 'setup.log'
