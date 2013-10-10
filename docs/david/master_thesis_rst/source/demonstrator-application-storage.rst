@@ -48,7 +48,7 @@ Charm's Hooks Activity Diagrams
 
 .. only:: html
 
-    .. figure:: ../uml/activity-storage-hooks.png
+    .. figure:: ../../uml/activity-storage-hooks.png
         :width: 900px
         :align: center
         :target: juju_unit_startup_
@@ -58,7 +58,7 @@ Charm's Hooks Activity Diagrams
 
 .. only:: latex
 
-    .. figure:: ../uml/activity-storage-hooks.png
+    .. figure:: ../../uml/activity-storage-hooks.png
         :scale: 100 %
         :target: juju_unit_startup_
         :alt: |activity_storage_hooks|

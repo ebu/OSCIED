@@ -80,13 +80,13 @@ install_requires=[
       'passlib',    # FIXME version
       'pyaml',      # FIXME version
       'pymongo',    # FIXME version
-      #'pytoolbox>=v5.1.9-beta',  # installed by setup.sh
+      #'pytoolbox>=v5.3.12-beta',  # installed by setup.sh
       'requests',   # FIXME version
       'six'         # FIXME version
 ]
 
 setup(name=u'oscied-lib',
-      version='2.29.40',
+      version='2.30.40',
       packages=find_packages(exclude=['tests', 'tests.*']),
       description='Library of EBU/UER OSCIED Project',
       long_description=open('README.rst', 'r', encoding='utf-8').read(),

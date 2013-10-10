@@ -1,0 +1,59 @@
+@startuml
+
+skin BlueModern
+
+title Transform Jobs Workers (Successful Block Copy or FFmpeg transcoding)
+
+'participant "WebUI" as W
+participant "Orchestra" as O
+participant "Storage" as S
+participant "Transform" as T
+'participant "Publisher" as P
+
+activate O
+T -> T: Startup (celeryd -Q queue_name)
+activate T
+
+T -> O: << get next transform job from queue >>
+O --> T: << next transform job is ... >>
+
+note right: <b>concurrency_value</b> jobs can be threated\nsimultaneously (multithreading)
+alt if job encoder_name is 'copy'
+    T -> T: Launch new block copy
+    T -> S: << read input media from medias path >>
+    activate S
+    S --> T: << read block 1/N from input media >>
+    T --> S: << write block 1/N to output media >>
+    T --> O: << update job status & statistics ... >>
+    S --> T: << read block 2/N from input media >>
+    T --> S: << write block 2/N to output media >>
+    S --> T: << read block N/N from input media >>
+    T --> S: << write block N/N to output media >>
+    S --> T: << end of file >>
+    deactivate S    
+    T --> O: << update job status & statistics ... >>
+else job encoder_name is 'ffmpeg' or 'dashcast'
+    T -> T: Launch new FFmpeg / DashCast instance
+    T -> S: << read input media from medias path >>
+    activate S
+    S --> T: << FFmpeg / DashCast read input media >>
+    T --> S: << FFmpeg / DashCast write output media >>
+    T --> O: << update job status & statistics ... >>
+    S --> T: << FFmpeg / DashCast read input media >>
+    T --> S: << FFmpeg / DashCast write output media >>
+    S --> T: << FFmpeg / DashCast read input media >>
+    T --> S: << FFmpeg / DashCast write output media >>
+    S --> T: << end of file >>
+    deactivate S
+    T --> O: << update job status & statistics ... >>
+end
+
+T -> O: POST /transform/callback {"job_id": "<uuid_of_job>", "status": "SUCCESS"}
+activate O
+O -> O: Set media status=READY into MongoDB
+O --> T: <b>OK 200</b> {"status": 200, value="Your work is much appreciated, thanks !"}
+
+deactivate T
+deactivate O
+
+@enduml

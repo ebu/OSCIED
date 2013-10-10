@@ -23,7 +23,7 @@ This component is the user interface of the application providing an uncluttered
 
 .. only:: html
 
-    .. figure:: ../schematics/OSCIED-Components_webui.png
+    .. figure:: ../../schematics/OSCIED-Components_webui.png
         :width: 1200px
         :align: center
         :alt: |components_w|
@@ -32,7 +32,7 @@ This component is the user interface of the application providing an uncluttered
 
 .. only:: latex
 
-    .. figure:: ../schematics/OSCIED-Components_webui.png
+    .. figure:: ../../schematics/OSCIED-Components_webui.png
         :scale: 80 %
         :alt: |components_w|
 
@@ -66,7 +66,7 @@ Charm's Hooks Activity Diagrams
 
 .. only:: html
 
-    .. figure:: ../uml/activity-webui-hooks.png
+    .. figure:: ../../uml/activity-webui-hooks.png
         :width: 1336px
         :align: center
         :target: juju_unit_startup_
@@ -76,7 +76,7 @@ Charm's Hooks Activity Diagrams
 
 .. only:: latex
 
-    .. figure:: ../uml/activity-webui-hooks.png
+    .. figure:: ../../uml/activity-webui-hooks.png
         :scale: 100 %
         :target: juju_unit_startup_
         :alt: |activity_webui_hooks|
@@ -103,7 +103,7 @@ Users Tab
 
 .. only:: html
 
-    .. figure:: ../screenshots/screen/webui_users_add.png
+    .. figure:: ../../screenshots/webui_users_add.png
         :width: 1205px
         :align: center
         :alt: |webui_users_add|
@@ -112,7 +112,7 @@ Users Tab
 
 .. only:: latex
 
-    .. figure:: ../screenshots/screen/webui_users_add.png
+    .. figure:: ../../screenshots/webui_users_add.png
         :scale: 100 %
         :alt: |webui_users_add|
 
@@ -122,7 +122,7 @@ Users Tab
 
 .. only:: html
 
-    .. figure:: ../screenshots/screen/webui_users_errors.png
+    .. figure:: ../../screenshots/webui_users_errors.png
         :width: 1191px
         :align: center
         :alt: |webui_users_errors|
@@ -131,7 +131,7 @@ Users Tab
 
 .. only:: latex
 
-    .. figure:: ../screenshots/screen/webui_users_errors.png
+    .. figure:: ../../screenshots/webui_users_errors.png
         :scale: 100 %
         :alt: |webui_users_errors|
 
@@ -141,7 +141,7 @@ Users Tab
 
 .. only:: html
 
-    .. figure:: ../uml/sequence-users-crud.png
+    .. figure:: ../../uml/sequence-users-crud.png
         :width: 1390px
         :align: center
         :alt: |sequence_users_crud|
@@ -150,7 +150,7 @@ Users Tab
 
 .. only:: latex
 
-    .. figure:: ../uml/sequence-users-crud.png
+    .. figure:: ../../uml/sequence-users-crud.png
         :scale: 100 %
         :alt: |sequence_users_crud|
 
@@ -163,7 +163,7 @@ Medias Tab
 
 .. only:: html
 
-    .. figure:: ../screenshots/screen/webui_medias_add.png
+    .. figure:: ../../screenshots/webui_medias_add.png
         :width: 1213px
         :align: center
         :alt: |webui_medias_add|
@@ -172,7 +172,7 @@ Medias Tab
 
 .. only:: latex
 
-    .. figure:: ../screenshots/screen/webui_medias_add.png
+    .. figure:: ../../screenshots/webui_medias_add.png
         :scale: 100 %
         :alt: |webui_medias_add|
 
@@ -182,7 +182,7 @@ Medias Tab
 
 .. only:: html
 
-    .. figure:: ../screenshots/screen/webui_medias_download.png
+    .. figure:: ../../screenshots/webui_medias_download.png
         :width: 1205px
         :align: center
         :alt: |webui_medias_download|
@@ -191,7 +191,7 @@ Medias Tab
 
 .. only:: latex
 
-    .. figure:: ../screenshots/screen/webui_medias_download.png
+    .. figure:: ../../screenshots/webui_medias_download.png
         :scale: 100 %
         :alt: |webui_medias_download|
 
@@ -201,7 +201,7 @@ Medias Tab
 
 .. only:: html
 
-    .. figure:: ../uml/sequence-medias-crud.png
+    .. figure:: ../../uml/sequence-medias-crud.png
         :width: 1500px
         :align: center
         :alt: |sequence_medias_crud|
@@ -210,7 +210,7 @@ Medias Tab
 
 .. only:: latex
 
-    .. figure:: ../uml/sequence-medias-crud.png
+    .. figure:: ../../uml/sequence-medias-crud.png
         :scale: 100 %
         :alt: |sequence_medias_crud|
 
@@ -223,7 +223,7 @@ Transform Profiles Tab
 
 .. only:: html
 
-    .. figure:: ../screenshots/screen/webui_tprofiles.png
+    .. figure:: ../../screenshots/webui_tprofiles.png
         :width: 1189px
         :align: center
         :alt: |webui_tprofiles|
@@ -232,7 +232,7 @@ Transform Profiles Tab
 
 .. only:: latex
 
-    .. figure:: ../screenshots/screen/webui_tprofiles.png
+    .. figure:: ../../screenshots/webui_tprofiles.png
         :scale: 100 %
         :alt: |webui_tprofiles|
 
@@ -242,7 +242,7 @@ Transform Profiles Tab
 
 .. only:: html
 
-    .. figure:: ../uml/sequence-tprofiles-crud.png
+    .. figure:: ../../uml/sequence-tprofiles-crud.png
         :width: 1474px
         :align: center
         :alt: |sequence_tprofiles_crud|
@@ -251,7 +251,7 @@ Transform Profiles Tab
 
 .. only:: latex
 
-    .. figure:: ../uml/sequence-tprofiles-crud.png
+    .. figure:: ../../uml/sequence-tprofiles-crud.png
         :scale: 100 %
         :alt: |sequence_tprofiles_crud|
 
@@ -264,7 +264,7 @@ Transform Tasks Tab
 
 .. only:: html
 
-    .. figure:: ../screenshots/screen/webui_ttasks.png
+    .. figure:: ../../screenshots/webui_ttasks.png
         :width: 1198px
         :align: center
         :alt: |webui_ttasks|
@@ -273,7 +273,7 @@ Transform Tasks Tab
 
 .. only:: latex
 
-    .. figure:: ../screenshots/screen/webui_ttasks.png
+    .. figure:: ../../screenshots/webui_ttasks.png
         :scale: 100 %
         :alt: |webui_ttasks|
 
@@ -287,7 +287,7 @@ Transform Tasks Tab
 
 .. only:: html
 
-    .. figure:: ../screenshots/screen/webui_ttasks_error.png
+    .. figure:: ../../screenshots/webui_ttasks_error.png
         :width: 1087px
         :align: center
         :alt: |webui_ttasks_error|
@@ -296,7 +296,7 @@ Transform Tasks Tab
 
 .. only:: latex
 
-    .. figure:: ../screenshots/screen/webui_ttasks_error.png
+    .. figure:: ../../screenshots/webui_ttasks_error.png
         :scale: 100 %
         :alt: |webui_ttasks_error|
 
@@ -306,7 +306,7 @@ Transform Tasks Tab
 
 .. only:: html
 
-    .. figure:: ../uml/sequence-ttasks-crud.png
+    .. figure:: ../../uml/sequence-ttasks-crud.png
         :width: 1500px
         :align: center
         :alt: |sequence_ttasks_crud|
@@ -315,7 +315,7 @@ Transform Tasks Tab
 
 .. only:: latex
 
-    .. figure:: ../uml/sequence-ttasks-crud.png
+    .. figure:: ../../uml/sequence-ttasks-crud.png
         :scale: 100 %
         :alt: |sequence_ttasks_crud|
 
@@ -328,7 +328,7 @@ Publish Tasks Tab
 
 .. only:: html
 
-    .. figure:: ../screenshots/screen/webui_ptasks.png
+    .. figure:: ../../screenshots/webui_ptasks.png
         :width: 1200px
         :align: center
         :alt: |webui_ptasks|
@@ -337,7 +337,7 @@ Publish Tasks Tab
 
 .. only:: latex
 
-    .. figure:: ../screenshots/screen/webui_ptasks.png
+    .. figure:: ../../screenshots/webui_ptasks.png
         :scale: 100 %
         :alt: |webui_ptasks|
 
@@ -347,7 +347,7 @@ Publish Tasks Tab
 
 .. only:: html
 
-    .. figure:: ../screenshots/screen/webui_ptasks_play.png
+    .. figure:: ../../screenshots/webui_ptasks_play.png
         :width: 1200px
         :align: center
         :alt: |webui_ptasks_play|
@@ -356,7 +356,7 @@ Publish Tasks Tab
 
 .. only:: latex
 
-    .. figure:: ../screenshots/screen/webui_ptasks_play.png
+    .. figure:: ../../screenshots/webui_ptasks_play.png
         :scale: 100 %
         :alt: |webui_ptasks_play|
 
@@ -366,7 +366,7 @@ Publish Tasks Tab
 
 .. only:: html
 
-    .. figure:: ../uml/sequence-ptasks-crud.png
+    .. figure:: ../../uml/sequence-ptasks-crud.png
         :width: 1481px
         :align: center
         :alt: |sequence_ptasks_crud|
@@ -375,7 +375,7 @@ Publish Tasks Tab
 
 .. only:: latex
 
-    .. figure:: ../uml/sequence-ptasks-crud.png
+    .. figure:: ../../uml/sequence-ptasks-crud.png
         :scale: 99 %
         :alt: |sequence_ptasks_crud|
 

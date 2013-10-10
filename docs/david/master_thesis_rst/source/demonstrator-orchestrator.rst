@@ -26,7 +26,7 @@ This is a rather complex task that requires a lot of work ... We need JuJu_ !
 
 .. only:: html
 
-    .. figure:: ../schematics/JUJU-Targets.png
+    .. figure:: ../../schematics/JUJU-Targets.png
         :width: 1200px
         :align: center
         :alt: |juju_targets|
@@ -35,7 +35,7 @@ This is a rather complex task that requires a lot of work ... We need JuJu_ !
 
 .. only:: latex
 
-    .. figure:: ../schematics/JUJU-Targets.png
+    .. figure:: ../../schematics/JUJU-Targets.png
         :scale: 100 %
         :alt: |juju_targets|
 
@@ -115,7 +115,7 @@ Here is shown in a state machine the life-cycle of a charm (relation's triggers 
 
 .. only:: html
 
-    .. figure:: ../uml/state-charm.png
+    .. figure:: ../../uml/state-charm.png
         :width: 912px
         :align: center
         :target: juju_unit_startup_
@@ -125,7 +125,7 @@ Here is shown in a state machine the life-cycle of a charm (relation's triggers 
 
 .. only:: latex
 
-    .. figure:: ../uml/state-charm.png
+    .. figure:: ../../uml/state-charm.png
         :scale: 100 %
         :target: juju_unit_startup_
         :alt: |state_charm|

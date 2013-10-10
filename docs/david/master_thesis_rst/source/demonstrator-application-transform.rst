@@ -26,7 +26,7 @@ Moreover, one can choose to explicitly target a unique worker (e.g. *myWorker1*)
 
 .. only:: html
 
-    .. figure:: ../schematics/OSCIED-Components_transform.png
+    .. figure:: ../../schematics/OSCIED-Components_transform.png
         :width: 1200px
         :align: center
         :alt: |components_t|
@@ -35,7 +35,7 @@ Moreover, one can choose to explicitly target a unique worker (e.g. *myWorker1*)
 
 .. only:: latex
 
-    .. figure:: ../schematics/OSCIED-Components_transform.png
+    .. figure:: ../../schematics/OSCIED-Components_transform.png
         :scale: 80 %
         :alt: |components_t|
 
@@ -67,7 +67,7 @@ Charm's Hooks Activity Diagrams
 
 .. only:: html
 
-    .. figure:: ../uml/activity-transform-hooks.png
+    .. figure:: ../../uml/activity-transform-hooks.png
         :width: 1255px
         :align: center
         :target: juju_unit_startup_
@@ -77,7 +77,7 @@ Charm's Hooks Activity Diagrams
 
 .. only:: latex
 
-    .. figure:: ../uml/activity-transform-hooks.png
+    .. figure:: ../../uml/activity-transform-hooks.png
         :scale: 100 %
         :target: juju_unit_startup_
         :alt: |activity_transform_hooks|
@@ -118,7 +118,7 @@ So, the transformation tasks stored in database has a *statistic* field that is 
 
 .. only:: html
 
-    .. figure:: ../uml/state-ttask.png
+    .. figure:: ../../uml/state-ttask.png
         :width: 1014px
         :align: center
         :target: Celery_Tasks_
@@ -128,7 +128,7 @@ So, the transformation tasks stored in database has a *statistic* field that is 
 
 .. only:: latex
 
-    .. figure:: ../uml/state-ttask.png
+    .. figure:: ../../uml/state-ttask.png
         :scale: 100 %
         :target: Celery_Tasks_
         :alt: |state_ttask|
@@ -147,7 +147,7 @@ A Successful Task
 
 .. only:: html
 
-    .. figure:: ../uml/sequence-ttasks-workers_success.png
+    .. figure:: ../../uml/sequence-ttasks-workers_success.png
         :width: 1001px
         :align: center
         :alt: |sequence_ttasks_workers_success|
@@ -156,7 +156,7 @@ A Successful Task
 
 .. only:: latex
 
-    .. figure:: ../uml/sequence-ttasks-workers_success.png
+    .. figure:: ../../uml/sequence-ttasks-workers_success.png
         :scale: 98 %
         :alt: |sequence_ttasks_workers_success|
 

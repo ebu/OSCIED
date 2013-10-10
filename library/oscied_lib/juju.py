@@ -28,13 +28,14 @@ from __future__ import absolute_import
 import logging, pygal, random, shutil, threading, time
 from os.path import join, splitext
 from collections import defaultdict, deque
-from pytoolbox import juju
+
+from pytoolbox import juju as py_juju
 from pytoolbox.collections import pygal_deque
 from pytoolbox.console import confirm
 from pytoolbox.datetime import datetime_now
 from pytoolbox.encoding import to_bytes
 from pytoolbox.mongo import TaskModel
-from pytoolbox.juju import Environment, ERROR_STATES, juju_do
+from pytoolbox.juju import Environment, ERROR_STATES, juju_do, SimulatedUnits
 from pytoolbox.serialization import PickleableObject
 from requests.exceptions import ConnectionError, Timeout
 
@@ -134,13 +135,21 @@ class ServiceStatistics(PickleableObject):
     u"""Store statistics about a service."""
 
     def __init__(self, environment=None, service=None, time=None, units_planned=None, units_current=None,
-                 tasks_current=None, unknown_states=None, maxlen=100):
+                 tasks_current=None, unknown_states=None, maxlen=100, simulate=False,
+                 simulated_units_start_latency_range=None, simulated_units_stop_latency_range=None,
+                 simulated_tasks_per_unit_range=None, simulated_tasks_divider=None):
         self.environment, self.service = environment, service
         self.time = time or deque(maxlen=maxlen)
         self.units_planned = units_planned or pygal_deque(maxlen=maxlen)
         self.units_current = units_current or {state: pygal_deque(maxlen=maxlen) for state in py_juju.ALL_STATES}
         self.tasks_current = tasks_current or {status: pygal_deque(maxlen=maxlen) for status in self.tasks_status}
         self.unknown_states = defaultdict(int)
+        self.simulate = simulate
+        self.simulated_units = SimulatedUnits(simulated_units_start_latency_range or (10, 13),
+                                              simulated_units_stop_latency_range or (1, 2))
+        self.simulated_tasks_per_unit_range = simulated_tasks_per_unit_range or (2, 3)
+        self.simulated_tasks_divider = simulated_tasks_divider or self.simulated_tasks_per_unit_range[1]
+        self.simulated_tasks_progress = 0
 
     @property
     def environment_label(self):
@@ -158,19 +167,42 @@ class ServiceStatistics(PickleableObject):
     def tasks_status(self):
         return (TaskModel.PROGRESS,) # TaskModel.PENDING, TaskModel.SUCCESS,
 
-    def update(self, now_string, planned, units, tasks):
+    def update(self, now_string, planned, units=None, tasks=None):
+
         self.units_planned.append(planned)
+
         current = defaultdict(int)
-        for unit in units.values():
-            state = unit.get(u'agent-state', u'unknown')
-            if state in py_juju.ALL_STATES:
-                current[state] += 1
-            else:
-                self.unknown_states[state] += 1
-        for state, history in self.units_current.items():
+        if self.simulate:
+            # Retrieve state of all simulated units and update time of 1 tick
+            self.simulated_units.ensure_num_units(num_units=planned)
+            for unit in self.simulated_units.units.itervalues():
+                if unit.state in py_juju.ALL_STATES:
+                    current[unit.state] += 1
+                else:
+                    self.unknown_states[unit.state] += 1
+            self.simulated_units.tick()
+        elif units:
+            # Retrieve agent-state of all units
+            for unit in units.itervalues():
+                state = unit.get(u'agent-state', u'unknown')
+                if state in py_juju.ALL_STATES:
+                    current[state] += 1
+                else:
+                    self.unknown_states[state] += 1
+        # Append newest values to the statistics about the units
+        for state, history in self.units_current.iteritems():
             history.append(current[state])
-        if tasks is not None:
-            current = defaultdict(int)
+
+        units_started = current[py_juju.STARTED]
+
+        current = defaultdict(int)
+        if self.simulate:
+            progress = self.simulated_tasks_progress
+            target = random.randint(*self.simulated_tasks_per_unit_range) * units_started
+            delta = target - progress
+            self.simulated_tasks_progress = progress + delta / self.simulated_tasks_divider if units_started > 0 else 0
+            current[TaskModel.PROGRESS] = int(self.simulated_tasks_progress)
+        elif tasks:
             for task in tasks:
                 status = task.status
                 if status in TaskModel.PENDING_STATUS:
@@ -180,27 +212,14 @@ class ServiceStatistics(PickleableObject):
                 elif status in TaskModel.SUCCESS_STATUS:
                     current[TaskModel.SUCCESS] += 1
                 # ... else do not add to statistics.
-        for status, history in self.tasks_current.items():
+        # Append newest values to the statistics about the tasks
+        for status, history in self.tasks_current.iteritems():
             history.append(current[status])
         self.time.append(now_string)
 
-
-    def _write_chart(self, chart, charts_path, prefix, add_x_labels=True):
-        if add_x_labels:
-            chart.x_labels = list(self.time)
-            chart.x_labels_major_count = 3
-            chart.x_label_rotation = 0
-            chart.show_minor_x_labels = False
-        chart.label_font_size = chart.major_label_font_size = 12
-        chart.explicit_size = True
-        chart.order_min = 0
-        chart.truncate_label = 20
-        chart.truncate_legend = 20
-        tmp_file = join(charts_path, u'{0}_{1}_{2}.new.svg'.format(prefix, self.environment, self.service_label))
-        dst_file = join(charts_path, u'{0}_{1}_{2}.svg'.format(prefix, self.environment, self.service_label))
-        chart.render_to_file(tmp_file)
-        shutil.copy(tmp_file, dst_file)
-        return dst_file
+    def _write_own_chart(self, chart, charts_path, prefix, add_x_labels=True):
+        filename = u'{0}_{1}_{2}'.format(prefix, self.environment, self.service_label)
+        return ServiceStatistics._write_chart(self.time, chart, charts_path, filename, add_x_labels=add_x_labels)
 
     def generate_units_pie_chart_by_status(self, charts_path, width=300, height=300):
         chart = pygal.Pie(width=width, height=height, no_data_text=u'No unit')
@@ -208,20 +227,21 @@ class ServiceStatistics(PickleableObject):
         for states in (py_juju.ERROR_STATES, py_juju.STARTED_STATES, py_juju.PENDING_STATES):
             units_number = sum((self.units_current.get(state, pygal_deque()).last or 0) for state in states)
             chart.add(u'{0} {1}'.format(units_number, states[0]), units_number)
-        return self._write_chart(chart, charts_path, u'pie_units', add_x_labels=False)
+        return self._write_own_chart(chart, charts_path, u'pie_units', add_x_labels=False)
 
-    def generate_units_line_chart(self, charts_path, width=1900, height=300):
+    def generate_units_line_chart(self, charts_path, enable_current=True, width=1900, height=300):
         chart = pygal.Line(width=width, height=height, show_dots=True, no_data_text=u'No unit')
         chart.title = u'Number of {0} nodes'.format(self.service_label)
-        planned_list, current_list = self.units_planned.list, self.units_current[py_juju.STARTED].list
+        planned_list, current_list = self.units_planned.list(), self.units_current[py_juju.STARTED].list()
         chart.add(u'{0} planned'.format(planned_list[-1] if len(planned_list) > 0 else 0), planned_list)
-        chart.add(u'{0} current'.format(current_list[-1] if len(current_list) > 0 else 0), current_list)
-        return self._write_chart(chart, charts_path, u'line_units')
+        if enable_current:
+            chart.add(u'{0} current'.format(current_list[-1] if len(current_list) > 0 else 0), current_list)
+        return self._write_own_chart(chart, charts_path, u'line_units')
 
     def generate_tasks_line_chart(self, charts_path, width=1200, height=300):
         total, lines = 0, {}
         for status in self.tasks_status:
-            current_list = self.tasks_current[status].list
+            current_list = self.tasks_current[status].list()
             number = current_list[-1] if len(current_list) > 0 else 0
             total += number
             lines[status] = (number, current_list)
@@ -231,7 +251,41 @@ class ServiceStatistics(PickleableObject):
 
         for status in self.tasks_status:
             chart.add(u'{0} {1}'.format(lines[status][0], status), lines[status][1])
-        return self._write_chart(chart, charts_path, u'line_tasks')
+        return self._write_own_chart(chart, charts_path, u'line_tasks')
+
+    @staticmethod
+    def _write_chart(time, chart, charts_path, filename, add_x_labels=True):
+        if add_x_labels:
+            chart.x_labels = list(time)
+            chart.x_labels_major_count = 3
+            chart.x_label_rotation = 0
+            chart.show_minor_x_labels = False
+        chart.label_font_size = chart.major_label_font_size = 12
+        chart.explicit_size = True
+        chart.order_min = 0
+        chart.truncate_label = 20
+        chart.truncate_legend = 20
+        tmp_file = join(charts_path, u'{0}.new.svg'.format(filename))
+        dst_file = join(charts_path, u'{0}.svg'.format(filename))
+        chart.render_to_file(tmp_file)
+        shutil.copy(tmp_file, dst_file)
+        return dst_file
+
+    @staticmethod
+    def generate_units_stacked_chart(statistics, charts_path, enable_current=True, width=1900, height=300):
+        labels = set(s.service_label for s in statistics)
+        if len(labels) != 1:
+            raise ValueError(to_bytes(u'Cannot generate a chart of different services, values: {0}'.format(labels)))
+        service_label = labels.pop()
+        chart = pygal.StackedLine(width=width, height=height, fill=True, show_dots=False, no_data_text=u'No unit')
+        chart.title = u'Number of {0} nodes'.format(service_label)
+        for statistic in statistics:
+            planned_list = statistic.units_planned.list(fill=True)
+            current_list = statistic.units_current[py_juju.STARTED].list(fill=True)
+            chart.add(statistic.environment_label, planned_list)
+        #if enable_current:
+        #    TODO
+        return ServiceStatistics._write_chart(statistics[0].time, chart, charts_path, u'sum_{0}'.format(service_label))
 
 
 class ScalingThread(OsciedEnvironmentThread):
@@ -245,7 +299,7 @@ class ScalingThread(OsciedEnvironmentThread):
                 env.auto = True  # Really better like that ;-)
                 index, event = env.events.get(now, default_value={})
                 print(u'[{0}] Handle scaling at index {1}.'.format(self.name, index))
-                for service, stats in env.statistics.items():
+                for service, stats in env.statistics.iteritems():
                     label = SERVICE_TO_LABEL.get(service, service)
                     units_api = SERVICE_TO_UNITS_API[service]
                     planned = event.get(service, None)
@@ -263,7 +317,7 @@ class ScalingThread(OsciedEnvironmentThread):
                         print(u'[{0}] Nothing to do !'.format(self.name))
                     # Recover faulty units
                     # FIXME only once and then destroy and warn admin by mail ...
-                    for number, unit_dict in units.items():
+                    for number, unit_dict in units.iteritems():
                         if unit_dict.get(u'agent-state') in ERROR_STATES:
                             unit = u'{0}/{1}'.format(service, number)
                             juju_do(u'resolved', environment=env.name, options=[u'--retry', unit], fail=False)
@@ -284,7 +338,7 @@ class StatisticsThread(OsciedEnvironmentThread):
                 env.auto = True  # Really better like that ;-)
                 index, event = env.events.get(now, default_value={})
                 print(u'[{0}] Update charts at index {1}.'.format(self.name, index))
-                for service, stats in env.statistics.items():
+                for service, stats in env.statistics.iteritems():
                     label = SERVICE_TO_LABEL.get(service, service)
                     units_api, tasks_api = SERVICE_TO_UNITS_API[service], SERVICE_TO_TASKS_API[service]
                     planned = event.get(service, None)

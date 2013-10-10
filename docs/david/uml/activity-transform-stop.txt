@@ -1,0 +1,28 @@
+@startuml
+
+skinparam activity {
+    FontColor          white
+    AttributeFontColor white
+    FontSize           17
+    AttributeFontSize  15
+    AttributeFontname  Droid Sans Mono
+    BackgroundColor    #527BC6
+    BorderColor        black
+    ArrowColor         #222266
+}
+
+partition stop {
+(*) --> if "screen\nrunning ?" then
+    -right-> [Yes] "kill screen"
+    if "killed" then
+        --> [No] "exit 1"
+        --> (*)
+    else
+        --> [Yes] (*)
+    endif
+else
+    --> [No] (*)
+endif
+}
+
+@enduml

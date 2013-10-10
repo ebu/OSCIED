@@ -31,12 +31,12 @@ The only regrets I have, is that most of the improvements I think-ed-of are easy
 
 .. only:: html
 
-    .. image:: ../schematics/signature_DavidFischer.png
+    .. image:: ../../schematics/signature_DavidFischer.png
         :width: 500px
         :align: right
 
 .. only:: latex
 
-    .. image:: ../schematics/signature_DavidFischer.png
+    .. image:: ../../schematics/signature_DavidFischer.png
         :scale: 70 %
         :align: right

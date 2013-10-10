@@ -27,7 +27,7 @@ Moreover, one can choose to explicitly target a unique worker (e.g. *myWorker2*)
 
 .. only:: html
 
-    .. figure:: ../schematics/OSCIED-Components_publisher.png
+    .. figure:: ../../schematics/OSCIED-Components_publisher.png
         :width: 1200px
         :align: center
         :alt: |components_p|
@@ -36,7 +36,7 @@ Moreover, one can choose to explicitly target a unique worker (e.g. *myWorker2*)
 
 .. only:: latex
 
-    .. figure:: ../schematics/OSCIED-Components_publisher.png
+    .. figure:: ../../schematics/OSCIED-Components_publisher.png
         :scale: 80 %
         :alt: |components_p|
 
@@ -71,7 +71,7 @@ Charm's Hooks Activity Diagrams
 
 .. only:: html
 
-    .. figure:: ../uml/activity-publisher-hooks.png
+    .. figure:: ../../uml/activity-publisher-hooks.png
         :width: 1299px
         :align: center
         :target: juju_unit_startup_
@@ -81,7 +81,7 @@ Charm's Hooks Activity Diagrams
 
 .. only:: latex
 
-    .. figure:: ../uml/activity-publisher-hooks.png
+    .. figure:: ../../uml/activity-publisher-hooks.png
         :scale: 100 %
         :target: juju_unit_startup_
         :alt: |activity_publisher_hooks|
@@ -122,7 +122,7 @@ So, the publication tasks stored in database has a *statistic* field that is fil
 
 .. only:: html
 
-    .. figure:: ../uml/state-ptask.png
+    .. figure:: ../../uml/state-ptask.png
         :width: 924px
         :align: center
         :target: Celery_Tasks_
@@ -132,7 +132,7 @@ So, the publication tasks stored in database has a *statistic* field that is fil
 
 .. only:: latex
 
-    .. figure:: ../uml/state-ptask.png
+    .. figure:: ../../uml/state-ptask.png
         :scale: 100 %
         :target: Celery_Tasks_
         :alt: |state_ptask|
@@ -151,7 +151,7 @@ A Successful Task
 
 .. only:: html
 
-    .. figure:: ../uml/sequence-ptasks-workers_success.png
+    .. figure:: ../../uml/sequence-ptasks-workers_success.png
         :width: 1202px
         :align: center
         :alt: |sequence_ptasks_workers_success|
@@ -160,7 +160,7 @@ A Successful Task
 
 .. only:: latex
 
-    .. figure:: ../uml/sequence-ptasks-workers_success.png
+    .. figure:: ../../uml/sequence-ptasks-workers_success.png
         :scale: 100 %
         :alt: |sequence_ptasks_workers_success|
 

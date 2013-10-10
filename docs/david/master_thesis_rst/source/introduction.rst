@@ -37,7 +37,7 @@ Here will be explained the use cases this project focused-on such as the transco
 
 .. only:: html
 
-    .. figure:: ../schematics/Context.png
+    .. figure:: ../../schematics/Context.png
         :width: 1200px
         :align: center
         :alt: |context|
@@ -46,7 +46,7 @@ Here will be explained the use cases this project focused-on such as the transco
 
 .. only:: latex
 
-    .. figure:: ../schematics/Context.png
+    .. figure:: ../../schematics/Context.png
         :scale: 80 %
         :alt: |context|
 
@@ -87,7 +87,7 @@ HbbTV_ BC to BB : When a program (eg. Tennis) is longer than expected, an advert
 
 .. only:: html
 
-    .. figure:: ../schematics/Motivation.png
+    .. figure:: ../../schematics/Motivation.png
         :width: 1200px
         :align: center
         :alt: |motivation|
@@ -96,7 +96,7 @@ HbbTV_ BC to BB : When a program (eg. Tennis) is longer than expected, an advert
 
 .. only:: latex
 
-    .. figure:: ../schematics/Motivation.png
+    .. figure:: ../../schematics/Motivation.png
         :scale: 80 %
         :alt: |motivation|
 

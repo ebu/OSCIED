@@ -123,7 +123,7 @@ class StorageHooks(CharmHooks):
             {'name': 'medias_volume_6', 'type': 'Distribute', 'status': 'Started',
              'transport': 'tcp', 'bricks': ['domU-12-31-39-06-6C-E9.compute-1.internal:/mnt/bricks/exp6']}
         """
-        for i in range(max_retry):
+        for i in xrange(max_retry):
             stdout = self.volume_do(u'info', volume=volume, fail=False)[u'stdout']
             self.debug(u'({0} of {1}) Volume infos stdout: {2}'.format(i+1, max_retry, repr(stdout)))
             match = self.local_config.volume_infos_regex.match(stdout)

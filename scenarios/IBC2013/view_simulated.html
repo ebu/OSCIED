@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- <meta http-equiv="refresh" content="15"> -->
+        <style type="text/css">
+            h2    { float: center; color: #FFFFFF; font: 24px ubuntu mono, helvetica, sans-serif; }
+            body  { background: black; }
+            tr    { margin: 0; padding: 0; }
+            table { float: left; margin: 0; border-collapse: collapse; }
+            svg   { display: block; }
+        </style>
+        <script src="jquery-1.10.2.min.js"></script>
+    </head>
+    <body>
+        <table>
+            <tr>
+                <th colspan="2"><h2>PRIVATE CLUSTER &amp; PUBLIC CLOUD: ACTIVE SERVICES</h2></th>
+                <th colspan="4"><h2>SCHEDULING OF ENCODING TASKS</h2></th>
+            </tr>
+            <tr>
+                <th colspan="1"><embed type="image/svg+xml" src="charts_simulated/pie_units_amazon_encoding.svg" /></th>
+                <th colspan="1"><embed type="image/svg+xml" src="charts_simulated/pie_units_amazon_distribution.svg" /></th>
+                <th colspan="4"><embed type="image/svg+xml" src="charts_simulated/line_tasks_amazon_encoding.svg" /></th>
+            </tr>
+            <tr>
+                <th colspan="1"><embed type="image/svg+xml" src="charts_simulated/pie_units_maas_encoding.svg" /></th>
+                <th colspan="1"><embed type="image/svg+xml" src="charts_simulated/pie_units_maas_distribution.svg" /></th>
+                <th colspan="4"><embed type="image/svg+xml" src="charts_simulated/line_tasks_maas_encoding.svg" /></th>
+            </tr>
+            <tr>
+                <th colspan="6"><h2>PUBLIC CLOUD: ACTIVE AND PLANNED AMOUNT OF NODES DURING THE DAY</h2></th>
+            </tr>
+            <tr>
+                <th colspan="6"><embed type="image/svg+xml" id="re" src="charts_simulated/line_units_amazon_encoding.svg" /></th>
+            </tr>
+            <tr>
+                <th colspan="6"><embed type="image/svg+xml" src="charts_simulated/line_units_amazon_distribution.svg" /></th>
+            </tr>
+    </body>
+</html>

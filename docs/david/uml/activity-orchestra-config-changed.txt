@@ -1,0 +1,46 @@
+@startuml
+
+skinparam activity {
+    FontColor          white
+    AttributeFontColor white
+    FontSize           17
+    AttributeFontSize  15
+    AttributeFontname  Droid Sans Mono
+    BackgroundColor    #527BC6
+    BorderColor        black
+    ArrowColor         #222266
+}
+
+partition config-changed {
+note right: <b>BOLD</b> actions are\nmethods calls
+(*) --> "configure MongoDB"
+if "ok" then
+    -right-> [No] "exit 1-3"
+    --> (*)
+else
+    --> "configure RabbitMQ"
+    if "ok" then
+        -right-> [No] "exit 4"
+        --> (*)
+    else
+        --> "<b>STOP</b>"
+        --> "configure Orchestra"
+        if "ok" then
+            -right-> [No] "exit 5-12"
+            --> (*)
+        else
+            --> "configure Celery"
+            if "ok" then
+                -right-> [No] "exit 13"
+                --> (*)
+            else
+                --> "<b>(RE)MOUNT</b> storage\nif configured"
+                --> "<b>START</b>"
+                --> (*)
+            endif
+        endif
+    endif
+endif
+}
+
+@enduml

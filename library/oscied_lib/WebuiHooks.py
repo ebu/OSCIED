@@ -63,7 +63,7 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
     @staticmethod
     def randpass(length):
         chars = string.letters + string.digits
-        return u''.join([choice(chars) for i in range(length)])
+        return u''.join([choice(chars) for i in xrange(length)])
 
     # ------------------------------------------------------------------------------------------------------------------
 

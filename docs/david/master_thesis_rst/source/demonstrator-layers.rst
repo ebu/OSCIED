@@ -11,7 +11,7 @@ Conceptually, you can picture the demonstrator as such :
 
 .. only:: html
 
-    .. figure:: ../schematics/OSCIED-Layers.png
+    .. figure:: ../../schematics/OSCIED-Layers.png
         :width: 800px
         :align: center
         :alt: |oscied_layers|
@@ -20,7 +20,7 @@ Conceptually, you can picture the demonstrator as such :
 
 .. only:: latex
 
-    .. figure:: ../schematics/OSCIED-Layers.png
+    .. figure:: ../../schematics/OSCIED-Layers.png
         :scale: 100 %
         :alt: |oscied_layers|
 

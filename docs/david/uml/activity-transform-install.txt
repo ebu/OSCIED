@@ -1,0 +1,34 @@
+@startuml
+
+skinparam activity {
+    FontColor          white
+    AttributeFontColor white
+    FontSize           17
+    AttributeFontSize  15
+    AttributeFontname  Droid Sans Mono
+    BackgroundColor    #527BC6
+    BorderColor        black
+    ArrowColor         #222266
+}
+
+partition install {
+note right: <b>BOLD</b> actions are\nmethods calls
+(*) --> "add FFmpeg\nPPA repository"
+--> "upgrade system"
+--> "install FFmpeg, x264,\npython, GlusterFS client"
+if "ok" then
+    -right-> [No] "exit 1"
+    --> (*)
+else
+    --> [Yes] "install Celery, pyMongo"
+    if "ok" then
+        -left-> [No] "exit 2"
+        --> (*)
+    else
+        --> [Yes] "<b>CONFIG-CHANGED</b>"
+        --> (*)
+    endif
+endif
+}
+
+@enduml

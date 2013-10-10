@@ -20,7 +20,7 @@ Here you can see the milestones with the *estimated* progress (as every ticket h
 
 .. only:: html
 
-    .. figure:: ../screenshots/screen/trac_roadmap.png
+    .. figure:: ../../screenshots/trac_roadmap.png
         :width: 1275px
         :align: center
         :target: trac_roadmap_
@@ -30,7 +30,7 @@ Here you can see the milestones with the *estimated* progress (as every ticket h
 
 .. only:: latex
 
-    .. figure:: ../screenshots/screen/trac_roadmap.png
+    .. figure:: ../../screenshots/trac_roadmap.png
         :scale: 85 %
         :target: trac_roadmap_
         :alt: |trac_roadmap|
@@ -48,7 +48,7 @@ Here you can browse the Subversion_ repository of the project and you can travel
 
 .. only:: html
 
-    .. figure:: ../screenshots/screen/trac_source.png
+    .. figure:: ../../screenshots/trac_source.png
         :width: 1275px
         :align: center
         :target: trac_source_
@@ -58,7 +58,7 @@ Here you can browse the Subversion_ repository of the project and you can travel
 
 .. only:: latex
 
-    .. figure:: ../screenshots/screen/trac_source.png
+    .. figure:: ../../screenshots/trac_source.png
         :scale: 85 %
         :target: trac_source_
         :alt: |trac_source|
@@ -76,7 +76,7 @@ Here you can compare any versions of any files under |VCS|_. This feature is lin
 
 .. only:: html
 
-    .. figure:: ../screenshots/screen/trac_source_diff.png
+    .. figure:: ../../screenshots/trac_source_diff.png
         :width: 1275px
         :align: center
         :target: trac_source_
@@ -86,7 +86,7 @@ Here you can compare any versions of any files under |VCS|_. This feature is lin
 
 .. only:: latex
 
-    .. figure:: ../screenshots/screen/trac_source_diff.png
+    .. figure:: ../../screenshots/trac_source_diff.png
         :scale: 85 %
         :target: trac_source_
         :alt: |trac_source_diff|
@@ -104,7 +104,7 @@ Here you can browse through the pending tickets in order to select the next task
 
 .. only:: html
 
-    .. figure:: ../screenshots/screen/trac_tickets_active.png
+    .. figure:: ../../screenshots/trac_tickets_active.png
         :width: 1275px
         :align: center
         :target: trac_tickets_active_
@@ -114,7 +114,7 @@ Here you can browse through the pending tickets in order to select the next task
 
 .. only:: latex
 
-    .. figure:: ../screenshots/screen/trac_tickets_active.png
+    .. figure:: ../../screenshots/trac_tickets_active.png
         :scale: 85 %
         :target: trac_tickets_active_
         :alt: |trac_tickets_active|
@@ -132,7 +132,7 @@ Here you can browse through all tickets, including the ones which are specified 
 
 .. only:: html
 
-    .. figure:: ../screenshots/screen/trac_tickets_all.png
+    .. figure:: ../../screenshots/trac_tickets_all.png
         :width: 1275px
         :align: center
         :target: trac_tickets_all_
@@ -142,7 +142,7 @@ Here you can browse through all tickets, including the ones which are specified 
 
 .. only:: latex
 
-    .. figure:: ../screenshots/screen/trac_tickets_all.png
+    .. figure:: ../../screenshots/trac_tickets_all.png
         :scale: 85 %
         :target: trac_tickets_all_
         :alt: |trac_tickets_all|
@@ -160,7 +160,7 @@ Here you can browse through my *online* bibliography. This is actually a set of 
 
 .. only:: html
 
-    .. figure:: ../screenshots/screen/trac_tickets_references.png
+    .. figure:: ../../screenshots/trac_tickets_references.png
         :width: 1275px
         :align: center
         :target: trac_tickets_references_
@@ -170,7 +170,7 @@ Here you can browse through my *online* bibliography. This is actually a set of 
 
 .. only:: latex
 
-    .. figure:: ../screenshots/screen/trac_tickets_references.png
+    .. figure:: ../../screenshots/trac_tickets_references.png
         :scale: 85 %
         :target: trac_tickets_references_
         :alt: |trac_tickets_references|
@@ -188,7 +188,7 @@ Here you can see the content of one of the reference tickets. As you can see mos
 
 .. only:: html
 
-    .. figure:: ../screenshots/screen/trac_tickets_references_120.png
+    .. figure:: ../../screenshots/trac_tickets_references_120.png
         :width: 1275px
         :align: center
         :target: `Ticket 120`_
@@ -198,7 +198,7 @@ Here you can see the content of one of the reference tickets. As you can see mos
 
 .. only:: latex
 
-    .. figure:: ../screenshots/screen/trac_tickets_references_120.png
+    .. figure:: ../../screenshots/trac_tickets_references_120.png
         :scale: 85 %
         :target: `Ticket 120`_
         :alt: |trac_tickets_references_120|
