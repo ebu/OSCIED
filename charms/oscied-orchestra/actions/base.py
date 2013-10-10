@@ -26,7 +26,7 @@
 from __future__ import absolute_import
 
 import logging
-from library.oscied_lib.pytoolbox.flask import get_request_data, map_exceptions
+from pytoolbox.flask import get_request_data, map_exceptions
 from plugit_utils import action, json_only
 
 from . import orchestra

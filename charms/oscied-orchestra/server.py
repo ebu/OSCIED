@@ -61,11 +61,11 @@ def check_ip(request):
     def address_in_network(ip, network):
         u"""Return True if the ``ip`` address is in the ``network``."""
         #http://stackoverflow.com/questions/819355/how-can-i-check-if-an-ip-is-in-a-network-in-python
-        ipaddr = struct.unpack(u'=L', socket.inet_aton(ip))[0]
+        ipaddr = struct.unpack('=L', socket.inet_aton(ip))[0]
         netaddr, bits = network.split(u'/')
         if int(bits) == 0:
             return True
-        netmask = struct.unpack(u'=L', socket.inet_aton(netaddr))[0] & ((2L << int(bits)-1) - 1)
+        netmask = struct.unpack('=L', socket.inet_aton(netaddr))[0] & ((2L << int(bits)-1) - 1)
         return ipaddr & netmask == netmask
 
     for network in PI_ALLOWED_NETWORKS:

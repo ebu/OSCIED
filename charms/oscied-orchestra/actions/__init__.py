@@ -26,12 +26,12 @@
 from __future__ import absolute_import
 
 import logging, sys
+from pytoolbox.encoding import configure_unicode
+from pytoolbox.logging import setup_logging
+from pytoolbox.serialization import object2json
 from library.oscied_lib.api import ABOUT, get_test_api_core, OrchestraAPICore
 from library.oscied_lib.config import OrchestraLocalConfig
 from library.oscied_lib.config_test import ORCHESTRA_CONFIG_TEST
-from library.oscied_lib.pytoolbox.encoding import configure_unicode
-from library.oscied_lib.pytoolbox.logging import setup_logging
-from library.oscied_lib.pytoolbox.serialization import object2json
 
 # Global variables -----------------------------------------------------------------------------------------------------
 
