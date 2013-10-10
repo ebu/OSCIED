@@ -49,8 +49,8 @@ from .models import Media
 class OsciedEnvironment(Environment):
 
     # FIXME an helper to update config passwords (generate) -> self.config
-    def __init__(self, name, events, statistics, charts_path, api_unit=u'oscied-orchestra/0', enable_units_api=False,
-                 enable_units_status=True, enable_tasks_status=True, daemons_auth=None,
+    def __init__(self, name, events=None, statistics=None, charts_path=None, api_unit=u'oscied-orchestra/0',
+                 enable_units_api=False, enable_units_status=True, enable_tasks_status=True, daemons_auth=None,
                  transform_matrix=None, transform_max_pending_tasks=5, max_output_media_assets=15, **kwargs):
         super(OsciedEnvironment, self).__init__(name, **kwargs)
         self.events = events

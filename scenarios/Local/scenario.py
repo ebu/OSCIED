@@ -42,12 +42,14 @@ class Local(DeploymentScenario):
     def run(self):
         print(description)
         self.local.bootstrap(wait_started=True)
-        self.local.ensure_num_units(u'oscied-transform', u'oscied-transform', local=True)
-        self.local.ensure_num_units(u'oscied-publisher', u'oscied-publisher', local=True, expose=True)
-        self.local.ensure_num_units(u'oscied-orchestra', u'oscied-orchestra', local=True, expose=True)
-        self.local.ensure_num_units(u'oscied-webui',     u'oscied-webui',     local=True, expose=True)
-        self.local.ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True)
-        has_proxy = self.ensure_num_units(u'haproxy', u'haproxy', expose=True, release=u'precise', required=False)[0]
+        self.local.generate_config_from_template()
+        ensure_num_units = self.local.ensure_num_units
+        ensure_num_units(u'oscied-transform', u'oscied-transform', local=True)
+        ensure_num_units(u'oscied-publisher', u'oscied-publisher', local=True, expose=True)
+        ensure_num_units(u'oscied-orchestra', u'oscied-orchestra', local=True, expose=True)
+        ensure_num_units(u'oscied-webui',     u'oscied-webui',     local=True, expose=True)
+        ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True)
+        has_proxy = ensure_num_units(u'haproxy', u'haproxy', expose=True, release=u'precise', required=False)[0]
 
         for peer in (u'orchestra', u'webui', u'transform', u'publisher'):
             self.local.add_relation(u'oscied-storage', u'oscied-{0}'.format(peer))
