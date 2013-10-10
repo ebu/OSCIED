@@ -1,6 +1,3 @@
-[submodule "docs/references/openstack-folsom-guide"]
-	path = docs/references/openstack-folsom-guide
-	url = git://github.com/EmilienM/openstack-folsom-guide.git
 [submodule "docs/wiki/build"]
 	path = docs/wiki/build
 	url = git@github.com:ebu/OSCIED.wiki.git
