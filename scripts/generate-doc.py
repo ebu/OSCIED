@@ -26,10 +26,10 @@
 
 from __future__ import print_function
 
-import glob, re, shutil, os
+import glob, re, shutil, site, os
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from codecs import open
-from os.path import basename, dirname, join, splitext
+from os.path import basename, dirname, exists, join, splitext
 from pytoolbox.console import print_error
 from pytoolbox.encoding import configure_unicode
 from pytoolbox.filesystem import try_makedirs, try_remove
@@ -54,6 +54,9 @@ DAVID_REPORT_REFERENCES_FILE = join(DAVID_REPORT_SOURCE_PATH, u'appendices-refer
 WIKI_BUILD_PATH = join(DOCS_PATH, u'wiki', u'build')
 WIKI_SOURCE_PATH = join(DOCS_PATH, u'wiki', u'source')
 
+PACKAGES = (u'default-jre', u'imagemagick', u'texlive-latex-recommended', u'texlive-latex-extra',
+            u'texlive-fonts-recommended')
+PYTHON_PACKAGES = (u'sphinx', u'sphinxcontrib-email', u'sphinxcontrib-googlechart', u'sphinxcontrib-httpdomain')
 
 if __name__ == u'__main__':
     configure_unicode()
@@ -75,6 +78,24 @@ if __name__ == u'__main__':
         print(u'')
         print_error(u'At least one target must be enabled')
 
+    print(u'Install prerequisites')
+    cmd(u'sudo apt-get -y install ' + u' '.join(PACKAGES))
+    cmd(u'sudo pip install ' + u' '.join(PYTHON_PACKAGES))
+    cmd(u'sudo easy_install rednose')  # NEVER install it with pip ;-)
+    os.chdir(TOOLS_PATH)
+    plantuml = u'http://downloads.sourceforge.net/project/plantuml'
+    cmd(u'wget -N {0}/plantuml.jar'.format(plantuml))
+    cmd(u'wget -N {0}/PlantUML%20Language%20Reference%20Guide.pdf'.format(plantuml))
+
+    print(u'Fixes bitbucket.org/birkenfeld/sphinx/pull-request/98/fixes-typeerror-raised-from/diff')
+    for path in site.getsitepackages():
+        file_to_fix = join(path, 'sphinx/writers/latex.py')
+        if exists(file_to_fix):
+            cmd('sudo sed -i "s:letter.translate(tex_escape_map)):unicode(letter).translate(tex_escape_map)):g" {0}'.
+                format(file_to_fix))
+            print(u'Fixed source file {0}'.format(file_to_fix))
+
+    print(u'Detect commit hash')
     revision = cmd(u"git log --pretty=format:'%H' -n 1", fail=False)[u'stdout']
     if not revision:
         print_error(u'Unable to detect local copy revision number !')

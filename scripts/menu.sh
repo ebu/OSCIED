@@ -369,23 +369,8 @@ install()
   $udo "./setup.sh"  || xecho 'Unable to install OSCIED Library'
 
   pecho 'Install prerequisites'
-  eval $install bzr default-jre imagemagick rst2pdf texlive-latex-recommended texlive-latex-extra \
-    texlive-fonts-recommended || xecho 'Unable to install packages'
-  $udo pip install --upgrade sphinx sphinxcontrib-email sphinxcontrib-googlechart sphinxcontrib-httpdomain || \
-    xecho 'Unable to install sphinx python packages'
-  $udo easy_install rednose || xecho 'Unable to install rednose python package' # NEVER install it with pip ;-)
-
-  pecho 'Download tools'
   addAptPpaRepo ppa:juju/stable juju || xecho 'Unable to add juju PPA repository'
   eval $install --reinstall juju-core juju-local || xecho 'Unable to install JuJu orchestrator'
-
-  plantuml=http://downloads.sourceforge.net/project/plantuml
-  wget -N $plantuml/plantuml.jar
-  wget -N $plantuml/PlantUML%20Language%20Reference%20Guide.pdf
-
-  pecho 'Fixes bitbucket.org/birkenfeld/sphinx/pull-request/98/fixes-typeerror-raised-from/diff'
-  $udo find /usr/local/lib/ -type f -name latex.py -path "*/sphinx/writers/*" -exec \
-    sed -i 's:letter.translate(tex_escape_map)):unicode(letter).translate(tex_escape_map)):g' {} \;
 
   pecho 'Fixes #7 - https://github.com/ebu/OSCIED/issues/7'
   $udo sed -i 's:#!/usr/bin/python3.*:#!/usr/bin/python3 -Es:' /usr/bin/lxc-ls
