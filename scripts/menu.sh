@@ -37,8 +37,6 @@ DOCS_PATH="$BASE_PATH/docs"
 LIBRARY_PATH="$BASE_PATH/library"
 MEDIAS_PATH="$BASE_PATH/medias"
 SCENARIOS_PATH="$BASE_PATH/scenarios"
-TOOLS_PATH="$BASE_PATH/tools"
-REFERENCES_PATH="$DOCS_PATH/references"
 
 # Symbolic link to current configuration's path
 SCENARIO_CURRENT_PATH="$SCENARIOS_PATH/current"
@@ -377,29 +375,9 @@ install()
     xecho 'Unable to install sphinx python packages'
   $udo easy_install rednose || xecho 'Unable to install rednose python package' # NEVER install it with pip ;-)
 
-  pecho 'Download references'
-  cd "$REFERENCES_PATH"|| xecho "Unable to find path $REFERENCES_PATH"
-  openstack='http://docs.openstack.org'
-  wget -N $openstack/trunk/openstack-compute/install/apt/openstack-install-guide-apt-trunk.pdf
-  wget -N $openstack/api/openstack-compute/programmer/openstackapi-programming.pdf
-  wget -N $openstack/folsom/openstack-compute/admin/bk-compute-adminguide-folsom.pdf
-  wget -N $openstack/folsom/openstack-network/admin/bk-quantum-admin-guide-folsom.pdf
-  wget -N $openstack/folsom/openstack-object-storage/admin/os-objectstorage-adminguide-folsom.pdf
-
   pecho 'Download tools'
-
-  if [ -d 'juju-core-source' ]; then cd 'juju-core-source' && bzr merge && cd ..
-  else bzr branch lp:juju-core 'juju-core-source'
-  fi
-
   addAptPpaRepo ppa:juju/stable juju || xecho 'Unable to add juju PPA repository'
   eval $install --reinstall juju-core juju-local || xecho 'Unable to install JuJu orchestrator'
-
-  #cat \
-  # /var/lib/apt/lists/ppa.launchpad.net_juju_pkgs_ubuntu_dists_quantal_main_binary-amd64_Packages \
-  # | grep Package
-  #Package: python-txzookeeper
-  #Package: ...
 
   plantuml=http://downloads.sourceforge.net/project/plantuml
   wget -N $plantuml/plantuml.jar
