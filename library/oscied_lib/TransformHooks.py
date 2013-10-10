@@ -134,7 +134,7 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
-    from pytoolbox.py_unicode import configure_unicode
+    from pytoolbox.encoding import configure_unicode
     configure_unicode()
     TransformHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-transform/metadata.yaml'),
                    first_that_exist(u'config.yaml',      u'../../charms/oscied-transform/config.yaml'),

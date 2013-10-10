@@ -198,7 +198,7 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
-    from pytoolbox.py_unicode import configure_unicode
+    from pytoolbox.encoding import configure_unicode
     configure_unicode()
     WebuiHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-webui/metadata.yaml'),
                first_that_exist(u'config.yaml',      u'../../charms/oscied-webui/config.yaml'),
