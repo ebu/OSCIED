@@ -1,6 +1,3 @@
-[submodule "docs/wiki/build"]
-	path = docs/wiki/build
-	url = git@github.com:ebu/OSCIED.wiki.git
 [submodule "library/pytoolbox-source"]
 	path = library/pytoolbox-source
 	url = git://github.com/davidfischer-ch/pytoolbox.git
