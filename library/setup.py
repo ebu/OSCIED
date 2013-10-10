@@ -80,7 +80,7 @@ install_requires=[
       'passlib',    # FIXME version
       'pyaml',      # FIXME version
       'pymongo',    # FIXME version
-      #'pytoolbox>=v5.3.12-beta',  # installed by setup.sh
+      #'pytoolbox>=v5.3.13-beta',  # installed by setup.sh
       'requests',   # FIXME version
       'six'         # FIXME version
 ]
