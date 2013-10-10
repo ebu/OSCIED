@@ -748,7 +748,7 @@ class OrchestraAPICore(object):
         logging.info(u'New transformation task {0} -> queue {1}.'.format(result_id, queue))
         task = TransformTask(user_id=user._id, media_in_id=media_in._id, media_out_id=media_out._id,
                              profile_id=profile._id, send_email=send_email, _id=result_id)
-        task.add_statistic(u'add_date', datetime_now(), True)
+        task.statistic[u'add_date'] = datetime_now()
         self._db.transform_tasks.save(task.__dict__, safe=True)
         return task
 
@@ -916,7 +916,7 @@ class OrchestraAPICore(object):
             raise ValueError(to_bytes(u'Unable to transmit task to workers of queue {0}.'.format(queue)))
         logging.info(u'New publication task {0} -> queue {1}.'.format(result_id, queue))
         task = PublisherTask(user_id=user._id, media_id=media._id, send_email=send_email, _id=result_id)
-        task.add_statistic(u'add_date', datetime_now(), True)
+        task.statistic[u'add_date'] = datetime_now()
         self._db.publisher_tasks.save(task.__dict__, safe=True)
         return task
 
@@ -1020,7 +1020,7 @@ class OrchestraAPICore(object):
             #self.send_email_task(task, TransformTask.SUCCESS, media_out=media_out)
         else:
             self.delete_media(media_out)
-            task.add_statistic(u'error_details', status.replace(u'\n', u'\\n'), True)
+            task.statistic[u'error_details'] = status.replace(u'\n', u'\\n')
             self._db.transform_tasks.save(task.__dict__, safe=True)
             logging.info(u'{0} Error: {1}'.format(task_id, status))
             logging.info(u'{0} Media {1} is now deleted'.format(task_id, media_out.filename))
@@ -1035,7 +1035,7 @@ class OrchestraAPICore(object):
             logging.info(u'{0} Media {1} is now available at {2}'.format(task_id, media.filename, media.public_uris))
             #self.send_email_task(task, PublisherTask.SUCCESS, media=media)
         else:
-            task.add_statistic(u'error_details', status.replace(u'\n', u'\\n'), True)
+            task.statistic[u'error_details'] = status.replace(u'\n', u'\\n')
             self._db.publisher_tasks.save(task.__dict__, safe=True)
             logging.info(u'{0} Error: {1}'.format(task_id, status))
             logging.info(u'{0} Media {1} is not modified'.format(task_id, media.filename))
@@ -1049,7 +1049,7 @@ class OrchestraAPICore(object):
             media = self.update_publisher_task_and_media(task, status=PublisherTask.REVOKED)
             logging.info(u'{0} Media {1} is now available at {2}'.format(task_id, media.filename, media.public_uris))
         else:
-            task.add_statistic('revoke_error_details', status.replace(u'\n', u'\\n'), True)
+            task.statistic['revoke_error_details'] = status.replace(u'\n', u'\\n')
             self._db.publisher_tasks.save(task.__dict__, safe=True)
             logging.info(u'{0} Error: {1}'.format(task_id, status))
             logging.info(u'{0} Media {1} is not modified'.format(task_id, media.filename))
