@@ -159,6 +159,12 @@ _deploy_helper()
   elif [ ! -f "$JUJU_ENVS_FILE" ]; then
     mecho 'Using juju to generate default environments file'
     juju generate-config || xecho "Unable to generate juju's environments file"
+    mv "$JUJU_ENVS_FILE" "$SCENARIO_JUJU_ENVS_FILE"
+    mecho 'Now you must fill juju environments file with required values'
+    mecho 'Typically your amazon credentials ...'
+    pause
+    editor "$SCENARIO_JUJU_ENVS_FILE"
+    cp "$SCENARIO_JUJU_ENVS_FILE" "$JUJU_ENVS_FILE" || xecho 'Unable to copy environments file'
   fi
   $udo ufw disable # Fix master thesis ticket #80 - Juju stuck in pending when using LXC
 
@@ -413,7 +419,6 @@ deploy()
     _overwrite_helper 'oscied-transform' "oscied-orchestra/charms/$RELEASE/oscied-transform"
     _overwrite_helper 'oscied-publisher' "oscied-orchestra/charms/$RELEASE/oscied-publisher"
     _overwrite_helper 'oscied-webui'     "oscied-orchestra/charms/$RELEASE/oscied-webui"
-    lu-importUtils "$CHARMS_DEPLOY_PATH"
   fi
 
   cd "$SCENARIOS_PATH" || xecho "Unable to find path $SCENARIOS_PATH"
