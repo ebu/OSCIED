@@ -158,9 +158,9 @@ _deploy_helper()
   if [ -f "$SCENARIO_JUJU_ENVS_FILE" ]; then
     mecho "Using scenario's environments file : $SCENARIO_JUJU_ENVS_FILE"
     cp "$SCENARIO_JUJU_ENVS_FILE" "$JUJU_ENVS_FILE" || xecho 'Unable to copy environments file'
-  else
+  elif [ ! -f "$JUJU_ENVS_FILE" ]; then
     mecho 'Using juju to generate default environments file'
-    juju generate-config -w || xecho "Unable to generate juju's environments file"
+    juju generate-config || xecho "Unable to generate juju's environments file"
   fi
   $udo ufw disable # Fix master thesis ticket #80 - Juju stuck in pending when using LXC
 
