@@ -1,24 +1,9 @@
 [submodule "docs/references/openstack-folsom-guide"]
 	path = docs/references/openstack-folsom-guide
 	url = git://github.com/EmilienM/openstack-folsom-guide.git
-[submodule "tools/openstack-scripts"]
-	path = tools/openstack-scripts
-	url = https://github.com/neophilo/openstack-scripts/
-[submodule "tools/celery-source"]
-	path = tools/celery-source
-	url = git://github.com/celery/celery.git
-[submodule "tools/celery-examples"]
-	path = tools/celery-examples
-	url = git://github.com/larsbutler/celery-examples.git
-[submodule "tools/flask-source"]
-	path = tools/flask-source
-	url = git://github.com/mitsuhiko/flask.git
 [submodule "docs/wiki/build"]
 	path = docs/wiki/build
 	url = git@github.com:ebu/OSCIED.wiki.git
-[submodule "tools/sqlalchemy-source"]
-	path = tools/sqlalchemy-source
-	url = https://github.com/zzzeek/sqlalchemy
 [submodule "library/pytoolbox-source"]
 	path = library/pytoolbox-source
 	url = git://github.com/davidfischer-ch/pytoolbox.git
