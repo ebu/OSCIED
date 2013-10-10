@@ -25,7 +25,7 @@
 
 from __future__ import absolute_import
 
-import logging, pygal, random, shutil, threading, time
+import logging, pygal, os, random, shutil, string, threading, time
 from os.path import join, splitext
 from collections import defaultdict, deque
 
@@ -34,6 +34,7 @@ from pytoolbox.collections import pygal_deque
 from pytoolbox.console import confirm
 from pytoolbox.datetime import datetime_now
 from pytoolbox.encoding import to_bytes
+from pytoolbox.filesystem import from_template
 from pytoolbox.mongo import TaskModel
 from pytoolbox.juju import Environment, ERROR_STATES, juju_do, SimulatedUnits
 from pytoolbox.serialization import PickleableObject
@@ -65,21 +66,6 @@ class OsciedEnvironment(Environment):
         self.max_output_media_assets = max_output_media_assets
         self._api_client = self._statistics_thread = self._scaling_thread = self._tasks_thread = None
 
-    def get_service_config(self, service, **kwargs):
-        if self.name == u'maas':
-            if service == u'oscied-orchestra':
-                return {u'settings': {u'root_secret': {u'value': u'CBIj67T514SEZZiP'}}}
-            raise NotImplementedError('Thing not implemented')
-        return super(OsciedEnvironment, self).get_service_config(service, **kwargs)
-
-    def get_unit(self, service, number):
-        if self.name == u'maas':
-            unit_name = u'{0}/{1}'.format(service, number)
-            if unit_name == u'oscied-orchestra/0':
-                return {u'public-address': u'192.168.0.5'}
-            raise NotImplementedError('Thing not implemented')
-        return super(OsciedEnvironment, self).get_unit(service, number)
-
     @property
     def api_client(self):
         if not self._api_client:
@@ -89,6 +75,14 @@ class OsciedEnvironment(Environment):
             host = self.get_unit(service, number)['public-address']
             self._api_client = OrchestraAPIClient(host, api_unit=self.api_unit, auth=root_auth, environment=self.name)
         return self._api_client
+
+    @property
+    def config_passwords(self):
+        return (u'root_secret', u'node_secret', u'mongo_admin_password', u'mongo_node_password', u'rabbit_password')
+
+    @property
+    def config_template(self):
+        return u'{0}.template'.format(self.config)
 
     @property
     def scaling_thread(self):
@@ -108,12 +102,18 @@ class OsciedEnvironment(Environment):
             self._tasks_thread = TasksThread(u'{0} TASKS THREAD'.format(self.name.upper()), self)
         return self._tasks_thread
 
-    def init_api(self, api_init_csv_directory, **kwargs):
-        init_api(self.api_client, api_init_csv_directory, **kwargs)
-
     @property
     def threads(self):
         return filter(None, [self._statistics_thread, self._scaling_thread, self._tasks_thread])
+
+    def generate_config_from_template(self, overwrite=False):
+        if not os.path.exists(self.config) or overwrite:
+            chars, size = string.ascii_letters + string.digits, 16
+            passwords = {p: u''.join(random.choice(chars) for i in xrange(size)) for p in self.config_passwords}
+            from_template(self.config_template, self.config, passwords)
+
+    def init_api(self, api_init_csv_directory, **kwargs):
+        init_api(self.api_client, api_init_csv_directory, **kwargs)
 
 
 class OsciedEnvironmentThread(threading.Thread):

@@ -82,6 +82,7 @@ class IBC2013(DeploymentScenario):
     def deploy_maas(self):
         u"""Deploy a full OSCIED setup in the EBU's private cluster (4 machines) provisioned by the MAAS controller."""
         self.maas.bootstrap(wait_started=True, timeout=1200, polling_delay=30)
+        self.maas.generate_config_from_template()
         ensure_num_units = self.maas.ensure_num_units
         ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, num_units=3, expose=True) # 1,2,3
         # WAIT
@@ -115,6 +116,7 @@ class IBC2013(DeploymentScenario):
     def deploy_amazon(self):
         u"""Deploy a full OSCIED setup in the infrastructure (IaaS) of the cloud provider, here Amazon AWS EC2."""
         self.amazon.bootstrap(wait_started=True)
+        self.amazon.generate_config_from_template()
         ensure_num_units = self.amazon.ensure_num_units
         ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, constraints=C1_MEDIUM)
         ensure_num_units(u'oscied-publisher', u'oscied-publisher', local=True, constraints=M1_SMALL,  expose=True)
