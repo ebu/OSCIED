@@ -67,7 +67,7 @@ if __name__ == u'__main__':
         epilog=u'''Generate OSCIED project documentation from source reStructuredText files.''')
     parser.add_argument(u'--html', help=HELP_HTML, action=u'store_true')
     parser.add_argument(u'--pdf',  help=HELP_PDF,  action=u'store_true')
-    parser.add_argument(u'--wiki', help=HELP_WIKI, action=u'store_true')
+    #parser.add_argument(u'--wiki', help=HELP_WIKI, action=u'store_true')
     args = parser.parse_args()
 
     if not args.html and not args.pdf and not args.wiki:
