@@ -371,6 +371,7 @@ install()
   cd "$BASE_PATH" || xecho "Unable to find path $BASE_PATH"
   git submodule update --init && git submodule status
 
+  pecho 'Install OSCIED Library with prerequisities (takes some time)'
   cd "$LIBRARY_PATH" || xecho "Unable to find path $LIBRARY_PATH"
   $udo "./setup.sh"  || xecho 'Unable to install OSCIED Library'
 
