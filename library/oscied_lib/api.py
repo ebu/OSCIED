@@ -56,6 +56,7 @@ ABOUT = u"Orchestra : EBU's OSCIED Orchestrator by David Fischer 2012-2013"
 
 
 class OsciedCRUDMapper(object):
+    u"""Map the CRUD operations of the orchestrator RESTful API into a utility class for OrchestraAPIClient."""
 
     def __init__(self, api_client, method=u'', cls=None, id_prefix=u'id', environment=False):
         self.api_client = api_client
@@ -122,6 +123,7 @@ class OsciedCRUDMapper(object):
 # ----------------------------------------------------------------------------------------------------------------------
 
 class OrchestraAPIClient(object):
+    u"""Map all functions of the orchestrator RESTful API in the form of a client class with attributes and methods."""
 
     def __init__(self, hostname, port=5000, api_unit=u'oscied-orchestra/0', api_local_config=u'local_config.pkl',
                  auth=None, id_rsa=u'~/.ssh/id_rsa', environment=u'default', timeout=10.0):
@@ -272,6 +274,7 @@ class OrchestraAPIClient(object):
 # ----------------------------------------------------------------------------------------------------------------------
 
 class OrchestraAPICore(object):
+    u"""Core class of the orchestration unit containing the implementation of the methods."""
 
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Constructor >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -1058,6 +1061,7 @@ class OrchestraAPICore(object):
 # ----------------------------------------------------------------------------------------------------------------------
 
 def get_test_api_core():
+    u"""Return an instance of ``OrchestraAPICore`` initialized with current scenario's configuration."""
     orchestra = OrchestraAPICore(ORCHESTRA_CONFIG_TEST)
     init_api(orchestra, u'../../scenarios/current')
     print(u'There are {0} registered users.'.format(len(orchestra.get_users())))
@@ -1069,7 +1073,10 @@ def get_test_api_core():
 
 def init_api(api_core_or_client, api_init_csv_directory, flush=False, add_users=True, add_profiles=True,
              add_medias=True, add_tasks=True):
-
+    u"""
+    Initialize an instance of ``OrchestraAPICore`` or use provided instance of ``OrchestraAPIClient`` to initialize a
+    remote orchestration unit.
+    """
     is_core = isinstance(api_core_or_client, OrchestraAPICore)
     orchestra = api_core_or_client if is_core else None
     api_client = api_core_or_client if not is_core else None
