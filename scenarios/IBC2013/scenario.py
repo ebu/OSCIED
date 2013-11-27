@@ -81,7 +81,7 @@ class IBC2013(DeploymentScenario):
 
     def deploy_maas(self):
         u"""Deploy a full OSCIED setup in the EBU's private cluster (4 machines) provisioned by the MAAS controller."""
-        self.maas.bootstrap(wait_started=True, timeout=1200, polling_delay=30)
+        self.maas.bootstrap(wait_started=True, timeout=1200, polling_delay=30, synchronize_tools=True)
         self.maas.generate_config_from_template()
         ensure_num_units = self.maas.ensure_num_units
         ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, num_units=3, expose=True) # 1,2,3
