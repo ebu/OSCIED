@@ -78,7 +78,10 @@ class OsciedEnvironment(Environment):
 
     @property
     def config_passwords(self):
-        return (u'root_secret', u'node_secret', u'mongo_admin_password', u'mongo_node_password', u'rabbit_password')
+        return (
+            u'root_secret', u'node_secret', u'mongo_admin_password', u'mongo_node_password', u'rabbit_password',
+            u'mysql_root_password', u'mysql_user_password'
+        )
 
     @property
     def config_template(self):

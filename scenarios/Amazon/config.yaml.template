@@ -63,8 +63,8 @@ oscied-webui:
   max_upload_size: 17179869184
   max_execution_time: 600
   max_input_time: 3600
-  mysql_root_password: ""
-  mysql_user_password: ""
+  mysql_root_password: "{mysql_root_password}"
+  mysql_user_password: "{mysql_user_password}"
   api_url: ""
   storage_address: ""
   storage_nat_address: ""
