@@ -146,7 +146,6 @@ _deploy_helper()
   ssh-add "$ID_RSA"
 
   # FIXME and what about *.pem stuff ?
-
   mkdir -p "$JUJU_PATH" "$JUJU_STORAGE_PATH" 2>/dev/null
   # Backup any already existing environments file (magic stuff) !
   if [ -f "$JUJU_ENVS_FILE" ]; then
@@ -155,17 +154,21 @@ _deploy_helper()
   fi
   if [ -f "$SCENARIO_JUJU_ENVS_FILE" ]; then
     mecho "Using scenario's environments file : $SCENARIO_JUJU_ENVS_FILE"
-    cp "$SCENARIO_JUJU_ENVS_FILE" "$JUJU_ENVS_FILE" || xecho 'Unable to copy environments file'
-  elif [ ! -f "$JUJU_ENVS_FILE" ]; then
-    mecho 'Using juju to generate default environments file'
-    juju generate-config || xecho "Unable to generate juju's environments file"
+  else
+    if [ ! -f "$JUJU_ENVS_FILE" ]; then
+      mecho 'Using juju to generate default environments file'
+      juju generate-config || xecho "Unable to generate juju's environments file"
+    fi
     mv "$JUJU_ENVS_FILE" "$SCENARIO_JUJU_ENVS_FILE"
-    mecho 'Now you must fill juju environments file with required values'
-    mecho 'Typically your amazon credentials ...'
-    pause
-    editor "$SCENARIO_JUJU_ENVS_FILE"
-    cp "$SCENARIO_JUJU_ENVS_FILE" "$JUJU_ENVS_FILE" || xecho 'Unable to copy environments file'
   fi
+
+  mecho 'An editor will be opened with the juju environments file.'
+  mecho 'You must ensure that this file is filled with required values.'
+  mecho 'For example, verify or set your amazon credentials ...'
+  pause
+  editor "$SCENARIO_JUJU_ENVS_FILE"
+  cp "$SCENARIO_JUJU_ENVS_FILE" "$JUJU_ENVS_FILE" || xecho 'Unable to copy environments file'
+
   $udo ufw disable # Fix master thesis ticket #80 - Juju stuck in pending when using LXC
 
   pecho "Copy JuJu environments file & SSH keys to Orchestra charm's deployment path"
