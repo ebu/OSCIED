@@ -88,7 +88,7 @@ xecho() # message (error)
 pause() # menu pause
 {
   [ ! -t 0 ] && return # skip if non interactive
-  $echo $e_ 'press any key to continue ...'
+  $echo $e_ 'press enter to continue ...'
   read ok </dev/tty
 }
 
