@@ -138,6 +138,9 @@ class StorageHooks(CharmHooks):
 
     def hook_install(self):
         self.hook_uninstall()
+        self.info(u'Generate locales if missing')
+        self.cmd(u'locale-gen fr_CH.UTF-8')
+        self.cmd(u'dpkg-reconfigure locales')
         self.info(u'Upgrade system and install prerequisites')
         self.cmd(u'apt-get -y update', fail=False)
         self.cmd(u'apt-get -y -f install')  # May recover problems with upgrade !

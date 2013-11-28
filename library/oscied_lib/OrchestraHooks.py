@@ -99,6 +99,9 @@ class OrchestraHooks(CharmHooks_Storage):
 
     def hook_install(self):
         self.hook_uninstall()
+        self.info(u'Generate locales if missing')
+        self.cmd(u'locale-gen fr_CH.UTF-8')
+        self.cmd(u'dpkg-reconfigure locales')
         self.info(u'Upgrade system and install prerequisites')
         self.cmd(u'apt-add-repository -y ppa:jon-severinsson/ffmpeg')
         self.cmd(u'apt-add-repository -y ppa:juju/stable')
