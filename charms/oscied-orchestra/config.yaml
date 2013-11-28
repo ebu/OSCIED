@@ -1,11 +1,11 @@
 options:
   verbose:
-    type: string
-    default: "true"
+    type: boolean
+    default: true
     description: Toogle verbose logging.
   cleanup:
-    type: string
-    default: "true"
+    type: boolean
+    default: true
     description: |
         Toggle uninstall step of prerequisities by install hook.
         Disable this if you planned to merge services into same unit, see ticket #87.
@@ -42,8 +42,8 @@ options:
         SMTP mailing server address.
         Please set to enable mailing functionnalitiy.
   email_tls:
-    type: string
-    default: "true"
+    type: boolean
+    default: true
     description: Enable TLS layer.
   email_address:
     type: string

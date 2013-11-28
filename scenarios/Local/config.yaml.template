@@ -1,13 +1,13 @@
 oscied-orchestra:
-  verbose: "true"
-  cleanup: "true"
+  verbose: true
+  cleanup: true
   root_secret: "{root_secret}"
   node_secret: "{node_secret}"
   mongo_admin_password: "{mongo_admin_password}"
   mongo_node_password: "{mongo_node_password}"
   rabbit_password: "{rabbit_password}"
   email_server: ""
-  email_tls: "true"
+  email_tls: true
   email_address: "someone@oscied.org"
   email_username: "someone"
   email_password: "1234"
@@ -18,11 +18,11 @@ oscied-orchestra:
   storage_options: ""
   plugit_api_url: ""
 oscied-publisher:
-  verbose: "true"
-  cleanup: "true"
+  verbose: true
+  cleanup: true
   concurrency: 2
   rabbit_queues: "publisher_private"
-  mod_streaming: "false"
+  mod_streaming: false
   max_upload_size: 17179869184
   max_execution_time: 600
   max_input_time: 3600
@@ -35,14 +35,14 @@ oscied-publisher:
   storage_mountpoint: ""
   storage_options: ""
 oscied-storage:
-  verbose: "true"
-  cleanup: "true"
+  verbose: true
+  cleanup: true
   allowed_ips: "*"
   replica_count: 1
   bricks_root_path: "/mnt"
 oscied-transform:
-  verbose: "true"
-  cleanup: "true"
+  verbose: true
+  cleanup: true
   concurrency: 1
   rabbit_queues: "transform_private"
   mongo_connection: ""
@@ -58,8 +58,8 @@ oscied-transform:
   ffmpeg_origin: "ppa:jon-severinsson/ffmpeg"
   gpac_origin: "gpac_0.5.1.DEV-r4927_amd64.deb"
 oscied-webui:
-  verbose: "true"
-  cleanup: "true"
+  verbose: true
+  cleanup: true
   max_upload_size: 17179869184
   max_execution_time: 600
   max_input_time: 3600
