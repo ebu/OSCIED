@@ -11,25 +11,6 @@
 
 <h2 class="page-header">Publication tasks</h2>
 
-<div id="tasks"></div>
-
-<script type="text/javascript">
-
-function loadTasks() {
-   $.get('{{ebuio_baseUrl}}publisher/tasks/list', function(data) { $('#tasks').html(data); });
-}
-
-loadTasks();
-
-/*<!-- Set the action for file deletion -->*/
-$('body').on('click', '.revoke', function() {
-   if (confirm('Do you really want to revoke the task "' + $(this).attr('title') + '"?')) {
-      $.get($(this).attr('href'), function(data) { window.location = data.redirect; }, 'json' );
-   }
-   return false;
-});
-</script>
-
 <h3>Launch a publication task</h3>
 
 <div id="launch_task_errors" class="alert alert-error hidden"></div>
@@ -83,6 +64,25 @@ $('#launch_task_submit').click(function() {
       },
       'json'
    );
+   return false;
+});
+</script>
+
+<div id="tasks"></div>
+
+<script type="text/javascript">
+
+function loadTasks() {
+   $.get('{{ebuio_baseUrl}}publisher/tasks/list', function(data) { $('#tasks').html(data); });
+}
+
+loadTasks();
+
+/*<!-- Set the action for file deletion -->*/
+$('body').on('click', '.revoke', function() {
+   if (confirm('Do you really want to revoke the task "' + $(this).attr('title') + '"?')) {
+      $.get($(this).attr('href'), function(data) { window.location = data.redirect; }, 'json' );
+   }
    return false;
 });
 </script>

@@ -16,6 +16,7 @@
          <th>Added on</th>
          <th>Added by</th>
          <th>Status</th>
+         <th>Public URLs</th>
          <th></th>
       </tr>
    </thead>
@@ -25,7 +26,7 @@
       <tr>
          <td>{{media.metadata.title}}</td>
          <td>
-            {% if status == 'READY' or media == 'PUBLISHED' %}
+            {% if status == 'READY' %}
             <a href="{{ebuio_baseUrl}}medias/force_download/{{media.id}}">{{media.filename|default:"Untitled"}}</a>
             {% else %}
             {{media.filename|default:"Untitled"}}
@@ -39,8 +40,13 @@
             <span class="label {% if status == 'PENDING' %}label-warning{% elif status == 'READY' %}label-success{% elif status != 'UNKNOWN' %}label-inverse{% endif %}">{{status}}</span>
          </td>
          <td>
+            {% for public_uri in media.public_uris %}
+            <a href="{{ public_uri }}"><i class="icon-play"></i></a>
+            {% endfor %}
+         </td>
+         <td>
             {% if ebuio_u.id == media.user_id %}
-            {% if status == 'READY' or status == 'PUBLISHED' %}
+            {% if status == 'READY' %}
             <a class="delete" title="{{media.metadata.title}}" href="{{ebuio_baseUrl}}medias/delete/{{media.id}}">
                <button class="btn btn-mini btn-danger">Delete</button>
             </a>
