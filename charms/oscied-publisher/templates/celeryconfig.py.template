@@ -29,6 +29,7 @@ import sys
 sys.path.append('.')
 
 BROKER_URL = '{rabbit}'
+CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_BACKEND = 'mongodb'
 CELERY_MONGODB_BACKEND_SETTINGS = {{
     'host': '{host}',
