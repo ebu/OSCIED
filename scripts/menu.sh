@@ -411,7 +411,17 @@ deploy()
 
   [ "$scenario_auto" ] && default=$true_auto || default=$true
 
+  pecho "Download encoders packages into Transform charm's path"
+  recho 'This step is required the 1st time or when you want to upgrade them'
+  yesOrNo $default 'do it now'
+  if [ $REPLY -eq $true ]; then
+    path="$CHARMS_PATH/oscied-transform/"
+    cd "$path" || xecho "Unable to find path $path"
+    ./get-libs.sh || xecho 'Something went wrong'
+  fi
+
   pecho 'Overwrite charms in deployment path'
+  recho 'This step is required the 1st time or when the code is modified'
   yesOrNo $default 'do it now'
   if [ $REPLY -eq $true ]; then
     _overwrite_helper 'oscied-orchestra' 'oscied-orchestra'
