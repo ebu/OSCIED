@@ -90,7 +90,7 @@ def configure_plugit_mode():
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-is_mock = True
+is_mock = True  # FIXME read command line parameter
 try:
     configure_unicode()
     config = ORCHESTRA_CONFIG_TEST if is_mock else OrchestraLocalConfig.read(u'local_config.pkl')
