@@ -23,48 +23,45 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-import logging
+import flask, logging
 from pytoolbox.flask import get_request_data, map_exceptions
-from plugit_utils import action, json_only
 
-from . import orchestra
+from server import app, ok_200, orchestra
 
 
 # Index ----------------------------------------------------------------------------------------------------------------
 
-@action(u'/', methods=[u'GET'])
-@json_only()
-def api_root(request):
+@app.route(u'/', methods=[u'GET'])
+def api_root(request=flask.request):
     u"""
     Return an about string. This method is actually used by Orchestra charm's hooks to check API's status.
     """
     try:
-        return orchestra.ok_200(orchestra.about, include_properties=False)
+        request = request or flask.request
+        return ok_200(orchestra.about, include_properties=False)
     except Exception as e:
         map_exceptions(e)
 
 
 # System management ----------------------------------------------------------------------------------------------------
 
-@action(u'/flush', methods=[u'POST'])
-@json_only()
-def api_flush(request):
+@app.route(u'/flush', methods=[u'POST'])
+def api_flush(request=flask.request):
     u"""Flush Orchestrator's database. This method is useful for testing and development purposes."""
     try:
         orchestra.requires_auth(request=request, allow_root=True)
         orchestra.flush_db()
-        return orchestra.ok_200(u'Orchestra database flushed !', include_properties=False)
+        return ok_200(u'Orchestra database flushed !', include_properties=False)
     except Exception as e:
         map_exceptions(e)
 
 
 # Workers (nodes) hooks ------------------------------------------------------------------------------------------------
 
-@action(u'/transform/callback', methods=[u'POST'])
-@json_only()
-def api_transform_task_hook(request):
+@app.route(u'/transform/callback', methods=[u'POST'])
+def api_transform_task_hook(request=flask.request):
     u"""
     This method is called by transformation workers when they finish their work.
 
@@ -79,14 +76,13 @@ def api_transform_task_hook(request):
         task_id, status = data[u'task_id'], data[u'status']
         logging.debug(u'task {0}, status {1}'.format (task_id, status))
         orchestra.transform_callback(task_id, status)
-        return orchestra.ok_200(u'Your work is much appreciated, thanks !', include_properties=False)
+        return ok_200(u'Your work is much appreciated, thanks !', include_properties=False)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/publisher/callback', methods=[u'POST'])
-@json_only()
-def api_publisher_task_hook(request):
+@app.route(u'/publisher/callback', methods=[u'POST'])
+def api_publisher_task_hook(request=flask.request):
     u"""
     This method is called by publication workers when they finish their work.
 
@@ -100,14 +96,13 @@ def api_publisher_task_hook(request):
         task_id, publish_uri, status = data[u'task_id'], data.get(u'publish_uri'), data[u'status']
         logging.debug(u'task {0}, publish_uri {1}, status {2}'.format(task_id, publish_uri, status))
         orchestra.publisher_callback(task_id, publish_uri, status)
-        return orchestra.ok_200(u'Your work is much appreciated, thanks !', include_properties=False)
+        return ok_200(u'Your work is much appreciated, thanks !', include_properties=False)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/publisher/revoke/callback', methods=[u'POST'])
-@json_only()
-def api_revoke_publisher_task_hook(request):
+@app.route(u'/publisher/revoke/callback', methods=[u'POST'])
+def api_revoke_publisher_task_hook(request=flask.request):
     u"""
     This method is called by publication workers when they finish their work (revoke).
 
@@ -120,6 +115,6 @@ def api_revoke_publisher_task_hook(request):
         task_id, publish_uri, status = data[u'task_id'], data.get(u'publish_uri'), data[u'status']
         logging.debug(u'task {0}, revoked publish_uri {1}, status {2}'.format(task_id, publish_uri, status))
         orchestra.publisher_revoke_callback(task_id, publish_uri, status)
-        return orchestra.ok_200(u'Your work is much appreciated, thanks !', include_properties=False)
+        return ok_200(u'Your work is much appreciated, thanks !', include_properties=False)
     except Exception as e:
         map_exceptions(e)

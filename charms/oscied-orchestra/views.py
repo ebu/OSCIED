@@ -23,20 +23,20 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os, random, string, time
-from werkzeug import secure_filename
 from pytoolbox.flask import json_response2dict, map_exceptions
 from library.oscied_lib.models import Media
-from plugit_utils import action, json_only, only_logged_user, user_info, PlugItSendFile
+from werkzeug import secure_filename
 
-from . import orchestra
-from .media import api_media_get, api_media_head, api_media_id_get, api_media_id_delete
-from .publisher import api_publisher_task_get, api_publisher_task_post, api_publisher_queue
-from .transform import (api_transform_profile_encoder, api_transform_profile_get, api_transform_profile_post,
-                        api_transform_profile_id_delete, api_transform_task_get, api_transform_task_post,
-                        api_transform_queue)
+from plugit.utils import action, json_only, only_logged_user, user_info, PlugItSendFile
+from server import orchestra
+from api_media import api_media_get, api_media_head, api_media_id_get, api_media_id_delete
+from api_publisher import api_publisher_task_get, api_publisher_task_post, api_publisher_queue
+from api_transform import (api_transform_profile_encoder, api_transform_profile_get, api_transform_profile_post,
+                           api_transform_profile_id_delete, api_transform_task_get, api_transform_task_post,
+                           api_transform_queue)
 
 
 @action(route=u'/medias', template=u'medias/home.html', methods=[u'GET'])
@@ -50,7 +50,7 @@ def view_medias(request):
 @only_logged_user()
 def view_medias_list(request):
     u"""Show the media assets list page."""
-    medias = json_response2dict(api_media_get(request), remove_underscore=True)
+    medias = json_response2dict(api_media_get(request=request), remove_underscore=True)
     return {u'medias': medias, u'refresh_rate': 5}
 
 
@@ -58,7 +58,7 @@ def view_medias_list(request):
 @only_logged_user()
 def get_medias(request, id):
     u"""Download a media asset."""
-    medias = api_media_id_get(request, id)
+    medias = api_media_id_get(id, request=request)
     return PlugItSendFile(medias[u'value'].api_uri, None, as_attachment=True,
                           attachment_filename=medias[u'value'].filename)
 
@@ -94,7 +94,7 @@ def upload_media(request):
 @json_only()
 def delete_medias(request, id):
     u"""Delete a media asset."""
-    result = json_response2dict(api_media_id_delete(request, id), remove_underscore=True)
+    result = json_response2dict(api_media_id_delete(id, request=request), remove_underscore=True)
     return {u'result': result}
 
 
@@ -102,7 +102,7 @@ def delete_medias(request, id):
 @only_logged_user()
 def view_transform_profiles(request):
     u"""Show the transformation profiles home page."""
-    encoders = json_response2dict(api_transform_profile_encoder(request), remove_underscore=True)
+    encoders = json_response2dict(api_transform_profile_encoder(request=request), remove_underscore=True)
     return {u'encoders': encoders}
 
 
@@ -110,7 +110,7 @@ def view_transform_profiles(request):
 @only_logged_user()
 def view_transform_profiles_list(request):
     u"""Show the transformation profiles list page."""
-    profiles = json_response2dict(api_transform_profile_get(request), remove_underscore=True)
+    profiles = json_response2dict(api_transform_profile_get(request=request), remove_underscore=True)
     return {u'profiles': profiles, u'refresh_rate': 5}
 
 
@@ -120,7 +120,7 @@ def view_transform_profiles_list(request):
 @user_info(props=[u'pk'])
 def view_transform_profiles_add(request):
     u"""Add a transformation profile."""
-    profile = json_response2dict(api_transform_profile_post(request), remove_underscore=True)
+    profile = json_response2dict(api_transform_profile_post(request=request), remove_underscore=True)
     return {u'profile': profile}
 
 
@@ -130,7 +130,7 @@ def view_transform_profiles_add(request):
 @user_info(props=[u'pk'])
 def view_transform_profiles_delete(request, id):
     u"""Delete a transformation profile."""
-    msg = json_response2dict(api_transform_profile_id_delete(request, id), remove_underscore=True)
+    msg = json_response2dict(api_transform_profile_id_delete(id, request=request), remove_underscore=True)
     return {u'msg': msg}
 
 
@@ -138,9 +138,9 @@ def view_transform_profiles_delete(request, id):
 @only_logged_user()
 def view_transform_tasks(request):
     u"""Show the transformation tasks home page."""
-    medias = json_response2dict(api_media_head(request), remove_underscore=True)
-    profiles = json_response2dict(api_transform_profile_get(request), remove_underscore=True)
-    queues = json_response2dict(api_transform_queue(request), remove_underscore=True)
+    medias = json_response2dict(api_media_head(request=request), remove_underscore=True)
+    profiles = json_response2dict(api_transform_profile_get(request=request), remove_underscore=True)
+    queues = json_response2dict(api_transform_queue(request=request), remove_underscore=True)
     return {u'medias': medias, u'profiles': profiles, u'queues': queues}
 
 
@@ -148,7 +148,7 @@ def view_transform_tasks(request):
 @only_logged_user()
 def view_transform_tasks_list(request):
     u"""Show the transformation tasks list page."""
-    tasks = json_response2dict(api_transform_task_get(request), remove_underscore=True)
+    tasks = json_response2dict(api_transform_task_get(request=request), remove_underscore=True)
     return {u'tasks': tasks, u'refresh_rate': 5}
 
 
@@ -158,7 +158,7 @@ def view_transform_tasks_list(request):
 @user_info(props=[u'pk'])
 def view_transform_tasks_launch(request):
     u"""Launch a transformation task."""
-    task_id = json_response2dict(api_transform_task_post(request), remove_underscore=True)
+    task_id = json_response2dict(api_transform_task_post(request=request), remove_underscore=True)
     return {u'task_id': task_id}
 
 
@@ -166,8 +166,8 @@ def view_transform_tasks_launch(request):
 @only_logged_user()
 def view_publisher_tasks(request):
     u"""Show the publication tasks home page."""
-    medias = json_response2dict(api_media_head(request),      remove_underscore=True)
-    queues = json_response2dict(api_publisher_queue(request), remove_underscore=True)
+    medias = json_response2dict(api_media_head(request=request),      remove_underscore=True)
+    queues = json_response2dict(api_publisher_queue(request=request), remove_underscore=True)
     return {u'medias': medias, u'queues': queues}
 
 
@@ -175,7 +175,7 @@ def view_publisher_tasks(request):
 @only_logged_user()
 def view_publisher_tasks_list(request):
     u"""Show the publication tasks list page."""
-    tasks = json_response2dict(api_publisher_task_get(request), remove_underscore=True)
+    tasks = json_response2dict(api_publisher_task_get(request=request), remove_underscore=True)
     return {u'tasks': tasks, u'refresh_rate': 5}
 
 
@@ -185,7 +185,7 @@ def view_publisher_tasks_list(request):
 @user_info(props=[u'pk'])
 def view_publisher_tasks_launch(request):
     u"""Launch a publication task."""
-    task_id = json_response2dict(api_publisher_task_post(request), remove_underscore=True)
+    task_id = json_response2dict(api_publisher_task_post(request=request), remove_underscore=True)
     return {u'task_id': task_id}
 
 

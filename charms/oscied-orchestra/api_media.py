@@ -23,46 +23,42 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-from flask import abort
+import flask
 from pytoolbox.encoding import to_bytes
 from pytoolbox.flask import check_id, get_request_data, map_exceptions
 from library.oscied_lib.models import Media
-from plugit_utils import action, json_only, user_info
 
-from . import orchestra
+from server import app, ok_200, orchestra
 
 
 # Medias management ----------------------------------------------------------------------------------------------------
 
-@action(u'/media/count', methods=[u'GET'])
-@json_only()
-def api_media_count(request):
+@app.route(u'/media/count', methods=[u'GET'])
+def api_media_count(request=flask.request):
     u"""Return the number of media assets."""
     try:
         orchestra.requires_auth(request=request, allow_any=True)
         data = get_request_data(request, accepted_keys=orchestra.db_count_keys, qs_only_first_value=True, fail=False)
-        return orchestra.ok_200(orchestra.get_medias_count(**data), include_properties=False)
+        return ok_200(orchestra.get_medias_count(**data), include_properties=False)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/media/HEAD', methods=[u'GET'])
-@json_only()
-def api_media_head(request):
+@app.route(u'/media/HEAD', methods=[u'GET'])
+def api_media_head(request=flask.request):
     u"""Return an array containing the informations about the media assets serialized to JSON."""
     try:
         orchestra.requires_auth(request=request, allow_any=True)
         data = get_request_data(request, accepted_keys=orchestra.db_find_keys, qs_only_first_value=True, fail=False)
-        return orchestra.ok_200(orchestra.get_medias(**data), include_properties=True)
+        return ok_200(orchestra.get_medias(**data), include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/media', methods=[u'GET'])
-@json_only()
-def api_media_get(request):
+@app.route(u'/media', methods=[u'GET'])
+def api_media_get(request=flask.request):
     u"""
     Return an array containing the informations about the media assets serialized to JSON.
 
@@ -72,15 +68,13 @@ def api_media_get(request):
     try:
         orchestra.requires_auth(request=request, allow_any=True)
         data = get_request_data(request, accepted_keys=orchestra.db_find_keys, qs_only_first_value=True, fail=False)
-        return orchestra.ok_200(orchestra.get_medias(load_fields=True, **data), include_properties=True)
+        return ok_200(orchestra.get_medias(load_fields=True, **data), include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/media', methods=[u'POST'])
-@json_only()
-@user_info(props=['pk'])
-def api_media_post(request):
+@app.route(u'/media', methods=[u'POST'])
+def api_media_post(request=flask.request):
     u"""
     Register a media asset and add informations about it.
 
@@ -106,14 +100,13 @@ def api_media_post(request):
         media = Media(user_id=auth_user._id, uri=data[u'uri'], filename=data[u'filename'], metadata=data[u'metadata'],
                       status=Media.READY)
         orchestra.save_media(media)
-        return orchestra.ok_200(media, include_properties=True)
+        return ok_200(media, include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
 # FIXME why HEAD verb doesn't work (curl: (18) transfer closed with 263 bytes remaining to read) ?
-@action(u'/media/id/<id>/HEAD', methods=[u'GET'])
-@json_only()
+@app.route(u'/media/id/<id>/HEAD', methods=[u'GET'])
 def api_media_id_head(request, id):
     u"""Return the informations about a media asset serialized to JSON."""
     try:
@@ -122,13 +115,12 @@ def api_media_id_head(request, id):
         media = orchestra.get_media(spec={u'_id': id})
         if not media:
             raise IndexError(to_bytes(u'No media asset with id {0}.'.format(id)))
-        return orchestra.ok_200(media, include_properties=True)
+        return ok_200(media, include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/media/id/<id>', methods=[u'GET'])
-@json_only()
+@app.route(u'/media/id/<id>', methods=[u'GET'])
 def api_media_id_get(request, id):
     u"""
     Return the informations about a media asset serialized to JSON.
@@ -142,14 +134,12 @@ def api_media_id_get(request, id):
         media = orchestra.get_media(spec={'_id': id}, load_fields=True)
         if not media:
             raise IndexError(to_bytes(u'No media asset with id {0}.'.format(id)))
-        return orchestra.ok_200(media, include_properties=True)
+        return ok_200(media, include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/media/id/<id>', methods=[u'PATCH', u'PUT'])
-@json_only()
-@user_info(props=['pk'])
+@app.route(u'/media/id/<id>', methods=[u'PATCH', u'PUT'])
 def api_media_id_patch(request, id):
     u"""Update the informations of a media asset (only metadata field can be updated)."""
     try:
@@ -160,19 +150,16 @@ def api_media_id_patch(request, id):
         if not media:
             raise IndexError(to_bytes(u'No media asset with id {0}.'.format(id)))
         if auth_user._id != media.user_id:
-            abort(403, u'You are not allowed to modify media asset with id {0}.'.format(id))
+            flask.abort(403, u'You are not allowed to modify media asset with id {0}.'.format(id))
         if u'metadata' in data:
             media.metadata = data[u'metadata']
         orchestra.save_media(media)
-        return orchestra.ok_200(u'The media asset "{0}" has been updated.'.format(media.filename),
-                                include_properties=False)
+        return ok_200(u'The media asset "{0}" has been updated.'.format(media.filename), include_properties=False)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/media/id/<id>', methods=[u'DELETE'])
-@json_only()
-@user_info(props=['pk'])
+@app.route(u'/media/id/<id>', methods=[u'DELETE'])
 def api_media_id_delete(request, id):
     u"""Remove a media asset from the shared storage and update informations about it (set status to DELETED)."""
     try:
@@ -182,9 +169,9 @@ def api_media_id_delete(request, id):
         if not media:
             raise IndexError(to_bytes(u'No media asset with id {0}.'.format(id)))
         if auth_user._id != media.user_id:
-            abort(403, u'You are not allowed to delete media asset with id {0}.'.format(id))
+            flask.abort(403, u'You are not allowed to delete media asset with id {0}.'.format(id))
         orchestra.delete_media(media)
-        return orchestra.ok_200(u'The media asset "{0}" has been deleted.'.format(media.metadata[u'title']),
-                                include_properties=False)
+        return ok_200(u'The media asset "{0}" has been deleted.'.format(media.metadata[u'title']),
+                      include_properties=False)
     except Exception as e:
         map_exceptions(e)

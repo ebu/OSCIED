@@ -390,12 +390,6 @@ class OrchestraAPICore(object):
                 # FIXME YourFormatter().format(template_file.read(), task)
             self.send_email(task.user.mail, u'OSCIED - {0} task {1} {2}'.format(name, task._id, status), text_plain)
 
-    def ok_200(self, value, include_properties):
-        if self.is_standalone:
-            return json_response(200, value=value, include_properties=include_properties)
-        # FIXME include_properties not yet handled
-        return {u'status': 200, u'value': value}
-
     # http://publish.luisrei.com/articles/flaskrest.html
     def requires_auth(self, request, allow_root=False, allow_node=False, allow_any=False, role=None, id=None,
                       mail=None):
@@ -1063,7 +1057,7 @@ class OrchestraAPICore(object):
 def get_test_api_core():
     u"""Return an instance of ``OrchestraAPICore`` initialized with current scenario's configuration."""
     orchestra = OrchestraAPICore(ORCHESTRA_CONFIG_TEST)
-    init_api(orchestra, u'../../scenarios/current')
+    init_api(orchestra, u'mock')
     print(u'There are {0} registered users.'.format(len(orchestra.get_users())))
     print(u'There are {0} available media assets.'.format(len(orchestra.get_medias())))
     print(u'There are {0} available transformation profiles.'.format(len(orchestra.get_transform_profiles())))
@@ -1080,6 +1074,7 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False, add_users=
     is_core = isinstance(api_core_or_client, OrchestraAPICore)
     orchestra = api_core_or_client if is_core else None
     api_client = api_core_or_client if not is_core else None
+    is_standalone = not is_core or orchestra.is_standalone
 
     if flush:
         if is_core:
@@ -1089,6 +1084,7 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False, add_users=
             api_client.flush()
             api_client.remove_medias()
 
+    add_users = add_users and is_standalone
     users, reader = [], csv_reader(os.path.join(api_init_csv_directory, u'users.csv'))
     for first_name, last_name, email, secret, admin_platform in reader:
         user = User(first_name, last_name, email, secret, admin_platform)
@@ -1100,7 +1096,7 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False, add_users=
             orchestra.save_user(user, hash_secret=True)
         else:
             api_client.users.add(user)
-    users = orchestra.get_users() if is_core else users# api_client.users.list()
+    users = orchestra.get_users() if is_core and is_standalone else users# api_client.users.list()
 
     if add_profiles:
         i, reader = 0, csv_reader(os.path.join(api_init_csv_directory, u'tprofiles.csv'))
@@ -1119,9 +1115,9 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False, add_users=
     if add_medias:
         i, reader = 0, csv_reader(os.path.join(api_init_csv_directory, u'medias.csv'))
         for local_filename, filename, title in reader:
+            local_filename = os.path.abspath(os.path.expanduser(local_filename))
             user = users[i]
-            print(os.getcwd())
-            media = Media(user_id=user._id, filename=filename, metadata={u'title': title})
+            media = Media(user_id=user._id, filename=filename, metadata={u'title': title}, status=u'READY')
             if not os.path.exists(local_filename):
                 print(u'Skip media asset {0}, file "{1}" Not found.'.format(media.metadata[u'title'], local_filename))
                 continue
@@ -1141,9 +1137,11 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False, add_users=
     if add_tasks:
         reader = csv_reader(os.path.join(api_init_csv_directory, u'ttasks.csv'))
         for user_email, in_filename, profile_title, out_filename, out_title, send_email, queue in reader:
-            user = orchestra.get_user({u'mail': user_email})
+            user = orchestra.get_user({u'mail': user_email}) if is_standalone else User(_id=uuid.uuid4())
             if not user:
                 raise IndexError(to_bytes(u'No user with e-mail address {0}.'.format(user_email)))
+            for media in orchestra.get_medias():
+                print(media.filename)
             media_in = orchestra.get_media({u'filename': in_filename})
             if not media_in:
                 raise IndexError(to_bytes(u'No media asset with filename {0}.'.format(in_filename)))

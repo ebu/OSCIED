@@ -23,57 +23,52 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-from flask import abort
+import flask
 from pytoolbox.encoding import to_bytes
 from pytoolbox.flask import check_id, get_request_data, map_exceptions
 from library.oscied_lib.models import TransformProfile
-from plugit_utils import action, json_only, user_info
 
-from . import orchestra
+from server import app, ok_200, orchestra
 
 
 # Transformation profiles management -----------------------------------------------------------------------------------
 
-@action(u'/transform/profile/encoder', methods=[u'GET'])
-@json_only()
-def api_transform_profile_encoder(request):
+@app.route(u'/transform/profile/encoder', methods=[u'GET'])
+def api_transform_profile_encoder(request=flask.request):
     u"""Return an array containing the names of the available encoders."""
     try:
         orchestra.requires_auth(request=request, allow_any=True)
-        return orchestra.ok_200(orchestra.get_transform_profile_encoders(), include_properties=True)
+        return ok_200(orchestra.get_transform_profile_encoders(), include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/transform/profile/count', methods=[u'GET'])
-@json_only()
-def api_transform_profile_count(request):
+@app.route(u'/transform/profile/count', methods=[u'GET'])
+def api_transform_profile_count(request=flask.request):
     u"""Return the number of transformation profiles."""
     try:
         orchestra.requires_auth(request=request, allow_any=True)
         data = get_request_data(request, accepted_keys=orchestra.db_count_keys, qs_only_first_value=True, fail=False)
-        return orchestra.ok_200(orchestra.get_transform_profiles_count(**data), include_properties=False)
+        return ok_200(orchestra.get_transform_profiles_count(**data), include_properties=False)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/transform/profile', methods=[u'GET'])
-@json_only()
-def api_transform_profile_get(request):
+@app.route(u'/transform/profile', methods=[u'GET'])
+def api_transform_profile_get(request=flask.request):
     u"""Return an array containing the transformation profiles serialized to JSON."""
     try:
         orchestra.requires_auth(request=request, allow_any=True)
         data = get_request_data(request, accepted_keys=orchestra.db_find_keys, qs_only_first_value=True, fail=False)
-        return orchestra.ok_200(orchestra.get_transform_profiles(**data), include_properties=True)
+        return ok_200(orchestra.get_transform_profiles(**data), include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/transform/profile', methods=[u'POST'])
-@json_only()
-def api_transform_profile_post(request):
+@app.route(u'/transform/profile', methods=[u'POST'])
+def api_transform_profile_post(request=flask.request):
     u"""
     Add a transformation profile.
 
@@ -89,14 +84,13 @@ def api_transform_profile_post(request):
         profile = TransformProfile(title=data[u'title'], description=data[u'description'],
                                    encoder_name=data[u'encoder_name'], encoder_string=data[u'encoder_string'])
         orchestra.save_transform_profile(profile)
-        return orchestra.ok_200(profile, include_properties=True)
+        return ok_200(profile, include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/transform/profile/id/<id>', methods=[u'GET'])
-@json_only()
-def api_transform_profile_id_get(request, id):
+@app.route(u'/transform/profile/id/<id>', methods=[u'GET'])
+def api_transform_profile_id_get(id, request=flask.request):
     u"""Return a transformation profile serialized to JSON."""
     try:
         check_id(id)
@@ -104,14 +98,13 @@ def api_transform_profile_id_get(request, id):
         profile = orchestra.get_transform_profile(spec={u'_id': id})
         if not profile:
             raise IndexError(to_bytes(u'No transformation profile with id {0}.'.format(id)))
-        return orchestra.ok_200(profile, include_properties=True)
+        return ok_200(profile, include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/transform/profile/id/<id>', methods=[u'DELETE'])
-@json_only()
-def api_transform_profile_id_delete(request, id):
+@app.route(u'/transform/profile/id/<id>', methods=[u'DELETE'])
+def api_transform_profile_id_delete(id, request=flask.request):
     u"""Delete a transformation profile."""
     try:
         check_id(id)
@@ -120,66 +113,61 @@ def api_transform_profile_id_delete(request, id):
         if not profile:
             raise IndexError(to_bytes(u'No transformation profile with id {0}.'.format(id)))
         orchestra.delete_transform_profile(profile)
-        return orchestra.ok_200(u'The transformation profile "{0}" has been deleted.'.format(profile.title),
-                                include_properties=False)
+        return ok_200(u'The transformation profile "{0}" has been deleted.'.format(profile.title),
+                      include_properties=False)
     except Exception as e:
         map_exceptions(e)
 
 
 # Transformation units management (encoders) ---------------------------------------------------------------------------
 
-@action(u'/transform/unit/environment/<environment>/count', methods=[u'GET'])
-@json_only()
-def api_transform_unit_count(request, environment):
+@app.route(u'/transform/unit/environment/<environment>/count', methods=[u'GET'])
+def api_transform_unit_count(environment, request=flask.request):
     u"""Return number of transformation units in the environment ``environment``."""
     try:
         orchestra.requires_auth(request=request, allow_root=True, allow_any=True)
-        return orchestra.ok_200(orchestra.get_transform_units_count(environment), include_properties=False)
+        return ok_200(orchestra.get_transform_units_count(environment), include_properties=False)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/transform/unit/environment/<environment>', methods=[u'GET'])
-@json_only()
-def api_transform_unit_get(request, environment):
+@app.route(u'/transform/unit/environment/<environment>', methods=[u'GET'])
+def api_transform_unit_get(environment, request=flask.request):
     u"""Return an array containing the transformation units of environment ``environment`` serialized to JSON."""
     try:
         orchestra.requires_auth(request=request, allow_root=True, allow_any=True)
-        return orchestra.ok_200(orchestra.get_transform_units(environment), include_properties=False)
+        return ok_200(orchestra.get_transform_units(environment), include_properties=False)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/transform/unit/environment/<environment>', methods=[u'POST'])
-@json_only()
-def api_transform_unit_post(request, environment):
+@app.route(u'/transform/unit/environment/<environment>', methods=[u'POST'])
+def api_transform_unit_post(environment, request=flask.request):
     u"""Ensure that ``num_units`` transformation units are deployed into environment ``environment``."""
     try:
         orchestra.requires_auth(request=request, allow_root=True, role=u'admin_platform')
         data = get_request_data(request, qs_only_first_value=True)
         orchestra.ensure_num_transform_units(environment, int(data[u'num_units']), terminate=True)
-        return orchestra.ok_200(u'Ensured {0} transformation units into environment "{1}"'.format(data[u'num_units'],
-                                environment), include_properties=False)
+        return ok_200(u'Ensured {0} transformation units into environment "{1}"'.format(data[u'num_units'],
+                      environment), include_properties=False)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/transform/unit/environment/<environment>', methods=[u'DELETE'])
-@json_only()
-def api_transform_unit_delete(request, environment):
+@app.route(u'/transform/unit/environment/<environment>', methods=[u'DELETE'])
+def api_transform_unit_delete(environment, request=flask.request):
     u"""Remove the transformation service from environment ``environment``."""
     try:
         orchestra.requires_auth(request=request, allow_root=True, role=u'admin_platform')
         orchestra.ensure_transform_units(environment, None, terminate=True)
-        return orchestra.ok_200(u'Removed transformation service from environment "{0}"'.format(environment),
-                                include_properties=False)
+        return ok_200(u'Removed transformation service from environment "{0}"'.format(environment),
+                      include_properties=False)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/transform/unit/environment/<environment>/number/<number>', methods=[u'GET'])
-@json_only()
-def api_transform_unit_number_get(request, environment, number):
+@app.route(u'/transform/unit/environment/<environment>/number/<number>', methods=[u'GET'])
+def api_transform_unit_number_get(environment, number, request=flask.request):
     u"""Return a transformation unit serialized to JSON."""
     try:
         orchestra.requires_auth(request=request, allow_root=True, allow_any=True)
@@ -187,52 +175,48 @@ def api_transform_unit_number_get(request, environment, number):
         if not unit:
             raise IndexError(to_bytes(u'Transformation unit {0} not found in environment {1}.'.format(number,
                              environment)))
-        return orchestra.ok_200(unit, include_properties=True)
+        return ok_200(unit, include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/transform/unit/environment/<environment>/number/<number>', methods=[u'DELETE'])
-@json_only()
-def api_transform_unit_number_delete(request, environment, number):
+@app.route(u'/transform/unit/environment/<environment>/number/<number>', methods=[u'DELETE'])
+def api_transform_unit_number_delete(environment, number, request=flask.request):
     u"""Remove the transformation unit number ``number`` from environment ``environment``."""
     try:
         orchestra.requires_auth(request=request, allow_root=True, role=u'admin_platform')
         orchestra.destroy_transform_unit(environment, number, terminate=True)
-        return orchestra.ok_200(u'The transformation unit {0} has been removed from environment {1}.'.format(number,
-                                environment), include_properties=False)
+        return ok_200(u'The transformation unit {0} has been removed from environment {1}.'.format(number, environment),
+                      include_properties=False)
     except Exception as e:
         map_exceptions(e)
 
 
 # Transformation tasks (encoding) --------------------------------------------------------------------------------------
 
-@action(u'/transform/queue', methods=[u'GET'])
-@json_only()
-def api_transform_queue(request):
+@app.route(u'/transform/queue', methods=[u'GET'])
+def api_transform_queue(request=flask.request):
     u"""Return an array containing the transformation queues serialized to JSON."""
     try:
         orchestra.requires_auth(request=request, allow_any=True)
-        return orchestra.ok_200(orchestra.get_transform_queues(), include_properties=True)
+        return ok_200(orchestra.get_transform_queues(), include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/transform/task/count', methods=[u'GET'])
-@json_only()
-def api_transform_task_count(request):
+@app.route(u'/transform/task/count', methods=[u'GET'])
+def api_transform_task_count(request=flask.request):
     u"""Return the number of transformation tasks."""
     try:
         orchestra.requires_auth(request=request, allow_any=True)
         data = get_request_data(request, accepted_keys=orchestra.db_count_keys, qs_only_first_value=True, fail=False)
-        return orchestra.ok_200(orchestra.get_transform_tasks_count(**data), include_properties=False)
+        return ok_200(orchestra.get_transform_tasks_count(**data), include_properties=False)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/transform/task/HEAD', methods=[u'GET'])
-@json_only()
-def api_transform_task_head(request):
+@app.route(u'/transform/task/HEAD', methods=[u'GET'])
+def api_transform_task_head(request=flask.request):
     u"""
     Return an array containing the transformation tasks serialized as JSON.
 
@@ -241,14 +225,13 @@ def api_transform_task_head(request):
     try:
         orchestra.requires_auth(request=request, allow_any=True)
         data = get_request_data(request, accepted_keys=orchestra.db_find_keys, qs_only_first_value=True, fail=False)
-        return orchestra.ok_200(orchestra.get_transform_tasks(**data), include_properties=True)
+        return ok_200(orchestra.get_transform_tasks(**data), include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/transform/task', methods=[u'GET'])
-@json_only()
-def api_transform_task_get(request):
+@app.route(u'/transform/task', methods=[u'GET'])
+def api_transform_task_get(request=flask.request):
     u"""
     Return an array containing the transformation tasks serialized to JSON.
 
@@ -260,15 +243,13 @@ def api_transform_task_get(request):
     try:
         orchestra.requires_auth(request=request, allow_any=True)
         data = get_request_data(request, accepted_keys=orchestra.db_find_keys, qs_only_first_value=True, fail=False)
-        return orchestra.ok_200(orchestra.get_transform_tasks(load_fields=True, **data), include_properties=True)
+        return ok_200(orchestra.get_transform_tasks(load_fields=True, **data), include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/transform/task', methods=[u'POST'])
-@json_only()
-@user_info(props=['pk'])
-def api_transform_task_post(request):
+@app.route(u'/transform/task', methods=[u'POST'])
+def api_transform_task_post(request=flask.request):
     u"""
     Launch a transformation task.
 
@@ -293,15 +274,14 @@ def api_transform_task_post(request):
         task_id = orchestra.launch_transform_task(
             auth_user._id, data[u'media_in_id'], data[u'profile_id'], data[u'filename'], data[u'metadata'],
             data[u'send_email'], data[u'queue'], u'/transform/callback')
-        return orchestra.ok_200(task_id, include_properties=True)
+        return ok_200(task_id, include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
 # FIXME why HEAD verb doesn't work (curl: (18) transfer closed with 263 bytes remaining to read) ?
-@action(u'/transform/task/id/<id>/HEAD', methods=[u'GET'])
-@json_only()
-def api_transform_task_id_head(request, id):
+@app.route(u'/transform/task/id/<id>/HEAD', methods=[u'GET'])
+def api_transform_task_id_head(id, request=flask.request):
     u"""
     Return a transformation task serialized to JSON.
 
@@ -313,14 +293,13 @@ def api_transform_task_id_head(request, id):
         task = orchestra.get_transform_task(spec={u'_id': id})
         if not task:
             raise IndexError(to_bytes(u'No transformation task with id {0}.'.format(id)))
-        return orchestra.ok_200(task, include_properties=True)
+        return ok_200(task, include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/transform/task/id/<id>', methods=[u'GET'])
-@json_only()
-def api_transform_task_id_get(request, id):
+@app.route(u'/transform/task/id/<id>', methods=[u'GET'])
+def api_transform_task_id_get(id, request=flask.request):
     u"""
     Return a transformation task serialized to JSON.
 
@@ -335,15 +314,13 @@ def api_transform_task_id_get(request, id):
         task = orchestra.get_transform_task(spec={u'_id': id}, load_fields=True)
         if not task:
             raise IndexError(to_bytes(u'No transformation task with id {0}.'.format(id)))
-        return orchestra.ok_200(task, include_properties=True)
+        return ok_200(task, include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/transform/task/id/<id>', methods=[u'DELETE'])
-@json_only()
-@user_info(props=['pk'])
-def api_transform_task_id_delete(request, id):
+@app.route(u'/transform/task/id/<id>', methods=[u'DELETE'])
+def api_transform_task_id_delete(id, request=flask.request):
     u"""
     Revoke a transformation task.
 
@@ -358,9 +335,9 @@ def api_transform_task_id_delete(request, id):
         if not task:
             raise IndexError(to_bytes(u'No transformation task with id {0}.'.format(id)))
         if auth_user._id != task.user_id:
-            abort(403, u'You are not allowed to revoke transformation task with id {0}.'.format(id))
+            flask.abort(403, u'You are not allowed to revoke transformation task with id {0}.'.format(id))
         orchestra.revoke_transform_task(task=task, terminate=True, remove=False, delete_media=True)
-        return orchestra.ok_200(u'The transformation task "{0}" has been revoked. Corresponding output media asset will'
-                                ' be deleted.'.format(task._id), include_properties=False)
+        return ok_200(u'The transformation task "{0}" has been revoked. Corresponding output media asset will be'
+                      ' deleted.'.format(task._id), include_properties=False)
     except Exception as e:
         map_exceptions(e)

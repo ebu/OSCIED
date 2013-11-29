@@ -23,70 +23,64 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-from flask import abort
+import flask
 from pytoolbox.encoding import to_bytes
 from pytoolbox.flask import check_id, get_request_data, map_exceptions
-from plugit_utils import action, json_only
 
-from . import orchestra
+from server import app, ok_200, orchestra
 
 
 # Publication units management -----------------------------------------------------------------------------------------
 
-@action(u'/publisher/unit/environment/<environment>/count', methods=[u'GET'])
-@json_only()
-def api_publisher_unit_count(request, environment):
+@app.route(u'/publisher/unit/environment/<environment>/count', methods=[u'GET'])
+def api_publisher_unit_count(environment, request=flask.request):
     u"""Return publication units count of environment ``environment``."""
     try:
         orchestra.requires_auth(request=request, allow_root=True, allow_any=True)
-        return orchestra.ok_200(orchestra.get_publisher_units_count(environment), include_properties=False)
+        return ok_200(orchestra.get_publisher_units_count(environment), include_properties=False)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/publisher/unit/environment/<environment>', methods=[u'GET'])
-@json_only()
-def api_publisher_unit_get(request, environment):
+@app.route(u'/publisher/unit/environment/<environment>', methods=[u'GET'])
+def api_publisher_unit_get(environment, request=flask.request):
     u"""Return an array containing the publication units of environment ``environment`` serialized to JSON."""
     try:
         orchestra.requires_auth(request=request, allow_root=True, allow_any=True)
-        return orchestra.ok_200(orchestra.get_publisher_units(environment), include_properties=False)
+        return ok_200(orchestra.get_publisher_units(environment), include_properties=False)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/publisher/unit/environment/<environment>', methods=[u'POST'])
-@json_only()
-def api_publisher_unit_post(request, environment):
+@app.route(u'/publisher/unit/environment/<environment>', methods=[u'POST'])
+def api_publisher_unit_post(environment, request=flask.request):
     u"""Ensure that ``num_units`` publication units are deployed into environment ``environment``."""
     try:
         orchestra.requires_auth(request=request, allow_root=True, role=u'admin_platform')
         data = get_request_data(request, qs_only_first_value=True)
         orchestra.ensure_publisher_units(environment, int(data[u'num_units']), terminate=True)
-        return orchestra.ok_200(u'Ensured {0} publication units into environment "{1}"'.format(data[u'num_units'],
-                                environment), include_properties=False)
+        return ok_200(u'Ensured {0} publication units into environment "{1}"'.format(data[u'num_units'], environment),
+                      include_properties=False)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/publisher/unit/environment/<environment>', methods=[u'DELETE'])
-@json_only()
-def api_publisher_unit_delete(request, environment):
+@app.route(u'/publisher/unit/environment/<environment>', methods=[u'DELETE'])
+def api_publisher_unit_delete(environment, request=flask.request):
     u"""Remove the publication service from environment ``environment``."""
     try:
         orchestra.requires_auth(request=request, allow_root=True, role=u'admin_platform')
         orchestra.destroy_publisher_units(environment, None, terminate=True)
-        return orchestra.ok_200(u'Removed publication service from environment "{0}"'.format(environment),
-                                include_properties=False)
+        return ok_200(u'Removed publication service from environment "{0}"'.format(environment),
+                      include_properties=False)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/publisher/unit/environment/<environment>/number/<number>', methods=[u'GET'])
-@json_only()
-def api_publisher_unit_number_get(request, environment, number):
+@app.route(u'/publisher/unit/environment/<environment>/number/<number>', methods=[u'GET'])
+def api_publisher_unit_number_get(environment, number, request=flask.request):
     u"""Return a publication unit serialized to JSON."""
     try:
         orchestra.requires_auth(request=request, allow_root=True, allow_any=True)
@@ -94,52 +88,48 @@ def api_publisher_unit_number_get(request, environment, number):
         if not unit:
             raise IndexError(to_bytes(u'Publication unit {0} not found in environment {1}.'.format(
                              number, environment)))
-        return orchestra.ok_200(unit, include_properties=True)
+        return ok_200(unit, include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/publisher/unit/environment/<environment>/number/<number>', methods=[u'DELETE'])
-@json_only()
-def api_publisher_unit_number_delete(request, environment, number):
+@app.route(u'/publisher/unit/environment/<environment>/number/<number>', methods=[u'DELETE'])
+def api_publisher_unit_number_delete(environment, number, request=flask.request):
     u"""Remove publication unit number ``number`` from environment ``environment``."""
     try:
         orchestra.requires_auth(request=request, allow_root=True, role=u'admin_platform')
         orchestra.destroy_publisher_unit(environment, number, terminate=True)
-        return orchestra.ok_200(u'The publication unit {0} has been removed of environment {1}.'.format(number,
-                                environment), include_properties=False)
+        return ok_200(u'The publication unit {0} has been removed of environment {1}.'.format(number, environment),
+                      include_properties=False)
     except Exception as e:
         map_exceptions(e)
 
 
 # Publishing tasks -----------------------------------------------------------------------------------------------------
 
-@action(u'/publisher/queue', methods=[u'GET'])
-@json_only()
-def api_publisher_queue(request):
+@app.route(u'/publisher/queue', methods=[u'GET'])
+def api_publisher_queue(request=flask.request):
     u"""Return an array containing the publication queues."""
     try:
         orchestra.requires_auth(request=request, allow_any=True)
-        return orchestra.ok_200(orchestra.get_publisher_queues(), include_properties=True)
+        return ok_200(orchestra.get_publisher_queues(), include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/publisher/task/count', methods=[u'GET'])
-@json_only()
-def api_publisher_task_count(request):
+@app.route(u'/publisher/task/count', methods=[u'GET'])
+def api_publisher_task_count(request=flask.request):
     u"""Return the number of publication tasks."""
     try:
         orchestra.requires_auth(request=request, allow_any=True)
         data = get_request_data(request, accepted_keys=orchestra.db_count_keys, qs_only_first_value=True, fail=False)
-        return orchestra.ok_200(orchestra.get_publisher_tasks_count(**data), include_properties=False)
+        return ok_200(orchestra.get_publisher_tasks_count(**data), include_properties=False)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/publisher/task/HEAD', methods=[u'GET'])
-@json_only()
-def api_publisher_task_head(request):
+@app.route(u'/publisher/task/HEAD', methods=[u'GET'])
+def api_publisher_task_head(request=flask.request):
     u"""
     Return an array containing the publication tasks serialized as JSON.
 
@@ -148,14 +138,13 @@ def api_publisher_task_head(request):
     try:
         orchestra.requires_auth(request=request, allow_any=True)
         data = get_request_data(request, accepted_keys=orchestra.db_find_keys, qs_only_first_value=True, fail=False)
-        return orchestra.ok_200(orchestra.get_publisher_tasks(**data), include_properties=True)
+        return ok_200(orchestra.get_publisher_tasks(**data), include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/publisher/task', methods=[u'GET'])
-@json_only()
-def api_publisher_task_get(request):
+@app.route(u'/publisher/task', methods=[u'GET'])
+def api_publisher_task_get(request=flask.request):
     u"""
     Return an array containing the publication tasks serialized to JSON.
 
@@ -167,14 +156,13 @@ def api_publisher_task_get(request):
     try:
         orchestra.requires_auth(request=request, allow_any=True)
         data = get_request_data(request, accepted_keys=orchestra.db_find_keys, qs_only_first_value=True, fail=False)
-        return orchestra.ok_200(orchestra.get_publisher_tasks(load_fields=True, **data), include_properties=True)
+        return ok_200(orchestra.get_publisher_tasks(load_fields=True, **data), include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/publisher/task', methods=[u'POST'])
-@json_only()
-def api_publisher_task_post(request):
+@app.route(u'/publisher/task', methods=[u'POST'])
+def api_publisher_task_post(request=flask.request):
     u"""
     Launch a publication task.
 
@@ -196,15 +184,14 @@ def api_publisher_task_post(request):
         data = get_request_data(request, qs_only_first_value=True)
         task_id = orchestra.launch_publisher_task(auth_user._id, data[u'media_id'], data[u'send_email'], data[u'queue'],
                                                   u'/publisher/callback')
-        return orchestra.ok_200(task_id, include_properties=True)
+        return ok_200(task_id, include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
 # FIXME why HEAD verb doesn't work (curl: (18) transfer closed with 263 bytes remaining to read) ?
-@action(u'/publisher/task/id/<id>/HEAD', methods=[u'GET'])
-@json_only()
-def api_publisher_task_id_head(request, id):
+@app.route(u'/publisher/task/id/<id>/HEAD', methods=[u'GET'])
+def api_publisher_task_id_head(id, request=flask.request):
     u"""
     Return a publication task serialized to JSON.
 
@@ -216,14 +203,13 @@ def api_publisher_task_id_head(request, id):
         task = orchestra.get_publisher_task(spec={u'_id': id})
         if not task:
             raise IndexError(to_bytes(u'No publication task with id {0}.'.format(id)))
-        return orchestra.ok_200(task, include_properties=True)
+        return ok_200(task, include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/publisher/task/id/<id>', methods=[u'GET'])
-@json_only()
-def api_publisher_task_id_get(request, id):
+@app.route(u'/publisher/task/id/<id>', methods=[u'GET'])
+def api_publisher_task_id_get(id, request=flask.request):
     u"""
     Return a publication task serialized to JSON.
 
@@ -238,14 +224,13 @@ def api_publisher_task_id_get(request, id):
         task = orchestra.get_publisher_task(spec={u'_id': id}, load_fields=True)
         if not task:
             raise IndexError(to_bytes(u'No publication task with id {0}.'.format(id)))
-        return orchestra.ok_200(task, include_properties=True)
+        return ok_200(task, include_properties=True)
     except Exception as e:
         map_exceptions(e)
 
 
-@action(u'/publisher/task/id/<id>', methods=[u'DELETE'])
-@json_only()
-def api_publisher_task_id_delete(request, id):
+@app.route(u'/publisher/task/id/<id>', methods=[u'DELETE'])
+def api_publisher_task_id_delete(id, request=flask.request):
     u"""
     Revoke a publication task.
 
@@ -260,10 +245,10 @@ def api_publisher_task_id_delete(request, id):
         if not task:
             raise IndexError(to_bytes(u'No publication task with id {0}.'.format(id)))
         if auth_user._id != task.user_id:
-            abort(403, u'You are not allowed to revoke publication task with id {0}.'.format(id))
+            flask.abort(403, u'You are not allowed to revoke publication task with id {0}.'.format(id))
         orchestra.revoke_publisher_task(task=task, callback_url=u'/publisher/revoke/callback', terminate=True,
                                         remove=False)
-        return orchestra.ok_200(u'The publication task "{0}" has been revoked. Corresponding media asset will be unpubl'
-                                'ished from here.'.format(task._id), include_properties=False)
+        return ok_200(u'The publication task "{0}" has been revoked. Corresponding media asset will be unpublished from'
+                      ' here.'.format(task._id), include_properties=False)
     except Exception as e:
         map_exceptions(e)
