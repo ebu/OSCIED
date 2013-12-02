@@ -45,7 +45,7 @@ from .. import PublisherWorker, TransformWorker
 from ..models import Media, User, TransformProfile, PublisherTask, TransformTask, ENCODERS_NAMES
 from ..utils import Callback, Storage
 from ..plugit_api import PlugItAPI
-from .base import get_test_api_core
+from .base import ABOUT, get_test_api_core
 
 
 class OrchestraAPICore(object):
