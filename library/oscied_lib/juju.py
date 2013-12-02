@@ -109,11 +109,12 @@ class OsciedEnvironment(Environment):
     def threads(self):
         return filter(None, [self._statistics_thread, self._scaling_thread, self._tasks_thread])
 
-    def generate_config_from_template(self, overwrite=False):
+    def generate_config_from_template(self, overwrite=False, **kwargs):
         if not os.path.exists(self.config) or overwrite:
             chars, size = string.ascii_letters + string.digits, 16
-            passwords = {p: u''.join(random.choice(chars) for i in xrange(size)) for p in self.config_passwords}
-            from_template(self.config_template, self.config, passwords)
+            params = {p: u''.join(random.choice(chars) for i in xrange(size)) for p in self.config_passwords}
+            params.update(kwargs)
+            from_template(self.config_template, self.config, params)
 
     def init_api(self, api_init_csv_directory, **kwargs):
         init_api(self.api_client, api_init_csv_directory, **kwargs)
