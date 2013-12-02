@@ -17,7 +17,7 @@ options:
         Default value is conservative.
   rabbit_queues:
     type: string
-    default: "publisher_private"
+    default: "publisher"
     description: |
         Worker connect to queues to receive tasks.
         For example "publisher_amazon" for amazon, "publisher_private,publisher_amazon" for both.
