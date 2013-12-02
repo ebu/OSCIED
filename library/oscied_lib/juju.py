@@ -113,6 +113,7 @@ class OsciedEnvironment(Environment):
         if not os.path.exists(self.config) or overwrite:
             chars, size = string.ascii_letters + string.digits, 16
             params = {p: u''.join(random.choice(chars) for i in xrange(size)) for p in self.config_passwords}
+            params.update({u'charms_release': self.release})
             params.update(kwargs)
             from_template(self.config_template, self.config, params)
 

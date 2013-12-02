@@ -36,15 +36,12 @@ from .config_base import CharmLocalConfig, CharmLocalConfig_Subordinate, CharmLo
 class OrchestraLocalConfig(CharmLocalConfig_Storage):
 
     def __init__(self, api_url=u'', root_secret=u'', node_secret=u'', mongo_admin_connection=u'',
-                 mongo_node_connection=u'', rabbit_connection=u'',
-                 celery_config_file=u'celeryconfig.py',
-                 celery_template_file=u'templates/celeryconfig.py.template',
-                 mongo_config_file=u'/etc/mongodb.conf', ssh_config_path=u'~/.ssh',
-                 ssh_template_path=u'ssh', juju_config_file=u'~/.juju/environments.yaml',
-                 juju_template_path=u'juju/', charms_config=u'config.yaml',
-                 charms_release=u'raring', charms_repository=u'charms', email_server=u'', email_tls=False,
-                 email_username=u'', email_password=u'', email_address=u'',
-                 email_ttask_template=u'templates/ttask_mail.template',
+                 mongo_node_connection=u'', rabbit_connection=u'', celery_config_file=u'celeryconfig.py',
+                 celery_template_file=u'templates/celeryconfig.py.template', mongo_config_file=u'/etc/mongodb.conf',
+                 ssh_config_path=u'~/.ssh', ssh_template_path=u'ssh', juju_config_file=u'~/.juju/environments.yaml',
+                 juju_template_path=u'juju/', charms_config=u'config.yaml', charms_release=u'raring',
+                 charms_repository=u'charms', email_server=u'', email_tls=False, email_username=u'', email_password=u'',
+                 email_address=u'', email_ttask_template=u'templates/ttask_mail.template',
                  email_ptask_template=u'templates/ptask_mail.template', plugit_api_url='',**kwargs):
         super(OrchestraLocalConfig, self).__init__(**kwargs)
         self.api_url = api_url
@@ -73,6 +70,14 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
         self.plugit_api_url = plugit_api_url
 
     @property
+    def charms_default_path(self):
+        return join(self.charms_repository, u'default')
+
+    @property
+    def charms_release_path(self):
+        return join(self.charms_repository, self.charms_release)
+
+    @property
     def transform_queues(self):
         # FIXME ideally the orchestrator will known what are the queues (https://github.com/ebu/OSCIED/issues/56)
         return (u'transform', )
@@ -96,7 +101,7 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
 
     @property
     def transform_config(self):
-        return join(self.charms_repository, self.charms_release, self.transform_service, u'config.yaml')
+        return join(self.charms_release_path, self.transform_service, u'config.yaml')
 
     @property
     def publisher_service(self):
@@ -104,7 +109,7 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
 
     @property
     def publisher_config(self):
-        return join(self.charms_repository, self.charms_release, self.publisher_service, u'config.yaml')
+        return join(self.charms_release_path, self.publisher_service, u'config.yaml')
 
 
 class PublisherLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinate):

@@ -27,12 +27,9 @@
 
 # Constants ============================================================================================================
 
-RELEASE='raring'  # Update this according to your needs
-
 SCRIPTS_PATH=$(pwd)
 BASE_PATH=$(dirname "$SCRIPTS_PATH")
 CHARMS_PATH="$BASE_PATH/charms"
-CHARMS_DEPLOY_PATH="$BASE_PATH/deploy/$RELEASE"
 DOCS_PATH="$BASE_PATH/docs"
 LIBRARY_PATH="$BASE_PATH/library"
 MEDIAS_PATH="$BASE_PATH/medias"
@@ -41,6 +38,7 @@ SCENARIOS_PATH="$BASE_PATH/scenarios"
 # Symbolic link to current configuration's path
 SCENARIO_CURRENT_PATH="$SCENARIOS_PATH/current"
 SCENARIO_GEN_UNITS_FILE="$SCENARIO_CURRENT_PATH/units.list"
+SCENARIO_CHARMS_PATH="$SCENARIO_CURRENT_PATH/charms/default"
 
 # Orchestra related configuration (e.g. initial setup)
 SCENARIO_API_USERS_FILE="$SCENARIO_CURRENT_PATH/users.csv"
@@ -122,6 +120,21 @@ _deploy_helper()
   rm -f "$SCENARIO_CURRENT_PATH" 2>/dev/null
   ln -s "$scenario" "$SCENARIO_CURRENT_PATH" || xecho 'Unable to update symlink'
 
+  pecho "Overwrite charms in current scenario's charms path"
+  recho 'This step is required the first time you deploy this scenario or when the code is modified'
+  yesOrNo $default 'do it now'
+  if [ $REPLY -eq $true ]; then
+    _overwrite_helper 'oscied-orchestra' 'oscied-orchestra'
+    _overwrite_helper 'oscied-publisher' 'oscied-publisher'
+    _overwrite_helper 'oscied-storage'   'oscied-storage'
+    _overwrite_helper 'oscied-transform' 'oscied-transform'
+    _overwrite_helper 'oscied-webui'     'oscied-webui'
+    _overwrite_helper 'oscied-storage'   'oscied-orchestra/charms/default/oscied-storage'
+    _overwrite_helper 'oscied-transform' 'oscied-orchestra/charms/default/oscied-transform'
+    _overwrite_helper 'oscied-publisher' 'oscied-orchestra/charms/default/oscied-publisher'
+    _overwrite_helper 'oscied-webui'     'oscied-orchestra/charms/default/oscied-webui'
+  fi
+
   pecho 'Initialize JuJu orchestrator configuration'
   if [ -f "$ID_RSA" ]; then
     suffix=$(md5sum "$ID_RSA" | cut -d' ' -f1)
@@ -172,15 +185,15 @@ _deploy_helper()
   $udo ufw disable # Fix master thesis ticket #80 - Juju stuck in pending when using LXC
 
   pecho "Copy JuJu environments file & SSH keys to Orchestra charm's deployment path"
-  cp -f "$ID_RSA"         "$CHARMS_DEPLOY_PATH/oscied-orchestra/ssh/"
-  cp -f "$ID_RSA_PUB"     "$CHARMS_DEPLOY_PATH/oscied-orchestra/ssh/"
-  cp -f "$JUJU_ENVS_FILE" "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/"
+  cp -f "$ID_RSA"         "$SCENARIO_CHARMS_PATH/oscied-orchestra/ssh/"
+  cp -f "$ID_RSA_PUB"     "$SCENARIO_CHARMS_PATH/oscied-orchestra/ssh/"
+  cp -f "$JUJU_ENVS_FILE" "$SCENARIO_CHARMS_PATH/oscied-orchestra/juju/"
   find "$JUJU_PATH" -mindepth 1 -maxdepth 1 -type f -name '*.pem' \
     -exec sudo chown $USER:$USER {} \; \
-    -exec cp -f {} "$CHARMS_DEPLOY_PATH/oscied-orchestra/juju/" \;
+    -exec cp -f {} "$SCENARIO_CHARMS_PATH/oscied-orchestra/juju/" \;
 
   pecho "Execute script of scenario $scenario"
-  python "$scenario/scenario.py" -m "$(dirname "$CHARMS_DEPLOY_PATH")" -r "$RELEASE"
+  python "$scenario/scenario.py" -m "$(dirname "$SCENARIO_CHARMS_PATH")"
 }
 
 _overwrite_helper()
@@ -189,10 +202,10 @@ _overwrite_helper()
     xecho "Usage: $(basename $0)._overwrite_helper source destination"
   fi
 
-  mkdir -p "$CHARMS_DEPLOY_PATH/$2" 2>/dev/null
+  mkdir -p "$SCENARIO_CHARMS_PATH/$2" 2>/dev/null
   rsync -rtvh -LH --delete --progress --exclude='.git' --exclude='*.log' --exclude='*.pyc' \
     --exclude='celeryconfig.py' --exclude='build' --exclude='dist' --exclude='cover' \
-    --exclude='*.egg-info' "$CHARMS_PATH/$1/" "$CHARMS_DEPLOY_PATH/$2/" || \
+    --exclude='*.egg-info' "$CHARMS_PATH/$1/" "$SCENARIO_CHARMS_PATH/$2/" || \
     xecho "Unable to overwrite $2 charm"
 }
 
@@ -388,7 +401,7 @@ install()
 
 cleanup()
 {
-  rm -rf "$CHARMS_DEPLOY_PATH"
+  rm -rf "$SCENARIO_CHARMS_PATH"
   find "$LIBRARY_PATH" -type d -name 'build'      -exec $udo rm -rf {} 2>/dev/null \;
   find "$LIBRARY_PATH" -type d -name 'dist'       -exec $udo rm -rf {} 2>/dev/null \;
   find "$LIBRARY_PATH" -type d -name "*.egg-info" -exec $udo rm -rf {} 2>/dev/null \;
@@ -418,21 +431,6 @@ deploy()
     path="$CHARMS_PATH/oscied-transform/"
     cd "$path" || xecho "Unable to find path $path"
     ./get-libs.sh || xecho 'Something went wrong'
-  fi
-
-  pecho 'Overwrite charms in deployment path'
-  recho 'This step is required the 1st time or when the code is modified'
-  yesOrNo $default 'do it now'
-  if [ $REPLY -eq $true ]; then
-    _overwrite_helper 'oscied-orchestra' 'oscied-orchestra'
-    _overwrite_helper 'oscied-publisher' 'oscied-publisher'
-    _overwrite_helper 'oscied-storage'   'oscied-storage'
-    _overwrite_helper 'oscied-transform' 'oscied-transform'
-    _overwrite_helper 'oscied-webui'     'oscied-webui'
-    _overwrite_helper 'oscied-storage'   "oscied-orchestra/charms/$RELEASE/oscied-storage"
-    _overwrite_helper 'oscied-transform' "oscied-orchestra/charms/$RELEASE/oscied-transform"
-    _overwrite_helper 'oscied-publisher' "oscied-orchestra/charms/$RELEASE/oscied-publisher"
-    _overwrite_helper 'oscied-webui'     "oscied-orchestra/charms/$RELEASE/oscied-webui"
   fi
 
   cd "$SCENARIOS_PATH" || xecho "Unable to find path $SCENARIOS_PATH"

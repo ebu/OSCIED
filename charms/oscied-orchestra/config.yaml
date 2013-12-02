@@ -35,6 +35,10 @@ options:
     description: |
         Messaging queue user's password.
         This secret is then forwared by the coordinator to managed units (transform, publish).
+  charms_release:
+    type: string
+    default: "raring"
+    description: The default Ubuntu release for the units deployed with the units management API of the orchestrator.
   email_server:
     type: string
     default: ""

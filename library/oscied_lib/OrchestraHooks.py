@@ -30,7 +30,7 @@ import os, re, shutil, time
 from codecs import open
 from configobj import ConfigObj
 from pytoolbox.encoding import to_bytes
-from pytoolbox.filesystem import first_that_exist, try_makedirs
+from pytoolbox.filesystem import first_that_exist, try_makedirs, try_symlink
 from pytoolbox.juju import DEFAULT_OS_ENV
 from pytoolbox.subprocess import rsync, screen_launch, screen_list, screen_kill
 
@@ -150,6 +150,8 @@ class OrchestraHooks(CharmHooks_Storage):
         self.info(u'Configure Orchestra the Orchestrator')
         self.local_config.verbose = self.config.verbose
         self.local_config.api_url = self.api_url(local=False)
+        self.local_config.charms_release = self.config.charms_release
+        self.local_config.node_secret = self.config.node_secret
         self.local_config.root_secret = self.config.root_secret
         self.local_config.mongo_admin_connection = self.mongo_admin_connection
         self.local_config.mongo_node_connection = self.mongo_node_connection
@@ -168,6 +170,11 @@ class OrchestraHooks(CharmHooks_Storage):
         self.local_config.email_password = self.config.email_password
         self.local_config.plugit_api_url = self.config.plugit_api_url
         self.remark(u'Orchestrator successfully configured')
+
+        self.info(u'Symlink charms default directory to directory for release {0}'.format(self.config.charms_release))
+        try_symlink(os.path.abspath(self.local_config.charms_default_path),
+                    os.path.abspath(self.local_config.charms_release_path))
+
         self.storage_remount()
 
     def hook_uninstall(self):

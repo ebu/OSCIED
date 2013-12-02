@@ -41,8 +41,9 @@ class Local(DeploymentScenario):
 
     def run(self):
         print(description)
-        self.local.bootstrap(wait_started=True)
+        self.local.symlink_local_charms()
         self.local.generate_config_from_template()
+        self.local.bootstrap(wait_started=True)
         ensure_num_units = self.local.ensure_num_units
         ensure_num_units(u'oscied-transform', u'oscied-transform', local=True)
         ensure_num_units(u'oscied-publisher', u'oscied-publisher', local=True, expose=True)
@@ -65,4 +66,4 @@ class Local(DeploymentScenario):
 
 if __name__ == u'__main__':
     configure_unicode()
-    Local().main(environments=[OsciedEnvironment(u'local', config=CONFIG)])
+    Local().main(environments=[OsciedEnvironment(u'local', config=CONFIG, release=u'raring')])
