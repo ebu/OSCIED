@@ -117,7 +117,7 @@ def get_test_api_core():
 
 
 def init_api(api_core_or_client, api_init_csv_directory, flush=False, add_users=True, add_profiles=True,
-             add_medias=True, add_tasks=True):
+             add_medias=True, add_tasks=False, wait_started=False):
     u"""
     Initialize an instance of ``OrchestraAPICore`` or use provided instance of ``OrchestraAPIClient`` to initialize a
     remote orchestration unit.
@@ -126,6 +126,12 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False, add_users=
     orchestra = api_core_or_client if is_core else None
     api_client = api_core_or_client if not is_core else None
     is_standalone = not is_core or orchestra.is_standalone
+
+    if api_client and wait_started:
+        t = api_client.timeout  # temporary set infinite timeout
+        api_client.timeout = 0
+        api_client.about()      # wait for orchestra to answer HTTP request
+        api_client.timeout = t  # reset client timeout to initial value
 
     if flush:
         if is_core:
