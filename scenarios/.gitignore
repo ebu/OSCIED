@@ -3,3 +3,8 @@ environments.yaml
 id_rsa
 id_rsa.pub
 units.list
+*/charms
+*/*.pem
+*/config*.yaml
+*/environments.yaml
+*/id_rsa*
