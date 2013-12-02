@@ -40,8 +40,8 @@ from .hooks_base import CharmHooks_Storage
 
 class OrchestraHooks(CharmHooks_Storage):
 
-    PACKAGES = tuple(set(CharmHooks_Storage.PACKAGES +
-                     (u'ffmpeg', u'ntp', u'x264', u'mongodb', u'rabbitmq-server')))
+    PACKAGES = tuple(set(CharmHooks_Storage.PACKAGES + (u'ffmpeg', u'mongodb', u'ntp', u'nginx', u'rabbitmq-server',
+                     u'uwsgi', u'uwsgi-plugin-python', u'x264')))
     JUJU_PACKAGES = (u'juju-core',)
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
