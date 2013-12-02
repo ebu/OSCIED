@@ -25,6 +25,9 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+import time
+
+from pytoolbox import juju as py_juju
 from pytoolbox.juju import DeploymentScenario
 
 SCENARIO_PATH = dirname(__file__)
@@ -36,8 +39,18 @@ TRANSFORM_UNITS = 5
 class Benchmark(DeploymentScenario):
 
     def run(self, **kwargs):
+        u"""
+        Run the Benchmark One scenario.
+
+        Keyword arguments:
+        concurrency      -- the number of concurrent worker per transformation unit (default 1)
+        overwrite_config -- overwrite previously generated configuration file (default False)
+        """
+        
+        overwrite   = kwargs.get('overwrite_config', False)
+        concurrency = kwargs.get('concurrency', 1)
         self.benchmark.bootstrap(wait_started=True)
-        self.benchmark.generate_config_from_template(kwargs['overwrite_config'], concurrency=kwargs['concurrency'])
+        self.benchmark.generate_config_from_template(overwrite=overwrite, concurrency=concurrency)
         
         self.benchmark.auto = True
         ensure_num_units = self.benchmark.ensure_num_units
@@ -50,7 +63,17 @@ class Benchmark(DeploymentScenario):
         self.benchmark.add_relation(u'oscied-orchestra:transform', u'oscied-transform:transform')
         self.benchmark.auto = False
 
-        # TODO wait_started
-        self.benchmark.init_api(SCENARIO_PATH, flush=True, add_tasks=False) #, wait_started=True)
+        # wait for orchestra to be STARTED
+        while True:
+            units = self.bechmark.get_units(u'oscied-orchestra')
+            state = units[0].get(u'agent-state', u'unknown')
+            if state in py_juju.STARTED_STATES: break
+            elif state in py_juju.ERROR_STATES: raise Exception(u'oscied-orchestra failed while starting')
+            else:                               time.sleep(0.5)
+
+        # TODO: oscied_lib/api/base.py:119
+        #       wait_started blocks until oscied-orchestra is up and running
+        #       this functionality should be tested
+        self.benchmark.init_api(SCENARIO_PATH, flush=True, add_tasks=False, wait_started=True)
 
         # TODO self.benchmark.check_status(raise_if_errors=True, wait_all_started=True)
