@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 #**********************************************************************************************************************#
@@ -143,7 +142,7 @@ class OrchestraAPIClient(object):
         # finally:
         #     os.remove(f.name)
 
-    def upload_media(self, filename):
+    def upload_media(self, filename, backup_in_remote=True):
         u"""Upload a media asset by rsync-ing the local file to the shared storage mount point of the orchestrator !"""
         # FIXME detect name based on hostname ?
         os.chmod(self.id_rsa, 0600)
@@ -151,21 +150,22 @@ class OrchestraAPIClient(object):
         host = u'ubuntu@{0}'.format(self.api_url.split(u':')[0])
 
         cfg, get = self.api_local_config, self.get_unit_local_config
-        if self.environment == u'maas':
-            p = self.storage_path = u'/mnt/storage'
-            a = self.storage_address = u'192.168.0.9'
-            m = self.storage_mountpoint = u'medias_volume_0'
-        else:
-            p = self.storage_path       = self.storage_path       or get(service, number, cfg, option=u'storage_path')
-            a = self.storage_address    = self.storage_address    or get(service, number, cfg, option=u'storage_address')
-            m = self.storage_mountpoint = self.storage_mountpoint or get(service, number, cfg, option=u'storage_mountpoint')
+        p = self.storage_path       = self.storage_path       or get(service, number, cfg, option=u'storage_path')
+        a = self.storage_address    = self.storage_address    or get(service, number, cfg, option=u'storage_address')
+        m = self.storage_mountpoint = self.storage_mountpoint or get(service, number, cfg, option=u'storage_mountpoint')
         bkp_path = os.path.join(p, u'uploads_bkp/')
         dst_path = os.path.join(p, u'uploads/')
 
-        print(rsync(filename, u'{0}:{1}'.format(host, bkp_path), makedest=True, archive=True, progress=True,
-              rsync_path=u'sudo rsync', extra='ssh -i {0}'.format(self.id_rsa))['stdout'])
-        sync_bkp_to_upload = u'sudo rsync -ah --progress {0} {1}'.format(bkp_path, dst_path)
-        print(ssh(host, id=self.id_rsa, remote_cmd=sync_bkp_to_upload)['stdout'])
+        if backup_in_remote:
+            # Mirror the local file into a 'backup' directory on the shared storage, then into the destination directory
+            print(rsync(filename, u'{0}:{1}'.format(host, bkp_path), makedest=True, archive=True, progress=True,
+                  rsync_path=u'sudo rsync', extra='ssh -i {0}'.format(self.id_rsa))['stdout'])
+            sync_bkp_to_upload = u'sudo rsync -ah --progress {0} {1}'.format(bkp_path, dst_path)
+            print(ssh(host, id=self.id_rsa, remote_cmd=sync_bkp_to_upload)['stdout'])
+        else:
+            # Mirror the local file into the destination directory of the shared storage
+            print(rsync(filename, u'{0}:{1}'.format(host, dst_path), makedest=True, archive=True, progress=True,
+                  rsync_path=u'sudo rsync', extra='ssh -i {0}'.format(self.id_rsa))['stdout'])
         ssh(host, id=self.id_rsa, remote_cmd=u'sudo chown www-data:www-data {0} -R'.format(dst_path))
 
         return u'{0}://{1}/{2}/uploads/{3}'.format(u'glusterfs', a, m, os.path.basename(filename))
@@ -178,10 +178,7 @@ class OrchestraAPIClient(object):
         host = u'ubuntu@{0}'.format(self.api_url.split(u':')[0])
 
         cfg, get = self.api_local_config, self.get_unit_local_config
-        if self.environment == u'maas':
-            p = self.storage_path = u'/mnt/storage'
-        else:
-            p = self.storage_path = self.storage_path or get(service, number, cfg, option=u'storage_path')
+        p = self.storage_path = self.storage_path or get(service, number, cfg, option=u'storage_path')
         medias_path = os.path.join(p, u'medias/*')
 
         ssh(host, id=self.id_rsa, remote_cmd=u'sudo rm -rf {0}'.format(medias_path))
