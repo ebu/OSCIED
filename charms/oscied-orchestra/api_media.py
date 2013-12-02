@@ -30,7 +30,7 @@ from pytoolbox.encoding import to_bytes
 from pytoolbox.flask import check_id, get_request_data, map_exceptions
 from library.oscied_lib.models import Media
 
-from server import app, ok_200, orchestra
+from orchestra import app, ok_200, orchestra
 
 
 # Medias management ----------------------------------------------------------------------------------------------------

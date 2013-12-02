@@ -27,6 +27,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import logging, sys
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from pytoolbox.encoding import configure_unicode
 from pytoolbox.logging import setup_logging
 from pytoolbox.serialization import object2json
@@ -90,12 +91,19 @@ def configure_plugit_mode():
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-is_mock = True  # FIXME read command line parameter
 try:
     configure_unicode()
-    config = ORCHESTRA_CONFIG_TEST if is_mock else OrchestraLocalConfig.read(u'local_config.pkl')
+    HELP_MOCK = u'Mock the MongoDB driver with MongoMock ([WARNING] Still not a perfect mock of the real-one)'
+    parser = ArgumentParser(
+        formatter_class=ArgumentDefaultsHelpFormatter, epilog=ABOUT)
+    parser.add_argument(u'-m', u'--mock', action=u'store_true', help=HELP_MOCK, default=False)
+    args = parser.parse_args()
+
+    config = ORCHESTRA_CONFIG_TEST if args.mock else OrchestraLocalConfig.read(u'local_config.pkl')
     setup_logging(filename=u'orchestra.log', console=True, level=config.log_level)
     logging.info(ABOUT)
+    logging.info(u'Mocking the MongoDB database through the driver called MongoMock' if args.mock else
+                 u'Using a real MongoDB database through the driver called pyMongo')
     logging.info(u'Configuration : {0}'.format(unicode(object2json(config, True))))
 
     if not config.storage_uri():
@@ -110,8 +118,7 @@ try:
         sys.exit(0)
 
     # Create an instance of the API core
-    orchestra = get_test_api_core() if is_mock else OrchestraAPICore(config)
-    orchestra.config.plugit_api_url = u'http://127.0.0.1/'
+    orchestra = get_test_api_core() if args.mock else OrchestraAPICore(config)
     logging.info(u'Start REST API')
 
     # Create an instance of the flask application

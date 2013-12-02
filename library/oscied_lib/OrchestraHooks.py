@@ -52,12 +52,7 @@ class OrchestraHooks(CharmHooks_Storage):
     # ------------------------------------------------------------------------------------------------------------------
 
     def api_url(self, local=False):
-        return u'http://{0}:5000{1}'.format(u'127.0.0.1' if local else self.private_address,
-                                            u'' if self.is_standalone else u'/action')
-
-    @property
-    def is_standalone(self):
-        return self.config.plugit_api_url is None or not self.config.plugit_api_url.strip()
+        return u'http://{0}:5000'.format(u'127.0.0.1' if local else self.private_address)
 
     @property
     def mongo_admin_connection(self):
@@ -203,7 +198,7 @@ class OrchestraHooks(CharmHooks_Storage):
             # FIXME this is not a good idea, but I have some trouble with precise release
             self.configure_rabbitmq()  # (see ticket #205 of my private TRAC ticket system)
             if screen_list(u'Orchestra', log=self.debug) == []:
-                screen_launch(u'Orchestra', [u'python', u'orchestra.py' if self.is_standalone else u'server.py'])
+                screen_launch(u'Orchestra', [u'python', u'orchestra.py'])
             for start_delay in xrange(15):
                 time.sleep(1)
                 if self.cmd(u'curl -s {0}'.format(self.api_url(local=True)), fail=False)[u'returncode'] == 0:

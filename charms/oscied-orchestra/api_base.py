@@ -28,7 +28,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import flask, logging
 from pytoolbox.flask import get_request_data, map_exceptions
 
-from server import app, ok_200, orchestra
+from orchestra import app, ok_200, orchestra
 
 
 # Index ----------------------------------------------------------------------------------------------------------------
