@@ -158,9 +158,9 @@ class IBC2013(DeploymentScenario):
 
 if __name__ == u'__main__':
     configure_unicode()
-    IBC2013().main(environments=[
+    IBC2013(environments=[
         OsciedEnvironment(AMAZON, events=EVENTS[AMAZON], statistics=STATS[AMAZON], charts_path=CHARTS_PATH,
                           config=CONFIG[AMAZON], release=u'raring'),
         OsciedEnvironment(MAAS, events=EVENTS[MAAS], statistics=STATS[MAAS], charts_path=CHARTS_PATH,
                           config=CONFIG[MAAS], release=u'precise')
-    ])
+    ]).run()
