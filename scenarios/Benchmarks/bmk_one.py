@@ -49,8 +49,10 @@ class Benchmark(DeploymentScenario):
         
         overwrite   = kwargs.get('overwrite_config', False)
         concurrency = kwargs.get('concurrency', 1)
-        self.benchmark.bootstrap(wait_started=True)
+        
+        self.benchmark.symlink_local_charms()
         self.benchmark.generate_config_from_template(overwrite=overwrite, concurrency=concurrency)
+        self.benchmark.bootstrap(wait_started=True)
         
         self.benchmark.auto = True
         ensure_num_units = self.benchmark.ensure_num_units
@@ -71,9 +73,20 @@ class Benchmark(DeploymentScenario):
             elif state in py_juju.ERROR_STATES: raise Exception(u'oscied-orchestra failed while starting')
             else:                               time.sleep(0.5)
 
-        # TODO: oscied_lib/api/base.py:119
-        #       wait_started blocks until oscied-orchestra is up and running
+        # TODO: oscied_lib/api/utils.py:58
+        #       wait_started blocks until oscied-orchestra is up and running;
         #       this functionality should be tested
         self.benchmark.init_api(SCENARIO_PATH, flush=True, add_tasks=False, wait_started=True)
 
         # TODO self.benchmark.check_status(raise_if_errors=True, wait_all_started=True)
+
+    def send_tasks(self):
+        api_client = self.benchmark.api_client()
+
+        # retrieves medias list
+        medias = api_client.medias.list(head=True)
+
+        # read tasks configuration file
+        
+        # schedule tasks
+        return []

@@ -27,43 +27,29 @@
 
 import benchmark_one
 import benchmark_two
+import sys
 
+from pytoolbox.console import choice
 from pytoolbox.encoding import configure_unicode
 
 description = u'OSCIED benchmarking; composed by two scenari'
 
-def choice(question='', choices=[]):
-    u"""
-    Prompt the user for a choice and return his/her answer.
-    
-    **Example of usage**
-    
-    >>choice('What is your favorite color?', ['blue', 'orange', 'red'])
-    What is your favourite color? [blue, orange, red]: orange
-    orange
-    >>choice(['male', 'female'])
-    [male, female]? male
-    male
-    """
-
-    # generate question and choices list
-    choices_list = ''.join(s + ', ' for s in choices).rstrip(', ')
-    if question is None:
-        question = u'[{0}]? '.format(choices_list)
-    else:
-        question = u'{0} [{1}]: '.format(question, choices_list)
-
-    # loop until an acceptable choice has been answered
-    while True:
-        ans = raw_input(question)
-        if ans in choices:
-            return ans
-        print(u'Please choose between {0}.'.format(choices_list)) 
-
 if __name__ == '__main__':
     configure_unicode()
-    bmk = choice('Which scenario would you like to deploy?', ['one', 'two'])
-    if scenario == 'one':
-        bmk_one.Benchmark().main(environments=[OsciedEnvironment(u'benchmark', config=CONFIG)])
-    elif scenario == 'two':
-        bmk_two.Benchmark().main(environments=[OsciedEnvironment(u'benchmark', config=CONFIG)])
+
+    # get selected benchmark from console arguments or prompt user for it
+    try:
+        idx = sys.argv.index(u'--benchmark') + 1
+        bmk = sys.argv[idx]
+    except ValueError:
+        bmk = choice(u'Which scenario would you like to deploy?', [u'one', u'two'])
+    except:
+        bmk = None
+
+    # deploy the selected benchmark
+    if bmk == u'one':
+        bmk_one.Benchmark(environments=[OsciedEnvironment(u'benchmark', config=CONFIG)]).run()
+    elif bmk == u'two':
+        bmk_two.Benchmark(environments=[OsciedEnvironment(u'benchmark', config=CONFIG)]).run()
+    else:
+        print(u'unknown benchmark name: %s', % bmk)
