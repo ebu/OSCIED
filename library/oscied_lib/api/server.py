@@ -30,7 +30,6 @@ import logging, mongomock, pymongo, smtplib, uuid
 from celery.task.control import revoke
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from flask import abort
 from jinja2 import Template
 from pymongo.errors import DuplicateKeyError
 from pytoolbox import juju
@@ -44,7 +43,6 @@ from random import randint
 from .. import PublisherWorker, TransformWorker
 from ..models import Media, User, TransformProfile, PublisherTask, TransformTask, ENCODERS_NAMES
 from ..utils import Callback, Storage
-from ..plugit_api import PlugItAPI
 from .base import ABOUT
 
 
@@ -54,6 +52,7 @@ class OrchestraAPICore(object):
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Constructor >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     def __init__(self, config):
+        logging.info(u'builded a core') # FIXME DEBUG
         self.config = config
         if self.is_mock:
             self._db = mongomock.Connection().orchestra
@@ -90,10 +89,6 @@ class OrchestraAPICore(object):
     @property
     def is_standalone(self):
         return self.config.plugit_api_url is None or not self.config.plugit_api_url.strip()
-
-    @property
-    def plugit_api(self):
-        return None if self.is_standalone else PlugItAPI(self.config.plugit_api_url)
 
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Functions >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -164,85 +159,6 @@ class OrchestraAPICore(object):
                 text_plain = Template(template_file.read()).render(object2dict(task, include_properties=True))
                 # FIXME YourFormatter().format(template_file.read(), task)
             self.send_email(task.user.mail, u'OSCIED - {0} task {1} {2}'.format(name, task._id, status), text_plain)
-
-    # http://publish.luisrei.com/articles/flaskrest.html
-    def requires_auth(self, request, allow_root=False, allow_node=False, allow_any=False, role=None, id=None,
-                      mail=None):
-        """
-        This method implements Orchestra's RESTful API (standalone only) authentication logic. Here is ensured that an
-        access to a method of the API is filtered based on rules (this method's parameters). HTTP user agent must
-        authenticate through HTTP basic access authentication. The username must be user's email address and password
-        must be user's secret. This not apply for system-users like root or node as they do not have any e-mail address.
-
-        .. warning::
-
-            Username and password are passed as plaintext, SSL/TLS is one of the way to improve security although this was
-            not tested during my thesis.
-
-        This method will abort request with HTTP 401 error if HTTP user agent doesn't authenticate.
-
-        :param request: the request itself, credentials are retrieved from request authorization header
-        :param allow_root: if set to `True` root system-user will be allowed
-        :param allow_node: if set to `True` node system-user will be allowed
-        :param allow_any: if set to `True` any authenticated user will be allowed
-        :param role: if set to <name>, any user will "name" role set to `True` will be allowed
-        :param id: if set to <uuid>, any user with _id equal to "uuid" will be allowed
-        :param mail: if set to <mail>, any user with mail equal to "mail" will be allowed
-
-        This method will abort request with HTTP 403 error if none of the following conditions are met.
-
-        Example::
-
-            # Allow any authenticated user
-            @action(u'/my/example/route', methods=[u'GET'])
-            def api_my_example_route():
-                if request.method == u'GET':
-                    auth_user = orchestra.requires_auth(request=request, allow_any=True)
-                    ...
-                    return ok_200(u'my return value', True)
-
-            # Allow root system-user or any user with admin attribute set
-            @action(u'/my/restricted/route', methods=[u'GET'])
-            def api_my_restricted_route():
-                if request.method == u'GET':
-                    auth_user = orchestra.requires_auth(request=request, allow_root=True, allow_role='admin')
-                    ...
-                    return ok_200(u'my return value', True)
-        """
-        if not self.is_standalone:
-            return  # Bypass user authentication & authorization if not in standalone mode.
-        auth = request.authorization
-        if not auth or auth.username is None or auth.password is None:
-            abort(401, u'Authenticate.')  # Testing for None is maybe too much ... Security is like that
-        username = auth.username
-        password = auth.password
-        root = (username == u'root' and password == self.config.root_secret)
-        node = (username == u'node' and password == self.config.node_secret)
-        user = None
-        if not root and not node:
-            user = self.get_user({u'mail': username}, secret=password)
-            username = user.name if user else None
-        if not root and not user and not node:
-            abort(401, u'Authentication Failed.')
-        if root and allow_root:
-            logging.info(u'Allowed authenticated root')
-            return self.root_user
-        if node and allow_node:
-            logging.info(u'Allowed authenticated worker/node')
-            return self.node_user
-        if user and allow_any:
-            logging.info(u'Allowed authenticated user {0}'.format(user.name))
-            return user
-        if role and hasattr(user, role) and getattr(user, role):
-            logging.info(u'Allowed authenticated user {0} with role {1}'.format(user.name, role))
-            return user
-        if id and user._id == id:
-            logging.info(u'Allowed authenticated user {0} with id {1}'.format(user.name, id))
-            return user
-        if mail and user.mail == mail:
-            logging.info(u'Allowed authenticated user {0} with mail {1}'.format(user.name, mail))
-            return user
-        abort(403, username)
 
     # ------------------------------------------------------------------------------------------------------------------
 

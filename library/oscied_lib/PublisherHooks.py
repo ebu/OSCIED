@@ -73,7 +73,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         shutil.rmtree(mod_streaming, ignore_errors=True)
         setuptools.archive_util.unpack_archive(u'apache_{0}.tar.gz'.format(mod_streaming), '.')
         os.chdir(mod_streaming)
-        self.cmd(u'./configure --with-apxs={0}'.format(self.cmd('which apxs2')['stdout']))
+        self.cmd(u'./configure --with-apxs={0}'.format(self.cmd(u'which apxs2')[u'stdout']))
         self.cmd(u'make -j{0}'.format(multiprocessing.cpu_count()))
         self.cmd(u'make install')
         os.chdir(u'..')
@@ -83,7 +83,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
 
     def hook_config_changed(self):
         self.info(u'Configure Apache 2')
-        self.info(u'{0} Apache H.264 streaming module'.format('Enable' if self.config.mod_streaming else 'Disable'))
+        self.info(u'{0} Apache H.264 streaming module'.format(u'Enable' if self.config.mod_streaming else u'Disable'))
         mods = (u'LoadModule h264_streaming_module /usr/lib/apache2/modules/mod_h264_streaming.so',
                 u'AddHandler h264-streaming.extensions .mp4')
         lines = filter(lambda l: l not in mods, open(self.local_config.apache_config_file, u'r', u'utf-8'))
@@ -106,7 +106,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
             self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(PublisherHooks.PACKAGES)))
             self.cmd(u'apt-get -y remove --purge apache2.2-common', fail=False)  # Fixes some problems
             self.cmd(u'apt-get -y autoremove')
-            shutil.rmtree('/etc/apache2/',      ignore_errors=True)
+            shutil.rmtree(u'/etc/apache2/',     ignore_errors=True)
             shutil.rmtree(u'/var/log/apache2/', ignore_errors=True)
         shutil.rmtree(self.publish_path, ignore_errors=True)
         os.makedirs(self.publish_path)

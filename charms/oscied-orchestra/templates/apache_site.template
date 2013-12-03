@@ -1,0 +1,19 @@
+<VirtualHost *:80>
+
+    ServerName {domain}
+
+    CustomLog "{directory}/access.log" common
+    ErrorLog "{directory}/error.log"
+    LogFormat "%h %l %u %t \"%r\" %>s %b" common
+    WSGIDaemonProcess flask processes=10 threads=15 display-name=%{{GROUP}} python-path={directory}
+    WSGIProcessGroup flask
+    WSGIScriptAlias /{alias} {wsgi}
+    WSGIApplicationGroup %{{GLOBAL}}
+    WSGIPassAuthorization On
+
+    <Directory {directory}/test/>
+        Order Allow,Deny
+        Allow from All
+    </Directory>
+
+</VirtualHost>

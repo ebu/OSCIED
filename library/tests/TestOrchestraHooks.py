@@ -26,6 +26,7 @@ import os, shutil
 from copy import copy
 from mock import call
 from nose.tools import assert_equal
+from pytoolbox.filesystem import try_makedirs
 from pytoolbox.juju import DEFAULT_OS_ENV
 from pytoolbox.unittest import mock_cmd
 from oscied_lib.config import OrchestraLocalConfig
@@ -33,10 +34,10 @@ from oscied_lib.OrchestraHooks import OrchestraHooks
 
 CONFIG = {
     u'verbose': True, u'root_secret': u'toto', u'node_secret': u'abcd', u'repositories_user': u'oscied',
-    u'repositories_pass': u'', u'charms_repository': u'https://github.com/ebu/OSCIED/charms',
-    u'mongo_admin_password': u'Mongo_admin_1234', u'mongo_node_password': u'Mongo_user_1234',
-    u'rabbit_password': u'Alice_in_wonderland', u'email_server': u'', u'email_tls': True,
-    u'email_address': u'someone@oscied.org', u'email_username': u'someone', u'email_password': u'',
+    u'repositories_pass': u'', u'charms_repository': u'charms', u'charms_release': u'raring',
+    u'charms_repository': u'https://github.com/ebu/OSCIED/charms', u'mongo_admin_password': u'Mongo_admin_1234',
+    u'mongo_node_password': u'Mongo_user_1234', u'rabbit_password': u'Alice_in_wonderland', u'email_server': u'',
+    u'email_tls': True, u'email_address': u'someone@oscied.org', u'email_username': u'someone', u'email_password': u'',
     u'storage_address': u'', u'storage_nat_address': u'', u'storage_fstype': u'', 'storage_mountpoint': u'',
     u'storage_options': u'', u'plugit_api_url': u''
 }
@@ -72,16 +73,24 @@ class TestOrchestraHooks(object):
         self.hooks.local_config.celery_config_file = u'celeryconfig.py'
         self.hooks.local_config.celery_template_file = os.path.join(
             u'../../charms/oscied-orchestra', self.hooks.local_config.celery_template_file)
+        self.hooks.local_config.site_path = u'.'
+        self.hooks.local_config.site_template_file = os.path.join(
+            u'../../charms/oscied-orchestra', self.hooks.local_config.site_template_file)
         self.hooks.local_config.ssh_template_path = os.path.join(
             u'../../charms/oscied-orchestra', self.hooks.local_config.ssh_template_path)
         self.hooks.local_config.mongo_config_file = u'mongodb_test.conf'
+        try_makedirs(os.path.join(self.hooks.local_config.charms_repository, u'default'))
+        try_makedirs(u'bibi')
+        self.hooks.directory = u'bibi'
 
     def tearDown(self):
-        for f in (u'celeryconfig.py', u'hosts', u'mongodb_test.conf', u'test.pkl'):
+        for f in (u'celeryconfig.py', u'hosts', u'mongodb_test.conf', u'oscied-orchestra-0', u'test.pkl'):
             try:
                 os.remove(f)
             except:
                 pass
+        shutil.rmtree(self.hooks.local_config.charms_repository, ignore_errors=True)
+        shutil.rmtree(u'bibi', ignore_errors=True)
 
     def test_config_changed(self):
         self.hooks.cmd = mock_cmd()
@@ -98,6 +107,8 @@ class TestOrchestraHooks(object):
         assert_equal(self.hooks.cmd.call_args_list, [
             call(u'service mongodb start',         fail=False),
             call(u'service rabbitmq-server start', fail=False),
+            call(u'a2dissite default'),
+            call(u'a2ensite oscied-orchestra-0'),
             call(u'mongo f.js'),
             call(u'mongo orchestra f.js'),
             call(u'mongo celery g.js'),

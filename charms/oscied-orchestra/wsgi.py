@@ -1,7 +1,8 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 #**********************************************************************************************************************#
-#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARY
+#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : ORCHESTRA
 #
 #  Project Manager : Bram Tullemans (tullemans@ebu.ch)
 #  Main Developer  : David Fischer (david.fischer.ch@gmail.com)
@@ -23,8 +24,6 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
-
-from .utils import Callback
-
-CALLBACK_TEST = Callback(u'http://127.0.0.1/media', u'toto', u'1234')
+import os
+os.chdir(os.path.dirname(__file__))
+from server import app as application

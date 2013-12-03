@@ -29,19 +29,21 @@ from __future__ import absolute_import
 import os, re, shutil, time
 from codecs import open
 from configobj import ConfigObj
+from os.path import join
 from pytoolbox.encoding import to_bytes
-from pytoolbox.filesystem import first_that_exist, try_makedirs, try_symlink
+from pytoolbox.filesystem import chown, first_that_exist, try_makedirs, try_symlink
 from pytoolbox.juju import DEFAULT_OS_ENV
-from pytoolbox.subprocess import rsync, screen_launch, screen_list, screen_kill
+from pytoolbox.subprocess import rsync
 
+from .api import VERSION
 from .config import OrchestraLocalConfig
 from .hooks_base import CharmHooks_Storage
 
 
 class OrchestraHooks(CharmHooks_Storage):
 
-    PACKAGES = tuple(set(CharmHooks_Storage.PACKAGES + (u'ffmpeg', u'mongodb', u'ntp', u'nginx', u'rabbitmq-server',
-                     u'uwsgi', u'uwsgi-plugin-python', u'x264')))
+    PACKAGES = tuple(set(CharmHooks_Storage.PACKAGES + (u'apache2', u'ffmpeg', u'libapache2-mod-wsgi', u'mongodb',
+                     u'ntp', u'rabbitmq-server', u'x264')))
     JUJU_PACKAGES = (u'juju-core',)
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
@@ -51,8 +53,16 @@ class OrchestraHooks(CharmHooks_Storage):
 
     # ------------------------------------------------------------------------------------------------------------------
 
+    @property
+    def api_alias(self):
+        return u'api/{0}'.format(VERSION)
+
     def api_url(self, local=False):
-        return u'http://{0}:5000'.format(u'127.0.0.1' if local else self.private_address)
+        return u'http://{0}:80/{1}'.format(u'127.0.0.1' if local else self.private_address, self.api_alias)
+
+    @property
+    def api_wsgi(self):
+        return join(self.directory, u'wsgi.py')
 
     @property
     def mongo_admin_connection(self):
@@ -108,7 +118,7 @@ class OrchestraHooks(CharmHooks_Storage):
         self.info(u'Restart network time protocol service')
         self.cmd(u'service ntp restart')
         self.info(u'Expose RESTful API, MongoDB & RabbitMQ service')
-        self.open_port(5000,  u'TCP')  # Orchestra RESTful API
+        self.open_port(80,    u'TCP')  # Orchestra RESTful API
         self.open_port(27017, u'TCP')  # MongoDB port mongod and mongos instances
         #self.open_port(27018, u'TCP') # MongoDB port when running with shardsvr setting
         #self.open_port(27019, u'TCP') # MongoDB port when running with configsvr setting
@@ -122,6 +132,14 @@ class OrchestraHooks(CharmHooks_Storage):
 
         self.info(u'Configure Secure Shell')
         rsync(self.local_config.ssh_template_path, self.local_config.ssh_config_path, recursive=True, log=self.debug)
+
+        self.info(u'Configure Apache 2')
+        self.cmd(u'a2dissite default')
+        self.template2config(self.local_config.site_template_file, join(self.local_config.site_path, self.name_slug), {
+            u'alias': self.api_alias, u'directory': self.directory, u'domain': self.public_address,
+            u'wsgi': self.api_wsgi
+        })
+        self.cmd(u'a2ensite {0}'.format(self.name_slug))
 
         self.info(u'Configure JuJu Service Orchestrator')
         juju_config_path = os.path.dirname(self.local_config.juju_config_file)
@@ -175,6 +193,9 @@ class OrchestraHooks(CharmHooks_Storage):
         try_symlink(os.path.abspath(self.local_config.charms_default_path),
                     os.path.abspath(self.local_config.charms_release_path))
 
+        self.info(u"Ensure that the charm's directory is owned by the Apache 2 daemon")
+        chown(self.directory, u'www-data', u'www-data', recursive=True)
+
         self.storage_remount()
 
     def hook_uninstall(self):
@@ -186,8 +207,11 @@ class OrchestraHooks(CharmHooks_Storage):
         self.storage_unregister()
         if self.config.cleanup:
             self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(OrchestraHooks.PACKAGES)))
+            self.cmd(u'apt-get -y remove --purge apache2.2-common', fail=False)  # Fixes some problems
             self.cmd(u'apt-get -y autoremove')
             #shutil.rmtree('$HOME/.juju $HOME/.ssh/id_rsa*
+            shutil.rmtree(u'/etc/apache2/',      ignore_errors=True)
+            shutil.rmtree(u'/var/log/apache2/',  ignore_errors=True)
             shutil.rmtree(u'/etc/rabbitmq/',     ignore_errors=True)
             shutil.rmtree(u'/var/log/rabbitmq/', ignore_errors=True)
         self.local_config.reset()
@@ -204,8 +228,7 @@ class OrchestraHooks(CharmHooks_Storage):
             self.cmd(u'service rabbitmq-server start', fail=False)
             # FIXME this is not a good idea, but I have some trouble with precise release
             self.configure_rabbitmq()  # (see ticket #205 of my private TRAC ticket system)
-            if screen_list(u'Orchestra', log=self.debug) == []:
-                screen_launch(u'Orchestra', [u'python', u'orchestra.py'])
+            self.cmd(u'service apache2 start')
             for start_delay in xrange(15):
                 time.sleep(1)
                 if self.cmd(u'curl -s {0}'.format(self.api_url(local=True)), fail=False)[u'returncode'] == 0:
@@ -214,7 +237,7 @@ class OrchestraHooks(CharmHooks_Storage):
             raise RuntimeError(to_bytes(u'Orchestra is not ready'))
 
     def hook_stop(self):
-        screen_kill(u'Orchestra', log=self.debug)
+        self.cmd(u'service apache2 stop',         fail=False)
         self.cmd(u'service rabbitmq-server stop', fail=False)
         self.cmd(u'service mongodb stop',         fail=False)
 

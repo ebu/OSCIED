@@ -161,9 +161,7 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         self.template2config(self.local_config.database_template_file, self.local_config.database_config_file, infos)
         self.template2config(self.local_config.htaccess_template_file, self.local_config.htaccess_config_file, infos)
         if self.storage_is_mounted:
-            self.info(u'Create uploads directory and symlink storage')
-            try_makedirs(self.local_config.storage_uploads_path)
-            chown(self.local_config.storage_uploads_path, u'www-data', u'www-data', recursive=True)
+            self.info(u'Symlink shared storage for the web daemon')
             try_symlink(self.local_config.storage_medias_path(), self.local_config.www_medias_path)
             try_symlink(self.local_config.storage_uploads_path, self.local_config.www_uploads_path)
 

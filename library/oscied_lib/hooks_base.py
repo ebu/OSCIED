@@ -28,7 +28,7 @@ from __future__ import absolute_import
 import os, pymongo.uri_parser, shutil, time
 from codecs import open
 from pytoolbox.encoding import to_bytes
-from pytoolbox.filesystem import try_makedirs
+from pytoolbox.filesystem import chown, try_makedirs
 from pytoolbox.juju import CharmHooks
 from pytoolbox.subprocess import screen_launch, screen_list, screen_kill
 
@@ -100,6 +100,10 @@ class CharmHooks_Storage(CharmHooks):
                 self.local_config.storage_mountpoint = mountpoint
                 self.local_config.storage_options = options
                 self.remark(u'Shared storage successfully registered')
+                self.debug(u'Create directories in the shared storage and ensure it is owned by the Apache 2 daemon')
+                try_makedirs(self.local_config.storage_medias_path())
+                try_makedirs(self.local_config.storage_uploads_path)
+                chown(self.local_config.storage_path, u'www-data', u'www-data', recursive=True)
             else:
                 raise IOError(to_bytes(u'Unable to mount shared storage'))
 

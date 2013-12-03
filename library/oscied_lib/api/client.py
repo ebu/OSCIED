@@ -34,15 +34,16 @@ from pytoolbox.subprocess import rsync, ssh
 from requests import get, post
 
 from ..models import Media, User, TransformProfile, PublisherTask, TransformTask
-from .base import OsciedCRUDMapper
+from .base import VERSION, OsciedCRUDMapper
 
 
 class OrchestraAPIClient(object):
     u"""Map all functions of the orchestrator RESTful API in the form of a client class with attributes and methods."""
 
-    def __init__(self, hostname, port=5000, api_unit=u'oscied-orchestra/0', api_local_config=u'local_config.pkl',
-                 auth=None, id_rsa=u'~/.ssh/id_rsa', environment=u'default', timeout=10.0):
-        self.api_url = u'{0}:{1}'.format(hostname, port)
+    def __init__(self, hostname, port=80, version=VERSION, api_unit=u'oscied-orchestra/0',
+                 api_local_config=u'local_config.pkl', auth=None, id_rsa=u'~/.ssh/id_rsa', environment=u'default',
+                 timeout=10.0):
+        self.api_url = u'{0}:{1}/api/{2}'.format(hostname, port, version)
         self.api_unit = api_unit
         self.api_local_config = api_local_config
         self.auth = auth

@@ -32,6 +32,7 @@ from requests import get, patch, post, delete
 from ..models import User
 
 ABOUT = u"Orchestra : EBU's OSCIED Orchestrator by David Fischer 2012-2013"
+VERSION = u'v3'
 
 
 class OsciedCRUDMapper(object):

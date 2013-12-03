@@ -57,7 +57,7 @@ class Callback(JsoneableObject):
         >>> callback.is_valid(True)
         True
         >>> print(callback.url)
-        http://127.0.0.1:5000/media
+        http://127.0.0.1/media
         >>> callback.replace_netloc(u'129.194.185.47:5003')
         >>> print(callback.url)
         http://129.194.185.47:5003/media
