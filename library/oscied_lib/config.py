@@ -42,7 +42,9 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
                  juju_template_path=u'juju/', charms_config=u'config.yaml', charms_release=u'raring',
                  charms_repository=u'charms', email_server=u'', email_tls=False, email_username=u'', email_password=u'',
                  email_address=u'', email_ttask_template=u'templates/ttask_mail.template',
-                 email_ptask_template=u'templates/ptask_mail.template', plugit_api_url='',**kwargs):
+                 email_ptask_template=u'templates/ptask_mail.template', plugit_api_url=u'',
+                 site_path=u'/etc/apache2/sites-available', site_template_file=u'templates/apache_site.template',
+                 **kwargs):
         super(OrchestraLocalConfig, self).__init__(**kwargs)
         self.api_url = api_url
         self.root_secret = root_secret
@@ -68,6 +70,8 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
         self.email_ttask_template = email_ttask_template
         self.email_ptask_template = email_ptask_template
         self.plugit_api_url = plugit_api_url
+        self.site_path = site_path
+        self.site_template_file = site_template_file
 
     @property
     def charms_default_path(self):
@@ -128,7 +132,7 @@ class PublisherLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinat
 
     @property
     def publish_path(self):
-        return join(self.www_root_path, 'www')
+        return join(self.www_root_path, u'www')
 
     def publish_point(self, media):
         common = join(MEDIAS_PATH, media.user_id, media._id, media.filename)

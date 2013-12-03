@@ -25,43 +25,36 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import flask, logging
-from pytoolbox.flask import get_request_data, map_exceptions
+import logging
+from pytoolbox.flask import get_request_data
 
-from orchestra import app, ok_200, orchestra
+from server import app, api_method_decorator, api_core, ok_200
 
 
 # Index ----------------------------------------------------------------------------------------------------------------
 
 @app.route(u'/', methods=[u'GET'])
-def api_root(request=flask.request):
+@api_method_decorator(api_core, authenticate=False)
+def api_root(api_core=None, request=None):
     u"""
     Return an about string. This method is actually used by Orchestra charm's hooks to check API's status.
     """
-    try:
-        request = request or flask.request
-        return ok_200(orchestra.about, include_properties=False)
-    except Exception as e:
-        map_exceptions(e)
-
+    return ok_200(api_core.about, include_properties=False)
 
 # System management ----------------------------------------------------------------------------------------------------
 
 @app.route(u'/flush', methods=[u'POST'])
-def api_flush(request=flask.request):
+@api_method_decorator(api_core, allow_root=True)
+def api_flush(auth_user=None, api_core=None, request=None):
     u"""Flush Orchestrator's database. This method is useful for testing and development purposes."""
-    try:
-        orchestra.requires_auth(request=request, allow_root=True)
-        orchestra.flush_db()
-        return ok_200(u'Orchestra database flushed !', include_properties=False)
-    except Exception as e:
-        map_exceptions(e)
-
+    api_core.flush_db()
+    return ok_200(u'Orchestra database flushed !', include_properties=False)
 
 # Workers (nodes) hooks ------------------------------------------------------------------------------------------------
 
 @app.route(u'/transform/callback', methods=[u'POST'])
-def api_transform_task_hook(request=flask.request):
+@api_method_decorator(api_core, allow_node=True)
+def api_transform_task_hook(auth_user=None, api_core=None, request=None):
     u"""
     This method is called by transformation workers when they finish their work.
 
@@ -70,19 +63,16 @@ def api_transform_task_hook(request=flask.request):
 
     The media asset will be deleted if task failed (even the worker already take care of that).
     """
-    try:
-        orchestra.requires_auth(request=request, allow_node=True)
-        data = get_request_data(request, qs_only_first_value=True)
-        task_id, status = data[u'task_id'], data[u'status']
-        logging.debug(u'task {0}, status {1}'.format (task_id, status))
-        orchestra.transform_callback(task_id, status)
-        return ok_200(u'Your work is much appreciated, thanks !', include_properties=False)
-    except Exception as e:
-        map_exceptions(e)
+    data = get_request_data(request, qs_only_first_value=True)
+    task_id, status = data[u'task_id'], data[u'status']
+    logging.debug(u'task {0}, status {1}'.format (task_id, status))
+    api_core.transform_callback(task_id, status)
+    return ok_200(u'Your work is much appreciated, thanks !', include_properties=False)
 
 
 @app.route(u'/publisher/callback', methods=[u'POST'])
-def api_publisher_task_hook(request=flask.request):
+@api_method_decorator(api_core, allow_node=True)
+def api_publisher_task_hook(auth_user=None, api_core=None, request=None):
     u"""
     This method is called by publication workers when they finish their work.
 
@@ -90,31 +80,24 @@ def api_publisher_task_hook(request=flask.request):
     status to SUCCESS and update ``public_uris`` attribute.
     Else, the orchestrator will append ``error_details`` to ``statistic`` attribute of the task.
     """
-    try:
-        orchestra.requires_auth(request=request, allow_node=True)
-        data = get_request_data(request, qs_only_first_value=True)
-        task_id, publish_uri, status = data[u'task_id'], data.get(u'publish_uri'), data[u'status']
-        logging.debug(u'task {0}, publish_uri {1}, status {2}'.format(task_id, publish_uri, status))
-        orchestra.publisher_callback(task_id, publish_uri, status)
-        return ok_200(u'Your work is much appreciated, thanks !', include_properties=False)
-    except Exception as e:
-        map_exceptions(e)
+    data = get_request_data(request, qs_only_first_value=True)
+    task_id, publish_uri, status = data[u'task_id'], data.get(u'publish_uri'), data[u'status']
+    logging.debug(u'task {0}, publish_uri {1}, status {2}'.format(task_id, publish_uri, status))
+    api_core.publisher_callback(task_id, publish_uri, status)
+    return ok_200(u'Your work is much appreciated, thanks !', include_properties=False)
 
 
 @app.route(u'/publisher/revoke/callback', methods=[u'POST'])
-def api_revoke_publisher_task_hook(request=flask.request):
+@api_method_decorator(api_core, allow_node=True)
+def api_revoke_publisher_task_hook(auth_user=None, api_core=None, request=None):
     u"""
     This method is called by publication workers when they finish their work (revoke).
 
     If the task is successful, the orchestrator will update media asset's ``status`` and ``public_uris`` attribute.
     Else, the orchestrator will append ``error_details`` to ``statistic`` attribute of the task.
     """
-    try:
-        orchestra.requires_auth(request=request, allow_node=True)
-        data = get_request_data(request, qs_only_first_value=True)
-        task_id, publish_uri, status = data[u'task_id'], data.get(u'publish_uri'), data[u'status']
-        logging.debug(u'task {0}, revoked publish_uri {1}, status {2}'.format(task_id, publish_uri, status))
-        orchestra.publisher_revoke_callback(task_id, publish_uri, status)
-        return ok_200(u'Your work is much appreciated, thanks !', include_properties=False)
-    except Exception as e:
-        map_exceptions(e)
+    data = get_request_data(request, qs_only_first_value=True)
+    task_id, publish_uri, status = data[u'task_id'], data.get(u'publish_uri'), data[u'status']
+    logging.debug(u'task {0}, revoked publish_uri {1}, status {2}'.format(task_id, publish_uri, status))
+    api_core.publisher_revoke_callback(task_id, publish_uri, status)
+    return ok_200(u'Your work is much appreciated, thanks !', include_properties=False)

@@ -92,7 +92,7 @@ class TestStorageHooks(object):
         self.hooks.local_config.allowed_ips = []
 
         py_unittest.MOCK_SIDE_EFFECT_RETURNS = [
-            u'', u'', u'', u'', u'',  # apt-get + ntp
+            u'', u'', u'', u'', u'', u'', u'',  # apt-get + ntp
             u'', u'',  # volume_create_or_expand
             {u'stdout': u'\nVolume Name: medias_volume_14\nType: Distribute\nStatus: Started'
             u'\nNumber of Bricks: 1\nTransport-type: tcp\nBricks:'
@@ -105,16 +105,18 @@ class TestStorageHooks(object):
         self.hooks.trigger(hook_name=u'install')
         self.hooks.volume_set_allowed_ips.assert_called_once()
         calls = self.hooks.cmd.call_args_list
-        assert_equal(calls[0], call(u'apt-get -y update', fail=False))
-        assert_equal(calls[1], call(u'apt-get -y -f install'))
-        assert_equal(calls[2], call(u'apt-get -y upgrade'))
-        assert_equal(calls[3], call(u'apt-get -y install ntp glusterfs-server nfs-common'))
-        assert_equal(calls[4], call(u'service ntp restart'))
-        assert_equal(calls[5], call(u'gluster volume create medias_volume_14  10.1.1.10:/mnt/somewhere/bricks/exp14',
+        assert_equal(calls[0],  call(u'locale-gen fr_CH.UTF-8'))
+        assert_equal(calls[1],  call(u'dpkg-reconfigure locales'))
+        assert_equal(calls[2],  call(u'apt-get -y update', fail=False))
+        assert_equal(calls[3],  call(u'apt-get -y -f install'))
+        assert_equal(calls[4],  call(u'apt-get -y upgrade'))
+        assert_equal(calls[5],  call(u'apt-get -y install ntp glusterfs-server nfs-common'))
+        assert_equal(calls[6],  call(u'service ntp restart'))
+        assert_equal(calls[7],  call(u'gluster volume create medias_volume_14  10.1.1.10:/mnt/somewhere/bricks/exp14',
                      fail=True, input=None, cli_input=None))
-        assert_equal(calls[6], call(u'gluster volume start medias_volume_14 ', fail=True, input=None, cli_input=None))
-        assert_equal(calls[7], call(u'gluster volume info medias_volume_14 ', fail=False, input=None, cli_input=None))
-        assert_equal(calls[8], call(u'gluster volume rebalance medias_volume_14 status', fail=False, input=None,
+        assert_equal(calls[8],  call(u'gluster volume start medias_volume_14 ', fail=True, input=None, cli_input=None))
+        assert_equal(calls[9],  call(u'gluster volume info medias_volume_14 ', fail=False, input=None, cli_input=None))
+        assert_equal(calls[10], call(u'gluster volume rebalance medias_volume_14 status', fail=False, input=None,
                      cli_input=None))
 
         self.hooks.relation_set = Mock(return_value=None)

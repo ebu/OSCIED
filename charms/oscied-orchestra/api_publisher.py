@@ -27,124 +27,95 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import flask
 from pytoolbox.encoding import to_bytes
-from pytoolbox.flask import check_id, get_request_data, map_exceptions
+from pytoolbox.flask import get_request_data
 
-from orchestra import app, ok_200, orchestra
+from server import app, api_method_decorator, api_core, ok_200
 
 
 # Publication units management -----------------------------------------------------------------------------------------
 
 @app.route(u'/publisher/unit/environment/<environment>/count', methods=[u'GET'])
-def api_publisher_unit_count(environment, request=flask.request):
+@api_method_decorator(api_core, allow_root=True, allow_any=True)
+def api_publisher_unit_count(environment=None, auth_user=None, api_core=None, request=None):
     u"""Return publication units count of environment ``environment``."""
-    try:
-        orchestra.requires_auth(request=request, allow_root=True, allow_any=True)
-        return ok_200(orchestra.get_publisher_units_count(environment), include_properties=False)
-    except Exception as e:
-        map_exceptions(e)
+    return ok_200(api_core.get_publisher_units_count(environment), include_properties=False)
 
 
 @app.route(u'/publisher/unit/environment/<environment>', methods=[u'GET'])
-def api_publisher_unit_get(environment, request=flask.request):
+@api_method_decorator(api_core, allow_root=True, allow_any=True)
+def api_publisher_unit_get(environment=None, auth_user=None, api_core=None, request=None):
     u"""Return an array containing the publication units of environment ``environment`` serialized to JSON."""
-    try:
-        orchestra.requires_auth(request=request, allow_root=True, allow_any=True)
-        return ok_200(orchestra.get_publisher_units(environment), include_properties=False)
-    except Exception as e:
-        map_exceptions(e)
+    return ok_200(api_core.get_publisher_units(environment), include_properties=False)
 
 
 @app.route(u'/publisher/unit/environment/<environment>', methods=[u'POST'])
-def api_publisher_unit_post(environment, request=flask.request):
+@api_method_decorator(api_core, allow_root=True, role=u'admin_platform')
+def api_publisher_unit_post(environment=None, auth_user=None, api_core=None, request=None):
     u"""Ensure that ``num_units`` publication units are deployed into environment ``environment``."""
-    try:
-        orchestra.requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        data = get_request_data(request, qs_only_first_value=True)
-        orchestra.ensure_publisher_units(environment, int(data[u'num_units']), terminate=True)
-        return ok_200(u'Ensured {0} publication units into environment "{1}"'.format(data[u'num_units'], environment),
-                      include_properties=False)
-    except Exception as e:
-        map_exceptions(e)
+    data = get_request_data(request, qs_only_first_value=True)
+    api_core.ensure_publisher_units(environment, int(data[u'num_units']), terminate=True)
+    return ok_200(u'Ensured {0} publication units into environment "{1}"'.format(data[u'num_units'], environment),
+                  include_properties=False)
 
 
 @app.route(u'/publisher/unit/environment/<environment>', methods=[u'DELETE'])
-def api_publisher_unit_delete(environment, request=flask.request):
+@api_method_decorator(api_core, allow_root=True, role=u'admin_platform')
+def api_publisher_unit_delete(environment=None, auth_user=None, api_core=None, request=None):
     u"""Remove the publication service from environment ``environment``."""
-    try:
-        orchestra.requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        orchestra.destroy_publisher_units(environment, None, terminate=True)
-        return ok_200(u'Removed publication service from environment "{0}"'.format(environment),
-                      include_properties=False)
-    except Exception as e:
-        map_exceptions(e)
+    api_core.destroy_publisher_units(environment, None, terminate=True)
+    return ok_200(u'Removed publication service from environment "{0}"'.format(environment), include_properties=False)
 
 
 @app.route(u'/publisher/unit/environment/<environment>/number/<number>', methods=[u'GET'])
-def api_publisher_unit_number_get(environment, number, request=flask.request):
+@api_method_decorator(api_core, allow_root=True, allow_any=True)
+def api_publisher_unit_number_get(environment=None, number=None, auth_user=None, api_core=None, request=None):
     u"""Return a publication unit serialized to JSON."""
-    try:
-        orchestra.requires_auth(request=request, allow_root=True, allow_any=True)
-        unit = orchestra.get_publisher_unit(environment, number)
-        if not unit:
-            raise IndexError(to_bytes(u'Publication unit {0} not found in environment {1}.'.format(
-                             number, environment)))
-        return ok_200(unit, include_properties=True)
-    except Exception as e:
-        map_exceptions(e)
+    unit = api_core.get_publisher_unit(environment, number)
+    if not unit:
+        raise IndexError(to_bytes(u'Publication unit {0} not found in environment {1}.'.format(number, environment)))
+    return ok_200(unit, include_properties=True)
 
 
 @app.route(u'/publisher/unit/environment/<environment>/number/<number>', methods=[u'DELETE'])
-def api_publisher_unit_number_delete(environment, number, request=flask.request):
+@api_method_decorator(api_core, allow_root=True, role=u'admin_platform')
+def api_publisher_unit_number_delete(environment=None, number=None, auth_user=None, api_core=None, request=None):
     u"""Remove publication unit number ``number`` from environment ``environment``."""
-    try:
-        orchestra.requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        orchestra.destroy_publisher_unit(environment, number, terminate=True)
-        return ok_200(u'The publication unit {0} has been removed of environment {1}.'.format(number, environment),
-                      include_properties=False)
-    except Exception as e:
-        map_exceptions(e)
-
+    api_core.destroy_publisher_unit(environment, number, terminate=True)
+    return ok_200(u'The publication unit {0} has been removed of environment {1}.'.format(number, environment),
+                  include_properties=False)
 
 # Publishing tasks -----------------------------------------------------------------------------------------------------
 
 @app.route(u'/publisher/queue', methods=[u'GET'])
-def api_publisher_queue(request=flask.request):
+@api_method_decorator(api_core, allow_any=True)
+def api_publisher_queue(auth_user=None, api_core=None, request=None):
     u"""Return an array containing the publication queues."""
-    try:
-        orchestra.requires_auth(request=request, allow_any=True)
-        return ok_200(orchestra.get_publisher_queues(), include_properties=True)
-    except Exception as e:
-        map_exceptions(e)
+    return ok_200(api_core.get_publisher_queues(), include_properties=True)
 
 
 @app.route(u'/publisher/task/count', methods=[u'GET'])
-def api_publisher_task_count(request=flask.request):
+@api_method_decorator(api_core, allow_any=True)
+def api_publisher_task_count(auth_user=None, api_core=None, request=None):
     u"""Return the number of publication tasks."""
-    try:
-        orchestra.requires_auth(request=request, allow_any=True)
-        data = get_request_data(request, accepted_keys=orchestra.db_count_keys, qs_only_first_value=True, fail=False)
-        return ok_200(orchestra.get_publisher_tasks_count(**data), include_properties=False)
-    except Exception as e:
-        map_exceptions(e)
+    data = get_request_data(request, accepted_keys=api_core.db_count_keys, qs_only_first_value=True, fail=False)
+    return ok_200(api_core.get_publisher_tasks_count(**data), include_properties=False)
 
 
 @app.route(u'/publisher/task/HEAD', methods=[u'GET'])
-def api_publisher_task_head(request=flask.request):
+@api_method_decorator(api_core, allow_any=True)
+def api_publisher_task_head(auth_user=None, api_core=None, request=None):
     u"""
     Return an array containing the publication tasks serialized as JSON.
 
     The publication tasks attributes are appended with the Celery's ``async result`` of the tasks.
     """
-    try:
-        orchestra.requires_auth(request=request, allow_any=True)
-        data = get_request_data(request, accepted_keys=orchestra.db_find_keys, qs_only_first_value=True, fail=False)
-        return ok_200(orchestra.get_publisher_tasks(**data), include_properties=True)
-    except Exception as e:
-        map_exceptions(e)
+    data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, fail=False)
+    return ok_200(api_core.get_publisher_tasks(**data), include_properties=True)
 
 
 @app.route(u'/publisher/task', methods=[u'GET'])
-def api_publisher_task_get(request=flask.request):
+@api_method_decorator(api_core, allow_any=True)
+def api_publisher_task_get(auth_user=None, api_core=None, request=None):
     u"""
     Return an array containing the publication tasks serialized to JSON.
 
@@ -153,16 +124,13 @@ def api_publisher_task_get(request=flask.request):
     All ``thing_id`` fields are replaced by corresponding ``thing``.
     For example ``user_id`` is replaced by ``user``'s data.
     """
-    try:
-        orchestra.requires_auth(request=request, allow_any=True)
-        data = get_request_data(request, accepted_keys=orchestra.db_find_keys, qs_only_first_value=True, fail=False)
-        return ok_200(orchestra.get_publisher_tasks(load_fields=True, **data), include_properties=True)
-    except Exception as e:
-        map_exceptions(e)
+    data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, fail=False)
+    return ok_200(api_core.get_publisher_tasks(load_fields=True, **data), include_properties=True)
 
 
 @app.route(u'/publisher/task', methods=[u'POST'])
-def api_publisher_task_post(request=flask.request):
+@api_method_decorator(api_core, allow_any=True)
+def api_publisher_task_post(auth_user=None, api_core=None, request=None):
     u"""
     Launch a publication task.
 
@@ -179,37 +147,30 @@ def api_publisher_task_post(request=flask.request):
         * Handle the registration of tasks related to PENDING medias
         * Permit to publication a media asset on more than one (1) publication queue
     """
-    try:
-        auth_user = orchestra.requires_auth(request=request, allow_any=True)
-        data = get_request_data(request, qs_only_first_value=True)
-        task_id = orchestra.launch_publisher_task(auth_user._id, data[u'media_id'], data[u'send_email'], data[u'queue'],
-                                                  u'/publisher/callback')
-        return ok_200(task_id, include_properties=True)
-    except Exception as e:
-        map_exceptions(e)
+    data = get_request_data(request, qs_only_first_value=True)
+    task_id = api_core.launch_publisher_task(auth_user._id, data[u'media_id'], data[u'send_email'], data[u'queue'],
+                                             u'/publisher/callback')
+    return ok_200(task_id, include_properties=True)
 
 
 # FIXME why HEAD verb doesn't work (curl: (18) transfer closed with 263 bytes remaining to read) ?
 @app.route(u'/publisher/task/id/<id>/HEAD', methods=[u'GET'])
-def api_publisher_task_id_head(id, request=flask.request):
+@api_method_decorator(api_core, allow_any=True)
+def api_publisher_task_id_head(id=None, auth_user=None, api_core=None, request=None):
     u"""
     Return a publication task serialized to JSON.
 
     The publication task attributes are appended with the Celery's ``async result`` of the task.
     """
-    try:
-        check_id(id)
-        orchestra.requires_auth(request=request, allow_any=True)
-        task = orchestra.get_publisher_task(spec={u'_id': id})
-        if not task:
-            raise IndexError(to_bytes(u'No publication task with id {0}.'.format(id)))
-        return ok_200(task, include_properties=True)
-    except Exception as e:
-        map_exceptions(e)
+    task = api_core.get_publisher_task(spec={u'_id': id})
+    if not task:
+        raise IndexError(to_bytes(u'No publication task with id {0}.'.format(id)))
+    return ok_200(task, include_properties=True)
 
 
 @app.route(u'/publisher/task/id/<id>', methods=[u'GET'])
-def api_publisher_task_id_get(id, request=flask.request):
+@api_method_decorator(api_core, allow_any=True)
+def api_publisher_task_id_get(id=None, auth_user=None, api_core=None, request=None):
     u"""
     Return a publication task serialized to JSON.
 
@@ -218,19 +179,15 @@ def api_publisher_task_id_get(id, request=flask.request):
     All ``thing_id`` fields are replaced by corresponding ``thing``.
     For example ``user_id`` is replaced by ``user``'s data.
     """
-    try:
-        check_id(id)
-        orchestra.requires_auth(request=request, allow_any=True)
-        task = orchestra.get_publisher_task(spec={u'_id': id}, load_fields=True)
-        if not task:
-            raise IndexError(to_bytes(u'No publication task with id {0}.'.format(id)))
-        return ok_200(task, include_properties=True)
-    except Exception as e:
-        map_exceptions(e)
+    task = api_core.get_publisher_task(spec={u'_id': id}, load_fields=True)
+    if not task:
+        raise IndexError(to_bytes(u'No publication task with id {0}.'.format(id)))
+    return ok_200(task, include_properties=True)
 
 
 @app.route(u'/publisher/task/id/<id>', methods=[u'DELETE'])
-def api_publisher_task_id_delete(id, request=flask.request):
+@api_method_decorator(api_core, allow_any=True)
+def api_publisher_task_id_delete(id=None, auth_user=None, api_core=None, request=None):
     u"""
     Revoke a publication task.
 
@@ -238,17 +195,11 @@ def api_publisher_task_id_delete(id, request=flask.request):
     revoke request to publication units with Celery. If the task is actually running it will be canceled.
     The media asset will be removed from the publication unit.
     """
-    try:
-        check_id(id)
-        auth_user = orchestra.requires_auth(request=request, allow_any=True)
-        task = orchestra.get_publisher_task(spec={u'_id': id})
-        if not task:
-            raise IndexError(to_bytes(u'No publication task with id {0}.'.format(id)))
-        if auth_user._id != task.user_id:
-            flask.abort(403, u'You are not allowed to revoke publication task with id {0}.'.format(id))
-        orchestra.revoke_publisher_task(task=task, callback_url=u'/publisher/revoke/callback', terminate=True,
-                                        remove=False)
-        return ok_200(u'The publication task "{0}" has been revoked. Corresponding media asset will be unpublished from'
-                      ' here.'.format(task._id), include_properties=False)
-    except Exception as e:
-        map_exceptions(e)
+    task = api_core.get_publisher_task(spec={u'_id': id})
+    if not task:
+        raise IndexError(to_bytes(u'No publication task with id {0}.'.format(id)))
+    if auth_user._id != task.user_id:
+        flask.abort(403, u'You are not allowed to revoke publication task with id {0}.'.format(id))
+    api_core.revoke_publisher_task(task=task, callback_url=u'/publisher/revoke/callback', terminate=True, remove=False)
+    return ok_200(u'The publication task "{0}" has been revoked. Corresponding media asset will be unpublished from'
+                  ' here.'.format(task._id), include_properties=False)

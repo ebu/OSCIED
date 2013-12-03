@@ -39,7 +39,7 @@ if __name__ == '__main__':
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
                             epilog=u'''Live-test security and functionalities of a running orchestrator.''')
     parser.add_argument(u'host',        action=u'store', default=None)
-    parser.add_argument(u'port',        action=u'store', default=5000)
+    parser.add_argument(u'port',        action=u'store', default=80)
     parser.add_argument(u'root_secret', action=u'store', default=None)
     parser.add_argument(u'node_secret', action=u'store', default=None)
     args = parser.parse_args()

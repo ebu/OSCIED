@@ -25,84 +25,62 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import flask
-from pytoolbox.flask import get_request_data, map_exceptions
+from pytoolbox.flask import get_request_data
 
-from orchestra import app, ok_200, orchestra
+from server import app, api_method_decorator, api_core, ok_200
 
 
 # Environments management ----------------------------------------------------------------------------------------------
 
 @app.route(u'/environment/count', methods=[u'GET'])
-def api_environment_count(request=flask.request):
+@api_method_decorator(api_core, allow_root=True, role=u'admin_platform')
+def api_environment_count(auth_user=None, api_core=None, request=None):
     u"""Return the number of environments."""
-    try:
-        orchestra.requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        (environments, default) = orchestra.get_environments()
-        return ok_200(len(environments), False)
-    except Exception as e:
-        map_exceptions(e)
+    (environments, default) = api_core.get_environments()
+    return ok_200(len(environments), False)
 
 
 @app.route(u'/environment/HEAD', methods=[u'GET'])
-def api_environment_get_head(request=flask.request):
+@api_method_decorator(api_core, allow_root=True, role=u'admin_platform')
+def api_environment_get_head(auth_user=None, api_core=None, request=None):
     u"""Return an array containing the environments serialized to JSON."""
-    try:
-        orchestra.requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        (environments, default) = orchestra.get_environments()
-        return ok_200({u'environments': environments, u'default': default}, include_properties=False)
-    except Exception as e:
-        map_exceptions(e)
+    (environments, default) = api_core.get_environments()
+    return ok_200({u'environments': environments, u'default': default}, include_properties=False)
 
 
 @app.route(u'/environment', methods=[u'GET'])
-def api_environment_get(request=flask.request):
+@api_method_decorator(api_core, allow_root=True, role=u'admin_platform')
+def api_environment_get(auth_user=None, api_core=None, request=None):
     u"""Return an array containing the environments (with status) serialized to JSON."""
-    try:
-        orchestra.requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        (environments, default) = orchestra.get_environments(get_status=True)
-        return ok_200({u'environments': environments, u'default': default}, include_properties=False)
-    except Exception as e:
-        map_exceptions(e)
+    (environments, default) = api_core.get_environments(get_status=True)
+    return ok_200({u'environments': environments, u'default': default}, include_properties=False)
 
 
 @app.route(u'/environment', methods=[u'POST'])
-def api_environment_post(request=flask.request):
+@api_method_decorator(api_core, allow_root=True, role=u'admin_platform')
+def api_environment_post(auth_user=None, api_core=None, request=None):
     u"""Add a new environment."""
-    try:
-        orchestra.requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        data = get_request_data(request, qs_only_first_value=True)
-        return ok_200(orchestra.add_environment(data[u'name'], data[u'type'], data[u'region'], data[u'access_key'],
-                      data[u'secret_key'], data[u'control_bucket']), include_properties=False)
-    except Exception as e:
-        map_exceptions(e)
+    data = get_request_data(request, qs_only_first_value=True)
+    return ok_200(api_core.add_environment(data[u'name'], data[u'type'], data[u'region'], data[u'access_key'],
+                  data[u'secret_key'], data[u'control_bucket']), include_properties=False)
 
 
 @app.route(u'/environment/name/<name>/HEAD', methods=[u'GET'])
-def api_environment_name_get_head(name, request=flask.request):
+@api_method_decorator(api_core, allow_root=True, role=u'admin_platform')
+def api_environment_name_get_head(name=None, auth_user=None, api_core=None, request=None):
     u"""Return an environment containing his status serialized to JSON."""
-    try:
-        orchestra.requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        return ok_200(orchestra.get_environments(name), include_properties=False)
-    except Exception as e:
-        map_exceptions(e)
+    return ok_200(api_core.get_environments(name), include_properties=False)
 
 
 @app.route(u'/environment/name/<name>', methods=[u'GET'])
-def api_environment_name_get(name, request=flask.request):
+@api_method_decorator(api_core, allow_root=True, role=u'admin_platform')
+def api_environment_name_get(name=None, auth_user=None, api_core=None, request=None):
     u"""Return an environment serialized to JSON."""
-    try:
-        orchestra.requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        return ok_200(orchestra.get_environment(name, get_status=True), include_properties=False)
-    except Exception as e:
-        map_exceptions(e)
+    return ok_200(api_core.get_environment(name, get_status=True), include_properties=False)
 
 
 @app.route(u'/environment/name/<name>', methods=[u'DELETE'])
-def api_environment_name_delete(name, request=flask.request):
+@api_method_decorator(api_core, allow_root=True, role=u'admin_platform')
+def api_environment_name_delete(name=None, auth_user=None, api_core=None, request=None):
     u"""Remove an environment (destroy services and unregister it)."""
-    try:
-        orchestra.requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        return ok_200(orchestra.delete_environment(name, remove=True), include_properties=False)
-    except Exception as e:
-        map_exceptions(e)
+    return ok_200(api_core.delete_environment(name, remove=True), include_properties=False)

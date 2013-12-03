@@ -25,18 +25,18 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import flask
 from pytoolbox.encoding import to_bytes
-from pytoolbox.flask import check_id, get_request_data, map_exceptions
+from pytoolbox.flask import get_request_data
 from library.oscied_lib.models import User
 
-from orchestra import app, ok_200, orchestra
+from server import app, api_method_decorator, api_core, ok_200
 
 
 # Users management -----------------------------------------------------------------------------------------------------
 
 @app.route(u'/user/login', methods=[u'GET'])
-def api_user_login(request=flask.request):
+@api_method_decorator(api_core, allow_any=True)
+def api_user_login(auth_user=None, api_core=None, request=None):
     u"""
     Return authenticated user serialized to JSON if authentication passed (without ``secret`` field).
 
@@ -46,107 +46,82 @@ def api_user_login(request=flask.request):
 
         This is kind of duplicate with API's GET /user/id/`id` method ...
     """
-    try:
-        auth_user = orchestra.requires_auth(request=request, allow_any=True)
-        delattr(auth_user, u'secret')  # do not send back user's secret
-        return ok_200(auth_user, include_properties=True)
-    except Exception as e:
-        map_exceptions(e)
+    delattr(auth_user, u'secret')  # do not send back user's secret
+    return ok_200(auth_user, include_properties=True)
 
 
 @app.route(u'/user/count', methods=[u'GET'])
-def api_user_count(request=flask.request):
+@api_method_decorator(api_core, allow_root=True, allow_any=True)
+def api_user_count(auth_user=None, api_core=None, request=None):
     u"""Return the number of users."""
-    try:
-        orchestra.requires_auth(request=request, allow_root=True, allow_any=True)
-        data = get_request_data(request, accepted_keys=orchestra.db_count_keys, qs_only_first_value=True, fail=False)
-        return ok_200(orchestra.get_users_count(**data), include_properties=False)
-    except Exception as e:
-        map_exceptions(e)
+    data = get_request_data(request, accepted_keys=api_core.db_count_keys, qs_only_first_value=True, fail=False)
+    return ok_200(api_core.get_users_count(**data), include_properties=False)
 
 
 @app.route(u'/user', methods=[u'GET'])
-def api_user_get(request=flask.request):
+@api_method_decorator(api_core, allow_root=True, role=u'admin_platform')
+def api_user_get(auth_user=None, api_core=None, request=None):
     u"""Return an array containing the users serialized to JSON (without ``secret`` fields)."""
-    try:
-        orchestra.requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        data = get_request_data(request, accepted_keys=orchestra.db_find_keys, qs_only_first_value=True, fail=False)
-        return ok_200(orchestra.get_users(**data), include_properties=True)
-    except Exception as e:
-        map_exceptions(e)
+    data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, fail=False)
+    return ok_200(api_core.get_users(**data), include_properties=True)
 
 
 @app.route(u'/user', methods=[u'POST'])
-def api_user_post(request=flask.request):
+@api_method_decorator(api_core, allow_root=True, role=u'admin_platform')
+def api_user_post(auth_user=None, api_core=None, request=None):
     u"""Add a user."""
-    try:
-        orchestra.requires_auth(request=request, allow_root=True, role=u'admin_platform')
-        data = get_request_data(request, qs_only_first_value=True)
-        user = User(first_name=data[u'first_name'], last_name=data[u'last_name'], mail=data[u'mail'],
-                    secret=data[u'secret'], admin_platform=data[u'admin_platform'])
-        orchestra.save_user(user, hash_secret=True)
-        delattr(user, u'secret')  # do not send back user's secret
-        return ok_200(user, include_properties=True)
-    except Exception as e:
-        map_exceptions(e)
+    data = get_request_data(request, qs_only_first_value=True)
+    user = User(first_name=data[u'first_name'], last_name=data[u'last_name'], mail=data[u'mail'],
+                secret=data[u'secret'], admin_platform=data[u'admin_platform'])
+    api_core.save_user(user, hash_secret=True)
+    delattr(user, u'secret')  # do not send back user's secret
+    return ok_200(user, include_properties=True)
 
 
 @app.route(u'/user/id/<id>', methods=[u'GET'])
-def api_user_id_get(id, request=flask.request):
+@api_method_decorator(api_core, allow_root=True, allow_any=True)
+def api_user_id_get(id=None, auth_user=None, api_core=None, request=None):
     u"""Return a user serialized to JSON (without ``secret`` field)."""
-    try:
-        check_id(id)
-        orchestra.requires_auth(request=request, allow_root=True, allow_any=True)
-        user = orchestra.get_user(spec={u'_id': id}, fields={u'secret': 0})
-        if not user:
-            raise IndexError(to_bytes(u'No user with id {0}.'.format(id)))
-        return ok_200(user, include_properties=True)
-    except Exception as e:
-        map_exceptions(e)
+    user = api_core.get_user(spec={u'_id': id}, fields={u'secret': 0})
+    if not user:
+        raise IndexError(to_bytes(u'No user with id {0}.'.format(id)))
+    return ok_200(user, include_properties=True)
 
 
 @app.route(u'/user/id/<id>', methods=[u'PATCH', u'PUT'])
-def api_user_id_patch(id, request=flask.request):
+@api_method_decorator(api_core, allow_root=True, role=u'admin_platform', allow_same_id=True)
+def api_user_id_patch(id=None, auth_user=None, api_core=None, request=None):
     u"""
     Update an user.
 
     User's admin_platform attribute can only be modified by root or any authenticated user with admin_platform attribute
     set.
     """
-    try:
-        check_id(id)
-        auth_user = orchestra.requires_auth(request=request, allow_root=True, role=u'admin_platform', id=id)
-        user = orchestra.get_user(spec={u'_id': id})
-        data = get_request_data(request, qs_only_first_value=True)
-        if not user:
-            raise IndexError(to_bytes(u'No user with id {0}.'.format(id)))
-        old_name = user.name
-        if u'first_name' in data:
-            user.first_name = data[u'first_name']
-        if u'last_name' in data:
-            user.last_name = data[u'last_name']
-        if u'mail' in data:
-            user.mail = data[u'mail']
-        if u'secret' in data:
-            user.secret = data[u'secret']
-        if auth_user.admin_platform and u'admin_platform' in data:
-            user.admin_platform = data[u'admin_platform']
-        orchestra.save_user(user, hash_secret=True)
-        return ok_200(u'The user "{0}" has been updated.'.format(old_name), include_properties=False)
-    except Exception as e:
-        map_exceptions(e)
+    user = api_core.get_user(spec={u'_id': id})
+    data = get_request_data(request, qs_only_first_value=True)
+    if not user:
+        raise IndexError(to_bytes(u'No user with id {0}.'.format(id)))
+    old_name = user.name
+    if u'first_name' in data:
+        user.first_name = data[u'first_name']
+    if u'last_name' in data:
+        user.last_name = data[u'last_name']
+    if u'mail' in data:
+        user.mail = data[u'mail']
+    if u'secret' in data:
+        user.secret = data[u'secret']
+    if auth_user.admin_platform and u'admin_platform' in data:
+        user.admin_platform = data[u'admin_platform']
+    api_core.save_user(user, hash_secret=True)
+    return ok_200(u'The user "{0}" has been updated.'.format(old_name), include_properties=False)
 
 
 @app.route(u'/user/id/<id>', methods=[u'DELETE'])
-def api_user_id_delete(id, request=flask.request):
+@api_method_decorator(api_core, allow_root=True, role=u'admin_platform', allow_same_id=True)
+def api_user_id_delete(id=None, auth_user=None, api_core=None, request=None):
     u"""Delete a user."""
-    try:
-        check_id(id)
-        orchestra.requires_auth(request=request, allow_root=True, role=u'admin_platform', id=id)
-        user = orchestra.get_user(spec={u'_id': id})
-        if not user:
-            raise IndexError(to_bytes(u'No user with id {0}.'.format(id)))
-        orchestra.delete_user(user)
-        return ok_200(u'The user "{0}" has been deleted.'.format(user.name), include_properties=False)
-    except Exception as e:
-        map_exceptions(e)
+    user = api_core.get_user(spec={u'_id': id})
+    if not user:
+        raise IndexError(to_bytes(u'No user with id {0}.'.format(id)))
+    api_core.delete_user(user)
+    return ok_200(u'The user "{0}" has been deleted.'.format(user.name), include_properties=False)

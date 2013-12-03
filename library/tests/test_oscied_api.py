@@ -27,7 +27,7 @@ from nose.tools import assert_equal, assert_raises
 from pytoolbox.unittest import mock_cmd
 from requests import get, post
 
-from oscied_lib.api import OsciedCRUDMapper, OrchestraAPIClient
+from oscied_lib.api import VERSION, OsciedCRUDMapper, OrchestraAPIClient
 from oscied_lib.models import User
 
 
@@ -41,43 +41,43 @@ class FakeAPIClient(object):
 class TestOsciedCRUDMapper(object):
 
     def test_get_url_without_environment(self):
-        client = FakeAPIClient('http://test.com:5000')
+        client = FakeAPIClient('http://test.com')
         mapper = OsciedCRUDMapper(client, id_prefix='id')
-        assert_equal(mapper.get_url(), u'http://test.com:5000')
-        assert_equal(mapper.get_url(extra='extra_value'), u'http://test.com:5000/extra_value')
-        assert_equal(mapper.get_url(index='index_value'), u'http://test.com:5000/id/index_value')
+        assert_equal(mapper.get_url(), u'http://test.com')
+        assert_equal(mapper.get_url(extra='extra_value'), u'http://test.com/extra_value')
+        assert_equal(mapper.get_url(index='index_value'), u'http://test.com/id/index_value')
         assert_equal(mapper.get_url(index='index_value', extra='extra_value'),
-                     u'http://test.com:5000/id/index_value/extra_value')
+                     u'http://test.com/id/index_value/extra_value')
 
     def test_get_url_with_environment(self):
-        client = FakeAPIClient('http://test.com:5000')
+        client = FakeAPIClient('http://test.com')
         mapper = OsciedCRUDMapper(client, id_prefix='id', environment=True)
-        assert_equal(mapper.get_url(), u'http://test.com:5000/environment/maas')
-        assert_equal(mapper.get_url(extra='extra_value'), u'http://test.com:5000/environment/maas/extra_value')
-        assert_equal(mapper.get_url(index='index_value'), u'http://test.com:5000/environment/maas/id/index_value')
+        assert_equal(mapper.get_url(), u'http://test.com/environment/maas')
+        assert_equal(mapper.get_url(extra='extra_value'), u'http://test.com/environment/maas/extra_value')
+        assert_equal(mapper.get_url(index='index_value'), u'http://test.com/environment/maas/id/index_value')
         assert_equal(mapper.get_url(index='index_value', extra='extra_value'),
-                     u'http://test.com:5000/environment/maas/id/index_value/extra_value')
+                     u'http://test.com/environment/maas/id/index_value/extra_value')
 
     def test_add_cls_none(self):
-        client = FakeAPIClient('http://test.com:5000')
+        client = FakeAPIClient('http://test.com')
         mapper = OsciedCRUDMapper(client, 'method')
         assert_raises(ValueError, mapper.add)
         assert_raises(ValueError, mapper.add, 10, arg=20)
         mapper.add('hello')
         mapper.add(arg1=0)
         assert_equal(client.do_request.call_args_list, [
-            call(post, u'http://test.com:5000/method', data='"hello"'),
-            call(post, u'http://test.com:5000/method', data='{"arg1": 0}')])
+            call(post, u'http://test.com/method', data='"hello"'),
+            call(post, u'http://test.com/method', data='{"arg1": 0}')])
 
     def test_add_cls_user(self):
-        client = FakeAPIClient('http://test.com:5000')
+        client = FakeAPIClient('http://test.com')
         mapper = OsciedCRUDMapper(client, 'method', User, environment=True)
         user = User(first_name='Tabby', last_name='Fischer', mail='t@f.com', secret='mia0w_mia0w')
         user._id = '3959e400-94b0-49f7-8b0f-fd168b7c90e3'
         user.is_valid(True)
         mapper.add(user)
         assert_equal(client.do_request.call_args_list, [
-            call(post, u'http://test.com:5000/method/environment/maas',
+            call(post, u'http://test.com/method/environment/maas',
                  data='{"first_name": "Tabby", "last_name": "Fischer", "admin_platform": false, "secret": "mia0w_mia0w"'
                       ', "mail": "t@f.com", "_id": "3959e400-94b0-49f7-8b0f-fd168b7c90e3"}')])
 
@@ -95,10 +95,10 @@ class TestOrchestraAPIClient(object):
 
     def test_len(self):
         client = OrchestraAPIClient('http://a.ch', 6000, auth=('username', 'password'))
-        assert_equal(client.users.get_url(), 'http://a.ch:6000/user')
-        assert_len(client, client.users, [call(get, u'http://a.ch:6000/user/count')])
-        assert_len(client, client.medias, [call(get, u'http://a.ch:6000/media/count')])
-        assert_len(client, client.environments, [call(get, u'http://a.ch:6000/environment/count')])
-        assert_len(client, client.transform_profiles, [call(get, u'http://a.ch:6000/transform/profile/count')])
-        #assert_len(client, client.transform_units, [call(get, u'http://a.ch:6000/transform/unit/count')])
-        assert_len(client, client.transform_tasks, [call(get, u'http://a.ch:6000/transform/task/count')])
+        assert_equal(client.users.get_url(), 'http://a.ch:6000/api/{0}/user'.format(VERSION))
+        assert_len(client, client.users, [call(get, u'http://a.ch:6000/api/{0}/user/count'.format(VERSION))])
+        assert_len(client, client.medias, [call(get, u'http://a.ch:6000/api/{0}/media/count'.format(VERSION))])
+        assert_len(client, client.environments, [call(get, u'http://a.ch:6000/api/{0}/environment/count'.format(VERSION))])
+        assert_len(client, client.transform_profiles, [call(get, u'http://a.ch:6000/api/{0}/transform/profile/count'.format(VERSION))])
+        #assert_len(client, client.transform_units, [call(get, u'http://a.ch:6000/transform/unit/count'.format(VERSION))])
+        assert_len(client, client.transform_tasks, [call(get, u'http://a.ch:6000/api/{0}/transform/task/count'.format(VERSION))])

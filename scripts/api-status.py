@@ -36,7 +36,7 @@ if __name__ == '__main__':
     parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
                             epilog=u'''Show interesting informations about a running orchestrator.''')
     parser.add_argument(u'host',   action=u'store', default=None)
-    parser.add_argument(u'port',   action=u'store', default=5000)
+    parser.add_argument(u'port',   action=u'store', default=80)
     parser.add_argument(u'mail',   action=u'store', default=None)
     parser.add_argument(u'secret', action=u'store', default=None)
     args = parser.parse_args()

@@ -41,6 +41,7 @@ def configure_standalone_mode():
     u"""Return an instance of the flask application after having configured the error handlers."""
     from flask import Flask
     from pytoolbox.flask import json_response
+    from library.oscied_lib.api import api_method_decorator
 
     app = Flask(__name__)
 
@@ -75,19 +76,25 @@ def configure_standalone_mode():
     def ok_200(value, include_properties):
         return json_response(200, value=value, include_properties=include_properties)
 
-    return (app, ok_200)
+    return (app, api_method_decorator, ok_200)
 
 # ----------------------------------------------------------------------------------------------------------------------
 
 def configure_plugit_mode():
 
     import plugit
+    #import flask, functools, logging
+    #from pytoolbox.flask import check_id, map_exceptions
+
+    def api_method_decorator(api_core, authenticate=True, allow_root=False, allow_node=False, allow_any=False,
+                             role=None, allow_same_id=False):
+        raise NotImplementedError()
 
     def ok_200(value, include_properties):
         # FIXME include_properties not yet handled
         return {u'status': 200, u'value': value}
 
-    return (plugit.app, ok_200)
+    return (plugit.app, api_method_decorator, ok_200)
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -120,32 +127,30 @@ try:
         sys.exit(0)
 
     # Create an instance of the API core
-    orchestra = get_test_api_core() if args.mock else OrchestraAPICore(config)
+    api_core = get_test_api_core() if args.mock else OrchestraAPICore(config)
+    is_standalone = api_core.is_standalone
     logging.info(u'Start REST API')
 
     # Create an instance of the flask application
     #app.config['PROPAGATE_EXCEPTIONS'] = True
-    if orchestra.is_standalone:
-        app, ok_200 = configure_standalone_mode()
-    else:
-        app, ok_200 = configure_plugit_mode()
-        # FIXME I MAY PATCH THE ORCHESTRA INSTANCE USER'S METHODS OR ADD THE IF ELSE INTO THE METHODS ...
-        # orchestra.requires_auth = lambda *args, **kwargs: None
+    app, api_method_decorator, ok_200 = configure_standalone_mode() if is_standalone else configure_plugit_mode()
+    from api_base import *
+    from api_environment import *
+    from api_media import *
+    from api_publisher import *
+    from api_transform import *
+    from api_user import *
+    if not api_core.is_standalone:
+        import views
+        plugit.load_actions(views)
+
+    print(u'Flask URLs Map :\n{0}'.format(app.url_map))
 
     if __name__ == u'__main__':
-        if orchestra.is_standalone:
-            from api_base import *
-            from api_environment import *
-            from api_media import *
-            from api_publisher import *
-            from api_transform import *
-            from api_user import *
-            print(app.url_map)
-            app.run(host=u'0.0.0.0', debug=orchestra.config.verbose)
+        if api_core.is_standalone:
+            app.run(host=u'0.0.0.0', debug=api_core.config.verbose)
         else:
-            import views
-            plugit.load_actions(views)
-            plugit.app.run(debug=orchestra.config.verbose)
+            plugit.app.run(debug=api_core.config.verbose)
 
 except Exception as error:
     logging.exception(error)
