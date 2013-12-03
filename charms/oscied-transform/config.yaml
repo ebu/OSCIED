@@ -17,7 +17,7 @@ options:
         Default value is conservative.
   rabbit_queues:
     type: string
-    default: "transform_private"
+    default: "transform"
     description: |
         Worker connect to queues to receive tasks.
         For example "transform_amazon" for amazon, "transform_private,transform_amazon" for both.

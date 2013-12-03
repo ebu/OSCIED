@@ -45,7 +45,7 @@ from .. import PublisherWorker, TransformWorker
 from ..models import Media, User, TransformProfile, PublisherTask, TransformTask, ENCODERS_NAMES
 from ..utils import Callback, Storage
 from ..plugit_api import PlugItAPI
-from .base import ABOUT, get_test_api_core
+from .base import ABOUT
 
 
 class OrchestraAPICore(object):
@@ -830,5 +830,6 @@ class OrchestraAPICore(object):
 
 if __name__ == u'__main__':
     from pytoolbox.encoding import configure_unicode
+    from .utils import get_test_api_core
     configure_unicode()
     get_test_api_core()

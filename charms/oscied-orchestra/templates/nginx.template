@@ -1,0 +1,14 @@
+server {
+    listen 5000;
+    client_max_body_size 0;
+    server_name {domain} www.{domain};
+    access_log /var/log/nginx/{domain}/access.log;
+    error_log /var/log/nginx/{domain}/error.log;
+
+    location / {
+            uwsgi_pass      unix:///run/uwsgi/app/{domain}/{domain}.socket;
+            include         uwsgi_params;
+            uwsgi_param     UWSGI_SCHEME $scheme;
+            uwsgi_param     SERVER_SOFTWARE nginx/$nginx_version;
+    }
+}

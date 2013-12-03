@@ -41,8 +41,9 @@ class Amazon(DeploymentScenario):
 
     def run(self):
         print(description)
-        self.amazon.bootstrap(wait_started=True)
+        self.amazon.symlink_local_charms()
         self.amazon.generate_config_from_template()
+        self.amazon.bootstrap(wait_started=True)
         ensure_num_units = self.amazon.ensure_num_units
         ensure_num_units(u'oscied-orchestra', u'oscied-orchestra', local=True, expose=True)
         ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True)
@@ -65,4 +66,4 @@ class Amazon(DeploymentScenario):
 
 if __name__ == u'__main__':
     configure_unicode()
-    Amazon().main(environments=[OsciedEnvironment(u'amazon', config=CONFIG)])
+    Amazon().main(environments=[OsciedEnvironment(u'amazon', config=CONFIG, release=u'raring')])

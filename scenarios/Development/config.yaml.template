@@ -6,6 +6,7 @@ oscied-orchestra:
   mongo_admin_password: "{mongo_admin_password}"
   mongo_node_password: "{mongo_node_password}"
   rabbit_password: "{rabbit_password}"
+  charms_release: "{charms_release}"
   email_server: ""
   email_tls: true
   email_address: "someone@oscied.org"

@@ -44,9 +44,10 @@ class Dev(DeploymentScenario):
         do_merge = confirm(u'Merge services (takes more time to setup, cost less if running for hours)', default=False)
         do_init = confirm(u'Initialize orchestra (will wait until orchestra is ready)', default=True)
 
-        print()
-        self.dev.bootstrap(wait_started=True)
+        print(u'')
+        self.dev.symlink_local_charms()
         self.dev.generate_config_from_template()
+        self.dev.bootstrap(wait_started=True)
 
         self.dev.auto = True
         ensure_num_units = self.dev.ensure_num_units
@@ -70,4 +71,4 @@ class Dev(DeploymentScenario):
 
 if __name__ == u'__main__':
     configure_unicode()
-    Dev().main(environments=[OsciedEnvironment(u'dev', config=CONFIG)])
+    Dev().main(environments=[OsciedEnvironment(u'dev', config=CONFIG, release=u'raring')])

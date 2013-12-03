@@ -1,4 +1,0 @@
-*.pem
-config*.yaml
-environments.yaml
-id_rsa*
