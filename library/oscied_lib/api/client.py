@@ -65,6 +65,7 @@ class OrchestraAPIClient(object):
 
     @property
     def about(self):
+        u""" TODO add docstring """
         return self.do_request(get, self.api_url)
 
     def flush(self):
