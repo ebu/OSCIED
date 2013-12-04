@@ -8,7 +8,6 @@
 	LogLevel warn
 
     DocumentRoot "{directory}"
-    Alias /{alias} "{directory}"
 
 	<Directory {directory}/>
 		Options Indexes FollowSymLinks MultiViews

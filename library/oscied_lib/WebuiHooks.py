@@ -153,7 +153,7 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
 
         self.info(u'Configure Apache 2')
         self.template2config(local_cfg.site_template_file, join(local_cfg.sites_available_path, self.name_slug), {
-            u'alias': u'webui', u'directory': local_cfg.www_root_path, u'domain': self.public_address
+            u'directory': local_cfg.www_root_path, u'domain': self.public_address
         })
         self.cmd(u'a2dissite default')
         self.cmd(u'a2ensite {0}'.format(self.name_slug))
