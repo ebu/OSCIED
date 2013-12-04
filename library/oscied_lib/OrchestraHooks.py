@@ -136,11 +136,11 @@ class OrchestraHooks(CharmHooks_Storage):
         rsync(local_cfg.ssh_template_path, local_cfg.ssh_config_path, recursive=True, log=self.debug)
 
         self.info(u'Configure Apache 2')
-        self.cmd(u'a2dissite default')
-        self.template2config(local_cfg.site_template_file, join(local_cfg.site_path, self.name_slug), {
+        self.template2config(local_cfg.site_template_file, join(local_cfg.sites_available_path, self.name_slug), {
             u'alias': self.api_alias, u'directory': self.directory, u'domain': self.public_address,
             u'wsgi': self.api_wsgi
         })
+        self.cmd(u'a2dissite default')
         self.cmd(u'a2ensite {0}'.format(self.name_slug))
 
         self.info(u'Configure JuJu Service Orchestrator')

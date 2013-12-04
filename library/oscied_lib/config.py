@@ -43,7 +43,8 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
                  charms_repository=u'charms', email_server=u'', email_tls=False, email_username=u'', email_password=u'',
                  email_address=u'', email_ttask_template=u'templates/ttask_mail.template',
                  email_ptask_template=u'templates/ptask_mail.template', plugit_api_url=u'',
-                 site_path=u'/etc/apache2/sites-available', site_template_file=u'templates/apache_site.template',
+                 sites_available_path=u'/etc/apache2/sites-available',
+                 site_template_file=u'templates/apache_site.template',
                  **kwargs):
         super(OrchestraLocalConfig, self).__init__(**kwargs)
         self.api_url = api_url
@@ -70,7 +71,7 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
         self.email_ttask_template = email_ttask_template
         self.email_ptask_template = email_ptask_template
         self.plugit_api_url = plugit_api_url
-        self.site_path = site_path
+        self.sites_available_path = sites_available_path
         self.site_template_file = site_template_file
 
     @property
@@ -183,8 +184,9 @@ class TransformLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinat
 class WebuiLocalConfig(CharmLocalConfig_Storage):
 
     def __init__(self, api_url=u'', encryption_key=u'', proxy_ips=None,
-                 sites_enabled_path=u'/etc/apache2/sites-enabled', site_database_file=u'webui-db.sql',
-                 site_template_file=u'templates/000-default', htaccess_template_file=u'templates/htaccess.template',
+                 sites_available_path=u'/etc/apache2/sites-available', site_database_file=u'webui-db.sql',
+                 site_template_file=u'templates/apache_site.template',
+                 htaccess_template_file=u'templates/htaccess.template',
                  general_template_file=u'templates/config.php.template',
                  database_template_file=u'templates/database.php.template', htaccess_config_file=u'/var/www/.htaccess',
                  general_config_file=u'/var/www/application/config/config.php',
@@ -194,7 +196,7 @@ class WebuiLocalConfig(CharmLocalConfig_Storage):
         self.api_url = api_url
         self.encryption_key = encryption_key
         self.proxy_ips = proxy_ips or []
-        self.sites_enabled_path = sites_enabled_path
+        self.sites_available_path = sites_available_path
         self.site_database_file = site_database_file
         self.site_template_file = site_template_file
         self.htaccess_template_file = htaccess_template_file
