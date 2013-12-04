@@ -1,0 +1,20 @@
+<VirtualHost *:80>
+
+    ServerName {domain}
+
+	CustomLog "{directory}/access.log" common
+    ErrorLog "{directory}/error.log"
+    LogFormat "%h %l %u %t \"%r\" %>s %b" common
+	LogLevel warn
+
+    DocumentRoot "{directory}"
+    Alias /{alias} "{directory}"
+
+	<Directory {directory}/>
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride All
+		Order allow,deny
+		allow from all
+	</Directory>
+
+</VirtualHost>
