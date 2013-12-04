@@ -36,10 +36,11 @@ from .config import StorageLocalConfig
 
 class StorageHooks(CharmHooks):
 
+    PACKAGES = (u'ntp', u'glusterfs-server', u'nfs-common')
+
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(StorageHooks, self).__init__(metadata, default_config, default_os_env)
         self.local_config = StorageLocalConfig.read(local_config_filename, store_filename=True)
-        self.debug(u'My __dict__ is {0}'.format(self.__dict__))
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -145,7 +146,7 @@ class StorageHooks(CharmHooks):
         self.cmd(u'apt-get -y update', fail=False)
         self.cmd(u'apt-get -y -f install')  # May recover problems with upgrade !
         self.cmd(u'apt-get -y upgrade')
-        self.cmd(u'apt-get -y install ntp glusterfs-server nfs-common')
+        self.cmd(u'apt-get -y install {0}'.format(u' '.join(StorageHooks.PACKAGES)))
         self.info(u'Restart network time protocol service')
         self.cmd(u'service ntp restart')
 
@@ -169,7 +170,7 @@ class StorageHooks(CharmHooks):
         self.info(u'Uninstall prerequisites, remove files & bricks and load default configuration')
         self.hook_stop()
         if self.config.cleanup:
-            self.cmd(u'apt-get -y remove --purge glusterfs-server nfs-common')
+            self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(StorageHooks.PACKAGES)))
             self.cmd(u'apt-get -y autoremove')
             shutil.rmtree(u'/etc/glusterd',  ignore_errors=True)
             shutil.rmtree(u'/etc/glusterfs', ignore_errors=True)

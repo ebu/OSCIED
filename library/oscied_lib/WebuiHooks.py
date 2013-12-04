@@ -50,7 +50,6 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(WebuiHooks, self).__init__(metadata, default_config, default_os_env)
         self.local_config = WebuiLocalConfig.read(local_config_filename, store_filename=True)
-        self.debug(u'My __dict__ is {0}'.format(self.__dict__))
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -150,20 +149,22 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         self.open_port(80, u'TCP')
 
     def hook_config_changed(self):
+        local_cfg = self.local_config
+
         self.storage_remount()
         self.api_register()
         infos = self.config.__dict__
-        infos.update(self.local_config.__dict__)
+        infos.update(local_cfg.__dict__)
         infos[u'proxy_ips'] = self.proxy_ips_string
-        infos[u'www_medias_uri'] = self.local_config.storage_uri(path=MEDIAS_PATH) or u''
-        infos[u'www_uploads_uri'] = self.local_config.storage_uri(path=UPLOADS_PATH) or u''
-        self.template2config(self.local_config.general_template_file,  self.local_config.general_config_file,  infos)
-        self.template2config(self.local_config.database_template_file, self.local_config.database_config_file, infos)
-        self.template2config(self.local_config.htaccess_template_file, self.local_config.htaccess_config_file, infos)
+        infos[u'www_medias_uri'] = local_cfg.storage_uri(path=MEDIAS_PATH) or u''
+        infos[u'www_uploads_uri'] = local_cfg.storage_uri(path=UPLOADS_PATH) or u''
+        self.template2config(local_cfg.general_template_file,  local_cfg.general_config_file,  infos)
+        self.template2config(local_cfg.database_template_file, local_cfg.database_config_file, infos)
+        self.template2config(local_cfg.htaccess_template_file, local_cfg.htaccess_config_file, infos)
         if self.storage_is_mounted:
             self.info(u'Symlink shared storage for the web daemon')
-            try_symlink(self.local_config.storage_medias_path(), self.local_config.www_medias_path)
-            try_symlink(self.local_config.storage_uploads_path, self.local_config.www_uploads_path)
+            try_symlink(local_cfg.storage_medias_path(), local_cfg.www_medias_path)
+            try_symlink(local_cfg.storage_uploads_path,  local_cfg.www_uploads_path)
 
     def hook_uninstall(self):
         self.info(u'Uninstall prerequisities, unregister service and load default configuration')

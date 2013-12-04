@@ -40,18 +40,18 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
     PACKAGES = tuple(set(
         CharmHooks_Storage.PACKAGES + CharmHooks_Subordinate.PACKAGES +
         CharmHooks_Website.PACKAGES + (u'apache2', u'apache2-threaded-dev', u'make', u'ntp')))
+    FIX_PACKAGES = (u'apache2.2-common',)
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(PublisherHooks, self).__init__(metadata, default_config, default_os_env)
         self.local_config = PublisherLocalConfig.read(local_config_filename, store_filename=True)
         self.local_config.update_publish_uri(self.public_address)
-        self.debug(u'My __dict__ is {0}'.format(self.__dict__))
 
     # ------------------------------------------------------------------------------------------------------------------
 
     @property
     def publish_path(self):
-        return os.path.join(self.config.www_root_path, 'www')
+        return os.path.join(self.config.www_root_path, u'www')
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -82,18 +82,20 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         self.open_port(80, u'TCP')
 
     def hook_config_changed(self):
+        local_cfg = self.local_config
+
         self.info(u'Configure Apache 2')
         self.info(u'{0} Apache H.264 streaming module'.format(u'Enable' if self.config.mod_streaming else u'Disable'))
         mods = (u'LoadModule h264_streaming_module /usr/lib/apache2/modules/mod_h264_streaming.so',
                 u'AddHandler h264-streaming.extensions .mp4')
-        lines = filter(lambda l: l not in mods, open(self.local_config.apache_config_file, u'r', u'utf-8'))
+        lines = filter(lambda l: l not in mods, open(local_cfg.apache_config_file, u'r', u'utf-8'))
         if self.config.mod_streaming:
             lines += u'\n'.join(mods) + u'\n'
-        open(self.local_config.apache_config_file, u'w', u'utf-8').write(u''.join(lines))
+        open(local_cfg.apache_config_file, u'w', u'utf-8').write(u''.join(lines))
         infos = {u'publish_path': self.publish_path}
-        self.template2config(self.local_config.site_template_file, self.local_config.site_file, infos)
-        self.template2config(self.local_config.site_ssl_template_file, self.local_config.site_ssl_file, infos)
-        self.local_config.www_root_path = self.config.www_root_path
+        self.template2config(local_cfg.site_template_file,     local_cfg.site_file, infos)
+        self.template2config(local_cfg.site_ssl_template_file, local_cfg.site_ssl_file, infos)
+        local_cfg.www_root_path = self.config.www_root_path
         self.storage_remount()
         self.subordinate_register()
 
@@ -104,7 +106,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         self.subordinate_unregister()
         if self.config.cleanup:
             self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(PublisherHooks.PACKAGES)))
-            self.cmd(u'apt-get -y remove --purge apache2.2-common', fail=False)  # Fixes some problems
+            self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(PublisherHooks.FIX_PACKAGES)), fail=False)
             self.cmd(u'apt-get -y autoremove')
             shutil.rmtree(u'/etc/apache2/',     ignore_errors=True)
             shutil.rmtree(u'/var/log/apache2/', ignore_errors=True)

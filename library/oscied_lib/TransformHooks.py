@@ -54,7 +54,6 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(TransformHooks, self).__init__(metadata, default_config, default_os_env)
         self.local_config = TransformLocalConfig.read(local_config_filename, store_filename=True)
-        self.debug(u'My __dict__ is {0}'.format(self.__dict__))
 
     # ------------------------------------------------------------------------------------------------------------------
 
