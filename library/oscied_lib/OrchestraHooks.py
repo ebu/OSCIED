@@ -44,6 +44,7 @@ class OrchestraHooks(CharmHooks_Storage):
 
     PACKAGES = tuple(set(CharmHooks_Storage.PACKAGES + (u'apache2', u'ffmpeg', u'libapache2-mod-wsgi', u'mongodb',
                      u'ntp', u'rabbitmq-server', u'x264')))
+    FIX_PACKAGES = (u'apache2.2-common',)
     JUJU_PACKAGES = (u'juju-core',)
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
@@ -207,7 +208,7 @@ class OrchestraHooks(CharmHooks_Storage):
         self.storage_unregister()
         if self.config.cleanup:
             self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(OrchestraHooks.PACKAGES)))
-            self.cmd(u'apt-get -y remove --purge apache2.2-common', fail=False)  # Fixes some problems
+            self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(OrchestraHooks.FIX_PACKAGES)), fail=False)
             self.cmd(u'apt-get -y autoremove')
             #shutil.rmtree('$HOME/.juju $HOME/.ssh/id_rsa*
             shutil.rmtree(u'/etc/apache2/',      ignore_errors=True)
