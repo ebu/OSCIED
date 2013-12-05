@@ -124,7 +124,7 @@ class OrchestraAPIClient(object):
     # More complex methods not directly related to the API -------------------------------------------------------------
 
     @property
-    def api_endpoint(self):
+    def api_host(self):
         u"""Return the string ubuntu@api_hostname useful to open a secure shell in the orchestration unit."""
         return u'ubuntu@{0}'.format(self.api_url.split(u':')[0])
 
@@ -145,7 +145,7 @@ class OrchestraAPIClient(object):
         u"""Upload a media asset by rsync-ing the local file to the shared storage mount point of the orchestrator !"""
         # FIXME detect name based on hostname ?
         os.chmod(self.id_rsa, 0600)
-        api_endpoint, local_cfg = self.api_endpoint, self.api_local_config
+        api_host, local_cfg = self.api_host, self.api_local_config
         bkp_path = local_cfg.storage_uploads_path + u'bkp/'
         dst_path = local_cfg.storage_uploads_path
         if not dst_path:
@@ -153,15 +153,15 @@ class OrchestraAPIClient(object):
 
         if backup_in_remote:
             # Mirror the local file into a 'backup' directory on the shared storage, then into the destination directory
-            print(rsync(filename, u'{0}:{1}'.format(api_endpoint, bkp_path), makedest=True, archive=True, progress=True,
+            print(rsync(filename, u'{0}:{1}'.format(api_host, bkp_path), makedest=True, archive=True, progress=True,
                   rsync_path=u'sudo rsync', extra='ssh -i {0}'.format(self.id_rsa))['stdout'])
             sync_bkp_to_upload = u'sudo rsync -ah --progress {0} {1}'.format(bkp_path, dst_path)
-            print(ssh(api_endpoint, id=self.id_rsa, remote_cmd=sync_bkp_to_upload)['stdout'])
+            print(ssh(api_host, id=self.id_rsa, remote_cmd=sync_bkp_to_upload)['stdout'])
         else:
             # Mirror the local file into the destination directory of the shared storage
-            print(rsync(filename, u'{0}:{1}'.format(api_endpoint, dst_path), makedest=True, archive=True, progress=True,
+            print(rsync(filename, u'{0}:{1}'.format(api_host, dst_path), makedest=True, archive=True, progress=True,
                   rsync_path=u'sudo rsync', extra='ssh -i {0}'.format(self.id_rsa))['stdout'])
-        ssh(api_endpoint, id=self.id_rsa, remote_cmd=u'sudo chown www-data:www-data {0} -R'.format(dst_path))
+        ssh(api_host, id=self.id_rsa, remote_cmd=u'sudo chown www-data:www-data {0} -R'.format(dst_path))
 
         return u'{0}://{1}/{2}/uploads/{3}'.format(u'glusterfs', local_cfg.storage_address,
                                                    local_cfg.storage_mountpoint, os.path.basename(filename))
@@ -171,4 +171,4 @@ class OrchestraAPIClient(object):
         # FIXME detect name based on hostname ?
         os.chmod(self.id_rsa, 0600)
         medias_path_filter = self.api_local_config.storage_medias_path('*')
-        ssh(self.api_endpoint, id=self.id_rsa, remote_cmd=u'sudo rm -rf {0}'.format(medias_path_filter))
+        ssh(self.api_host, id=self.id_rsa, remote_cmd=u'sudo rm -rf {0}'.format(medias_path_filter))
