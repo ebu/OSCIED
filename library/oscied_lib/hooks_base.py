@@ -35,7 +35,7 @@ from pytoolbox.subprocess import screen_launch, screen_list, screen_kill
 
 class OsciedCharmHooks(CharmHooks):
 
-    def __init__(self, metadata, default_config, default_os_env, local_config_cls, local_config_filename):
+    def __init__(self, metadata, default_config, default_os_env, local_config_filename, local_config_cls):
         super(OsciedCharmHooks, self).__init__(metadata, default_config, default_os_env)
         # Create the local configuration file if missing
         if not local_config_filename:
