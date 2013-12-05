@@ -79,6 +79,7 @@ install_requires=[
       'celery',     # FIXME version
       'flask',      # FIXME version
       'mongomock',  # FIXME version
+      'nose',       # FIXME version
       'passlib',    # FIXME version
       'pyaml',      # FIXME version
       'pymongo',    # FIXME version
