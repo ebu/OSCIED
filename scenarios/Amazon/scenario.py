@@ -66,4 +66,4 @@ class Amazon(DeploymentScenario):
 
 if __name__ == u'__main__':
     configure_unicode()
-    Amazon().main(environments=[OsciedEnvironment(u'amazon', config=CONFIG, release=u'raring')])
+    Amazon(environments=[OsciedEnvironment(u'amazon', config=CONFIG, release=u'raring')]).run()

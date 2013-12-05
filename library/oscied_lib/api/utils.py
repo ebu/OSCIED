@@ -25,7 +25,7 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os, uuid
+import os, time, uuid
 from pytoolbox.encoding import csv_reader, to_bytes
 
 from ..config_test import ORCHESTRA_CONFIG_TEST
@@ -45,7 +45,7 @@ def get_test_api_core():
 
 
 def init_api(api_core_or_client, api_init_csv_directory, flush=False, add_users=True, add_profiles=True,
-             add_medias=True, add_tasks=True, backup_medias_in_remote=True):
+             add_medias=True, add_tasks=False, wait_started=False, timeout=0, minimun_polling=10):
     u"""
     Initialize an instance of ``OrchestraAPICore`` or use provided instance of ``OrchestraAPIClient`` to initialize a
     remote orchestration unit.
@@ -54,6 +54,15 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False, add_users=
     orchestra = api_core_or_client if is_core else None
     api_client = api_core_or_client if not is_core else None
     is_standalone = not is_core or orchestra.is_standalone
+
+    if api_client and wait_started:
+        t = time.time()
+        while (timeout == 0) or (time.time() - t < timeout):
+            try:
+                s = api_client.about()  # wait for orchestra to answer HTTP request
+                break
+            except:
+                time.sleep(minimun_polling)
 
     if flush:
         if is_core:

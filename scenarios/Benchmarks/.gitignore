@@ -1,0 +1,5 @@
+*.pem
+config*.yaml
+environments.yaml
+id_rsa*
+*.DS_Store
