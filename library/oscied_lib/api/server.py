@@ -24,7 +24,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import logging, mongomock, pymongo, smtplib, uuid
 from celery.task.control import revoke

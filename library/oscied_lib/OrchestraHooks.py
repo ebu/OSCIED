@@ -24,7 +24,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os, re, shutil, time
 from codecs import open
@@ -48,8 +48,8 @@ class OrchestraHooks(CharmHooks_Storage):
     JUJU_PACKAGES = (u'juju-core',)
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
-        super(OrchestraHooks, self).__init__(metadata, default_config, default_os_env)
-        self.local_config = OrchestraLocalConfig.read(local_config_filename, store_filename=True)
+        super(OrchestraHooks, self).__init__(metadata, default_config, default_os_env, local_config_filename,
+                                             OrchestraLocalConfig)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -283,7 +283,7 @@ class OrchestraHooks(CharmHooks_Storage):
 if __name__ == u'__main__':
     from pytoolbox.encoding import configure_unicode
     configure_unicode()
-    OrchestraHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-orchestra/metadata.yaml'),
-                   first_that_exist(u'config.yaml',      u'../../charms/oscied-orchestra/config.yaml'),
-                   first_that_exist(u'local_config.pkl', u'../../charms/oscied-orchestra/local_config.pkl'),
+    OrchestraHooks(first_that_exist(u'metadata.yaml',     u'../../charms/oscied-orchestra/metadata.yaml'),
+                   first_that_exist(u'config.yaml',       u'../../charms/oscied-orchestra/config.yaml'),
+                   first_that_exist(u'local_config.json', u'../../charms/oscied-orchestra/local_config.json'),
                    DEFAULT_OS_ENV).trigger()

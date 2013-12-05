@@ -23,7 +23,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os, pymongo.uri_parser, shutil, time
 from codecs import open
@@ -33,19 +33,25 @@ from pytoolbox.juju import CharmHooks
 from pytoolbox.subprocess import screen_launch, screen_list, screen_kill
 
 
-class CharmHooks_Storage(CharmHooks):
+class OsciedCharmHooks(CharmHooks):
+
+    def __init__(self, metadata, default_config, default_os_env, local_config_cls, local_config_filename):
+        super(CharmHooks_Storage, self).__init__(metadata, default_config, default_os_env)
+        # Create the local configuration file if missing
+        if not local_config_filename:
+            local_config_cls().write(u'local_config.json')
+        self.local_config = local_config_cls.read(u'local_config.json', store_filename=True)
+
+
+class CharmHooks_Storage(OsciedCharmHooks):
 
     PACKAGES = (u'glusterfs-client', u'nfs-common')
-
-    def __init__(self, metadata, default_config, default_os_env):
-        super(CharmHooks_Storage, self).__init__(metadata, default_config, default_os_env)
 
     # ------------------------------------------------------------------------------------------------------------------
 
     @property
     def storage_config_is_enabled(self):
-        c = self.config
-        return c.storage_address and c.storage_fstype and c.storage_mountpoint
+        return self.config.storage_address and self.config.storage_fstype and self.config.storage_mountpoint
 
     @property
     def storage_is_mounted(self):
@@ -150,18 +156,15 @@ class CharmHooks_Storage(CharmHooks):
         self.storage_remount()
 
 
-class CharmHooks_Subordinate(CharmHooks):
+class CharmHooks_Subordinate(OsciedCharmHooks):
 
     PACKAGES = ()
-
-    def __init__(self, metadata, default_config, default_os_env):
-        super(CharmHooks_Subordinate, self).__init__(metadata, default_config, default_os_env)
 
     # ------------------------------------------------------------------------------------------------------------------
 
     @property
     def screen_name(self):
-        return self.__class__.__name__.lower().replace('hooks', '')
+        return self.__class__.__name__.lower().replace(u'hooks', u'')
 
     @property
     def rabbit_hostname(self):
@@ -251,12 +254,9 @@ class CharmHooks_Subordinate(CharmHooks):
         self.subordinate_unregister()
 
 
-class CharmHooks_Website(CharmHooks):
+class CharmHooks_Website(OsciedCharmHooks):
 
     PACKAGES = ()
-
-    def __init__(self, metadata, default_config, default_os_env):
-        super(CharmHooks_Website, self).__init__(metadata, default_config, default_os_env)
 
     # ------------------------------------------------------------------------------------------------------------------
 

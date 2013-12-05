@@ -204,7 +204,7 @@ _overwrite_helper()
 
   mkdir -p "$SCENARIO_CHARMS_PATH/$2" 2>/dev/null
   rsync -rtvh -LH --delete --progress --exclude='.git' --exclude='*.log' --exclude='*.pyc' \
-    --exclude='celeryconfig.py' --exclude='build' --exclude='dist' --exclude='cover' \
+    --exclude='celeryconfig.py' --exclude='local_config.*' --exclude='build' --exclude='dist' --exclude='cover' \
     --exclude='*.egg-info' "$CHARMS_PATH/$1/" "$SCENARIO_CHARMS_PATH/$2/" || \
     xecho "Unable to overwrite $2 charm"
 }
@@ -238,18 +238,18 @@ _rsync_helper()
     host="ubuntu@$REPLY"
     dest="/var/lib/juju/agents/unit-$1-$number/charm"
     ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
-    rsync --rsync-path='sudo rsync' -avhL --progress --delete -e "ssh -i '$ID_RSA'" --exclude=.git \
+    rsync --rsync-path='sudo rsync' -avhL --progress --delete -e "ssh -i '$ID_RSA'" --exclude='.git' \
       --exclude='build' --exclude='cover' --exclude='dist' --exclude=config.json \
-      --exclude=celeryconfig.py --exclude=*.pyc --exclude=local_config.pkl --exclude=charms \
-      --exclude=ssh --exclude=environments.yaml --exclude=*.log "$CHARMS_PATH/$1/" "$host:$dest/"
+      --exclude='celeryconfig.py' --exclude='*.pyc' --exclude='local_config.*' --exclude='charms' \
+      --exclude='ssh' --exclude='environments.yaml' --exclude='*.log' "$CHARMS_PATH/$1/" "$host:$dest/"
     ssh -i "$ID_RSA" "$host" -n "sudo chown root:root $dest -R"
 
     if [ "$1" = 'oscied-webui' ]; then
       dest='/var/www'
       ssh -i "$ID_RSA" "$host" -n "sudo chown 1000:1000 $dest -R"
-      rsync -avh --progress -e "ssh -i '$ID_RSA'" --exclude=.git --exclude=.htaccess \
-        --exclude=application/config/config.php --exclude=application/config/database.php --exclude=medias \
-        --exclude=uploads --exclude=orchestra_relation_ok --delete "$CHARMS_PATH/oscied-webui/www/" "$host:$dest/"
+      rsync -avh --progress -e "ssh -i '$ID_RSA'" --exclude='.git' --exclude='.htaccess' \
+        --exclude='application/config/config.php' --exclude='application/config/database.php' --exclude='medias' \
+        --exclude='uploads' --exclude='orchestra_relation_ok' --delete "$CHARMS_PATH/oscied-webui/www/" "$host:$dest/"
       ssh -i "$ID_RSA" "$host" -n "sudo chown www-data:www-data $dest -R"
     fi
 

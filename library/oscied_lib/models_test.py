@@ -23,7 +23,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import uuid
 from .config_test import ORCHESTRA_CONFIG_TEST

@@ -24,7 +24,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
 from os.path import expanduser, join
@@ -147,7 +147,7 @@ class PublisherLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinat
         >>> import copy
         >>> from .config_test import PUBLISHER_CONFIG_TEST
         >>> config = copy.copy(PUBLISHER_CONFIG_TEST)
-        >>> print(config.publish_uri, config.publish_uri_to_path(u'test.mp4'))
+        >>> print((config.publish_uri, config.publish_uri_to_path(u'test.mp4')))
         (u'', None)
         >>> config.update_publish_uri(u'my_host.com')
         >>> print(config.publish_uri_to_path(u'http://another_host.com/a_path/a_file.txt'))
@@ -170,9 +170,11 @@ class StorageLocalConfig(CharmLocalConfig):
         super(StorageLocalConfig, self).__init__(**kwargs)
         self.allowed_ips = allowed_ips or []
         self.volume_flag = volume_flag
-        self.volume_infos_regex = re.compile(
-            r".*Volume Name:\s*(?P<name>\S+)\s+.*Type:\s*(?P<type>\S+)\s+.*"
-            r"Status:\s*(?P<status>\S+)\s+.*Transport-type:\s*(?P<transport>\S+).*", re.DOTALL)
+
+    @property
+    def volume_infos_regex(self):
+        return re.compile(r".*Volume Name:\s*(?P<name>\S+)\s+.*Type:\s*(?P<type>\S+)\s+.*"
+                          r"Status:\s*(?P<status>\S+)\s+.*Transport-type:\s*(?P<transport>\S+).*", re.DOTALL)
 
 
 class TransformLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinate):
@@ -219,13 +221,3 @@ if __name__ == u'__main__':
     import doctest
     assert(doctest.testmod(verbose=False))
     print(u'OK')
-    print(u'Write default orchestra local configuration')
-    OrchestraLocalConfig().write(u'../../charms/oscied-orchestra/local_config.pkl')
-    print(u'Write default publisher local configuration')
-    PublisherLocalConfig().write(u'../../charms/oscied-publisher/local_config.pkl')
-    print(u'Write default storage local configuration')
-    StorageLocalConfig().write(u'../../charms/oscied-storage/local_config.pkl')
-    print(u'Write default transform local configuration')
-    TransformLocalConfig().write(u'../../charms/oscied-transform/local_config.pkl')
-    print('Write default web user interface local configuration')
-    WebuiLocalConfig().write('../../charms/oscied-webui/local_config.pkl')

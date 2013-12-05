@@ -23,16 +23,16 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import logging
 from os.path import join, sep
-from pytoolbox.serialization import PickleableObject
+from pytoolbox.serialization import JsoneableObject
 
 MEDIAS_PATH, UPLOADS_PATH = u'medias', u'uploads'
 
 
-class CharmLocalConfig(PickleableObject):
+class CharmLocalConfig(JsoneableObject):
 
     def __init__(self, verbose=True):
         self.verbose = verbose
@@ -51,7 +51,7 @@ class CharmLocalConfig(PickleableObject):
         **Example usage**
 
         >>> config = CharmLocalConfig(verbose=True)
-        >>> config._pickle_filename = u'my_file.pkl'
+        >>> config._json_filename = u'my_file.json'
         >>> print(config.verbose)
         True
         >>> config.verbose = False
@@ -60,8 +60,8 @@ class CharmLocalConfig(PickleableObject):
         >>> config.reset()
         >>> print(config.verbose)
         True
-        >>> print(config._pickle_filename)
-        my_file.pkl
+        >>> print(config._json_filename)
+        my_file.json
         """
         self.__init__()
 

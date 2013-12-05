@@ -24,7 +24,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os, shutil, socket, string
 from codecs import open
@@ -49,8 +49,8 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
                     u'mysql-server', u'mysql-server-5.1', u'mysql-server-5.5', u'mysql-server-core-5.5')
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
-        super(WebuiHooks, self).__init__(metadata, default_config, default_os_env)
-        self.local_config = WebuiLocalConfig.read(local_config_filename, store_filename=True)
+        super(WebuiHooks, self).__init__(metadata, default_config, default_os_env, local_config_filename,
+                                         WebuiLocalConfig)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -210,7 +210,7 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
 if __name__ == u'__main__':
     from pytoolbox.encoding import configure_unicode
     configure_unicode()
-    WebuiHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-webui/metadata.yaml'),
-               first_that_exist(u'config.yaml',      u'../../charms/oscied-webui/config.yaml'),
-               first_that_exist(u'local_config.pkl', u'../../charms/oscied-webui/local_config.pkl'),
+    WebuiHooks(first_that_exist(u'metadata.yaml',     u'../../charms/oscied-webui/metadata.yaml'),
+               first_that_exist(u'config.yaml',       u'../../charms/oscied-webui/config.yaml'),
+               first_that_exist(u'local_config.json', u'../../charms/oscied-webui/local_config.json'),
                DEFAULT_OS_ENV).trigger()

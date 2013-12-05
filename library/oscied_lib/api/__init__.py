@@ -23,8 +23,11 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from base import *
-from client import *
-from decorators import *
-from server import *
-from utils import *
+from __future__ import absolute_import, division, print_function, unicode_literals
+
+from .base import *
+from .client import *
+from .decorators import *
+from .server import *
+from .test import *
+from .utils import *

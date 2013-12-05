@@ -24,7 +24,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os, multiprocessing, setuptools.archive_util, shutil
 from codecs import open
@@ -43,9 +43,8 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
     FIX_PACKAGES = (u'apache2.2-common',)
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
-        super(PublisherHooks, self).__init__(metadata, default_config, default_os_env)
-        self.local_config = PublisherLocalConfig.read(local_config_filename, store_filename=True)
-        self.local_config.update_publish_uri(self.public_address)
+        super(PublisherHooks, self).__init__(metadata, default_config, default_os_env, local_config_filename,
+                                             PublisherLocalConfig)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -137,7 +136,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
 if __name__ == u'__main__':
     from pytoolbox.encoding import configure_unicode
     configure_unicode()
-    PublisherHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-publisher/metadata.yaml'),
-                   first_that_exist(u'config.yaml',      u'../../charms/oscied-publisher/config.yaml'),
-                   first_that_exist(u'local_config.pkl', u'../../charms/oscied-publisher/local_config.pkl'),
+    PublisherHooks(first_that_exist(u'metadata.yaml',     u'../../charms/oscied-publisher/metadata.yaml'),
+                   first_that_exist(u'config.yaml',       u'../../charms/oscied-publisher/config.yaml'),
+                   first_that_exist(u'local_config.json', u'../../charms/oscied-publisher/local_config.json'),
                    DEFAULT_OS_ENV).trigger()

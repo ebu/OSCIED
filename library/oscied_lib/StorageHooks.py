@@ -24,7 +24,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os, re, shutil
 from pytoolbox.encoding import to_bytes
@@ -39,8 +39,8 @@ class StorageHooks(CharmHooks):
     PACKAGES = (u'ntp', u'glusterfs-server', u'nfs-common')
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
-        super(StorageHooks, self).__init__(metadata, default_config, default_os_env)
-        self.local_config = StorageLocalConfig.read(local_config_filename, store_filename=True)
+        super(StorageHooks, self).__init__(metadata, default_config, default_os_env, local_config_filename,
+                                           StorageLocalConfig)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -250,7 +250,7 @@ class StorageHooks(CharmHooks):
 if __name__ == u'__main__':
     from pytoolbox.encoding import configure_unicode
     configure_unicode()
-    StorageHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-storage/metadata.yaml'),
-                 first_that_exist(u'config.yaml',      u'../../charms/oscied-storage/config.yaml'),
-                 first_that_exist(u'local_config.pkl', u'../../charms/oscied-storage/local_config.pkl'),
+    StorageHooks(first_that_exist(u'metadata.yaml',     u'../../charms/oscied-storage/metadata.yaml'),
+                 first_that_exist(u'config.yaml',       u'../../charms/oscied-storage/config.yaml'),
+                 first_that_exist(u'local_config.json', u'../../charms/oscied-storage/local_config.json'),
                  DEFAULT_OS_ENV).trigger()

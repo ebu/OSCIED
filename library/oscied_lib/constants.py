@@ -24,6 +24,8 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 ENVIRONMENT_TO_LABEL = {u'amazon': u'Public Cloud', u'maas': u'Private Cluster'}
 ENVIRONMENT_TO_TYPE  = {u'amazon': u'public', u'maas': u'private'}
 SERVICE_TO_LABEL     = {u'oscied-transform': u'encoding',        u'oscied-publisher': u'distribution'}

@@ -24,7 +24,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
 from pytoolbox.filesystem import first_that_exist
@@ -50,10 +50,9 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
 
     PACKAGES = tuple(set(CharmHooks_Storage.PACKAGES + CharmHooks_Subordinate.PACKAGES + (u'ntp',)))
 
-
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
-        super(TransformHooks, self).__init__(metadata, default_config, default_os_env)
-        self.local_config = TransformLocalConfig.read(local_config_filename, store_filename=True)
+        super(TransformHooks, self).__init__(metadata, default_config, default_os_env, local_config_filename,
+                                             TransformLocalConfig)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -138,7 +137,7 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
 if __name__ == u'__main__':
     from pytoolbox.encoding import configure_unicode
     configure_unicode()
-    TransformHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-transform/metadata.yaml'),
-                   first_that_exist(u'config.yaml',      u'../../charms/oscied-transform/config.yaml'),
-                   first_that_exist(u'local_config.pkl', u'../../charms/oscied-transform/local_config.pkl'),
+    TransformHooks(first_that_exist(u'metadata.yaml',     u'../../charms/oscied-transform/metadata.yaml'),
+                   first_that_exist(u'config.yaml',       u'../../charms/oscied-transform/config.yaml'),
+                   first_that_exist(u'local_config.json', u'../../charms/oscied-transform/local_config.json'),
                    DEFAULT_OS_ENV).trigger()

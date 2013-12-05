@@ -23,7 +23,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os, shutil, time
 from celery import current_task
@@ -73,8 +73,8 @@ def publisher_task(media_json, callback_json):
         # Let's the task begin !
         print(u'{0} Publication task started'.format(request.id))
 
-        # Read current configuration to translate files uri to local paths
-        local_config = PublisherLocalConfig.read(u'local_config.pkl')
+        # Read current configuration to translate files URIs to local paths
+        local_config = PublisherLocalConfig.read(u'local_config.json')
         print(object2json(local_config, include_properties=True))
 
         # Load and check task parameters
@@ -140,8 +140,8 @@ def revoke_publisher_task(publish_uri, callback_json):
         # Let's the task begin !
         print(u'{0} Revoke publication task started'.format(request.id))
 
-        # Read current configuration to translate files uri to local paths
-        local_config = PublisherLocalConfig.read(u'local_config.pkl')
+        # Read current configuration to translate files URIs to local paths
+        local_config = PublisherLocalConfig.read(u'local_config.json')
         print(object2json(local_config, True))
 
         # Load and check task parameters
