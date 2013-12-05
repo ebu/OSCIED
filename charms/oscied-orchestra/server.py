@@ -98,38 +98,35 @@ def configure_plugit_mode():
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-CONFIG_FILENAME = os.path.join(os.path.abspath(os.path.dirname(__file__)), u'local_config.pkl')
+CONFIG_FILENAME = os.path.join(os.path.abspath(os.path.dirname(__file__)), u'local_config.json')
 HELP_MOCK = u'Mock the MongoDB driver with MongoMock ([WARNING] Still not a perfect mock of the real-one)'
 
 try:
     configure_unicode()
-    parser = ArgumentParser(
-        formatter_class=ArgumentDefaultsHelpFormatter, epilog=ABOUT)
+    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter, epilog=ABOUT)
     parser.add_argument(u'-m', u'--mock', action=u'store_true', help=HELP_MOCK, default=False)
     args = parser.parse_args()
 
-    config = ORCHESTRA_CONFIG_TEST if args.mock else OrchestraLocalConfig.read(CONFIG_FILENAME)
-    setup_logging(console=True, level=config.log_level)
-    logging.info(ABOUT)
-    logging.info(u'Mocking the MongoDB database through the driver called MongoMock' if args.mock else
-                 u'Using a real MongoDB database through the driver called pyMongo')
-    logging.debug(u'Configuration : {0}'.format(unicode(object2json(config, True))))
+    if args.mock:
+        local_config = ORCHESTRA_CONFIG_TEST
+    else:
+        local_config = OrchestraLocalConfig.read(CONFIG_FILENAME, inspect_constructor=False)
+    setup_logging(console=True, level=local_config.log_level)
 
-    if not config.storage_uri():
+    if not local_config.storage_uri():
         logging.warning(u'Shared storage is not set in configuration ... exiting')
         sys.exit(0)
 
-    if not config.mongo_admin_connection:
+    if not local_config.mongo_admin_connection:
         logging.warning(u'MongoDB is not set in configuration ... mocking')
 
-    if not config.rabbit_connection:
+    if not local_config.rabbit_connection:
         logging.warning(u'RabbitMQ is not set in configuration ... exiting')
         sys.exit(0)
 
     # Create an instance of the API core
-    api_core = get_test_api_core() if args.mock else OrchestraAPICore(config)
+    api_core = get_test_api_core() if args.mock else OrchestraAPICore(local_config)
     is_standalone = api_core.is_standalone
-    logging.info(u'Start REST API')
 
     # Create an instance of the flask application
     #app.config['PROPAGATE_EXCEPTIONS'] = True
@@ -144,7 +141,7 @@ try:
         import views
         plugit.load_actions(views)
 
-    print(u'Flask URLs Map :\n{0}'.format(app.url_map))
+    #print(u'Flask URLs Map :\n{0}'.format(app.url_map))
 
     if __name__ == u'__main__':
         if api_core.is_standalone:

@@ -36,7 +36,7 @@ from pytoolbox.subprocess import rsync
 from random import choice
 
 from .config import WebuiLocalConfig
-from .config_base import MEDIAS_PATH, UPLOADS_PATH
+from .constants import MEDIAS_PATH, UPLOADS_PATH
 from .hooks_base import CharmHooks_Storage, CharmHooks_Website
 
 

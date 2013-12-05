@@ -29,12 +29,13 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import os, re, shutil
 from pytoolbox.encoding import to_bytes
 from pytoolbox.filesystem import first_that_exist
-from pytoolbox.juju import CharmHooks, DEFAULT_OS_ENV
+from pytoolbox.juju import DEFAULT_OS_ENV
 
 from .config import StorageLocalConfig
+from .hooks_base import OsciedCharmHooks
 
 
-class StorageHooks(CharmHooks):
+class StorageHooks(OsciedCharmHooks):
 
     PACKAGES = (u'ntp', u'glusterfs-server', u'nfs-common')
 

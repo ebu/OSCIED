@@ -33,7 +33,6 @@ from pytoolbox.flask import check_id, map_exceptions
 # http://publish.luisrei.com/articles/flaskrest.html
 def api_method_decorator(api_core, authenticate=True, allow_root=False, allow_node=False, allow_any=False, role=None,
                          allow_same_id=False):
-    logging.info(u'creating the decorator with {0}'.format(api_core)) # FIXME DEBUG
     def decorate(func):
         @wraps(func)
         def wrapper(**kwargs):
@@ -90,7 +89,6 @@ def api_method_decorator(api_core, authenticate=True, allow_root=False, allow_no
                     ...
                     return ok_200(u'Id is "{0}"'.format(id), include_properties=False)
             """
-            logging.info(u'called the decorator with {0}'.format(api_core)) # FIXME DEBUG
             try:
                  # Get id from the API method's arguments and check it if present
                 id = kwargs.get(u'id')

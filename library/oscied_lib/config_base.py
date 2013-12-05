@@ -29,7 +29,7 @@ import logging
 from os.path import join, sep
 from pytoolbox.serialization import JsoneableObject
 
-MEDIAS_PATH, UPLOADS_PATH = u'medias', u'uploads'
+from .constants import MEDIAS_PATH, UPLOADS_PATH
 
 
 class CharmLocalConfig(JsoneableObject):

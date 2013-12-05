@@ -31,3 +31,4 @@ ENVIRONMENT_TO_TYPE  = {u'amazon': u'public', u'maas': u'private'}
 SERVICE_TO_LABEL     = {u'oscied-transform': u'encoding',        u'oscied-publisher': u'distribution'}
 SERVICE_TO_UNITS_API = {u'oscied-transform': u'transform_units', u'oscied-publisher': u'publisher_units'}
 SERVICE_TO_TASKS_API = {u'oscied-transform': u'transform_tasks', u'oscied-publisher': u'publisher_tasks'}
+MEDIAS_PATH, UPLOADS_PATH = u'medias', u'uploads'

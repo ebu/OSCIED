@@ -30,7 +30,8 @@ import re
 from os.path import expanduser, join
 from urlparse import urlparse
 
-from .config_base import CharmLocalConfig, CharmLocalConfig_Subordinate, CharmLocalConfig_Storage, MEDIAS_PATH
+from .config_base import CharmLocalConfig, CharmLocalConfig_Subordinate, CharmLocalConfig_Storage
+from .constants import MEDIAS_PATH
 
 
 class OrchestraLocalConfig(CharmLocalConfig_Storage):

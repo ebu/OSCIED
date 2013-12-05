@@ -52,7 +52,6 @@ class OrchestraAPICore(object):
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Constructor >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     def __init__(self, config):
-        logging.info(u'builded a core') # FIXME DEBUG
         self.config = config
         if self.is_mock:
             self._db = mongomock.Connection().orchestra

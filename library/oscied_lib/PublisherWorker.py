@@ -74,7 +74,7 @@ def publisher_task(media_json, callback_json):
         print(u'{0} Publication task started'.format(request.id))
 
         # Read current configuration to translate files URIs to local paths
-        local_config = PublisherLocalConfig.read(u'local_config.json')
+        local_config = PublisherLocalConfig.read(u'local_config.json', inspect_constructor=False)
         print(object2json(local_config, include_properties=True))
 
         # Load and check task parameters
@@ -141,7 +141,7 @@ def revoke_publisher_task(publish_uri, callback_json):
         print(u'{0} Revoke publication task started'.format(request.id))
 
         # Read current configuration to translate files URIs to local paths
-        local_config = PublisherLocalConfig.read(u'local_config.json')
+        local_config = PublisherLocalConfig.read(u'local_config.json', inspect_constructor=False)
         print(object2json(local_config, True))
 
         # Load and check task parameters
