@@ -68,11 +68,12 @@ class CharmLocalConfig(JsoneableObject):
 
 class CharmLocalConfig_Storage(CharmLocalConfig):
 
-    def __init__(self, verbose=None, storage_address=u'', storage_fstype=u'', storage_mountpoint=u'',
-                 storage_options=u'', storage_path=u'/mnt/storage', storage_mount_max_retry=5,
+    def __init__(self, verbose=None, storage_address=u'', storage_nat_address=u'', storage_fstype=u'',
+                 storage_mountpoint=u'', storage_options=u'', storage_path=u'/mnt/storage', storage_mount_max_retry=5,
                  storage_mount_sleep_delay=5, hosts_file=u'/etc/hosts', **kwargs):
         super(CharmLocalConfig_Storage, self).__init__(verbose=verbose)
         self.storage_address = storage_address
+        self.storage_nat_address = storage_nat_address
         self.storage_fstype = storage_fstype
         self.storage_mountpoint = storage_mountpoint
         self.storage_options = storage_options
