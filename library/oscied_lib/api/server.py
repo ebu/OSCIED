@@ -465,7 +465,7 @@ class OrchestraAPICore(object):
         task.is_valid(True)
         if task.status == TransformTask.CANCELED_STATUS:
             raise ValueError(to_bytes(u'Transformation task {0} is already revoked !'.format(task._id)))
-        if task.status in TransformTask.FINAL_SATUS:
+        if task.status in TransformTask.FINAL_STATUS:
             raise ValueError(to_bytes(u'Cannot revoke a transformation task with status {0}.'.format(task.status)))
         task.status = TransformTask.REVOKED
         if self.is_mock:

@@ -29,12 +29,11 @@ import os
 from pytoolbox.encoding import to_bytes
 from pytoolbox.flask import map_exceptions
 from pytoolbox.juju import get_unit_path, juju_do
-from pytoolbox.serialization import dict2object, json2object
+from pytoolbox.serialization import dict2object
 from pytoolbox.subprocess import rsync, ssh
 from requests import get, post
 
 from ..config import OrchestraLocalConfig
-from ..config_base import CharmLocalConfig
 from ..models import Media, User, TransformProfile, PublisherTask, TransformTask
 from .base import VERSION, OsciedCRUDMapper
 
@@ -135,11 +134,11 @@ class OrchestraAPIClient(object):
             self._local_config = self.get_unit_local_config(service, number, cls=OrchestraLocalConfig)
         return self._local_config
 
-    def get_unit_local_config(self, service, number, cls=dict, local_config=u'local_config.json'):
+    def get_unit_local_config(self, service, number, cls=None, local_config=u'local_config.json'):
         u"""Return an instance of ``cls`` with the content of local_config.json of an instance of a charm !"""
-        config_json = juju_do(u'ssh', environment=self.environment, options=[u'{0}/{1}'.format(service, number),
+        config_dict = juju_do(u'ssh', environment=self.environment, options=[u'{0}/{1}'.format(service, number),
                               u'sudo cat {0}'.format(get_unit_path(service, number, local_config))])
-        return json2object(cls, config_json, inspect_constructor=issubclass(cls, CharmLocalConfig))
+        return dict2object(cls, config_dict, inspect_constructor=False) if cls else config_dict
 
     def upload_media(self, filename, backup_in_remote=True):
         u"""Upload a media asset by rsync-ing the local file to the shared storage mount point of the orchestrator !"""
@@ -150,25 +149,37 @@ class OrchestraAPIClient(object):
         dst_path = local_cfg.storage_uploads_path
         if not dst_path:
             raise ValueError(to_bytes(u'Unable to retrieve shared storage uploads directory.'))
-
         if backup_in_remote:
             # Mirror the local file into a 'backup' directory on the shared storage, then into the destination directory
-            print(rsync(filename, u'{0}:{1}'.format(api_host, bkp_path), makedest=True, archive=True, progress=True,
-                  rsync_path=u'sudo rsync', extra='ssh -i {0}'.format(self.id_rsa))['stdout'])
+            rsync(filename, u'{0}:{1}'.format(api_host, bkp_path), cli_output=True, makedest=True, archive=True,
+                  progress=True, rsync_path=u'sudo rsync', extra='ssh -i {0}'.format(self.id_rsa))
             sync_bkp_to_upload = u'sudo rsync -ah --progress {0} {1}'.format(bkp_path, dst_path)
-            print(ssh(api_host, id=self.id_rsa, remote_cmd=sync_bkp_to_upload)['stdout'])
+            ssh(api_host, cli_output=True, id=self.id_rsa, remote_cmd=sync_bkp_to_upload)
         else:
             # Mirror the local file into the destination directory of the shared storage
-            print(rsync(filename, u'{0}:{1}'.format(api_host, dst_path), makedest=True, archive=True, progress=True,
-                  rsync_path=u'sudo rsync', extra='ssh -i {0}'.format(self.id_rsa))['stdout'])
+            rsync(filename, u'{0}:{1}'.format(api_host, dst_path), cli_output=True, makedest=True, archive=True,
+                  progress=True, rsync_path=u'sudo rsync', extra='ssh -i {0}'.format(self.id_rsa))
         ssh(api_host, id=self.id_rsa, remote_cmd=u'sudo chown www-data:www-data {0} -R'.format(dst_path))
-
         return u'{0}://{1}/{2}/uploads/{3}'.format(u'glusterfs', local_cfg.storage_address,
                                                    local_cfg.storage_mountpoint, os.path.basename(filename))
+
+    def download_media(self, media, destination_path):
+        u"""
+        Download a media asset by rsync-ing its directory from the shared storage mount point of the orchestrator !
+        """
+        # FIXME detect name based on hostname ?
+        os.chmod(self.id_rsa, 0600)
+        api_host, local_cfg = self.api_host, self.api_local_config
+        src_path = local_cfg.storage_medias_path(media)
+        if not src_path:
+            raise ValueError(to_bytes(u'Unable to retrieve shared storage uploads directory.'))
+        # Mirror the remote directory of the media from the source directory of the shared storage
+        rsync(u'{0}:{1}'.format(api_host, os.path.dirname(src_path)), destination_path, cli_output=True, makedest=True,
+              archive=True, progress=True, rsync_path=u'sudo rsync', extra='ssh -i {0}'.format(self.id_rsa))
 
     def remove_medias(self):
         u"""Remove all medias from the shared storage mount point of the orchestrator !"""
         # FIXME detect name based on hostname ?
         os.chmod(self.id_rsa, 0600)
-        medias_path_filter = self.api_local_config.storage_medias_path('*')
+        medias_path_filter = os.path.join(self.api_local_config.storage_medias_path(), u'*')
         ssh(self.api_host, id=self.id_rsa, remote_cmd=u'sudo rm -rf {0}'.format(medias_path_filter))
