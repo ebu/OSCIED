@@ -140,20 +140,11 @@ class StorageHooks(OsciedCharmHooks):
 
     def hook_install(self):
         self.hook_uninstall()
-        self.info(u'Generate locales if missing')
-        self.cmd(u'locale-gen fr_CH.UTF-8')
-        self.cmd(u'dpkg-reconfigure locales')
-        self.info(u'Upgrade system and install prerequisites')
-        self.cmd(u'apt-get -y update', fail=False)
-        self.cmd(u'apt-get -y -f install')  # May recover problems with upgrade !
-        self.cmd(u'apt-get -y upgrade')
-        self.cmd(u'apt-get -y install {0}'.format(u' '.join(StorageHooks.PACKAGES)))
-        self.info(u'Restart network time protocol service')
-        self.cmd(u'service ntp restart')
-
+        self.generate_locales((u'fr_CH.UTF-8',))
+        self.install_packages(StorageHooks.PACKAGES)
+        self.restart_ntp()
         # Create medias volume if it is already possible to do so
         self.volume_create_or_expand()
-
         self.info(u'Expose GlusterFS Server service')
         self.open_port(111,   u'TCP')   # For portmapper, and should have both TCP and UDP open
         self.open_port(24007, u'TCP')   # For the Gluster Daemon

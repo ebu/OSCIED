@@ -113,23 +113,16 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
     # ------------------------------------------------------------------------------------------------------------------
 
     def hook_install(self):
+        cfg = self.config
         self.hook_uninstall()
-        self.info(u'Generate locales if missing')
-        self.cmd(u'locale-gen fr_CH.UTF-8')
-        self.cmd(u'dpkg-reconfigure locales')
-        self.info(u'Upgrade system, pre-configure and install prerequisites')
-        self.cmd(u'apt-get -y update', fail=False)
-        self.cmd(u'apt-get -y -f install')  # May recover problems with upgrade !
-        self.cmd(u'apt-get -y upgrade')
+        self.generate_locales((u'fr_CH.UTF-8',))
         try_makedirs(u'/etc/mysql')
         debconf, mysql = u'debconf-set-selections', u'mysql-server mysql-server'
-        mysql_root_pass = self.config.mysql_root_password
         # Tip : http://ubuntuforums.org/showthread.php?t=981801
-        self.cmd(debconf, input=u'{0}/root_password select {1}'.format(mysql, mysql_root_pass))
-        self.cmd(debconf, input=u'{0}/root_password_again select {1}'.format(mysql, mysql_root_pass))
-        self.cmd(u'apt-get -y install {0}'.format(u' '.join(WebuiHooks.PACKAGES)))
-        self.info(u'Restart network time protocol service')
-        self.cmd(u'service ntp restart')
+        self.cmd(debconf, input=u'{0}/root_password select {1}'.format(mysql, cfg.mysql_root_password))
+        self.cmd(debconf, input=u'{0}/root_password_again select {1}'.format(mysql, cfg.mysql_root_password))
+        self.install_packages(WebuiHooks.JUJU_PACKAGES)
+        self.restart_ntp()
         self.info(u'Import Web UI database and create user')
         hostname = socket.gethostname()
         self.cmd(u'service mysql start', fail=False)
@@ -137,8 +130,7 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         self.mysql_do(u"GRANT ALL PRIVILEGES ON *.* TO 'root'@'%%' WITH GRANT OPTION;")
         self.mysql_do(u'DROP DATABASE IF EXISTS webui')
         self.mysql_do(cli_input=open(self.local_config.site_database_file, u'r', u'utf-8').read())
-        self.mysql_do(u"GRANT ALL ON webui.* TO 'webui'@'%%' IDENTIFIED BY '{0}';".format(
-                      self.config.mysql_user_password))
+        self.mysql_do(u"GRANT ALL ON webui.* TO 'webui'@'%%' IDENTIFIED BY '{0}';".format(cfg.mysql_user_password))
         self.info(u'Configure Apache 2')
         self.cmd(u'a2enmod rewrite')
         self.info(u'Copy and pre-configure Web UI')

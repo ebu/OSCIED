@@ -42,6 +42,7 @@ from .hooks_base import CharmHooks_Storage
 
 class OrchestraHooks(CharmHooks_Storage):
 
+    PPAS = (u'ppa:jon-severinsson/ffmpeg', u'ppa:juju/stable')
     PACKAGES = tuple(set(CharmHooks_Storage.PACKAGES + (u'apache2', u'ffmpeg', u'libapache2-mod-wsgi', u'mongodb',
                      u'ntp', u'rabbitmq-server', u'x264')))
     FIX_PACKAGES = (u'apache2.2-common',)
@@ -104,19 +105,9 @@ class OrchestraHooks(CharmHooks_Storage):
 
     def hook_install(self):
         self.hook_uninstall()
-        self.info(u'Generate locales if missing')
-        self.cmd(u'locale-gen fr_CH.UTF-8')
-        self.cmd(u'dpkg-reconfigure locales')
-        self.info(u'Upgrade system and install prerequisites')
-        self.cmd(u'apt-add-repository -y ppa:jon-severinsson/ffmpeg')
-        self.cmd(u'apt-add-repository -y ppa:juju/stable')
-        self.cmd(u'apt-get -y update', fail=False)
-        self.cmd(u'apt-get -y -f install')  # May recover problems with upgrade !
-        self.cmd(u'apt-get -y upgrade')
-        self.cmd(u'apt-get -y install {0}'.format(u' '.join(OrchestraHooks.PACKAGES)))
-        self.cmd(u'apt-get -y install {0}'.format(u' '.join(OrchestraHooks.JUJU_PACKAGES)))
-        self.info(u'Restart network time protocol service')
-        self.cmd(u'service ntp restart')
+        self.generate_locales((u'fr_CH.UTF-8',))
+        self.install_packages(OrchestraHooks.PACKAGES + OrchestraHooks.JUJU_PACKAGES, ppas=OrchestraHooks.PPAS)
+        self.restart_ntp()
         self.info(u'Expose RESTful API, MongoDB & RabbitMQ service')
         self.open_port(80,    u'TCP')  # Orchestra RESTful API
         self.open_port(27017, u'TCP')  # MongoDB port mongod and mongos instances

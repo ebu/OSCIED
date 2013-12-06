@@ -58,18 +58,10 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
 
     def hook_install(self):
         self.hook_uninstall()
-        self.info(u'Generate locales if missing')
-        self.cmd(u'locale-gen fr_CH.UTF-8')
-        self.cmd(u'dpkg-reconfigure locales')
-        self.info(u'Upgrade system and install prerequisites')
-        if 'ppa:' in self.config.ffmpeg_origin:
-            self.cmd(u'apt-add-repository -y {0}'.format(self.config.ffmpeg_origin))
-        self.cmd(u'apt-get -y update', fail=False)
-        self.cmd(u'apt-get -y -f install')  # May recover problems with upgrade !
-        self.cmd(u'apt-get -y upgrade')
-        self.cmd(u'apt-get -y install {0}'.format(u' '.join(TransformHooks.PACKAGES)))
-        self.info(u'Restart network time protocol service')
-        self.cmd(u'service ntp restart')
+        self.generate_locales((u'fr_CH.UTF-8',))
+        self.install_packages(TransformHooks.PACKAGES,
+                              ppas=(self.config.ffmpeg_origin,) if 'ppa:' in self.config.ffmpeg_origin else None)
+        self.restart_ntp()
         # FIXME Compile and install openSVCDecoder
         if 'tar.bz2' in self.config.open_hevc_origin:
             self.info(u'Compile and install openHEVC from archive {0}'.format(self.config.open_hevc_origin))

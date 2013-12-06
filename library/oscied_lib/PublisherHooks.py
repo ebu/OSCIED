@@ -37,6 +37,7 @@ from .hooks_base import CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_W
 
 class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Website):
 
+    PPAS = (u'ppa:jon-severinsson/ffmpeg',)
     PACKAGES = tuple(set(
         CharmHooks_Storage.PACKAGES + CharmHooks_Subordinate.PACKAGES +
         CharmHooks_Website.PACKAGES + (u'apache2', u'apache2-threaded-dev', u'make', u'ntp')))
@@ -56,17 +57,9 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
 
     def hook_install(self):
         self.hook_uninstall()
-        self.info(u'Generate locales if missing')
-        self.cmd(u'locale-gen fr_CH.UTF-8')
-        self.cmd(u'dpkg-reconfigure locales')
-        self.info(u'Upgrade system and install prerequisites')
-        self.cmd(u'apt-add-repository -y ppa:jon-severinsson/ffmpeg')
-        self.cmd(u'apt-get -y update', fail=False)
-        self.cmd(u'apt-get -y -f install')  # May recover problems with upgrade !
-        self.cmd(u'apt-get -y upgrade')
-        self.cmd(u'apt-get -y install {0}'.format(u' '.join(PublisherHooks.PACKAGES)))
-        self.info(u'Restart network time protocol service')
-        self.cmd(u'service ntp restart')
+        self.generate_locales((u'fr_CH.UTF-8',))
+        self.install_packages(PublisherHooks.PACKAGES, ppas=PublisherHooks.PPAS)
+        self.restart_ntp()
         self.info(u'Compile and install Apache H.264 streaming module')
         mod_streaming = u'mod_h264_streaming-2.2.7'
         shutil.rmtree(mod_streaming, ignore_errors=True)

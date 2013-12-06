@@ -43,6 +43,27 @@ class OsciedCharmHooks(CharmHooks):
             local_config_cls().write(local_config_filename)
         self.local_config = local_config_cls.read(local_config_filename, store_filename=True, inspect_constructor=False)
 
+    def generate_locales(self, locales):
+        self.info(u'Generate locales if missing')
+        self.cmd(u'locale-gen {0}'.format(u' '.join(locales)))
+        self.cmd(u'dpkg-reconfigure locales')
+
+    def install_packages(self, packages, ppas=None, upgrade=True, tries=3, delay_min=10, delay_max=20):
+        self.info(u'Upgrade system and install prerequisites')
+        retry_kargs = {u'tries': tries, u'delay_min': delay_min, u'delay_max': delay_max}
+        if ppas:
+            for ppa in ppas:
+                self.cmd(u'apt-add-repository -y {0}'.format(ppa), **retry_kargs)
+        self.cmd(u'apt-get -y update', **retry_kargs)
+        self.cmd(u'apt-get -y -f install', **retry_kargs)  # May recover problems ...
+        if upgrade:
+            self.cmd(u'apt-get -y upgrade', **retry_kargs)
+        self.cmd(u'apt-get -y install {0}'.format(u' '.join(packages)), **retry_kargs)
+
+    def restart_ntp(self):
+        self.info(u'Restart network time protocol service')
+        self.cmd(u'service ntp restart')
+
 
 class CharmHooks_Storage(OsciedCharmHooks):
 
