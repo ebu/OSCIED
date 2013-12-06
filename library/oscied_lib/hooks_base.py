@@ -39,8 +39,9 @@ class OsciedCharmHooks(CharmHooks):
         super(OsciedCharmHooks, self).__init__(metadata, default_config, default_os_env)
         # Create the local configuration file if missing
         if not local_config_filename:
-            local_config_cls().write(u'local_config.json')
-        self.local_config = local_config_cls.read(u'local_config.json', store_filename=True, inspect_constructor=False)
+            local_config_filename = u'local_config.json'
+            local_config_cls().write(local_config_filename)
+        self.local_config = local_config_cls.read(local_config_filename, store_filename=True, inspect_constructor=False)
 
 
 class CharmHooks_Storage(OsciedCharmHooks):
