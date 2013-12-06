@@ -35,12 +35,12 @@ from pymongo.errors import DuplicateKeyError
 from pytoolbox import juju
 from pytoolbox.datetime import datetime_now
 from pytoolbox.encoding import to_bytes
-from pytoolbox.pyutils import UUID_ZERO
 from pytoolbox.serialization import dict2object, object2dict, object2json
 from pytoolbox.validation import valid_uuid
 from random import randint
 
 from .. import PublisherWorker, TransformWorker
+from ..constants import UUID_ZERO
 from ..models import Media, User, TransformProfile, PublisherTask, TransformTask, ENCODERS_NAMES
 from ..utils import Callback, Storage
 from .base import ABOUT
