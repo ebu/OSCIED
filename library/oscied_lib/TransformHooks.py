@@ -54,13 +54,16 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
         super(TransformHooks, self).__init__(metadata, default_config, default_os_env, local_config_filename,
                                              TransformLocalConfig)
 
+    @property
+    def PPAS(self):
+        return (self.config.ffmpeg_origin,) if 'ppa:' in self.config.ffmpeg_origin else None
+
     # ------------------------------------------------------------------------------------------------------------------
 
     def hook_install(self):
         self.hook_uninstall()
         self.generate_locales((u'fr_CH.UTF-8',))
-        self.install_packages(TransformHooks.PACKAGES,
-                              ppas=(self.config.ffmpeg_origin,) if 'ppa:' in self.config.ffmpeg_origin else None)
+        self.install_packages(TransformHooks.PACKAGES, ppas=self.PPAS)
         self.restart_ntp()
         # FIXME Compile and install openSVCDecoder
         if 'tar.bz2' in self.config.open_hevc_origin:
