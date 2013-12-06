@@ -120,13 +120,14 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
 
 class PublisherLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinate):
 
-    def __init__(self, proxy_ips=None, apache_config_file=u'/etc/apache2/apache2.conf', www_root_path=u'/mnt',
-                 publish_uri=u'', site_template_file=u'templates/default.template',
+    def __init__(self, proxy_ips=None, mod_streaming_installed=False, apache_config_file=u'/etc/apache2/apache2.conf',
+                 www_root_path=u'/mnt', publish_uri=u'', site_template_file=u'templates/default.template',
                  site_file=u'/etc/apache2/sites-available/default',
                  site_ssl_template_file=u'templates/default-ssl.template',
                  site_ssl_file=u'/etc/apache2/sites-available/default-ssl', **kwargs):
         super(PublisherLocalConfig, self).__init__(**kwargs)
         self.proxy_ips = proxy_ips or []
+        self.mod_streaming_installed = mod_streaming_installed
         self.apache_config_file = apache_config_file
         self.www_root_path, self.publish_uri = www_root_path, publish_uri
         self.site_template_file, self.site_file = site_template_file, site_file

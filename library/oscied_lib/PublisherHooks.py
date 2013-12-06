@@ -26,10 +26,11 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os, multiprocessing, setuptools.archive_util, shutil
+import os, shutil
 from codecs import open
 from pytoolbox.filesystem import chown, first_that_exist
 from pytoolbox.juju import DEFAULT_OS_ENV
+from pytoolbox.subprocess import make
 
 from .config import PublisherLocalConfig
 from .hooks_base import CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Website
@@ -60,34 +61,32 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         self.generate_locales((u'fr_CH.UTF-8',))
         self.install_packages(PublisherHooks.PACKAGES, ppas=PublisherHooks.PPAS)
         self.restart_ntp()
-        self.info(u'Compile and install Apache H.264 streaming module')
-        mod_streaming = u'mod_h264_streaming-2.2.7'
-        shutil.rmtree(mod_streaming, ignore_errors=True)
-        setuptools.archive_util.unpack_archive(u'apache_{0}.tar.gz'.format(mod_streaming), '.')
-        os.chdir(mod_streaming)
-        self.cmd(u'./configure --with-apxs={0}'.format(self.cmd(u'which apxs2')[u'stdout']))
-        self.cmd(u'make -j{0}'.format(multiprocessing.cpu_count()))
-        self.cmd(u'make install')
-        os.chdir(u'..')
-        shutil.rmtree(mod_streaming)
         self.info(u'Expose Apache 2 service')
         self.open_port(80, u'TCP')
 
     def hook_config_changed(self):
-        local_cfg = self.local_config
+        cfg, local_cfg = self.config, self.local_config
 
         self.info(u'Configure Apache 2')
-        self.info(u'{0} Apache H.264 streaming module'.format(u'Enable' if self.config.mod_streaming else u'Disable'))
+        self.info(u'{0} Apache H.264 streaming module'.format(u'Enable' if cfg.mod_streaming else u'Disable'))
         mods = (u'LoadModule h264_streaming_module /usr/lib/apache2/modules/mod_h264_streaming.so',
                 u'AddHandler h264-streaming.extensions .mp4')
         lines = filter(lambda l: l not in mods, open(local_cfg.apache_config_file, u'r', u'utf-8'))
-        if self.config.mod_streaming:
+        if cfg.mod_streaming:
             lines += u'\n'.join(mods) + u'\n'
+            if not local_cfg.mod_streaming_installed:
+                self.info(u'Compile and install Apache H.264 streaming module')
+                mod = u'mod_h264_streaming-2.2.7'
+                apxs2 = self.cmd(u'which apxs2')[u'stdout']
+                make(u'apache_{0}.tar.gz'.format(mod), path=mod, configure_options=u'--with-apxs={0}'.format(apxs2),
+                     install=True, remove_temporary=True, log=self.debug)
+                local_cfg.mod_streaming_installed = True
         open(local_cfg.apache_config_file, u'w', u'utf-8').write(u''.join(lines))
+
         infos = {u'publish_path': self.publish_path}
         self.template2config(local_cfg.site_template_file,     local_cfg.site_file, infos)
         self.template2config(local_cfg.site_ssl_template_file, local_cfg.site_ssl_file, infos)
-        local_cfg.www_root_path = self.config.www_root_path
+        local_cfg.www_root_path = cfg.www_root_path
         self.storage_remount()
         self.subordinate_register()
 
