@@ -24,7 +24,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
 from pytoolbox.filesystem import first_that_exist
@@ -50,28 +50,21 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
 
     PACKAGES = tuple(set(CharmHooks_Storage.PACKAGES + CharmHooks_Subordinate.PACKAGES + (u'ntp',)))
 
-
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
-        super(TransformHooks, self).__init__(metadata, default_config, default_os_env)
-        self.local_config = TransformLocalConfig.read(local_config_filename, store_filename=True)
-        self.debug(u'My __dict__ is {0}'.format(self.__dict__))
+        super(TransformHooks, self).__init__(metadata, default_config, default_os_env, local_config_filename,
+                                             TransformLocalConfig)
+
+    @property
+    def PPAS(self):
+        return (self.config.ffmpeg_origin,) if 'ppa:' in self.config.ffmpeg_origin else None
 
     # ------------------------------------------------------------------------------------------------------------------
 
     def hook_install(self):
         self.hook_uninstall()
-        self.info(u'Generate locales if missing')
-        self.cmd(u'locale-gen fr_CH.UTF-8')
-        self.cmd(u'dpkg-reconfigure locales')
-        self.info(u'Upgrade system and install prerequisites')
-        if 'ppa:' in self.config.ffmpeg_origin:
-            self.cmd(u'apt-add-repository -y {0}'.format(self.config.ffmpeg_origin))
-        self.cmd(u'apt-get -y update', fail=False)
-        self.cmd(u'apt-get -y -f install')  # May recover problems with upgrade !
-        self.cmd(u'apt-get -y upgrade')
-        self.cmd(u'apt-get -y install {0}'.format(u' '.join(TransformHooks.PACKAGES)))
-        self.info(u'Restart network time protocol service')
-        self.cmd(u'service ntp restart')
+        self.generate_locales((u'fr_CH.UTF-8',))
+        self.install_packages(TransformHooks.PACKAGES, ppas=self.PPAS)
+        self.restart_ntp()
         # FIXME Compile and install openSVCDecoder
         if 'tar.bz2' in self.config.open_hevc_origin:
             self.info(u'Compile and install openHEVC from archive {0}'.format(self.config.open_hevc_origin))
@@ -139,7 +132,7 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
 if __name__ == u'__main__':
     from pytoolbox.encoding import configure_unicode
     configure_unicode()
-    TransformHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-transform/metadata.yaml'),
-                   first_that_exist(u'config.yaml',      u'../../charms/oscied-transform/config.yaml'),
-                   first_that_exist(u'local_config.pkl', u'../../charms/oscied-transform/local_config.pkl'),
+    TransformHooks(first_that_exist(u'metadata.yaml',     u'../../charms/oscied-transform/metadata.yaml'),
+                   first_that_exist(u'config.yaml',       u'../../charms/oscied-transform/config.yaml'),
+                   first_that_exist(u'local_config.json', u'../../charms/oscied-transform/local_config.json'),
                    DEFAULT_OS_ENV).trigger()

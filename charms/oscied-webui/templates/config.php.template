@@ -388,10 +388,10 @@ $config['orchestra_api_url'] = '{api_url}';
 |--------------------------------------------------------------------------
 |
 */
-$config['uploads_uri'] = '{www_uploads_uri}';
-$config['uploads_path'] = '{www_uploads_path}';
-$config['medias_uri'] = '{www_medias_uri}';
-$config['medias_path'] = '{www_medias_path}';
+$config['uploads_uri'] = '{uploads_uri}';
+$config['uploads_path'] = '{uploads_path}';
+$config['medias_uri'] = '{medias_uri}';
+$config['medias_path'] = '{medias_path}';
 
 /*
 |--------------------------------------------------------------------------

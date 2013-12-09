@@ -23,7 +23,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os, pymongo.uri_parser, shutil, time
 from codecs import open
@@ -33,19 +33,50 @@ from pytoolbox.juju import CharmHooks
 from pytoolbox.subprocess import screen_launch, screen_list, screen_kill
 
 
-class CharmHooks_Storage(CharmHooks):
+class OsciedCharmHooks(CharmHooks):
+
+    daemon_user = u'www-data'
+    daemon_group = u'www-data'
+
+    def __init__(self, metadata, default_config, default_os_env, local_config_filename, local_config_cls):
+        super(OsciedCharmHooks, self).__init__(metadata, default_config, default_os_env)
+        # Create the local configuration file if missing
+        if not local_config_filename:
+            local_config_filename = u'local_config.json'
+            local_config_cls().write(local_config_filename)
+        self.local_config = local_config_cls.read(local_config_filename, store_filename=True, inspect_constructor=False)
+
+    def generate_locales(self, locales):
+        self.info(u'Generate locales if missing')
+        self.cmd(u'locale-gen {0}'.format(u' '.join(locales)))
+        self.cmd(u'dpkg-reconfigure locales')
+
+    def install_packages(self, packages, ppas=None, upgrade=True, tries=3, delay_min=10, delay_max=20):
+        self.info(u'Upgrade system and install prerequisites')
+        retry_kwargs = {u'tries': tries, u'delay_min': delay_min, u'delay_max': delay_max}
+        if ppas:
+            for ppa in ppas:
+                self.cmd(u'apt-add-repository -y {0}'.format(ppa), **retry_kwargs)
+        self.cmd(u'apt-get -y update', **retry_kwargs)
+        self.cmd(u'apt-get -y -f install', **retry_kwargs)  # May recover problems ...
+        if upgrade:
+            self.cmd(u'apt-get -y upgrade', **retry_kwargs)
+        self.cmd(u'apt-get -y install {0}'.format(u' '.join(packages)), **retry_kwargs)
+
+    def restart_ntp(self):
+        self.info(u'Restart network time protocol service')
+        self.cmd(u'service ntp restart')
+
+
+class CharmHooks_Storage(OsciedCharmHooks):
 
     PACKAGES = (u'glusterfs-client', u'nfs-common')
-
-    def __init__(self, metadata, default_config, default_os_env):
-        super(CharmHooks_Storage, self).__init__(metadata, default_config, default_os_env)
 
     # ------------------------------------------------------------------------------------------------------------------
 
     @property
     def storage_config_is_enabled(self):
-        c = self.config
-        return c.storage_address and c.storage_fstype and c.storage_mountpoint
+        return self.config.storage_address and self.config.storage_fstype and self.config.storage_mountpoint
 
     @property
     def storage_is_mounted(self):
@@ -100,10 +131,10 @@ class CharmHooks_Storage(CharmHooks):
                 self.local_config.storage_mountpoint = mountpoint
                 self.local_config.storage_options = options
                 self.remark(u'Shared storage successfully registered')
-                self.debug(u'Create directories in the shared storage and ensure it is owned by the Apache 2 daemon')
+                self.debug(u'Create directories in the shared storage and ensure it is owned by the right user')
                 try_makedirs(self.local_config.storage_medias_path())
                 try_makedirs(self.local_config.storage_uploads_path)
-                chown(self.local_config.storage_path, u'www-data', u'www-data', recursive=True)
+                chown(self.local_config.storage_path, self.daemon_user, self.daemon_group, recursive=True)
             else:
                 raise IOError(to_bytes(u'Unable to mount shared storage'))
 
@@ -150,18 +181,15 @@ class CharmHooks_Storage(CharmHooks):
         self.storage_remount()
 
 
-class CharmHooks_Subordinate(CharmHooks):
+class CharmHooks_Subordinate(OsciedCharmHooks):
 
     PACKAGES = ()
-
-    def __init__(self, metadata, default_config, default_os_env):
-        super(CharmHooks_Subordinate, self).__init__(metadata, default_config, default_os_env)
 
     # ------------------------------------------------------------------------------------------------------------------
 
     @property
     def screen_name(self):
-        return self.__class__.__name__.lower().replace('hooks', '')
+        return self.__class__.__name__.lower().replace(u'hooks', u'')
 
     @property
     def rabbit_hostname(self):
@@ -213,19 +241,19 @@ class CharmHooks_Subordinate(CharmHooks):
             raise RuntimeError(to_bytes(u'Orchestrator is set in config, subordinate relation is disabled'))
 
     def start_celeryd(self, retry_count=15, retry_delay=1):
-        if screen_list(self.screen_name, log=self.debug) == []:
-            screen_launch(self.screen_name, [u'celeryd', u'--config', u'celeryconfig',
-                                             u'--hostname', self.rabbit_hostname, u'-Q', self.rabbit_queues])
+        if screen_list(self.screen_name, log=self.debug, user=self.daemon_user) == []:
+            screen_launch(self.screen_name, [u'celeryd', u'--config', u'celeryconfig', u'--hostname',
+                          self.rabbit_hostname, u'-Q', self.rabbit_queues], user=self.daemon_user)
         for start_delay in xrange(retry_count):
             time.sleep(retry_delay)
-            if screen_list(self.screen_name, log=self.debug) != []:
+            if screen_list(self.screen_name, log=self.debug, user=self.daemon_user) != []:
                 start_time = start_delay * retry_delay
                 self.remark(u'{0} successfully started in {1} seconds'.format(self.screen_name, start_time))
                 return
         raise RuntimeError(to_bytes(u'Worker {0} is not ready'.format(self.screen_name)))
 
     def stop_celeryd(self):
-        screen_kill(self.screen_name, log=self.debug)
+        screen_kill(self.screen_name, log=self.debug, user=self.daemon_user)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -251,12 +279,9 @@ class CharmHooks_Subordinate(CharmHooks):
         self.subordinate_unregister()
 
 
-class CharmHooks_Website(CharmHooks):
+class CharmHooks_Website(OsciedCharmHooks):
 
     PACKAGES = ()
-
-    def __init__(self, metadata, default_config, default_os_env):
-        super(CharmHooks_Website, self).__init__(metadata, default_config, default_os_env)
 
     # ------------------------------------------------------------------------------------------------------------------
 

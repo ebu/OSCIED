@@ -24,11 +24,16 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from pprint import pprint
+from pytoolbox.console import confirm
+from pytoolbox.encoding import configure_unicode
+from library.oscied_lib.api import OrchestraAPIClient, test_api
+
+
 if __name__ == '__main__':
-    from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-    from pprint import pprint
-    from pytoolbox.encoding import configure_unicode
-    from library.oscied_lib.api import OrchestraAPIClient
 
     configure_unicode()
 
@@ -99,3 +104,6 @@ if __name__ == '__main__':
 
     #del client.transform_profiles[client.transform_profiles.list()[0]._id]
     #client.transform_profiles.add(TransformProfile(title='salut', description='yo', encoder_name='copy'))
+
+    if confirm(u'Live-test the orchestrator'):
+        test_api(client)

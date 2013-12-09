@@ -23,7 +23,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 from pytoolbox.encoding import to_bytes
 from pytoolbox.serialization import dict2object, object2json

@@ -24,6 +24,8 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import sys
 from codecs import open
 from setuptools import setup, find_packages
@@ -77,6 +79,7 @@ install_requires=[
       'celery',     # FIXME version
       'flask',      # FIXME version
       'mongomock',  # FIXME version
+      'nose',       # FIXME version
       'passlib',    # FIXME version
       'pyaml',      # FIXME version
       'pymongo',    # FIXME version

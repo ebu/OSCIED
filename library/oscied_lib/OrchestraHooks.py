@@ -24,12 +24,12 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os, re, shutil, time
 from codecs import open
 from configobj import ConfigObj
-from os.path import join
+from os.path import abspath, dirname, exists, join
 from pytoolbox.encoding import to_bytes
 from pytoolbox.filesystem import chown, first_that_exist, try_makedirs, try_symlink
 from pytoolbox.juju import DEFAULT_OS_ENV
@@ -42,14 +42,15 @@ from .hooks_base import CharmHooks_Storage
 
 class OrchestraHooks(CharmHooks_Storage):
 
+    PPAS = (u'ppa:jon-severinsson/ffmpeg', u'ppa:juju/stable')
     PACKAGES = tuple(set(CharmHooks_Storage.PACKAGES + (u'apache2', u'ffmpeg', u'libapache2-mod-wsgi', u'mongodb',
                      u'ntp', u'rabbitmq-server', u'x264')))
+    FIX_PACKAGES = (u'apache2.2-common',)
     JUJU_PACKAGES = (u'juju-core',)
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
-        super(OrchestraHooks, self).__init__(metadata, default_config, default_os_env)
-        self.local_config = OrchestraLocalConfig.read(local_config_filename, store_filename=True)
-        self.debug(u'My __dict__ is {0}'.format(self.__dict__))
+        super(OrchestraHooks, self).__init__(metadata, default_config, default_os_env, local_config_filename,
+                                             OrchestraLocalConfig)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -59,10 +60,6 @@ class OrchestraHooks(CharmHooks_Storage):
 
     def api_url(self, local=False):
         return u'http://{0}:80/{1}'.format(u'127.0.0.1' if local else self.private_address, self.api_alias)
-
-    @property
-    def api_wsgi(self):
-        return join(self.directory, u'wsgi.py')
 
     @property
     def mongo_admin_connection(self):
@@ -104,19 +101,12 @@ class OrchestraHooks(CharmHooks_Storage):
 
     def hook_install(self):
         self.hook_uninstall()
-        self.info(u'Generate locales if missing')
-        self.cmd(u'locale-gen fr_CH.UTF-8')
-        self.cmd(u'dpkg-reconfigure locales')
-        self.info(u'Upgrade system and install prerequisites')
-        self.cmd(u'apt-add-repository -y ppa:jon-severinsson/ffmpeg')
-        self.cmd(u'apt-add-repository -y ppa:juju/stable')
-        self.cmd(u'apt-get -y update', fail=False)
-        self.cmd(u'apt-get -y -f install')  # May recover problems with upgrade !
-        self.cmd(u'apt-get -y upgrade')
-        self.cmd(u'apt-get -y install {0}'.format(u' '.join(OrchestraHooks.PACKAGES)))
-        self.cmd(u'apt-get -y install {0}'.format(u' '.join(OrchestraHooks.JUJU_PACKAGES)))
-        self.info(u'Restart network time protocol service')
-        self.cmd(u'service ntp restart')
+        self.generate_locales((u'fr_CH.UTF-8',))
+        self.install_packages(OrchestraHooks.PACKAGES + OrchestraHooks.JUJU_PACKAGES, ppas=OrchestraHooks.PPAS)
+        self.restart_ntp()
+        self.info(u'Copy Orchestra')
+        rsync(u'./', self.local_config.site_directory, archive=True, delete=True, exclude_vcs=True, recursive=True)
+        chown(self.local_config.site_directory, self.daemon_user, self.daemon_group, recursive=True)
         self.info(u'Expose RESTful API, MongoDB & RabbitMQ service')
         self.open_port(80,    u'TCP')  # Orchestra RESTful API
         self.open_port(27017, u'TCP')  # MongoDB port mongod and mongos instances
@@ -126,75 +116,75 @@ class OrchestraHooks(CharmHooks_Storage):
         self.open_port(5672,  u'TCP')  # RabbitMQ service
 
     def hook_config_changed(self):
+        cfg, local_cfg = self.config, self.local_config
+
         self.info(u'Start MongoDB and RabbitMQ daemons')
         self.cmd(u'service mongodb start',         fail=False)
         self.cmd(u'service rabbitmq-server start', fail=False)
 
         self.info(u'Configure Secure Shell')
-        rsync(self.local_config.ssh_template_path, self.local_config.ssh_config_path, recursive=True, log=self.debug)
+        rsync(local_cfg.ssh_template_path, local_cfg.ssh_config_path, recursive=True, log=self.debug)
 
         self.info(u'Configure Apache 2')
-        self.cmd(u'a2dissite default')
-        self.template2config(self.local_config.site_template_file, join(self.local_config.site_path, self.name_slug), {
-            u'alias': self.api_alias, u'directory': self.directory, u'domain': self.public_address,
-            u'wsgi': self.api_wsgi
+        self.template2config(local_cfg.site_template_file, join(local_cfg.sites_available_path, self.name_slug), {
+            u'alias': self.api_alias, u'directory': local_cfg.site_directory, u'domain': self.public_address,
+            u'wsgi': local_cfg.api_wsgi
         })
+        self.cmd(u'a2dissite default')
         self.cmd(u'a2ensite {0}'.format(self.name_slug))
 
         self.info(u'Configure JuJu Service Orchestrator')
-        juju_config_path = os.path.dirname(self.local_config.juju_config_file)
+        juju_config_path = dirname(local_cfg.juju_config_file)
         try_makedirs(juju_config_path)
-        rsync(self.local_config.juju_template_path, juju_config_path, recursive=True, log=self.debug)
+        rsync(local_cfg.juju_template_path, juju_config_path, recursive=True, log=self.debug)
 
         self.info(u'Configure MongoDB Scalable NoSQL DB')
         with open(u'f.js', u'w', u'utf-8') as mongo_f:
-            mongo_f.write(u"db.addUser('admin', '{0}', false);".format(self.config.mongo_admin_password))
+            mongo_f.write(u"db.addUser('admin', '{0}', false);".format(cfg.mongo_admin_password))
         with open(u'g.js', u'w', u'utf-8') as mongo_g:
-            mongo_g.write(u"db.addUser('node', '{0}', false);".format(self.config.mongo_node_password))
+            mongo_g.write(u"db.addUser('node', '{0}', false);".format(cfg.mongo_node_password))
         self.cmd(u'mongo f.js')
         self.cmd(u'mongo orchestra f.js')
         self.cmd(u'mongo celery g.js')
         [os.remove(f) for f in (u'f.js', u'g.js')]
 
-        mongo_config = ConfigObj(self.local_config.mongo_config_file)
+        mongo_config = ConfigObj(local_cfg.mongo_config_file)
         mongo_config[u'bind_ip'] = u'0.0.0.0'
         mongo_config[u'noauth'] = u'false'
         mongo_config[u'auth'] = u'true'
-        self.debug(u'MongoDB configuration is: {0}'.format(mongo_config.__dict__))
         mongo_config.write()
 
         self.configure_rabbitmq()
 
         self.info(u'Configure Orchestra the Orchestrator')
-        self.local_config.verbose = self.config.verbose
-        self.local_config.api_url = self.api_url(local=False)
-        self.local_config.charms_release = self.config.charms_release
-        self.local_config.node_secret = self.config.node_secret
-        self.local_config.root_secret = self.config.root_secret
-        self.local_config.mongo_admin_connection = self.mongo_admin_connection
-        self.local_config.mongo_node_connection = self.mongo_node_connection
-        self.local_config.rabbit_connection = self.rabbit_connection
+        local_cfg.verbose = cfg.verbose
+        local_cfg.api_url = self.api_url(local=False)
+        local_cfg.charms_release = cfg.charms_release
+        local_cfg.node_secret = cfg.node_secret
+        local_cfg.root_secret = cfg.root_secret
+        local_cfg.mongo_admin_connection = self.mongo_admin_connection
+        local_cfg.mongo_node_connection = self.mongo_node_connection
+        local_cfg.rabbit_connection = self.rabbit_connection
         infos = {
             u'rabbit': unicode(self.rabbit_connection),
             u'port': unicode(27017),
             u'username': u'node',
-            u'password': unicode(self.config.mongo_node_password),
+            u'password': unicode(cfg.mongo_node_password),
         }
-        self.template2config(self.local_config.celery_template_file, self.local_config.celery_config_file, infos)
-        self.local_config.email_server = self.config.email_server
-        self.local_config.email_tls = self.config.email_tls
-        self.local_config.email_address = self.config.email_address
-        self.local_config.email_username = self.config.email_username
-        self.local_config.email_password = self.config.email_password
-        self.local_config.plugit_api_url = self.config.plugit_api_url
+        self.template2config(local_cfg.celery_template_file, local_cfg.celery_config_file, infos)
+        local_cfg.email_server = cfg.email_server
+        local_cfg.email_tls = cfg.email_tls
+        local_cfg.email_address = cfg.email_address
+        local_cfg.email_username = cfg.email_username
+        local_cfg.email_password = cfg.email_password
+        local_cfg.plugit_api_url = cfg.plugit_api_url
         self.remark(u'Orchestrator successfully configured')
 
-        self.info(u'Symlink charms default directory to directory for release {0}'.format(self.config.charms_release))
-        try_symlink(os.path.abspath(self.local_config.charms_default_path),
-                    os.path.abspath(self.local_config.charms_release_path))
+        self.info(u'Symlink charms default directory to directory for release {0}'.format(cfg.charms_release))
+        try_symlink(abspath(local_cfg.charms_default_path), abspath(local_cfg.charms_release_path))
 
-        self.info(u"Ensure that the charm's directory is owned by the Apache 2 daemon")
-        chown(self.directory, u'www-data', u'www-data', recursive=True)
+        self.info(u"Ensure that the orchestrator's directory is owned by the right user")
+        chown(local_cfg.site_directory, self.daemon_user, self.daemon_group, recursive=True)
 
         self.storage_remount()
 
@@ -207,19 +197,20 @@ class OrchestraHooks(CharmHooks_Storage):
         self.storage_unregister()
         if self.config.cleanup:
             self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(OrchestraHooks.PACKAGES)))
-            self.cmd(u'apt-get -y remove --purge apache2.2-common', fail=False)  # Fixes some problems
+            self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(OrchestraHooks.FIX_PACKAGES)), fail=False)
             self.cmd(u'apt-get -y autoremove')
             #shutil.rmtree('$HOME/.juju $HOME/.ssh/id_rsa*
             shutil.rmtree(u'/etc/apache2/',      ignore_errors=True)
             shutil.rmtree(u'/var/log/apache2/',  ignore_errors=True)
             shutil.rmtree(u'/etc/rabbitmq/',     ignore_errors=True)
             shutil.rmtree(u'/var/log/rabbitmq/', ignore_errors=True)
+            shutil.rmtree(self.local_config.site_directory, ignore_errors=True)
         self.local_config.reset()
 
     def hook_start(self):
         if not self.storage_is_mounted:
             self.remark(u'Do not start orchestra daemon : No shared storage')
-        elif not os.path.exists(self.local_config.celery_config_file):
+        elif not exists(self.local_config.celery_config_file):
             self.remark(u'Do not start orchestra daemon : No celery configuration file')
         else:
             self.save_local_config()  # Update local configuration file for orchestra daemon
@@ -254,8 +245,7 @@ class OrchestraHooks(CharmHooks_Storage):
         # FIXME something to do (register unit ?)
 
     def hook_publisher_relation_joined(self):
-        self.relation_set(mongo_connection=self.mongo_node_connection,
-                          rabbit_connection=self.rabbit_connection)
+        self.relation_set(mongo_connection=self.mongo_node_connection, rabbit_connection=self.rabbit_connection)
 
     def hook_publisher_relation_changed(self):
         # Get configuration from the relation
@@ -267,8 +257,7 @@ class OrchestraHooks(CharmHooks_Storage):
         # FIXME something to do (register unit ?)
 
     def hook_transform_relation_joined(self):
-        self.relation_set(mongo_connection=self.mongo_node_connection,
-                          rabbit_connection=self.rabbit_connection)
+        self.relation_set(mongo_connection=self.mongo_node_connection, rabbit_connection=self.rabbit_connection)
 
     def hook_transform_relation_changed(self):
         # Get configuration from the relation
@@ -284,7 +273,7 @@ class OrchestraHooks(CharmHooks_Storage):
 if __name__ == u'__main__':
     from pytoolbox.encoding import configure_unicode
     configure_unicode()
-    OrchestraHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-orchestra/metadata.yaml'),
-                   first_that_exist(u'config.yaml',      u'../../charms/oscied-orchestra/config.yaml'),
-                   first_that_exist(u'local_config.pkl', u'../../charms/oscied-orchestra/local_config.pkl'),
+    OrchestraHooks(first_that_exist(u'metadata.yaml',     u'../../charms/oscied-orchestra/metadata.yaml'),
+                   first_that_exist(u'config.yaml',       u'../../charms/oscied-orchestra/config.yaml'),
+                   first_that_exist(u'local_config.json', u'../../charms/oscied-orchestra/local_config.json'),
                    DEFAULT_OS_ENV).trigger()

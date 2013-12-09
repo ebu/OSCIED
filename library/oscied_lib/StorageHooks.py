@@ -24,22 +24,24 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os, re, shutil
 from pytoolbox.encoding import to_bytes
 from pytoolbox.filesystem import first_that_exist
-from pytoolbox.juju import CharmHooks, DEFAULT_OS_ENV
+from pytoolbox.juju import DEFAULT_OS_ENV
 
 from .config import StorageLocalConfig
+from .hooks_base import OsciedCharmHooks
 
 
-class StorageHooks(CharmHooks):
+class StorageHooks(OsciedCharmHooks):
+
+    PACKAGES = (u'ntp', u'glusterfs-server', u'nfs-common')
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
-        super(StorageHooks, self).__init__(metadata, default_config, default_os_env)
-        self.local_config = StorageLocalConfig.read(local_config_filename, store_filename=True)
-        self.debug(u'My __dict__ is {0}'.format(self.__dict__))
+        super(StorageHooks, self).__init__(metadata, default_config, default_os_env, local_config_filename,
+                                           StorageLocalConfig)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -138,20 +140,11 @@ class StorageHooks(CharmHooks):
 
     def hook_install(self):
         self.hook_uninstall()
-        self.info(u'Generate locales if missing')
-        self.cmd(u'locale-gen fr_CH.UTF-8')
-        self.cmd(u'dpkg-reconfigure locales')
-        self.info(u'Upgrade system and install prerequisites')
-        self.cmd(u'apt-get -y update', fail=False)
-        self.cmd(u'apt-get -y -f install')  # May recover problems with upgrade !
-        self.cmd(u'apt-get -y upgrade')
-        self.cmd(u'apt-get -y install ntp glusterfs-server nfs-common')
-        self.info(u'Restart network time protocol service')
-        self.cmd(u'service ntp restart')
-
+        self.generate_locales((u'fr_CH.UTF-8',))
+        self.install_packages(StorageHooks.PACKAGES)
+        self.restart_ntp()
         # Create medias volume if it is already possible to do so
         self.volume_create_or_expand()
-
         self.info(u'Expose GlusterFS Server service')
         self.open_port(111,   u'TCP')   # For portmapper, and should have both TCP and UDP open
         self.open_port(24007, u'TCP')   # For the Gluster Daemon
@@ -169,7 +162,7 @@ class StorageHooks(CharmHooks):
         self.info(u'Uninstall prerequisites, remove files & bricks and load default configuration')
         self.hook_stop()
         if self.config.cleanup:
-            self.cmd(u'apt-get -y remove --purge glusterfs-server nfs-common')
+            self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(StorageHooks.PACKAGES)))
             self.cmd(u'apt-get -y autoremove')
             shutil.rmtree(u'/etc/glusterd',  ignore_errors=True)
             shutil.rmtree(u'/etc/glusterfs', ignore_errors=True)
@@ -249,7 +242,7 @@ class StorageHooks(CharmHooks):
 if __name__ == u'__main__':
     from pytoolbox.encoding import configure_unicode
     configure_unicode()
-    StorageHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-storage/metadata.yaml'),
-                 first_that_exist(u'config.yaml',      u'../../charms/oscied-storage/config.yaml'),
-                 first_that_exist(u'local_config.pkl', u'../../charms/oscied-storage/local_config.pkl'),
+    StorageHooks(first_that_exist(u'metadata.yaml',     u'../../charms/oscied-storage/metadata.yaml'),
+                 first_that_exist(u'config.yaml',       u'../../charms/oscied-storage/config.yaml'),
+                 first_that_exist(u'local_config.json', u'../../charms/oscied-storage/local_config.json'),
                  DEFAULT_OS_ENV).trigger()

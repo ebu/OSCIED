@@ -41,32 +41,34 @@ class Dev(DeploymentScenario):
 
     def run(self):
         print(description)
-        do_merge = confirm(u'Merge services (takes more time to setup, cost less if running for hours)', default=False)
-        do_init = confirm(u'Initialize orchestra (will wait until orchestra is ready)', default=True)
 
-        print(u'')
         self.dev.symlink_local_charms()
         self.dev.generate_config_from_template()
-        self.dev.bootstrap(wait_started=True)
 
-        self.dev.auto = True
-        ensure_num_units = self.dev.ensure_num_units
-        ensure_num_units(u'oscied-orchestra', u'oscied-orchestra', local=True, expose=True)
-        ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, constraints=C1_MEDIUM)
-        ensure_num_units(u'oscied-transform', u'oscied-transform', local=True)
-        ensure_num_units(u'oscied-webui',     u'oscied-webui',     local=True, to=1 if do_merge else None, expose=True)
-        ensure_num_units(u'oscied-publisher', u'oscied-publisher', local=True, to=2 if do_merge else None, expose=True)
+        if confirm(u'Deploy the platform now', default=True):
+            do_merge = confirm(u'Merge services (takes more time to setup, cost less if running for hours)', default=False)
 
-        for peer in (u'orchestra', u'webui', u'transform', u'publisher'):
-            self.dev.add_relation(u'oscied-storage', u'oscied-{0}'.format(peer))
-        self.dev.add_relation(u'oscied-orchestra:transform', u'oscied-transform:transform')
-        self.dev.add_relation(u'oscied-orchestra:publisher', u'oscied-publisher:publisher')
-        self.dev.add_relation(u'oscied-orchestra:api',       u'oscied-webui:api')
-        self.dev.auto = False
+            print(u'')
+            self.dev.bootstrap(wait_started=True)
+
+            self.dev.auto = True
+            ensure_num_units = self.dev.ensure_num_units
+            ensure_num_units(u'oscied-orchestra', u'oscied-orchestra', local=True, constraints=C1_MEDIUM, expose=True)
+            ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, constraints=C1_MEDIUM)
+            ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, constraints=C1_MEDIUM)
+            ensure_num_units(u'oscied-webui',     u'oscied-webui',     local=True, constraints=C1_MEDIUM, to=1 if do_merge else None, expose=True)
+            ensure_num_units(u'oscied-publisher', u'oscied-publisher', local=True, constraints=C1_MEDIUM, to=2 if do_merge else None, expose=True)
+
+            for peer in (u'orchestra', u'webui', u'transform', u'publisher'):
+                self.dev.add_relation(u'oscied-storage', u'oscied-{0}'.format(peer))
+            self.dev.add_relation(u'oscied-orchestra:transform', u'oscied-transform:transform')
+            self.dev.add_relation(u'oscied-orchestra:publisher', u'oscied-publisher:publisher')
+            self.dev.add_relation(u'oscied-orchestra:api',       u'oscied-webui:api')
+            self.dev.auto = False
 
         #self.dev.check_status(raise_if_errors=True, wait_all_started=True)
 
-        if do_init:
+        if confirm(u'Initialize orchestra (will wait until orchestra is ready)', default=True):
             self.dev.init_api(SCENARIO_PATH, flush=True)#, wait_started=True)
 
 if __name__ == u'__main__':

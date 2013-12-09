@@ -24,18 +24,20 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os, shutil, socket, string
+import shutil, socket, string
 from codecs import open
+from os.path import join
 from pytoolbox.encoding import to_bytes
 from pytoolbox.filesystem import chown, first_that_exist, try_makedirs, try_symlink
 from pytoolbox.juju import DEFAULT_OS_ENV
+from pytoolbox.serialization import object2dict
 from pytoolbox.subprocess import rsync
 from random import choice
 
 from .config import WebuiLocalConfig
-from .config_base import MEDIAS_PATH, UPLOADS_PATH
+from .constants import MEDIAS_PATH, UPLOADS_PATH
 from .hooks_base import CharmHooks_Storage, CharmHooks_Website
 
 
@@ -48,9 +50,8 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
                     u'mysql-server', u'mysql-server-5.1', u'mysql-server-5.5', u'mysql-server-core-5.5')
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
-        super(WebuiHooks, self).__init__(metadata, default_config, default_os_env)
-        self.local_config = WebuiLocalConfig.read(local_config_filename, store_filename=True)
-        self.debug(u'My __dict__ is {0}'.format(self.__dict__))
+        super(WebuiHooks, self).__init__(metadata, default_config, default_os_env, local_config_filename,
+                                         WebuiLocalConfig)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -113,23 +114,16 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
     # ------------------------------------------------------------------------------------------------------------------
 
     def hook_install(self):
+        cfg = self.config
         self.hook_uninstall()
-        self.info(u'Generate locales if missing')
-        self.cmd(u'locale-gen fr_CH.UTF-8')
-        self.cmd(u'dpkg-reconfigure locales')
-        self.info(u'Upgrade system, pre-configure and install prerequisites')
-        self.cmd(u'apt-get -y update', fail=False)
-        self.cmd(u'apt-get -y -f install')  # May recover problems with upgrade !
-        self.cmd(u'apt-get -y upgrade')
+        self.generate_locales((u'fr_CH.UTF-8',))
         try_makedirs(u'/etc/mysql')
         debconf, mysql = u'debconf-set-selections', u'mysql-server mysql-server'
-        mysql_root_pass = self.config.mysql_root_password
         # Tip : http://ubuntuforums.org/showthread.php?t=981801
-        self.cmd(debconf, input=u'{0}/root_password select {1}'.format(mysql, mysql_root_pass))
-        self.cmd(debconf, input=u'{0}/root_password_again select {1}'.format(mysql, mysql_root_pass))
-        self.cmd(u'apt-get -y install {0}'.format(u' '.join(WebuiHooks.PACKAGES)))
-        self.info(u'Restart network time protocol service')
-        self.cmd(u'service ntp restart')
+        self.cmd(debconf, input=u'{0}/root_password select {1}'.format(mysql, cfg.mysql_root_password))
+        self.cmd(debconf, input=u'{0}/root_password_again select {1}'.format(mysql, cfg.mysql_root_password))
+        self.install_packages(WebuiHooks.PACKAGES)
+        self.restart_ntp()
         self.info(u'Import Web UI database and create user')
         hostname = socket.gethostname()
         self.cmd(u'service mysql start', fail=False)
@@ -137,33 +131,41 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         self.mysql_do(u"GRANT ALL PRIVILEGES ON *.* TO 'root'@'%%' WITH GRANT OPTION;")
         self.mysql_do(u'DROP DATABASE IF EXISTS webui')
         self.mysql_do(cli_input=open(self.local_config.site_database_file, u'r', u'utf-8').read())
-        self.mysql_do(u"GRANT ALL ON webui.* TO 'webui'@'%%' IDENTIFIED BY '{0}';".format(
-                      self.config.mysql_user_password))
+        self.mysql_do(u"GRANT ALL ON webui.* TO 'webui'@'%%' IDENTIFIED BY '{0}';".format(cfg.mysql_user_password))
         self.info(u'Configure Apache 2')
         self.cmd(u'a2enmod rewrite')
         self.info(u'Copy and pre-configure Web UI')
-        shutil.copy(self.local_config.site_template_file, self.local_config.sites_enabled_path)
-        rsync(u'www/', self.local_config.www_root_path, archive=True, delete=True, exclude_vcs=True, recursive=True)
-        chown(self.local_config.www_root_path, u'www-data', u'www-data', recursive=True)
+        rsync(u'www/', self.local_config.site_directory, archive=True, delete=True, exclude_vcs=True, recursive=True)
+        chown(self.local_config.site_directory, self.daemon_user, self.daemon_group, recursive=True)
         self.local_config.encryption_key = WebuiHooks.randpass(32)
         self.info(u'Expose Apache 2 service')
         self.open_port(80, u'TCP')
 
     def hook_config_changed(self):
+        local_cfg = self.local_config
+
+        self.info(u'Configure Apache 2')
+        self.template2config(local_cfg.site_template_file, join(local_cfg.sites_available_path, self.name_slug), {
+            u'directory': local_cfg.site_directory, u'domain': self.public_address
+        })
+        self.cmd(u'a2dissite default')
+        self.cmd(u'a2ensite {0}'.format(self.name_slug))
+
+        self.info(u'Configure CodeIgniter the PHP framework')
         self.storage_remount()
         self.api_register()
-        infos = self.config.__dict__
-        infos.update(self.local_config.__dict__)
+        infos = object2dict(self.config, include_properties=True)
+        infos.update(object2dict(local_cfg, include_properties=True))
         infos[u'proxy_ips'] = self.proxy_ips_string
-        infos[u'www_medias_uri'] = self.local_config.storage_uri(path=MEDIAS_PATH) or u''
-        infos[u'www_uploads_uri'] = self.local_config.storage_uri(path=UPLOADS_PATH) or u''
-        self.template2config(self.local_config.general_template_file,  self.local_config.general_config_file,  infos)
-        self.template2config(self.local_config.database_template_file, self.local_config.database_config_file, infos)
-        self.template2config(self.local_config.htaccess_template_file, self.local_config.htaccess_config_file, infos)
+        infos[u'medias_uri'] = local_cfg.storage_uri(path=MEDIAS_PATH) or u''
+        infos[u'uploads_uri'] = local_cfg.storage_uri(path=UPLOADS_PATH) or u''
+        self.template2config(local_cfg.general_template_file,  local_cfg.general_config_file,  infos)
+        self.template2config(local_cfg.database_template_file, local_cfg.database_config_file, infos)
+        self.template2config(local_cfg.htaccess_template_file, local_cfg.htaccess_config_file, infos)
         if self.storage_is_mounted:
             self.info(u'Symlink shared storage for the web daemon')
-            try_symlink(self.local_config.storage_medias_path(), self.local_config.www_medias_path)
-            try_symlink(self.local_config.storage_uploads_path, self.local_config.www_uploads_path)
+            try_symlink(local_cfg.storage_medias_path(), local_cfg.medias_path)
+            try_symlink(local_cfg.storage_uploads_path,  local_cfg.uploads_path)
 
     def hook_uninstall(self):
         self.info(u'Uninstall prerequisities, unregister service and load default configuration')
@@ -178,8 +180,7 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
             shutil.rmtree(u'/etc/mysql/',       ignore_errors=True)
             shutil.rmtree(u'/var/lib/mysql/',   ignore_errors=True)
             shutil.rmtree(u'/var/log/mysql/',   ignore_errors=True)
-        shutil.rmtree(self.local_config.www_root_path, ignore_errors=True)
-        os.makedirs(self.local_config.www_root_path)
+        shutil.rmtree(self.local_config.site_directory, ignore_errors=True)
         self.local_config.reset()
 
     def hook_start(self):
@@ -201,7 +202,7 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
 if __name__ == u'__main__':
     from pytoolbox.encoding import configure_unicode
     configure_unicode()
-    WebuiHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-webui/metadata.yaml'),
-               first_that_exist(u'config.yaml',      u'../../charms/oscied-webui/config.yaml'),
-               first_that_exist(u'local_config.pkl', u'../../charms/oscied-webui/local_config.pkl'),
+    WebuiHooks(first_that_exist(u'metadata.yaml',     u'../../charms/oscied-webui/metadata.yaml'),
+               first_that_exist(u'config.yaml',       u'../../charms/oscied-webui/config.yaml'),
+               first_that_exist(u'local_config.json', u'../../charms/oscied-webui/local_config.json'),
                DEFAULT_OS_ENV).trigger()

@@ -23,7 +23,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os, re, select, shlex, time, uuid
 from celery import current_task
@@ -94,7 +94,7 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
         print(u'{0} Transformation task started'.format(request.id))
 
         # Read current configuration to translate files uri to local paths
-        local_config = TransformLocalConfig.read(u'local_config.pkl')
+        local_config = TransformLocalConfig.read(u'local_config.json', inspect_constructor=False)
         print(object2json(local_config, include_properties=True))
 
         # Load and check task parameters

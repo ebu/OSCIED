@@ -24,27 +24,27 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
 from os.path import expanduser, join
 from urlparse import urlparse
 
-from .config_base import CharmLocalConfig, CharmLocalConfig_Subordinate, CharmLocalConfig_Storage, MEDIAS_PATH
+from .config_base import CharmLocalConfig, CharmLocalConfig_Subordinate, CharmLocalConfig_Storage
+from .constants import MEDIAS_PATH, UPLOADS_PATH
 
 
 class OrchestraLocalConfig(CharmLocalConfig_Storage):
 
     def __init__(self, api_url=u'', root_secret=u'', node_secret=u'', mongo_admin_connection=u'',
-                 mongo_node_connection=u'', rabbit_connection=u'', celery_config_file=u'celeryconfig.py',
+                 mongo_node_connection=u'', rabbit_connection=u'',
                  celery_template_file=u'templates/celeryconfig.py.template', mongo_config_file=u'/etc/mongodb.conf',
-                 ssh_config_path=u'~/.ssh', ssh_template_path=u'ssh', juju_config_file=u'~/.juju/environments.yaml',
-                 juju_template_path=u'juju/', charms_config=u'config.yaml', charms_release=u'raring',
-                 charms_repository=u'charms', email_server=u'', email_tls=False, email_username=u'', email_password=u'',
+                 ssh_config_path=u'~/.ssh', juju_config_file=u'~/.juju/environments.yaml',
+                 charms_release=u'raring', email_server=u'', email_tls=False, email_username=u'', email_password=u'',
                  email_address=u'', email_ttask_template=u'templates/ttask_mail.template',
                  email_ptask_template=u'templates/ptask_mail.template', plugit_api_url=u'',
-                 site_path=u'/etc/apache2/sites-available', site_template_file=u'templates/apache_site.template',
-                 **kwargs):
+                 sites_available_path=u'/etc/apache2/sites-available', site_directory=u'/var/www/api',
+                 site_template_file=u'templates/apache_site.template', **kwargs):
         super(OrchestraLocalConfig, self).__init__(**kwargs)
         self.api_url = api_url
         self.root_secret = root_secret
@@ -52,16 +52,11 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
         self.mongo_admin_connection = mongo_admin_connection
         self.mongo_node_connection = mongo_node_connection
         self.rabbit_connection = rabbit_connection
-        self.celery_config_file = celery_config_file
         self.celery_template_file = celery_template_file
         self.mongo_config_file = mongo_config_file
         self.ssh_config_path = expanduser(ssh_config_path)
-        self.ssh_template_path = ssh_template_path
         self.juju_config_file = expanduser(juju_config_file)
-        self.juju_template_path = juju_template_path
-        self.charms_config = charms_config
         self.charms_release = charms_release
-        self.charms_repository = charms_repository
         self.email_server = email_server
         self.email_tls = email_tls
         self.email_address = email_address
@@ -70,8 +65,25 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
         self.email_ttask_template = email_ttask_template
         self.email_ptask_template = email_ptask_template
         self.plugit_api_url = plugit_api_url
-        self.site_path = site_path
+        self.sites_available_path = sites_available_path
+        self.site_directory = site_directory
         self.site_template_file = site_template_file
+
+    @property
+    def api_wsgi(self):
+        return join(self.site_directory, u'wsgi.py')
+
+    @property
+    def celery_config_file(self):
+        return join(self.site_directory, u'celeryconfig.py')
+
+    @property
+    def charms_repository(self):
+        return join(self.site_directory, u'charms')
+
+    @property
+    def charms_config(self):
+        return join(self.site_directory, u'config.yaml')
 
     @property
     def charms_default_path(self):
@@ -80,6 +92,14 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
     @property
     def charms_release_path(self):
         return join(self.charms_repository, self.charms_release)
+
+    @property
+    def juju_template_path(self):
+        return join(self.site_directory, u'juju/')
+
+    @property
+    def ssh_template_path(self):
+        return join(self.site_directory, u'ssh')
 
     @property
     def transform_queues(self):
@@ -118,13 +138,14 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
 
 class PublisherLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinate):
 
-    def __init__(self, proxy_ips=None, apache_config_file=u'/etc/apache2/apache2.conf', www_root_path=u'/mnt',
-                 publish_uri=u'', site_template_file=u'templates/default.template',
+    def __init__(self, proxy_ips=None, mod_streaming_installed=False, apache_config_file=u'/etc/apache2/apache2.conf',
+                 www_root_path=u'/mnt', publish_uri=u'', site_template_file=u'templates/default.template',
                  site_file=u'/etc/apache2/sites-available/default',
                  site_ssl_template_file=u'templates/default-ssl.template',
                  site_ssl_file=u'/etc/apache2/sites-available/default-ssl', **kwargs):
         super(PublisherLocalConfig, self).__init__(**kwargs)
         self.proxy_ips = proxy_ips or []
+        self.mod_streaming_installed = mod_streaming_installed
         self.apache_config_file = apache_config_file
         self.www_root_path, self.publish_uri = www_root_path, publish_uri
         self.site_template_file, self.site_file = site_template_file, site_file
@@ -146,7 +167,7 @@ class PublisherLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinat
         >>> import copy
         >>> from .config_test import PUBLISHER_CONFIG_TEST
         >>> config = copy.copy(PUBLISHER_CONFIG_TEST)
-        >>> print(config.publish_uri, config.publish_uri_to_path(u'test.mp4'))
+        >>> print((config.publish_uri, config.publish_uri_to_path(u'test.mp4')))
         (u'', None)
         >>> config.update_publish_uri(u'my_host.com')
         >>> print(config.publish_uri_to_path(u'http://another_host.com/a_path/a_file.txt'))
@@ -169,9 +190,11 @@ class StorageLocalConfig(CharmLocalConfig):
         super(StorageLocalConfig, self).__init__(**kwargs)
         self.allowed_ips = allowed_ips or []
         self.volume_flag = volume_flag
-        self.volume_infos_regex = re.compile(
-            r".*Volume Name:\s*(?P<name>\S+)\s+.*Type:\s*(?P<type>\S+)\s+.*"
-            r"Status:\s*(?P<status>\S+)\s+.*Transport-type:\s*(?P<transport>\S+).*", re.DOTALL)
+
+    @property
+    def volume_infos_regex(self):
+        return re.compile(r".*Volume Name:\s*(?P<name>\S+)\s+.*Type:\s*(?P<type>\S+)\s+.*"
+                          r"Status:\s*(?P<status>\S+)\s+.*Transport-type:\s*(?P<transport>\S+).*", re.DOTALL)
 
 
 class TransformLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinate):
@@ -183,30 +206,42 @@ class TransformLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinat
 class WebuiLocalConfig(CharmLocalConfig_Storage):
 
     def __init__(self, api_url=u'', encryption_key=u'', proxy_ips=None,
-                 sites_enabled_path=u'/etc/apache2/sites-enabled', site_database_file=u'webui-db.sql',
-                 site_template_file=u'templates/000-default', htaccess_template_file=u'templates/htaccess.template',
+                 sites_available_path=u'/etc/apache2/sites-available', site_database_file=u'webui-db.sql',
+                 site_directory=u'/var/www/webui', site_template_file=u'templates/apache_site.template',
+                 htaccess_template_file=u'templates/htaccess.template',
                  general_template_file=u'templates/config.php.template',
-                 database_template_file=u'templates/database.php.template', htaccess_config_file=u'/var/www/.htaccess',
-                 general_config_file=u'/var/www/application/config/config.php',
-                 database_config_file=u'/var/www/application/config/database.php', www_root_path=u'/var/www',
-                 www_medias_path=u'/var/www/medias', www_uploads_path=u'/var/www/uploads', **kwargs):
+                 database_template_file=u'templates/database.php.template', **kwargs):
         super(WebuiLocalConfig, self).__init__(**kwargs)
         self.api_url = api_url
         self.encryption_key = encryption_key
         self.proxy_ips = proxy_ips or []
-        self.sites_enabled_path = sites_enabled_path
+        self.sites_available_path = sites_available_path
         self.site_database_file = site_database_file
+        self.site_directory = site_directory
         self.site_template_file = site_template_file
-        self.htaccess_template_file = htaccess_template_file
-        self.general_template_file = general_template_file
         self.database_template_file = database_template_file
-        self.htaccess_config_file = htaccess_config_file
-        self.general_config_file = general_config_file
-        self.database_config_file = database_config_file
-        self.www_root_path = www_root_path
-        self.www_medias_path = www_medias_path
-        self.www_uploads_path = www_uploads_path
+        self.general_template_file = general_template_file
+        self.htaccess_template_file = htaccess_template_file
 
+    @property
+    def database_config_file(self):
+        return join(self.site_directory, u'application/config/database.php')
+
+    @property
+    def general_config_file(self):
+        return join(self.site_directory, u'application/config/config.php')
+
+    @property
+    def htaccess_config_file(self):
+        return join(self.site_directory, u'.htaccess')
+
+    @property
+    def medias_path(self):
+         return join(self.site_directory, MEDIAS_PATH)
+
+    @property
+    def uploads_path(self):
+        return join(self.site_directory, UPLOADS_PATH)
 
 # Main -----------------------------------------------------------------------------------------------------------------
 
@@ -217,13 +252,3 @@ if __name__ == u'__main__':
     import doctest
     assert(doctest.testmod(verbose=False))
     print(u'OK')
-    print(u'Write default orchestra local configuration')
-    OrchestraLocalConfig().write(u'../../charms/oscied-orchestra/local_config.pkl')
-    print(u'Write default publisher local configuration')
-    PublisherLocalConfig().write(u'../../charms/oscied-publisher/local_config.pkl')
-    print(u'Write default storage local configuration')
-    StorageLocalConfig().write(u'../../charms/oscied-storage/local_config.pkl')
-    print(u'Write default transform local configuration')
-    TransformLocalConfig().write(u'../../charms/oscied-transform/local_config.pkl')
-    print('Write default web user interface local configuration')
-    WebuiLocalConfig().write('../../charms/oscied-webui/local_config.pkl')

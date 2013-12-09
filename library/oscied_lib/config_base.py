@@ -23,16 +23,16 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import logging
 from os.path import join, sep
-from pytoolbox.serialization import PickleableObject
+from pytoolbox.serialization import JsoneableObject
 
-MEDIAS_PATH, UPLOADS_PATH = u'medias', u'uploads'
+from .constants import MEDIAS_PATH, UPLOADS_PATH
 
 
-class CharmLocalConfig(PickleableObject):
+class CharmLocalConfig(JsoneableObject):
 
     def __init__(self, verbose=True):
         self.verbose = verbose
@@ -51,7 +51,7 @@ class CharmLocalConfig(PickleableObject):
         **Example usage**
 
         >>> config = CharmLocalConfig(verbose=True)
-        >>> config._pickle_filename = u'my_file.pkl'
+        >>> config._json_filename = u'my_file.json'
         >>> print(config.verbose)
         True
         >>> config.verbose = False
@@ -60,19 +60,20 @@ class CharmLocalConfig(PickleableObject):
         >>> config.reset()
         >>> print(config.verbose)
         True
-        >>> print(config._pickle_filename)
-        my_file.pkl
+        >>> print(config._json_filename)
+        my_file.json
         """
         self.__init__()
 
 
 class CharmLocalConfig_Storage(CharmLocalConfig):
 
-    def __init__(self, verbose=None, storage_address=u'', storage_fstype=u'', storage_mountpoint=u'',
-                 storage_options=u'', storage_path=u'/mnt/storage', storage_mount_max_retry=5,
+    def __init__(self, verbose=None, storage_address=u'', storage_nat_address=u'', storage_fstype=u'',
+                 storage_mountpoint=u'', storage_options=u'', storage_path=u'/mnt/storage', storage_mount_max_retry=5,
                  storage_mount_sleep_delay=5, hosts_file=u'/etc/hosts', **kwargs):
         super(CharmLocalConfig_Storage, self).__init__(verbose=verbose)
         self.storage_address = storage_address
+        self.storage_nat_address = storage_nat_address
         self.storage_fstype = storage_fstype
         self.storage_mountpoint = storage_mountpoint
         self.storage_options = storage_options

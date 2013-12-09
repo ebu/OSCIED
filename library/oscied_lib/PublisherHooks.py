@@ -24,12 +24,13 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os, multiprocessing, setuptools.archive_util, shutil
+import os, shutil
 from codecs import open
 from pytoolbox.filesystem import chown, first_that_exist
 from pytoolbox.juju import DEFAULT_OS_ENV
+from pytoolbox.subprocess import make
 
 from .config import PublisherLocalConfig
 from .hooks_base import CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Website
@@ -37,63 +38,55 @@ from .hooks_base import CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_W
 
 class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Website):
 
+    PPAS = (u'ppa:jon-severinsson/ffmpeg',)
     PACKAGES = tuple(set(
         CharmHooks_Storage.PACKAGES + CharmHooks_Subordinate.PACKAGES +
         CharmHooks_Website.PACKAGES + (u'apache2', u'apache2-threaded-dev', u'make', u'ntp')))
+    FIX_PACKAGES = (u'apache2.2-common',)
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
-        super(PublisherHooks, self).__init__(metadata, default_config, default_os_env)
-        self.local_config = PublisherLocalConfig.read(local_config_filename, store_filename=True)
-        self.local_config.update_publish_uri(self.public_address)
-        self.debug(u'My __dict__ is {0}'.format(self.__dict__))
+        super(PublisherHooks, self).__init__(metadata, default_config, default_os_env, local_config_filename,
+                                             PublisherLocalConfig)
 
     # ------------------------------------------------------------------------------------------------------------------
 
     @property
     def publish_path(self):
-        return os.path.join(self.config.www_root_path, 'www')
+        return os.path.join(self.config.www_root_path, u'www')
 
     # ------------------------------------------------------------------------------------------------------------------
 
     def hook_install(self):
         self.hook_uninstall()
-        self.info(u'Generate locales if missing')
-        self.cmd(u'locale-gen fr_CH.UTF-8')
-        self.cmd(u'dpkg-reconfigure locales')
-        self.info(u'Upgrade system and install prerequisites')
-        self.cmd(u'apt-add-repository -y ppa:jon-severinsson/ffmpeg')
-        self.cmd(u'apt-get -y update', fail=False)
-        self.cmd(u'apt-get -y -f install')  # May recover problems with upgrade !
-        self.cmd(u'apt-get -y upgrade')
-        self.cmd(u'apt-get -y install {0}'.format(u' '.join(PublisherHooks.PACKAGES)))
-        self.info(u'Restart network time protocol service')
-        self.cmd(u'service ntp restart')
-        self.info(u'Compile and install Apache H.264 streaming module')
-        mod_streaming = u'mod_h264_streaming-2.2.7'
-        shutil.rmtree(mod_streaming, ignore_errors=True)
-        setuptools.archive_util.unpack_archive(u'apache_{0}.tar.gz'.format(mod_streaming), '.')
-        os.chdir(mod_streaming)
-        self.cmd(u'./configure --with-apxs={0}'.format(self.cmd(u'which apxs2')[u'stdout']))
-        self.cmd(u'make -j{0}'.format(multiprocessing.cpu_count()))
-        self.cmd(u'make install')
-        os.chdir(u'..')
-        shutil.rmtree(mod_streaming)
+        self.generate_locales((u'fr_CH.UTF-8',))
+        self.install_packages(PublisherHooks.PACKAGES, ppas=PublisherHooks.PPAS)
+        self.restart_ntp()
         self.info(u'Expose Apache 2 service')
         self.open_port(80, u'TCP')
 
     def hook_config_changed(self):
+        cfg, local_cfg = self.config, self.local_config
+
         self.info(u'Configure Apache 2')
-        self.info(u'{0} Apache H.264 streaming module'.format(u'Enable' if self.config.mod_streaming else u'Disable'))
+        self.info(u'{0} Apache H.264 streaming module'.format(u'Enable' if cfg.mod_streaming else u'Disable'))
         mods = (u'LoadModule h264_streaming_module /usr/lib/apache2/modules/mod_h264_streaming.so',
                 u'AddHandler h264-streaming.extensions .mp4')
-        lines = filter(lambda l: l not in mods, open(self.local_config.apache_config_file, u'r', u'utf-8'))
-        if self.config.mod_streaming:
+        lines = filter(lambda l: l not in mods, open(local_cfg.apache_config_file, u'r', u'utf-8'))
+        if cfg.mod_streaming:
             lines += u'\n'.join(mods) + u'\n'
-        open(self.local_config.apache_config_file, u'w', u'utf-8').write(u''.join(lines))
+            if not local_cfg.mod_streaming_installed:
+                self.info(u'Compile and install Apache H.264 streaming module')
+                mod = u'mod_h264_streaming-2.2.7'
+                apxs2 = self.cmd(u'which apxs2')[u'stdout']
+                make(u'apache_{0}.tar.gz'.format(mod), path=mod, configure_options=u'--with-apxs={0}'.format(apxs2),
+                     install=True, remove_temporary=True, log=self.debug)
+                local_cfg.mod_streaming_installed = True
+        open(local_cfg.apache_config_file, u'w', u'utf-8').write(u''.join(lines))
+
         infos = {u'publish_path': self.publish_path}
-        self.template2config(self.local_config.site_template_file, self.local_config.site_file, infos)
-        self.template2config(self.local_config.site_ssl_template_file, self.local_config.site_ssl_file, infos)
-        self.local_config.www_root_path = self.config.www_root_path
+        self.template2config(local_cfg.site_template_file,     local_cfg.site_file, infos)
+        self.template2config(local_cfg.site_ssl_template_file, local_cfg.site_ssl_file, infos)
+        local_cfg.www_root_path = cfg.www_root_path
         self.storage_remount()
         self.subordinate_register()
 
@@ -104,13 +97,13 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         self.subordinate_unregister()
         if self.config.cleanup:
             self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(PublisherHooks.PACKAGES)))
-            self.cmd(u'apt-get -y remove --purge apache2.2-common', fail=False)  # Fixes some problems
+            self.cmd(u'apt-get -y remove --purge {0}'.format(u' '.join(PublisherHooks.FIX_PACKAGES)), fail=False)
             self.cmd(u'apt-get -y autoremove')
             shutil.rmtree(u'/etc/apache2/',     ignore_errors=True)
             shutil.rmtree(u'/var/log/apache2/', ignore_errors=True)
         shutil.rmtree(self.publish_path, ignore_errors=True)
         os.makedirs(self.publish_path)
-        chown(self.publish_path, u'www-data', u'www-data', recursive=True)
+        chown(self.publish_path, self.daemon_user, self.daemon_group, recursive=True)
         self.local_config.reset()
         self.local_config.update_publish_uri(self.public_address)
 
@@ -135,7 +128,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
 if __name__ == u'__main__':
     from pytoolbox.encoding import configure_unicode
     configure_unicode()
-    PublisherHooks(first_that_exist(u'metadata.yaml',    u'../../charms/oscied-publisher/metadata.yaml'),
-                   first_that_exist(u'config.yaml',      u'../../charms/oscied-publisher/config.yaml'),
-                   first_that_exist(u'local_config.pkl', u'../../charms/oscied-publisher/local_config.pkl'),
+    PublisherHooks(first_that_exist(u'metadata.yaml',     u'../../charms/oscied-publisher/metadata.yaml'),
+                   first_that_exist(u'config.yaml',       u'../../charms/oscied-publisher/config.yaml'),
+                   first_that_exist(u'local_config.json', u'../../charms/oscied-publisher/local_config.json'),
                    DEFAULT_OS_ENV).trigger()

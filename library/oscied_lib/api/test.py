@@ -1,8 +1,7 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 #**********************************************************************************************************************#
-#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : SCRIPTS
+#              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : COMMON LIBRARY
 #
 #  Project Manager : Bram Tullemans (tullemans@ebu.ch)
 #  Main Developer  : David Fischer (david.fischer.ch@gmail.com)
@@ -24,37 +23,27 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-if __name__ == '__main__':
-    import uuid
-    from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
-    from nose.tools import assert_raises
-    from pytoolbox.encoding import configure_unicode
-    from pytoolbox.exception import assert_raises_item
-    from library.oscied_lib.api import OrchestraAPIClient
-    from library.oscied_lib.models import User
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-    configure_unicode()
+import uuid
+from nose.tools import assert_raises
+from pytoolbox.exception import assert_raises_item
+from ..models import User
 
-    # Gather arguments
-    parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter,
-                            epilog=u'''Live-test security and functionalities of a running orchestrator.''')
-    parser.add_argument(u'host',        action=u'store', default=None)
-    parser.add_argument(u'port',        action=u'store', default=80)
-    parser.add_argument(u'root_secret', action=u'store', default=None)
-    parser.add_argument(u'node_secret', action=u'store', default=None)
-    args = parser.parse_args()
-    root = (u'root', args.root_secret)
-    node = (u'node', args.node_secret)
 
-    client = OrchestraAPIClient(args.host, args.port, root)
-    print(client.about)
+def test_api(api_client, root_secret, node_secret):
+    u"""Live-test security and functionalities of a running orchestrator."""
+
+    print(api_client.about)
+    root = (u'root', root_secret)
+    node = (u'node', node_secret)
 
     print(u'Register some test users')
-    client.auth = root
+    api_client.auth = root
     admin = User(first_name=u'Admin', last_name=u'Test', mail=u'a@u.test', secret=u'AdminS3cret', admin_platform=True)
     user  = User(first_name=u'User',  last_name=u'Test', mail=u'u@u.test', secret=u'SimpleS3cret')
-    admin = client.login_or_create(admin)
-    user  = client.login_or_create(user)
+    admin = api_client.login_or_create(admin)
+    user  = api_client.login_or_create(user)
 
     print(u'Test user API')
 
@@ -63,68 +52,68 @@ if __name__ == '__main__':
     # FIXME this is really not pythonic ...
 
     print(u'\t\tAnonymous ...')
-    client.auth = None
-    assert_raises(Exception, client.login, None, None)
-    assert_raises(Exception, len, client.users)
-    assert_raises(Exception, client.users.list)
-    assert_raises_item(Exception, client.users, admin._id)
-    assert_raises_item(Exception, client.users, admin._id, value=admin)
-    assert_raises_item(Exception, client.users, admin._id, delete=True)
+    api_client.auth = None
+    assert_raises(Exception, api_client.login, None, None)
+    assert_raises(Exception, len, api_client.users)
+    assert_raises(Exception, api_client.users.list)
+    assert_raises_item(Exception, api_client.users, admin._id)
+    assert_raises_item(Exception, api_client.users, admin._id, value=admin)
+    assert_raises_item(Exception, api_client.users, admin._id, delete=True)
 
     print(u'\t\tCharlie ...')
-    client.auth = (u'charlie', u'passw0rd')
-    assert_raises(Exception, client.login, *client.auth)
-    assert_raises(Exception, len, client.users)
-    assert_raises(Exception, client.users.list)
-    assert_raises_item(Exception, client.users, user._id)
-    assert_raises_item(Exception, client.users, user._id, value=admin)
-    assert_raises_item(Exception, client.users, user._id, delete=True)
+    api_client.auth = (u'charlie', u'passw0rd')
+    assert_raises(Exception, api_client.login, *api_client.auth)
+    assert_raises(Exception, len, api_client.users)
+    assert_raises(Exception, api_client.users.list)
+    assert_raises_item(Exception, api_client.users, user._id)
+    assert_raises_item(Exception, api_client.users, user._id, value=admin)
+    assert_raises_item(Exception, api_client.users, user._id, delete=True)
 
     print(u'\t\tRoot ...')
-    client.auth = root
-    assert_raises(Exception, client.login, *client.auth)
-    len(client.users)
-    client.users
-    client.users[admin._id]
-    client.users[admin._id] = admin
-    del client.users[user._id]
-    user = client.users.add(user)
+    api_client.auth = root
+    assert_raises(Exception, api_client.login, *api_client.auth)
+    len(api_client.users)
+    api_client.users
+    api_client.users[admin._id]
+    api_client.users[admin._id] = admin
+    del api_client.users[user._id]
+    user = api_client.users.add(user)
 
     print(u'\t\tNode ...')
-    client.auth = node
-    assert_raises(Exception, client.login, *client.auth)
-    assert_raises(Exception, len, client.users)
-    assert_raises(Exception, client.users.list)
-    assert_raises_item(Exception, client.users, user._id)
-    assert_raises_item(Exception, client.users, user._id, value=admin)
-    assert_raises_item(Exception, client.users, user._id, delete=True)
+    api_client.auth = node
+    assert_raises(Exception, api_client.login, *api_client.auth)
+    assert_raises(Exception, len, api_client.users)
+    assert_raises(Exception, api_client.users.list)
+    assert_raises_item(Exception, api_client.users, user._id)
+    assert_raises_item(Exception, api_client.users, user._id, value=admin)
+    assert_raises_item(Exception, api_client.users, user._id, delete=True)
 
     print(u'\t\tAdmin ...')
-    client.login(admin)
-    len(client.users)
-    client.users.list()
-    client.users[user._id]
-    client.users[user._id] = user
-    del client.users[user._id]
-    user = client.users.add(user)
+    api_client.login(admin)
+    len(api_client.users)
+    api_client.users.list()
+    api_client.users[user._id]
+    api_client.users[user._id] = user
+    del api_client.users[user._id]
+    user = api_client.users.add(user)
 
     print(u'\t\tUser ...')
-    client.login(user)
-    len(client.users)
-    assert_raises(Exception, client.users.list)
-    client.users[admin._id]
-    client.users[user._id] = user
-    assert_raises_item(Exception, client.users, admin._id, value=admin)
-    assert_raises_item(Exception, client.users, admin._id, delete=True)
-    del client.users[user._id]
-    client.auth = admin
-    user = client.users.add(user)
+    api_client.login(user)
+    len(api_client.users)
+    assert_raises(Exception, api_client.users.list)
+    api_client.users[admin._id]
+    api_client.users[user._id] = user
+    assert_raises_item(Exception, api_client.users, admin._id, value=admin)
+    assert_raises_item(Exception, api_client.users, admin._id, delete=True)
+    del api_client.users[user._id]
+    api_client.auth = admin
+    user = api_client.users.add(user)
 
     print(u'\t2/3 Input validation ...')
-    client.auth = admin
-    assert_raises_item(TypeError, client.users, 0)
-    assert_raises_item(IndexError, client.users, uuid.uuid4())
-    assert_raises_item(IndexError, client.users, uuid.uuid4(), delete=True)
+    api_client.auth = admin
+    assert_raises_item(TypeError, api_client.users, 0)
+    assert_raises_item(IndexError, api_client.users, uuid.uuid4())
+    assert_raises_item(IndexError, api_client.users, uuid.uuid4(), delete=True)
 
     # mecho 'Admin can modify users (and it should work as expected)'
     # test_api 200 PATCH $ORCHESTRA_URL/user/id/$user3_id "$user1_auth" \
@@ -149,7 +138,7 @@ if __name__ == '__main__':
     # test_api 200 GET    $ORCHESTRA_URL/user/login        "$user2_auth" ''
 
     #users_count = len(client.users)
-    #users = client.users.list()
+    #users = api_client.users.list()
     #assert_equal(users_count, len(users))
 
 # api_test_main()

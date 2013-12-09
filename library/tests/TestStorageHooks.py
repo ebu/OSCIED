@@ -41,11 +41,11 @@ class TestStorageHooks(object):
     #return {'stdout': INFOS_STDOUT, 'stderr': None, 'returncode': 0}
 
     def setUp(self):
-        StorageLocalConfig().write(u'test.pkl')
-        self.hooks = StorageHooks(None, CONFIG, u'test.pkl', OS_ENV)
+        StorageLocalConfig().write(u'test.json')
+        self.hooks = StorageHooks(None, CONFIG, u'test.json', OS_ENV)
 
     def tearDown(self):
-        os.remove(u'test.pkl')
+        os.remove(u'test.json')
 
     def test_class_properties(self):
         assert_equal(self.hooks.brick(), u'{0}:/mnt/somewhere/bricks/exp14'.format(self.hooks.private_address))

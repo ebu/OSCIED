@@ -24,8 +24,14 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+from __future__ import absolute_import, division, print_function, unicode_literals
+
+import uuid
+
 ENVIRONMENT_TO_LABEL = {u'amazon': u'Public Cloud', u'maas': u'Private Cluster'}
 ENVIRONMENT_TO_TYPE  = {u'amazon': u'public', u'maas': u'private'}
 SERVICE_TO_LABEL     = {u'oscied-transform': u'encoding',        u'oscied-publisher': u'distribution'}
 SERVICE_TO_UNITS_API = {u'oscied-transform': u'transform_units', u'oscied-publisher': u'publisher_units'}
 SERVICE_TO_TASKS_API = {u'oscied-transform': u'transform_tasks', u'oscied-publisher': u'publisher_tasks'}
+MEDIAS_PATH, UPLOADS_PATH = u'medias', u'uploads'
+UUID_ZERO = unicode(uuid.UUID(u'{00000000-0000-0000-0000-000000000000}'))

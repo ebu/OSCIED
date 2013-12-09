@@ -24,7 +24,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-from __future__ import absolute_import
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 import logging, mongomock, pymongo, smtplib, uuid
 from celery.task.control import revoke
@@ -35,12 +35,12 @@ from pymongo.errors import DuplicateKeyError
 from pytoolbox import juju
 from pytoolbox.datetime import datetime_now
 from pytoolbox.encoding import to_bytes
-from pytoolbox.pyutils import UUID_ZERO
 from pytoolbox.serialization import dict2object, object2dict, object2json
 from pytoolbox.validation import valid_uuid
 from random import randint
 
 from .. import PublisherWorker, TransformWorker
+from ..constants import UUID_ZERO
 from ..models import Media, User, TransformProfile, PublisherTask, TransformTask, ENCODERS_NAMES
 from ..utils import Callback, Storage
 from .base import ABOUT
@@ -52,7 +52,6 @@ class OrchestraAPICore(object):
     # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Constructor >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
     def __init__(self, config):
-        logging.info(u'builded a core') # FIXME DEBUG
         self.config = config
         if self.is_mock:
             self._db = mongomock.Connection().orchestra
@@ -466,7 +465,7 @@ class OrchestraAPICore(object):
         task.is_valid(True)
         if task.status == TransformTask.CANCELED_STATUS:
             raise ValueError(to_bytes(u'Transformation task {0} is already revoked !'.format(task._id)))
-        if task.status in TransformTask.FINAL_SATUS:
+        if task.status in TransformTask.FINAL_STATUS:
             raise ValueError(to_bytes(u'Cannot revoke a transformation task with status {0}.'.format(task.status)))
         task.status = TransformTask.REVOKED
         if self.is_mock:

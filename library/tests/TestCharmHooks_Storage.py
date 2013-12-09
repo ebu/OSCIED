@@ -54,8 +54,8 @@ OS_ENV[u'JUJU_UNIT_NAME'] = u'oscied-transform/0'
 
 
 class CharmHooks_Storage_tmp(CharmHooks_Storage):
-    def __init__(self, m, c, o):
-        super(CharmHooks_Storage_tmp, self).__init__(m, c, o)
+    def __init__(self, m, c, o, f, s):
+        super(CharmHooks_Storage_tmp, self).__init__(m, c, o, f, s)
 
     @property
     def storage_is_mounted(self):
@@ -65,7 +65,7 @@ class CharmHooks_Storage_tmp(CharmHooks_Storage):
 class TestCharmHooks_Storage(object):
 
     def create_hooks(self, hooks_class, default_config):
-        hooks = hooks_class(None, default_config, OS_ENV)
+        hooks = hooks_class(None, default_config, OS_ENV, u'test.json', TransformLocalConfig)
         hooks.local_config = TransformLocalConfig()
         hooks.local_config.storage_mount_sleep_delay = 0.01
         shutil.copy(hooks.local_config.hosts_file, u'hosts')
