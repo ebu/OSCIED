@@ -131,10 +131,10 @@ class CharmHooks_Storage(OsciedCharmHooks):
                 self.local_config.storage_mountpoint = mountpoint
                 self.local_config.storage_options = options
                 self.remark(u'Shared storage successfully registered')
-                self.debug(u'Create directories in the shared storage and ensure it is owned by the Apache 2 daemon')
+                self.debug(u'Create directories in the shared storage and ensure it is owned by the right user')
                 try_makedirs(self.local_config.storage_medias_path())
                 try_makedirs(self.local_config.storage_uploads_path)
-                chown(self.local_config.storage_path, u'www-data', u'www-data', recursive=True)
+                chown(self.local_config.storage_path, self.daemon_user, self.daemon_group, recursive=True)
             else:
                 raise IOError(to_bytes(u'Unable to mount shared storage'))
 
