@@ -25,7 +25,7 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os
+import os, simplejson.scanner
 from pytoolbox.encoding import to_bytes
 from pytoolbox.flask import map_exceptions
 from pytoolbox.juju import get_unit_path, juju_do
@@ -118,7 +118,12 @@ class OrchestraAPIClient(object):
         auth = auth or self.auth
         auth = auth.credentials if isinstance(auth, User) else auth
         url = u'http://{0}'.format(resource)
-        return map_exceptions(verb(url, auth=auth, data=data, headers=headers, timeout=self.timeout).json())
+        response = verb(url, auth=auth, data=data, headers=headers, timeout=self.timeout)
+        try:
+            response_json = response.json()
+        except simplejson.scanner.JSONDecodeError:
+            raise ValueError(to_bytes(u'Response does not contain valid JSON data:\n' + unicode(response.text)))
+        return map_exceptions(response_json)
 
     # More complex methods not directly related to the API -------------------------------------------------------------
 
@@ -145,7 +150,7 @@ class OrchestraAPIClient(object):
         # FIXME detect name based on hostname ?
         os.chmod(self.id_rsa, 0600)
         api_host, local_cfg = self.api_host, self.api_local_config
-        bkp_path = local_cfg.storage_uploads_path + u'bkp/'
+        bkp_path = local_cfg.storage_uploads_path + u'_bkp/'
         dst_path = local_cfg.storage_uploads_path
         if not dst_path:
             raise ValueError(to_bytes(u'Unable to retrieve shared storage uploads directory.'))
@@ -153,8 +158,9 @@ class OrchestraAPIClient(object):
             # Mirror the local file into a 'backup' directory on the shared storage, then into the destination directory
             rsync(filename, u'{0}:{1}'.format(api_host, bkp_path), cli_output=True, makedest=True, archive=True,
                   progress=True, rsync_path=u'sudo rsync', extra='ssh -i {0}'.format(self.id_rsa))
-            sync_bkp_to_upload = u'sudo rsync -ah --progress {0} {1}'.format(bkp_path, dst_path)
-            ssh(api_host, cli_output=True, id=self.id_rsa, remote_cmd=sync_bkp_to_upload)
+            raise ValueError()
+            #sync_bkp_to_upload = u'sudo rsync -ah --progress {0} {1}'.format(bkp_path, dst_path)
+            #ssh(api_host, cli_output=True, id=self.id_rsa, remote_cmd=sync_bkp_to_upload)
         else:
             # Mirror the local file into the destination directory of the shared storage
             rsync(filename, u'{0}:{1}'.format(api_host, dst_path), cli_output=True, makedest=True, archive=True,
