@@ -103,7 +103,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
             shutil.rmtree(u'/var/log/apache2/', ignore_errors=True)
         shutil.rmtree(self.publish_path, ignore_errors=True)
         os.makedirs(self.publish_path)
-        chown(self.publish_path, u'www-data', u'www-data', recursive=True)
+        chown(self.publish_path, self.daemon_user, self.daemon_group, recursive=True)
         self.local_config.reset()
         self.local_config.update_publish_uri(self.public_address)
 

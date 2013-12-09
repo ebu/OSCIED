@@ -185,8 +185,8 @@ class OrchestraHooks(CharmHooks_Storage):
         self.info(u'Symlink charms default directory to directory for release {0}'.format(self.config.charms_release))
         try_symlink(abspath(local_cfg.charms_default_path), abspath(local_cfg.charms_release_path))
 
-        self.info(u"Ensure that the charm's directory is owned by the Apache 2 daemon")
-        chown(self.directory, u'www-data', u'www-data', recursive=True)
+        self.info(u"Ensure that the charm's directory is owned by the right user")
+        chown(self.directory, self.daemon_user, self.daemon_group, recursive=True)
 
         self.storage_remount()
 

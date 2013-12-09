@@ -135,7 +135,7 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         self.cmd(u'a2enmod rewrite')
         self.info(u'Copy and pre-configure Web UI')
         rsync(u'www/', self.local_config.www_root_path, archive=True, delete=True, exclude_vcs=True, recursive=True)
-        chown(self.local_config.www_root_path, u'www-data', u'www-data', recursive=True)
+        chown(self.local_config.www_root_path, self.daemon_user, self.daemon_group, recursive=True)
         self.local_config.encryption_key = WebuiHooks.randpass(32)
         self.info(u'Expose Apache 2 service')
         self.open_port(80, u'TCP')

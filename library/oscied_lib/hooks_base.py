@@ -35,6 +35,9 @@ from pytoolbox.subprocess import screen_launch, screen_list, screen_kill
 
 class OsciedCharmHooks(CharmHooks):
 
+    daemon_user = u'www-data'
+    daemon_group = u'www-data'
+
     def __init__(self, metadata, default_config, default_os_env, local_config_filename, local_config_cls):
         super(OsciedCharmHooks, self).__init__(metadata, default_config, default_os_env)
         # Create the local configuration file if missing
@@ -238,19 +241,19 @@ class CharmHooks_Subordinate(OsciedCharmHooks):
             raise RuntimeError(to_bytes(u'Orchestrator is set in config, subordinate relation is disabled'))
 
     def start_celeryd(self, retry_count=15, retry_delay=1):
-        if screen_list(self.screen_name, log=self.debug) == []:
-            screen_launch(self.screen_name, [u'celeryd', u'--config', u'celeryconfig',
-                                             u'--hostname', self.rabbit_hostname, u'-Q', self.rabbit_queues])
+        if screen_list(self.screen_name, log=self.debug, user=self.daemon_user) == []:
+            screen_launch(self.screen_name, [u'celeryd', u'--config', u'celeryconfig', u'--hostname',
+                          self.rabbit_hostname, u'-Q', self.rabbit_queues], user=self.daemon_user)
         for start_delay in xrange(retry_count):
             time.sleep(retry_delay)
-            if screen_list(self.screen_name, log=self.debug) != []:
+            if screen_list(self.screen_name, log=self.debug, user=self.daemon_user) != []:
                 start_time = start_delay * retry_delay
                 self.remark(u'{0} successfully started in {1} seconds'.format(self.screen_name, start_time))
                 return
         raise RuntimeError(to_bytes(u'Worker {0} is not ready'.format(self.screen_name)))
 
     def stop_celeryd(self):
-        screen_kill(self.screen_name, log=self.debug)
+        screen_kill(self.screen_name, log=self.debug, user=self.daemon_user)
 
     # ------------------------------------------------------------------------------------------------------------------
 
