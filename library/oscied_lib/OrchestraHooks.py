@@ -127,7 +127,7 @@ class OrchestraHooks(CharmHooks_Storage):
 
         self.info(u'Configure Apache 2')
         self.template2config(local_cfg.site_template_file, join(local_cfg.sites_available_path, self.name_slug), {
-            u'alias': self.api_alias, u'directory': local_cfg.directory, u'domain': self.public_address,
+            u'alias': self.api_alias, u'directory': local_cfg.site_directory, u'domain': self.public_address,
             u'wsgi': local_cfg.api_wsgi
         })
         self.cmd(u'a2dissite default')
