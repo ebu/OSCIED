@@ -121,7 +121,7 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         # Tip : http://ubuntuforums.org/showthread.php?t=981801
         self.cmd(debconf, input=u'{0}/root_password select {1}'.format(mysql, cfg.mysql_root_password))
         self.cmd(debconf, input=u'{0}/root_password_again select {1}'.format(mysql, cfg.mysql_root_password))
-        self.install_packages(WebuiHooks.JUJU_PACKAGES)
+        self.install_packages(WebuiHooks.PACKAGES)
         self.restart_ntp()
         self.info(u'Import Web UI database and create user')
         hostname = socket.gethostname()
@@ -134,8 +134,8 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         self.info(u'Configure Apache 2')
         self.cmd(u'a2enmod rewrite')
         self.info(u'Copy and pre-configure Web UI')
-        rsync(u'www/', self.local_config.www_root_path, archive=True, delete=True, exclude_vcs=True, recursive=True)
-        chown(self.local_config.www_root_path, self.daemon_user, self.daemon_group, recursive=True)
+        rsync(u'www/', self.local_config.site_directory, archive=True, delete=True, exclude_vcs=True, recursive=True)
+        chown(self.local_config.site_directory, self.daemon_user, self.daemon_group, recursive=True)
         self.local_config.encryption_key = WebuiHooks.randpass(32)
         self.info(u'Expose Apache 2 service')
         self.open_port(80, u'TCP')
@@ -145,7 +145,7 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
 
         self.info(u'Configure Apache 2')
         self.template2config(local_cfg.site_template_file, join(local_cfg.sites_available_path, self.name_slug), {
-            u'directory': local_cfg.www_root_path, u'domain': self.public_address
+            u'directory': local_cfg.site_directory, u'domain': self.public_address
         })
         self.cmd(u'a2dissite default')
         self.cmd(u'a2ensite {0}'.format(self.name_slug))
@@ -179,8 +179,7 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
             shutil.rmtree(u'/etc/mysql/',       ignore_errors=True)
             shutil.rmtree(u'/var/lib/mysql/',   ignore_errors=True)
             shutil.rmtree(u'/var/log/mysql/',   ignore_errors=True)
-        shutil.rmtree(self.local_config.www_root_path, ignore_errors=True)
-        os.makedirs(self.local_config.www_root_path)
+        shutil.rmtree(self.local_config.site_directory, ignore_errors=True)
         self.local_config.reset()
 
     def hook_start(self):

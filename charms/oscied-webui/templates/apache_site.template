@@ -2,18 +2,16 @@
 
     ServerName {domain}
 
-	CustomLog "{directory}/access.log" common
+    CustomLog "{directory}/access.log" common
     ErrorLog "{directory}/error.log"
     LogFormat "%h %l %u %t \"%r\" %>s %b" common
-	LogLevel warn
+    LogLevel warn
 
-    DocumentRoot "{directory}"
-
-	<Directory {directory}/>
-		Options Indexes FollowSymLinks MultiViews
-		AllowOverride All
-		Order allow,deny
-		allow from all
-	</Directory>
+    <Directory {directory}/>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride All
+        Order allow,deny
+        allow from all
+    </Directory>
 
 </VirtualHost>

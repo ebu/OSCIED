@@ -31,22 +31,20 @@ from os.path import expanduser, join
 from urlparse import urlparse
 
 from .config_base import CharmLocalConfig, CharmLocalConfig_Subordinate, CharmLocalConfig_Storage
-from .constants import MEDIAS_PATH
+from .constants import MEDIAS_PATH, UPLOADS_PATH
 
 
 class OrchestraLocalConfig(CharmLocalConfig_Storage):
 
     def __init__(self, api_url=u'', root_secret=u'', node_secret=u'', mongo_admin_connection=u'',
-                 mongo_node_connection=u'', rabbit_connection=u'', celery_config_file=u'celeryconfig.py',
+                 mongo_node_connection=u'', rabbit_connection=u'',
                  celery_template_file=u'templates/celeryconfig.py.template', mongo_config_file=u'/etc/mongodb.conf',
-                 ssh_config_path=u'~/.ssh', ssh_template_path=u'ssh', juju_config_file=u'~/.juju/environments.yaml',
-                 juju_template_path=u'juju/', charms_config=u'config.yaml', charms_release=u'raring',
-                 charms_repository=u'charms', email_server=u'', email_tls=False, email_username=u'', email_password=u'',
+                 ssh_config_path=u'~/.ssh', juju_config_file=u'~/.juju/environments.yaml',
+                 charms_release=u'raring', email_server=u'', email_tls=False, email_username=u'', email_password=u'',
                  email_address=u'', email_ttask_template=u'templates/ttask_mail.template',
                  email_ptask_template=u'templates/ptask_mail.template', plugit_api_url=u'',
-                 sites_available_path=u'/etc/apache2/sites-available',
-                 site_template_file=u'templates/apache_site.template',
-                 **kwargs):
+                 sites_available_path=u'/etc/apache2/sites-available', site_directory=u'/var/www/api',
+                 site_template_file=u'templates/apache_site.template', **kwargs):
         super(OrchestraLocalConfig, self).__init__(**kwargs)
         self.api_url = api_url
         self.root_secret = root_secret
@@ -54,16 +52,11 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
         self.mongo_admin_connection = mongo_admin_connection
         self.mongo_node_connection = mongo_node_connection
         self.rabbit_connection = rabbit_connection
-        self.celery_config_file = celery_config_file
         self.celery_template_file = celery_template_file
         self.mongo_config_file = mongo_config_file
         self.ssh_config_path = expanduser(ssh_config_path)
-        self.ssh_template_path = ssh_template_path
         self.juju_config_file = expanduser(juju_config_file)
-        self.juju_template_path = juju_template_path
-        self.charms_config = charms_config
         self.charms_release = charms_release
-        self.charms_repository = charms_repository
         self.email_server = email_server
         self.email_tls = email_tls
         self.email_address = email_address
@@ -73,7 +66,24 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
         self.email_ptask_template = email_ptask_template
         self.plugit_api_url = plugit_api_url
         self.sites_available_path = sites_available_path
+        self.site_directory = site_directory
         self.site_template_file = site_template_file
+
+    @property
+    def api_wsgi(self):
+        return join(self.site_directory, u'wsgi.py')
+
+    @property
+    def celery_config_file(self):
+        return join(self.site_directory, u'celeryconfig.py')
+
+    @property
+    def charms_repository(self):
+        return join(self.site_directory, u'charms')
+
+    @property
+    def charms_config(self):
+        return join(self.site_directory, u'config.yaml')
 
     @property
     def charms_default_path(self):
@@ -82,6 +92,14 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
     @property
     def charms_release_path(self):
         return join(self.charms_repository, self.charms_release)
+
+    @property
+    def juju_template_path(self):
+        return join(self.site_directory, u'juju/')
+
+    @property
+    def ssh_template_path(self):
+        return join(self.site_directory, u'ssh')
 
     @property
     def transform_queues(self):
@@ -189,29 +207,36 @@ class WebuiLocalConfig(CharmLocalConfig_Storage):
 
     def __init__(self, api_url=u'', encryption_key=u'', proxy_ips=None,
                  sites_available_path=u'/etc/apache2/sites-available', site_database_file=u'webui-db.sql',
-                 site_template_file=u'templates/apache_site.template',
+                 site_directory=u'/var/www/webui', site_template_file=u'templates/apache_site.template',
                  htaccess_template_file=u'templates/htaccess.template',
                  general_template_file=u'templates/config.php.template',
-                 database_template_file=u'templates/database.php.template', htaccess_config_file=u'/var/www/.htaccess',
-                 general_config_file=u'/var/www/application/config/config.php',
-                 database_config_file=u'/var/www/application/config/database.php', www_root_path=u'/var/www',
-                 www_medias_path=u'/var/www/medias', www_uploads_path=u'/var/www/uploads', **kwargs):
+                 database_template_file=u'templates/database.php.template', **kwargs):
         super(WebuiLocalConfig, self).__init__(**kwargs)
         self.api_url = api_url
         self.encryption_key = encryption_key
         self.proxy_ips = proxy_ips or []
         self.sites_available_path = sites_available_path
         self.site_database_file = site_database_file
+        self.site_directory = site_directory
         self.site_template_file = site_template_file
-        self.htaccess_template_file = htaccess_template_file
-        self.general_template_file = general_template_file
         self.database_template_file = database_template_file
-        self.htaccess_config_file = htaccess_config_file
-        self.general_config_file = general_config_file
-        self.database_config_file = database_config_file
-        self.www_root_path = www_root_path
-        self.www_medias_path = www_medias_path
-        self.www_uploads_path = www_uploads_path
+        self.general_template_file = general_template_file
+        self.htaccess_template_file = htaccess_template_file
+
+        def database_config_file(self):
+            return join(self.site_directory, u'application/config/database.php')
+
+        def general_config_file(self):
+            return join(self.site_directory, u'application/config/config.php')
+
+        def htaccess_config_file(self):
+            return join(self.site_directory, u'.htaccess')
+
+        def medias_path(self):
+             return join(self.site_directory, MEDIAS_PATH)
+
+        def uploads_path(self):
+            return join(self.site_directory, UPLOADS_PATH)
 
 
 # Main -----------------------------------------------------------------------------------------------------------------

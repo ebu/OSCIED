@@ -62,10 +62,6 @@ class OrchestraHooks(CharmHooks_Storage):
         return u'http://{0}:80/{1}'.format(u'127.0.0.1' if local else self.private_address, self.api_alias)
 
     @property
-    def api_wsgi(self):
-        return join(self.directory, u'wsgi.py')
-
-    @property
     def mongo_admin_connection(self):
         return u'mongodb://admin:{0}@localhost:27017/orchestra'.format(self.config.mongo_admin_password)
 
@@ -108,6 +104,9 @@ class OrchestraHooks(CharmHooks_Storage):
         self.generate_locales((u'fr_CH.UTF-8',))
         self.install_packages(OrchestraHooks.PACKAGES + OrchestraHooks.JUJU_PACKAGES, ppas=OrchestraHooks.PPAS)
         self.restart_ntp()
+        self.info(u'Copy Orchestra')
+        rsync(u'./', self.local_config.site_directory, archive=True, delete=True, exclude_vcs=True, recursive=True)
+        chown(self.local_config.site_directory, self.daemon_user, self.daemon_group, recursive=True)
         self.info(u'Expose RESTful API, MongoDB & RabbitMQ service')
         self.open_port(80,    u'TCP')  # Orchestra RESTful API
         self.open_port(27017, u'TCP')  # MongoDB port mongod and mongos instances
@@ -117,7 +116,7 @@ class OrchestraHooks(CharmHooks_Storage):
         self.open_port(5672,  u'TCP')  # RabbitMQ service
 
     def hook_config_changed(self):
-        local_cfg = self.local_config
+        cfg, local_cfg = self.config, self.local_config
 
         self.info(u'Start MongoDB and RabbitMQ daemons')
         self.cmd(u'service mongodb start',         fail=False)
@@ -128,8 +127,8 @@ class OrchestraHooks(CharmHooks_Storage):
 
         self.info(u'Configure Apache 2')
         self.template2config(local_cfg.site_template_file, join(local_cfg.sites_available_path, self.name_slug), {
-            u'alias': self.api_alias, u'directory': self.directory, u'domain': self.public_address,
-            u'wsgi': self.api_wsgi
+            u'alias': self.api_alias, u'directory': local_cfg.directory, u'domain': self.public_address,
+            u'wsgi': local_cfg.api_wsgi
         })
         self.cmd(u'a2dissite default')
         self.cmd(u'a2ensite {0}'.format(self.name_slug))
@@ -141,9 +140,9 @@ class OrchestraHooks(CharmHooks_Storage):
 
         self.info(u'Configure MongoDB Scalable NoSQL DB')
         with open(u'f.js', u'w', u'utf-8') as mongo_f:
-            mongo_f.write(u"db.addUser('admin', '{0}', false);".format(self.config.mongo_admin_password))
+            mongo_f.write(u"db.addUser('admin', '{0}', false);".format(cfg.mongo_admin_password))
         with open(u'g.js', u'w', u'utf-8') as mongo_g:
-            mongo_g.write(u"db.addUser('node', '{0}', false);".format(self.config.mongo_node_password))
+            mongo_g.write(u"db.addUser('node', '{0}', false);".format(cfg.mongo_node_password))
         self.cmd(u'mongo f.js')
         self.cmd(u'mongo orchestra f.js')
         self.cmd(u'mongo celery g.js')
@@ -159,11 +158,11 @@ class OrchestraHooks(CharmHooks_Storage):
         self.configure_rabbitmq()
 
         self.info(u'Configure Orchestra the Orchestrator')
-        local_cfg.verbose = self.config.verbose
+        local_cfg.verbose = cfg.verbose
         local_cfg.api_url = self.api_url(local=False)
-        local_cfg.charms_release = self.config.charms_release
-        local_cfg.node_secret = self.config.node_secret
-        local_cfg.root_secret = self.config.root_secret
+        local_cfg.charms_release = cfg.charms_release
+        local_cfg.node_secret = cfg.node_secret
+        local_cfg.root_secret = cfg.root_secret
         local_cfg.mongo_admin_connection = self.mongo_admin_connection
         local_cfg.mongo_node_connection = self.mongo_node_connection
         local_cfg.rabbit_connection = self.rabbit_connection
@@ -171,22 +170,22 @@ class OrchestraHooks(CharmHooks_Storage):
             u'rabbit': unicode(self.rabbit_connection),
             u'port': unicode(27017),
             u'username': u'node',
-            u'password': unicode(self.config.mongo_node_password),
+            u'password': unicode(cfg.mongo_node_password),
         }
         self.template2config(local_cfg.celery_template_file, local_cfg.celery_config_file, infos)
-        local_cfg.email_server = self.config.email_server
-        local_cfg.email_tls = self.config.email_tls
-        local_cfg.email_address = self.config.email_address
-        local_cfg.email_username = self.config.email_username
-        local_cfg.email_password = self.config.email_password
-        local_cfg.plugit_api_url = self.config.plugit_api_url
+        local_cfg.email_server = cfg.email_server
+        local_cfg.email_tls = cfg.email_tls
+        local_cfg.email_address = cfg.email_address
+        local_cfg.email_username = cfg.email_username
+        local_cfg.email_password = cfg.email_password
+        local_cfg.plugit_api_url = cfg.plugit_api_url
         self.remark(u'Orchestrator successfully configured')
 
-        self.info(u'Symlink charms default directory to directory for release {0}'.format(self.config.charms_release))
+        self.info(u'Symlink charms default directory to directory for release {0}'.format(cfg.charms_release))
         try_symlink(abspath(local_cfg.charms_default_path), abspath(local_cfg.charms_release_path))
 
-        self.info(u"Ensure that the charm's directory is owned by the right user")
-        chown(self.directory, self.daemon_user, self.daemon_group, recursive=True)
+        self.info(u"Ensure that the orchestrator's directory is owned by the right user")
+        chown(local_cfg.site_directory, self.daemon_user, self.daemon_group, recursive=True)
 
         self.storage_remount()
 
@@ -206,6 +205,7 @@ class OrchestraHooks(CharmHooks_Storage):
             shutil.rmtree(u'/var/log/apache2/',  ignore_errors=True)
             shutil.rmtree(u'/etc/rabbitmq/',     ignore_errors=True)
             shutil.rmtree(u'/var/log/rabbitmq/', ignore_errors=True)
+            shutil.rmtree(self.local_config.site_directory, ignore_errors=True)
         self.local_config.reset()
 
     def hook_start(self):
