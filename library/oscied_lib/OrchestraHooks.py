@@ -152,7 +152,6 @@ class OrchestraHooks(CharmHooks_Storage):
         mongo_config[u'bind_ip'] = u'0.0.0.0'
         mongo_config[u'noauth'] = u'false'
         mongo_config[u'auth'] = u'true'
-        self.debug(u'MongoDB configuration is: {0}'.format(mongo_config.__dict__))
         mongo_config.write()
 
         self.configure_rabbitmq()
