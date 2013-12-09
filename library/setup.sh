@@ -41,8 +41,8 @@ oscied_install()
   apt-get -y install build-essential git-core libyaml-dev libxml2-dev libxslt-dev libz-dev \
     python-dev python-kitchen python-pip || xecho 'Unable to install required packages with apt-get' 2
 
-  echo '2/3 - Install Python module called pytoolbox'
-  cd "$base/pytoolbox-source" && pip install --upgrade -e .[flask,mongo] || xecho 'Unable to install pytoolbox module' 3
+  echo '2/3 - Install Python requirements'
+  cd "$base" && pip install -r REQUIREMENTS.txt || xecho 'Unable to install python requirements' 3
 
   echo '3/3 - Install Python module called oscied_lib'
   cd "$base" && ./setup.py develop || xecho 'Unable to install oscied_lib module' 4

@@ -1,0 +1,12 @@
+configobj
+celery
+flask
+mongomock
+nose
+passlib
+git+git://github.com/kyouko-taiga/paya.git#egg=paya
+pyaml
+pymongo
+git+git://github.com/davidfischer-ch/pytoolbox.git#egg=pytoolbox[flask,mongo]
+requests
+six

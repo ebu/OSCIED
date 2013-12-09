@@ -28,6 +28,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import sys
 from codecs import open
+from pip.req import parse_requirements
 from setuptools import setup, find_packages
 
 major, minor = sys.version_info[:2]
@@ -81,6 +82,7 @@ install_requires=[
       'mongomock',  # FIXME version
       'nose',       # FIXME version
       'passlib',    # FIXME version
+      #'pytoolbox>=v5.3.13-beta',  # installed by setup.sh
       'pyaml',      # FIXME version
       'pymongo',    # FIXME version
       #'pytoolbox>=v5.3.13-beta',  # installed by setup.sh
@@ -99,7 +101,7 @@ setup(name=u'oscied-lib',
       license='EUPL 1.1',
       classifiers=filter(None, classifiers.split('\n')),
       keywords=keywords,
-      install_requires=install_requires,
+      install_requires=[str(requirement.req) for requirement in parse_requirements('REQUIREMENTS.txt')],
       tests_require=['coverage', 'mock', 'nose'],
       # Thanks to https://github.com/graingert/django-browserid/commit/46c763f11f76b2f3ba365b164196794a37494f44
       test_suite='tests.oscied_lib_runtests.main', **kwargs)
