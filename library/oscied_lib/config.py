@@ -223,21 +223,25 @@ class WebuiLocalConfig(CharmLocalConfig_Storage):
         self.general_template_file = general_template_file
         self.htaccess_template_file = htaccess_template_file
 
+        @property
         def database_config_file(self):
             return join(self.site_directory, u'application/config/database.php')
 
+        @property
         def general_config_file(self):
             return join(self.site_directory, u'application/config/config.php')
 
+        @property
         def htaccess_config_file(self):
             return join(self.site_directory, u'.htaccess')
 
+        @property
         def medias_path(self):
              return join(self.site_directory, MEDIAS_PATH)
 
+        @property
         def uploads_path(self):
             return join(self.site_directory, UPLOADS_PATH)
-
 
 # Main -----------------------------------------------------------------------------------------------------------------
 
