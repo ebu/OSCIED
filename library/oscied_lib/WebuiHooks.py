@@ -32,6 +32,7 @@ from os.path import join
 from pytoolbox.encoding import to_bytes
 from pytoolbox.filesystem import chown, first_that_exist, try_makedirs, try_symlink
 from pytoolbox.juju import DEFAULT_OS_ENV
+from pytoolbox.serialization import object2dict
 from pytoolbox.subprocess import rsync
 from random import choice
 
@@ -153,8 +154,8 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         self.info(u'Configure CodeIgniter the PHP framework')
         self.storage_remount()
         self.api_register()
-        infos = self.config.__dict__
-        infos.update(local_cfg.__dict__)
+        infos = object2dict(self.config, include_properties=True)
+        infos.update(object2dict(local_cfg, include_properties=True))
         infos[u'proxy_ips'] = self.proxy_ips_string
         infos[u'medias_uri'] = local_cfg.storage_uri(path=MEDIAS_PATH) or u''
         infos[u'uploads_uri'] = local_cfg.storage_uri(path=UPLOADS_PATH) or u''
