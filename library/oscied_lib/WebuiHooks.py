@@ -26,7 +26,7 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os, shutil, socket, string
+import shutil, socket, string
 from codecs import open
 from os.path import join
 from pytoolbox.encoding import to_bytes
@@ -156,15 +156,15 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         infos = self.config.__dict__
         infos.update(local_cfg.__dict__)
         infos[u'proxy_ips'] = self.proxy_ips_string
-        infos[u'www_medias_uri'] = local_cfg.storage_uri(path=MEDIAS_PATH) or u''
-        infos[u'www_uploads_uri'] = local_cfg.storage_uri(path=UPLOADS_PATH) or u''
+        infos[u'medias_uri'] = local_cfg.storage_uri(path=MEDIAS_PATH) or u''
+        infos[u'uploads_uri'] = local_cfg.storage_uri(path=UPLOADS_PATH) or u''
         self.template2config(local_cfg.general_template_file,  local_cfg.general_config_file,  infos)
         self.template2config(local_cfg.database_template_file, local_cfg.database_config_file, infos)
         self.template2config(local_cfg.htaccess_template_file, local_cfg.htaccess_config_file, infos)
         if self.storage_is_mounted:
             self.info(u'Symlink shared storage for the web daemon')
-            try_symlink(local_cfg.storage_medias_path(), local_cfg.www_medias_path)
-            try_symlink(local_cfg.storage_uploads_path,  local_cfg.www_uploads_path)
+            try_symlink(local_cfg.storage_medias_path(), local_cfg.medias_path)
+            try_symlink(local_cfg.storage_uploads_path,  local_cfg.uploads_path)
 
     def hook_uninstall(self):
         self.info(u'Uninstall prerequisities, unregister service and load default configuration')
