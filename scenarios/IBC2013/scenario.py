@@ -37,13 +37,13 @@ TODO
 from pytoolbox.console import confirm
 from pytoolbox.encoding import configure_unicode
 from pytoolbox.juju import DeploymentScenario, M1_SMALL, C1_MEDIUM
-from library.oscied_lib.juju import OsciedEnvironment
 from library.oscied_lib.models import User
 
 from scenario_config import (
     AMAZON, MAAS, CONFIG, EVENTS, STATS, CHARTS_PATH, SCENARIO_PATH,
     ENABLE_UNITS_API, TRANSFORM_MATRIX, TRANSFORM_MAX_PENDING_TASKS, MAX_OUTPUT_MEDIA_ASSETS
 )
+from scenario_utils import IBCEnvironment
 
 
 description = u'Launch IBC 2013 demo setup (MaaS Cluster with 4 machines // Amazon)'
@@ -159,8 +159,8 @@ class IBC2013(DeploymentScenario):
 if __name__ == u'__main__':
     configure_unicode()
     IBC2013(environments=[
-        OsciedEnvironment(AMAZON, events=EVENTS[AMAZON], statistics=STATS[AMAZON], charts_path=CHARTS_PATH,
-                          config=CONFIG[AMAZON], release=u'raring'),
-        OsciedEnvironment(MAAS, events=EVENTS[MAAS], statistics=STATS[MAAS], charts_path=CHARTS_PATH,
-                          config=CONFIG[MAAS], release=u'precise')
+        IBCEnvironment(AMAZON, events=EVENTS[AMAZON], statistics=STATS[AMAZON], charts_path=CHARTS_PATH,
+                       config=CONFIG[AMAZON], release=u'raring'),
+        IBCEnvironment(MAAS, events=EVENTS[MAAS], statistics=STATS[MAAS], charts_path=CHARTS_PATH,
+                       config=CONFIG[MAAS], release=u'precise')
     ]).run()

@@ -34,7 +34,7 @@ TODO
 import os
 from pytoolbox.collections import EventsTable
 from library.oscied_lib.constants import SERVICE_TO_LABEL
-from library.oscied_lib.juju import ServiceStatistics
+from scenario_utils import ServiceStatistics
 
 
 def read_or_default(environment, service, **kwargs):
