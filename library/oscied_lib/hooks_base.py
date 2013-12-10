@@ -287,10 +287,14 @@ class CharmHooks_Website(OsciedCharmHooks):
 
     @property
     def proxy_ips_string(self):
-        try:
-            proxy_ips = self.config.proxy_ips.split(u',')
-        except:
-            proxy_ips = [self.config.proxy_ips]
+        # Read the charm's config.yaml file proxy_ips option only if it does exist
+        if hasattr(self.config, u'proxy_ips'):
+            try:
+                proxy_ips = self.config.proxy_ips.split(u',')
+            except:
+                proxy_ips = [self.config.proxy_ips]
+        else:
+            proxy_ips = []
         return u','.join(list(filter(None, self.local_config.proxy_ips + proxy_ips)))
 
     # ------------------------------------------------------------------------------------------------------------------
