@@ -26,12 +26,13 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os
+from os.path import abspath, dirname, exists, join
 from pytoolbox.filesystem import first_that_exist
-from pytoolbox.juju import DEFAULT_OS_ENV
+from pytoolbox.juju import  CONFIG_FILENAME, METADATA_FILENAME, DEFAULT_OS_ENV
 from pytoolbox.subprocess import make
 
 from .config import TransformLocalConfig
+from .constants import LOCAL_CONFIG_FILENAME
 from .hooks_base import CharmHooks_Storage, CharmHooks_Subordinate
 
 
@@ -116,7 +117,7 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
     def hook_start(self):
         if not self.storage_is_mounted:
             self.remark(u'Do not start transform daemon : No shared storage')
-        elif not os.path.exists(self.local_config.celery_config_file):
+        elif not exists(self.local_config.celery_config_file):
             self.remark(u'Do not start transform daemon : No celery configuration file')
         elif len(self.rabbit_queues) == 0:
             self.remark(u'Do not start transform daemon : No RabbitMQ queues declared')
@@ -132,7 +133,8 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
 if __name__ == u'__main__':
     from pytoolbox.encoding import configure_unicode
     configure_unicode()
-    TransformHooks(first_that_exist(u'metadata.yaml',     u'../../charms/oscied-transform/metadata.yaml'),
-                   first_that_exist(u'config.yaml',       u'../../charms/oscied-transform/config.yaml'),
-                   first_that_exist(u'local_config.json', u'../../charms/oscied-transform/local_config.json'),
+    transform_hooks = abspath(join(dirname(__file__), u'../../charms/oscied-transform'))
+    TransformHooks(first_that_exist(METADATA_FILENAME,     join(transform_hooks, METADATA_FILENAME)),
+                   first_that_exist(CONFIG_FILENAME,       join(transform_hooks, CONFIG_FILENAME)),
+                   first_that_exist(LOCAL_CONFIG_FILENAME, join(transform_hooks, LOCAL_CONFIG_FILENAME)),
                    DEFAULT_OS_ENV).trigger()

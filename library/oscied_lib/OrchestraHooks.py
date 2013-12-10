@@ -32,11 +32,12 @@ from configobj import ConfigObj
 from os.path import abspath, dirname, exists, join
 from pytoolbox.encoding import to_bytes
 from pytoolbox.filesystem import chown, first_that_exist, try_makedirs, try_symlink
-from pytoolbox.juju import DEFAULT_OS_ENV
+from pytoolbox.juju import CONFIG_FILENAME, METADATA_FILENAME, DEFAULT_OS_ENV
 from pytoolbox.subprocess import rsync
 
 from .api import VERSION
 from .config import OrchestraLocalConfig
+from .constants import DAEMON_GROUP, DAEMON_USER, LOCAL_CONFIG_FILENAME
 from .hooks_base import CharmHooks_Storage
 
 
@@ -60,7 +61,7 @@ class OrchestraHooks(CharmHooks_Storage):
         u"""Save or update local configuration in charm's and api's path and ensure that is owned by the right user."""
         super(OrchestraHooks, self).save_local_config()
         self.local_config.write(self.local_config.site_local_config_file, makedirs=True)
-        chown(self.local_config.site_local_config_file, self.daemon_user, self.daemon_group)
+        chown(self.local_config.site_local_config_file, DAEMON_USER, DAEMON_GROUP)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -118,7 +119,7 @@ class OrchestraHooks(CharmHooks_Storage):
         self.restart_ntp()
         self.info(u'Copy Orchestra and the local charms repository of OSCIED')
         rsync(local_cfg.api_path, local_cfg.site_directory, **self.rsync_kwargs)
-        chown(local_cfg.site_directory, self.daemon_user, self.daemon_group, recursive=True)
+        chown(local_cfg.site_directory, DAEMON_USER, DAEMON_GROUP, recursive=True)
         self.info(u'Expose RESTful API, MongoDB & RabbitMQ service')
         self.open_port(80,    u'TCP')  # Orchestra RESTful API
         self.open_port(27017, u'TCP')  # MongoDB port mongod and mongos instances
@@ -137,11 +138,11 @@ class OrchestraHooks(CharmHooks_Storage):
         self.info(u'Configure JuJu Service Orchestrator')
         juju_config_path = dirname(local_cfg.juju_config_file)
         rsync(local_cfg.juju_template_path, juju_config_path, **self.rsync_kwargs)
-        chown(juju_config_path, self.daemon_user, self.daemon_group, recursive=True)
+        chown(juju_config_path, DAEMON_USER, DAEMON_GROUP, recursive=True)
 
         self.info(u'Configure Secure Shell')
         rsync(local_cfg.ssh_template_path, local_cfg.ssh_config_path, **self.rsync_kwargs)
-        chown(local_cfg.ssh_config_path, self.daemon_user, self.daemon_group, recursive=True)
+        chown(local_cfg.ssh_config_path, DAEMON_USER, DAEMON_GROUP, recursive=True)
 
         self.info(u'Configure Apache 2')
         self.template2config(local_cfg.htaccess_template_file, local_cfg.htaccess_config_file, {})
@@ -198,7 +199,7 @@ class OrchestraHooks(CharmHooks_Storage):
         try_symlink(abspath(local_cfg.charms_default_path), abspath(local_cfg.charms_release_path))
 
         self.info(u'Ensure that the Apache sites directory is owned by the right user')
-        chown(local_cfg.sites_directory, self.daemon_user, self.daemon_group, recursive=True)
+        chown(local_cfg.sites_directory, DAEMON_USER, DAEMON_GROUP, recursive=True)
 
         self.storage_remount()
 
@@ -287,7 +288,8 @@ class OrchestraHooks(CharmHooks_Storage):
 if __name__ == u'__main__':
     from pytoolbox.encoding import configure_unicode
     configure_unicode()
-    OrchestraHooks(first_that_exist(u'metadata.yaml',     u'../../charms/oscied-orchestra/metadata.yaml'),
-                   first_that_exist(u'config.yaml',       u'../../charms/oscied-orchestra/config.yaml'),
-                   first_that_exist(u'local_config.json', u'../../charms/oscied-orchestra/local_config.json'),
+    orchestra_path = abspath(join(dirname(__file__), u'../../charms/oscied-orchestra'))
+    OrchestraHooks(first_that_exist(METADATA_FILENAME,     join(orchestra_path, METADATA_FILENAME)),
+                   first_that_exist(CONFIG_FILENAME,       join(orchestra_path, CONFIG_FILENAME)),
+                   first_that_exist(LOCAL_CONFIG_FILENAME, join(orchestra_path, LOCAL_CONFIG_FILENAME)),
                    DEFAULT_OS_ENV).trigger()

@@ -28,16 +28,16 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import shutil, socket, string
 from codecs import open
-from os.path import join
+from os.path import abspath, dirname, join
 from pytoolbox.encoding import to_bytes
 from pytoolbox.filesystem import chown, first_that_exist, try_makedirs, try_symlink
-from pytoolbox.juju import DEFAULT_OS_ENV
+from pytoolbox.juju import  CONFIG_FILENAME, METADATA_FILENAME, DEFAULT_OS_ENV
 from pytoolbox.serialization import object2dict
 from pytoolbox.subprocess import rsync
 from random import choice
 
 from .config import WebuiLocalConfig
-from .constants import MEDIAS_PATH, UPLOADS_PATH
+from .constants import  MEDIAS_PATH, UPLOADS_PATH, DAEMON_USER, DAEMON_GROUP, LOCAL_CONFIG_FILENAME
 from .hooks_base import CharmHooks_Storage, CharmHooks_Website
 
 
@@ -136,7 +136,7 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         self.cmd(u'a2enmod rewrite')
         self.info(u'Copy and pre-configure Web UI')
         rsync(u'www/', self.local_config.site_directory, archive=True, delete=True, exclude_vcs=True, recursive=True)
-        chown(self.local_config.site_directory, self.daemon_user, self.daemon_group, recursive=True)
+        chown(self.local_config.site_directory, DAEMON_USER, DAEMON_GROUP, recursive=True)
         self.local_config.encryption_key = WebuiHooks.randpass(32)
         self.info(u'Expose Apache 2 service')
         self.open_port(80, u'TCP')
@@ -202,7 +202,8 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
 if __name__ == u'__main__':
     from pytoolbox.encoding import configure_unicode
     configure_unicode()
-    WebuiHooks(first_that_exist(u'metadata.yaml',     u'../../charms/oscied-webui/metadata.yaml'),
-               first_that_exist(u'config.yaml',       u'../../charms/oscied-webui/config.yaml'),
-               first_that_exist(u'local_config.json', u'../../charms/oscied-webui/local_config.json'),
+    webui_hooks = abspath(join(dirname(__file__), u'../../charms/oscied-webui'))
+    WebuiHooks(first_that_exist(METADATA_FILENAME,     join(webui_hooks, METADATA_FILENAME)),
+               first_that_exist(CONFIG_FILENAME,       join(webui_hooks, CONFIG_FILENAME)),
+               first_that_exist(LOCAL_CONFIG_FILENAME, join(webui_hooks, LOCAL_CONFIG_FILENAME)),
                DEFAULT_OS_ENV).trigger()

@@ -35,3 +35,8 @@ SERVICE_TO_UNITS_API = {u'oscied-transform': u'transform_units', u'oscied-publis
 SERVICE_TO_TASKS_API = {u'oscied-transform': u'transform_tasks', u'oscied-publisher': u'publisher_tasks'}
 MEDIAS_PATH, UPLOADS_PATH = u'medias', u'uploads'
 UUID_ZERO = unicode(uuid.UUID(u'{00000000-0000-0000-0000-000000000000}'))
+
+# The daemons (orchestra's API, WebUI, ...) of the charms should run with the following unix user & group:
+DAEMON_GROUP = DAEMON_USER = u'www-data'
+
+LOCAL_CONFIG_FILENAME = u'local_config.json'

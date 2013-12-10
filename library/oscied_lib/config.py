@@ -28,10 +28,11 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import re
 from os.path import dirname, join
+from pytoolbox.juju import CONFIG_FILENAME
 from urlparse import urlparse
 
 from .config_base import CharmLocalConfig, CharmLocalConfig_Subordinate, CharmLocalConfig_Storage
-from .constants import MEDIAS_PATH, UPLOADS_PATH
+from .constants import MEDIAS_PATH, UPLOADS_PATH, LOCAL_CONFIG_FILENAME
 
 
 class OrchestraLocalConfig(CharmLocalConfig_Storage):
@@ -85,7 +86,7 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
 
     @property
     def site_local_config_file(self):
-        return join(self.site_directory, u'local_config.json')
+        return join(self.site_directory, LOCAL_CONFIG_FILENAME)
 
     @property
     def ssh_config_path(self):
@@ -105,7 +106,7 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
 
     @property
     def charms_config(self):
-        return join(self.site_directory, u'config.yaml')
+        return join(self.site_directory, CONFIG_FILENAME)
 
     @property
     def charms_default_path(self):
@@ -125,7 +126,7 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
 
     @property
     def publisher_config(self):
-        return join(self.charms_release_path, self.publisher_service, u'config.yaml')
+        return join(self.charms_release_path, self.publisher_service, CONFIG_FILENAME)
 
     @property
     def publisher_queues(self):
@@ -142,7 +143,7 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
 
     @property
     def transform_config(self):
-        return join(self.charms_release_path, self.transform_service, u'config.yaml')
+        return join(self.charms_release_path, self.transform_service, CONFIG_FILENAME)
 
     @property
     def transform_queues(self):

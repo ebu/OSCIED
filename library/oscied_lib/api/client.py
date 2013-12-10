@@ -34,6 +34,7 @@ from pytoolbox.subprocess import rsync, ssh
 from requests import get, post
 
 from ..config import OrchestraLocalConfig
+from ..constants import LOCAL_CONFIG_FILENAME
 from ..models import Media, User, TransformProfile, PublisherTask, TransformTask
 from .base import VERSION, OsciedCRUDMapper
 
@@ -139,8 +140,8 @@ class OrchestraAPIClient(object):
             self._local_config = self.get_unit_local_config(service, number, cls=OrchestraLocalConfig)
         return self._local_config
 
-    def get_unit_local_config(self, service, number, cls=None, local_config=u'local_config.json'):
-        u"""Return an instance of ``cls`` with the content of local_config.json of an instance of a charm !"""
+    def get_unit_local_config(self, service, number, cls=None, local_config=LOCAL_CONFIG_FILENAME):
+        u"""Return an instance of ``cls`` with the content of the local configuration of an instance of a charm !"""
         config_dict = juju_do(u'ssh', environment=self.environment, options=[u'{0}/{1}'.format(service, number),
                               u'sudo cat {0}'.format(get_unit_path(service, number, local_config))])
         return dict2object(cls, config_dict, inspect_constructor=False) if cls else config_dict

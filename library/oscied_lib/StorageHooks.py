@@ -27,11 +27,13 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os, re, shutil
+from os.path import abspath, dirname, join
 from pytoolbox.encoding import to_bytes
 from pytoolbox.filesystem import first_that_exist
-from pytoolbox.juju import DEFAULT_OS_ENV
+from pytoolbox.juju import  CONFIG_FILENAME, METADATA_FILENAME, DEFAULT_OS_ENV
 
 from .config import StorageLocalConfig
+from .constants import LOCAL_CONFIG_FILENAME
 from .hooks_base import OsciedCharmHooks
 
 
@@ -59,7 +61,7 @@ class StorageHooks(OsciedCharmHooks):
 
     @property
     def bricks_path(self):
-        return os.path.join(self.config.bricks_root_path, u'bricks')
+        return join(self.config.bricks_root_path, u'bricks')
 
     @property
     def volume(self):
@@ -237,7 +239,8 @@ class StorageHooks(OsciedCharmHooks):
 if __name__ == u'__main__':
     from pytoolbox.encoding import configure_unicode
     configure_unicode()
-    StorageHooks(first_that_exist(u'metadata.yaml',     u'../../charms/oscied-storage/metadata.yaml'),
-                 first_that_exist(u'config.yaml',       u'../../charms/oscied-storage/config.yaml'),
-                 first_that_exist(u'local_config.json', u'../../charms/oscied-storage/local_config.json'),
+    storage_hooks = abspath(join(dirname(__file__), u'../../charms/oscied-storage'))
+    StorageHooks(first_that_exist(METADATA_FILENAME,     join(storage_hooks, METADATA_FILENAME)),
+                 first_that_exist(CONFIG_FILENAME,       join(storage_hooks, CONFIG_FILENAME)),
+                 first_that_exist(LOCAL_CONFIG_FILENAME, join(storage_hooks, LOCAL_CONFIG_FILENAME)),
                  DEFAULT_OS_ENV).trigger()
