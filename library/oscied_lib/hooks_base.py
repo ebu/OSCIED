@@ -328,10 +328,3 @@ class CharmHooks_Website(OsciedCharmHooks):
             self.save_local_config()
             self.hook_config_changed()
             self.hook_start()
-
-    def hook_website_relation_broken(self):
-        self.info(u'Cleanup allowed proxy IPs')
-        self.hook_stop()
-        self.local_config.proxy_ips = []
-        self.hook_config_changed()
-        self.hook_start()
