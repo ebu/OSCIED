@@ -25,7 +25,7 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os, simplejson.scanner
+import os
 from pytoolbox.encoding import to_bytes
 from pytoolbox.flask import map_exceptions
 from pytoolbox.juju import get_unit_path, juju_do
@@ -121,7 +121,7 @@ class OrchestraAPIClient(object):
         response = verb(url, auth=auth, data=data, headers=headers, timeout=self.timeout)
         try:
             response_json = response.json()
-        except simplejson.scanner.JSONDecodeError:
+        except:
             raise ValueError(to_bytes(u'Response does not contain valid JSON data:\n' + unicode(response.text)))
         return map_exceptions(response_json)
 
