@@ -63,6 +63,7 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
         self.email_username = email_username
         self.email_password = email_password
         self.plugit_api_url = plugit_api_url
+        self.api_path = api_path
         self.juju_template_path = juju_template_path
         self.ssh_template_path = ssh_template_path
         self.celery_template_file = celery_template_file
