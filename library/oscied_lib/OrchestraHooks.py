@@ -51,17 +51,16 @@ class OrchestraHooks(CharmHooks_Storage):
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(OrchestraHooks, self).__init__(metadata, default_config, default_os_env, local_config_filename,
                                              OrchestraLocalConfig)
+        self.rsync_kwargs = {
+            u'archive': True, u'delete': True, u'exclude_vcs': True, u'makedest': True, u'recursive': True,
+            u'log': self.log
+        }
 
     def save_local_config(self):
-        u"""Save or update local configuration file and ensure that is owned by the right user."""
+        u"""Save or update local configuration in charm's and api's path and ensure that is owned by the right user."""
         super(OrchestraHooks, self).save_local_config()
-        # COPY LOCAL CONFIG TO SITE PATH
-        local_cfg_on_site = join(self.local_config.site_directory, u'local_config.json')
-        self.local_config.write(local_cfg_on_site)
-        chown(local_cfg_on_site, self.daemon_user, self.daemon_group)
-        self.rsync_kwargs = {
-            u'archive': True, u'delete': True, u'exclude_vcs': True, u'recursive': True, u'log': self.log
-        }
+        self.local_config.write(self.local_config.site_local_config_file, makedirs=True)
+        chown(self.local_config.site_local_config_file, self.daemon_user, self.daemon_group)
 
     # ------------------------------------------------------------------------------------------------------------------
 

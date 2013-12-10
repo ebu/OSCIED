@@ -80,6 +80,10 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
         return join(self.sites_directory, u'.juju/environments.yaml')
 
     @property
+    def site_local_config_file(self):
+        return join(self.site_directory, u'local_config.json')
+
+    @property
     def ssh_config_path(self):
         return join(self.sites_directory, u'.ssh')
 
