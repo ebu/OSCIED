@@ -53,7 +53,7 @@ class OrchestraHooks(CharmHooks_Storage):
                                              OrchestraLocalConfig)
         self.rsync_kwargs = {
             u'archive': True, u'delete': True, u'exclude_vcs': True, u'makedest': True, u'recursive': True,
-            u'log': self.log
+            u'extra_args': [u'--copy-links'], u'log': self.log
         }
 
     def save_local_config(self):
@@ -110,13 +110,15 @@ class OrchestraHooks(CharmHooks_Storage):
     # ------------------------------------------------------------------------------------------------------------------
 
     def hook_install(self):
+        local_cfg = self.local_config
+
         self.hook_uninstall()
         self.generate_locales((u'fr_CH.UTF-8',))
         self.install_packages(OrchestraHooks.PACKAGES + OrchestraHooks.JUJU_PACKAGES, ppas=OrchestraHooks.PPAS)
         self.restart_ntp()
         self.info(u'Copy Orchestra and the local charms repository of OSCIED')
-        rsync(u'api/', self.local_config.site_directory, **self.rsync_kwargs)
-        chown(self.local_config.site_directory, self.daemon_user, self.daemon_group, recursive=True)
+        rsync(local_cfg.api_path, local_cfg.site_directory, **self.rsync_kwargs)
+        chown(local_cfg.site_directory, self.daemon_user, self.daemon_group, recursive=True)
         self.info(u'Expose RESTful API, MongoDB & RabbitMQ service')
         self.open_port(80,    u'TCP')  # Orchestra RESTful API
         self.open_port(27017, u'TCP')  # MongoDB port mongod and mongos instances

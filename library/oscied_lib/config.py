@@ -39,6 +39,7 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
     def __init__(self, api_url=u'',node_secret=u'', root_secret=u'', mongo_admin_connection=u'',
                  mongo_node_connection=u'', rabbit_connection=u'', charms_release=u'raring', email_server=u'',
                  email_tls=False, email_address=u'', email_username=u'', email_password=u'', plugit_api_url=u'',
+                 api_path=u'api/', juju_template_path=u'juju/', ssh_template_path=u'ssh/',
                  celery_template_file=u'templates/celeryconfig.py.template',
                  email_ptask_template=u'templates/ptask_mail.template',
                  email_ttask_template=u'templates/ttask_mail.template',
@@ -62,6 +63,8 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
         self.email_username = email_username
         self.email_password = email_password
         self.plugit_api_url = plugit_api_url
+        self.juju_template_path = juju_template_path
+        self.ssh_template_path = ssh_template_path
         self.celery_template_file = celery_template_file
         self.email_ptask_template = email_ptask_template
         self.email_ttask_template = email_ttask_template
@@ -114,14 +117,6 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
     @property
     def htaccess_config_file(self):
         return join(dirname(self.site_directory), u'.htaccess')
-
-    @property
-    def juju_template_path(self):
-        return join(self.site_directory, u'juju/')
-
-    @property
-    def ssh_template_path(self):
-        return join(self.site_directory, u'ssh')
 
     @property
     def orchestra_service(self):
