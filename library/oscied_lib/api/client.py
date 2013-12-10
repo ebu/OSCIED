@@ -158,9 +158,8 @@ class OrchestraAPIClient(object):
             # Mirror the local file into a 'backup' directory on the shared storage, then into the destination directory
             rsync(filename, u'{0}:{1}'.format(api_host, bkp_path), cli_output=True, makedest=True, archive=True,
                   progress=True, rsync_path=u'sudo rsync', extra='ssh -i {0}'.format(self.id_rsa))
-            raise ValueError()
-            #sync_bkp_to_upload = u'sudo rsync -ah --progress {0} {1}'.format(bkp_path, dst_path)
-            #ssh(api_host, cli_output=True, id=self.id_rsa, remote_cmd=sync_bkp_to_upload)
+            sync_bkp_to_upload = u'sudo rsync -ah --progress {0} {1}'.format(bkp_path, dst_path)
+            ssh(api_host, cli_output=True, id=self.id_rsa, remote_cmd=sync_bkp_to_upload)
         else:
             # Mirror the local file into the destination directory of the shared storage
             rsync(filename, u'{0}:{1}'.format(api_host, dst_path), cli_output=True, makedest=True, archive=True,
