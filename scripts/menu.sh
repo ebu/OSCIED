@@ -129,10 +129,10 @@ _deploy_helper()
     _overwrite_helper 'oscied-storage'   'oscied-storage'
     _overwrite_helper 'oscied-transform' 'oscied-transform'
     _overwrite_helper 'oscied-webui'     'oscied-webui'
-    _overwrite_helper 'oscied-storage'   'oscied-orchestra/charms/default/oscied-storage'
-    _overwrite_helper 'oscied-transform' 'oscied-orchestra/charms/default/oscied-transform'
-    _overwrite_helper 'oscied-publisher' 'oscied-orchestra/charms/default/oscied-publisher'
-    _overwrite_helper 'oscied-webui'     'oscied-orchestra/charms/default/oscied-webui'
+    _overwrite_helper 'oscied-storage'   'oscied-orchestra/api/charms/default/oscied-storage'
+    _overwrite_helper 'oscied-transform' 'oscied-orchestra/api/charms/default/oscied-transform'
+    _overwrite_helper 'oscied-publisher' 'oscied-orchestra/api/charms/default/oscied-publisher'
+    _overwrite_helper 'oscied-webui'     'oscied-orchestra/api/charms/default/oscied-webui'
   fi
 
   pecho 'Initialize JuJu orchestrator configuration'

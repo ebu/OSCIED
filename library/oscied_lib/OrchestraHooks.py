@@ -115,9 +115,8 @@ class OrchestraHooks(CharmHooks_Storage):
         self.generate_locales((u'fr_CH.UTF-8',))
         self.install_packages(OrchestraHooks.PACKAGES + OrchestraHooks.JUJU_PACKAGES, ppas=OrchestraHooks.PPAS)
         self.restart_ntp()
-        self.info(u'Copy Orchestra')
+        self.info(u'Copy Orchestra and the local charms repository of OSCIED')
         rsync(u'api/', self.local_config.site_directory, **self.rsync_kwargs)
-        rsync(u'charms/', self.local_config.charms_repository, **self.rsync_kwargs)
         chown(self.local_config.site_directory, self.daemon_user, self.daemon_group, recursive=True)
         self.info(u'Expose RESTful API, MongoDB & RabbitMQ service')
         self.open_port(80,    u'TCP')  # Orchestra RESTful API
