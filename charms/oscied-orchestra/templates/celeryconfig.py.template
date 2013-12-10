@@ -29,7 +29,6 @@ from kombu import Queue
 sys.path.append('.')
 
 BROKER_URL = '{rabbit}'
-CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_BACKEND = 'mongodb'
 CELERY_MONGODB_BACKEND_SETTINGS = {{
     'host': '127.0.0.1',
@@ -40,15 +39,6 @@ CELERY_MONGODB_BACKEND_SETTINGS = {{
     'taskmeta_collection': 'taskmeta',
 }}
 
-#class OrchestraRouter(object):
-#
-#    def route_for_task(self, task, args=None, kwargs=None):
-#        return {{'exchange': '/',
-#                'exchange_type': 'topic',
-#                'queue': 'transform_new',
-#                'routing_key': 'transform.new'}}
-
-#CELERY_ROUTES = (OrchestraRouter(), )
 CELERY_QUEUES = (Queue('black_hole', routing_key='blackhole'),)
 CELERY_CREATE_MISSING_QUEUES = True
 CELERY_DEFAULT_QUEUE = 'black_hole'
