@@ -30,10 +30,9 @@ import logging, os, sys
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 from pytoolbox.encoding import configure_unicode
 from pytoolbox.logging import setup_logging
-from pytoolbox.serialization import object2json
-from library.oscied_lib.api import ABOUT, get_test_api_core, OrchestraAPICore
-from library.oscied_lib.config import OrchestraLocalConfig
-from library.oscied_lib.config_test import ORCHESTRA_CONFIG_TEST
+from oscied_lib.api import ABOUT, get_test_api_core, OrchestraAPICore
+from oscied_lib.config import OrchestraLocalConfig
+from oscied_lib.config_test import ORCHESTRA_CONFIG_TEST
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -41,7 +40,7 @@ def configure_standalone_mode():
     u"""Return an instance of the flask application after having configured the error handlers."""
     from flask import Flask
     from pytoolbox.flask import json_response
-    from library.oscied_lib.api import api_method_decorator
+    from oscied_lib.api import api_method_decorator
 
     app = Flask(__name__)
 
@@ -99,6 +98,7 @@ def configure_plugit_mode():
 # ----------------------------------------------------------------------------------------------------------------------
 
 CONFIG_FILENAME = os.path.join(os.path.abspath(os.path.dirname(__file__)), u'local_config.json')
+CSV_DIRECTORY = os.path.join(os.path.abspath(os.path.dirname(__file__)), u'mock')
 HELP_MOCK = u'Mock the MongoDB driver with MongoMock ([WARNING] Still not a perfect mock of the real-one)'
 
 try:
@@ -125,7 +125,7 @@ try:
         sys.exit(0)
 
     # Create an instance of the API core
-    api_core = get_test_api_core() if args.mock else OrchestraAPICore(local_config)
+    api_core = get_test_api_core(CSV_DIRECTORY) if args.mock else OrchestraAPICore(local_config)
     is_standalone = api_core.is_standalone
 
     # Create an instance of the flask application

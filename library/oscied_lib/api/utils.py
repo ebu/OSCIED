@@ -33,10 +33,10 @@ from ..models import Media, User, TransformProfile
 from .server import OrchestraAPICore
 
 
-def get_test_api_core():
+def get_test_api_core(api_init_csv_directory, config=ORCHESTRA_CONFIG_TEST, **kwargs):
     u"""Return an instance of ``OrchestraAPICore`` initialized with current scenario's configuration."""
-    orchestra = OrchestraAPICore(ORCHESTRA_CONFIG_TEST)
-    init_api(orchestra, u'mock')
+    orchestra = OrchestraAPICore(config)
+    init_api(orchestra, api_init_csv_directory, **kwargs)
     print(u'There are {0} registered users.'.format(len(orchestra.get_users())))
     print(u'There are {0} available media assets.'.format(len(orchestra.get_medias())))
     print(u'There are {0} available transformation profiles.'.format(len(orchestra.get_transform_profiles())))

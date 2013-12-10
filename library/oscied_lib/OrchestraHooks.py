@@ -52,6 +52,17 @@ class OrchestraHooks(CharmHooks_Storage):
         super(OrchestraHooks, self).__init__(metadata, default_config, default_os_env, local_config_filename,
                                              OrchestraLocalConfig)
 
+    def save_local_config(self):
+        u"""Save or update local configuration file and ensure that is owned by the right user."""
+        super(OrchestraHooks, self).save_local_config()
+        # COPY LOCAL CONFIG TO SITE PATH
+        local_cfg_on_site = join(self.local_config.site_directory, u'local_config.json')
+        self.local_config.write(local_cfg_on_site)
+        chown(local_cfg_on_site, self.daemon_user, self.daemon_group)
+        self.rsync_kwargs = {
+            u'archive': True, u'delete': True, u'exclude_vcs': True, u'recursive': True, u'log': self.log
+        }
+
     # ------------------------------------------------------------------------------------------------------------------
 
     @property
@@ -105,7 +116,8 @@ class OrchestraHooks(CharmHooks_Storage):
         self.install_packages(OrchestraHooks.PACKAGES + OrchestraHooks.JUJU_PACKAGES, ppas=OrchestraHooks.PPAS)
         self.restart_ntp()
         self.info(u'Copy Orchestra')
-        rsync(u'./', self.local_config.site_directory, archive=True, delete=True, exclude_vcs=True, recursive=True)
+        rsync(u'api/', self.local_config.site_directory, **self.rsync_kwargs)
+        rsync(u'charms/', self.local_config.charms_repository, **self.rsync_kwargs)
         chown(self.local_config.site_directory, self.daemon_user, self.daemon_group, recursive=True)
         self.info(u'Expose RESTful API, MongoDB & RabbitMQ service')
         self.open_port(80,    u'TCP')  # Orchestra RESTful API
@@ -122,21 +134,23 @@ class OrchestraHooks(CharmHooks_Storage):
         self.cmd(u'service mongodb start',         fail=False)
         self.cmd(u'service rabbitmq-server start', fail=False)
 
+        self.info(u'Configure JuJu Service Orchestrator')
+        juju_config_path = dirname(local_cfg.juju_config_file)
+        rsync(local_cfg.juju_template_path, juju_config_path, **self.rsync_kwargs)
+        chown(juju_config_path, self.daemon_user, self.daemon_group, recursive=True)
+
         self.info(u'Configure Secure Shell')
-        rsync(local_cfg.ssh_template_path, local_cfg.ssh_config_path, recursive=True, log=self.debug)
+        rsync(local_cfg.ssh_template_path, local_cfg.ssh_config_path, **self.rsync_kwargs)
+        chown(local_cfg.ssh_config_path, self.daemon_user, self.daemon_group, recursive=True)
 
         self.info(u'Configure Apache 2')
+        self.template2config(local_cfg.htaccess_template_file, local_cfg.htaccess_config_file, {})
         self.template2config(local_cfg.site_template_file, join(local_cfg.sites_available_path, self.name_slug), {
             u'alias': self.api_alias, u'directory': local_cfg.site_directory, u'domain': self.public_address,
             u'wsgi': local_cfg.api_wsgi
         })
         self.cmd(u'a2dissite default')
         self.cmd(u'a2ensite {0}'.format(self.name_slug))
-
-        self.info(u'Configure JuJu Service Orchestrator')
-        juju_config_path = dirname(local_cfg.juju_config_file)
-        try_makedirs(juju_config_path)
-        rsync(local_cfg.juju_template_path, juju_config_path, recursive=True, log=self.debug)
 
         self.info(u'Configure MongoDB Scalable NoSQL DB')
         with open(u'f.js', u'w', u'utf-8') as mongo_f:
@@ -183,8 +197,8 @@ class OrchestraHooks(CharmHooks_Storage):
         self.info(u'Symlink charms default directory to directory for release {0}'.format(cfg.charms_release))
         try_symlink(abspath(local_cfg.charms_default_path), abspath(local_cfg.charms_release_path))
 
-        self.info(u"Ensure that the orchestrator's directory is owned by the right user")
-        chown(local_cfg.site_directory, self.daemon_user, self.daemon_group, recursive=True)
+        self.info(u'Ensure that the Apache sites directory is owned by the right user')
+        chown(local_cfg.sites_directory, self.daemon_user, self.daemon_group, recursive=True)
 
         self.storage_remount()
 

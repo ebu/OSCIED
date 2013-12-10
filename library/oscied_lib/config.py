@@ -27,7 +27,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import re
-from os.path import expanduser, join
+from os.path import dirname, join
 from urlparse import urlparse
 
 from .config_base import CharmLocalConfig, CharmLocalConfig_Subordinate, CharmLocalConfig_Storage
@@ -36,38 +36,52 @@ from .constants import MEDIAS_PATH, UPLOADS_PATH
 
 class OrchestraLocalConfig(CharmLocalConfig_Storage):
 
-    def __init__(self, api_url=u'', root_secret=u'', node_secret=u'', mongo_admin_connection=u'',
-                 mongo_node_connection=u'', rabbit_connection=u'',
-                 celery_template_file=u'templates/celeryconfig.py.template', mongo_config_file=u'/etc/mongodb.conf',
-                 ssh_config_path=u'~/.ssh', juju_config_file=u'~/.juju/environments.yaml',
-                 charms_release=u'raring', email_server=u'', email_tls=False, email_username=u'', email_password=u'',
-                 email_address=u'', email_ttask_template=u'templates/ttask_mail.template',
-                 email_ptask_template=u'templates/ptask_mail.template', plugit_api_url=u'',
-                 sites_available_path=u'/etc/apache2/sites-available', site_directory=u'/var/www/api',
-                 site_template_file=u'templates/apache_site.template', **kwargs):
+    def __init__(self, api_url=u'',node_secret=u'', root_secret=u'', mongo_admin_connection=u'',
+                 mongo_node_connection=u'', rabbit_connection=u'', charms_release=u'raring', email_server=u'',
+                 email_tls=False, email_address=u'', email_username=u'', email_password=u'', plugit_api_url=u'',
+                 celery_template_file=u'templates/celeryconfig.py.template',
+                 email_ptask_template=u'templates/ptask_mail.template',
+                 email_ttask_template=u'templates/ttask_mail.template',
+                 htaccess_template_file=u'templates/htaccess.template',
+                 site_template_file=u'templates/apache_site.template',
+                 mongo_config_file=u'/etc/mongodb.conf',
+                 sites_available_path=u'/etc/apache2/sites-available',
+                 sites_directory=u'/var/www',
+                 **kwargs):
         super(OrchestraLocalConfig, self).__init__(**kwargs)
         self.api_url = api_url
-        self.root_secret = root_secret
         self.node_secret = node_secret
+        self.root_secret = root_secret
         self.mongo_admin_connection = mongo_admin_connection
         self.mongo_node_connection = mongo_node_connection
         self.rabbit_connection = rabbit_connection
-        self.celery_template_file = celery_template_file
-        self.mongo_config_file = mongo_config_file
-        self.ssh_config_path = expanduser(ssh_config_path)
-        self.juju_config_file = expanduser(juju_config_file)
         self.charms_release = charms_release
         self.email_server = email_server
         self.email_tls = email_tls
         self.email_address = email_address
         self.email_username = email_username
         self.email_password = email_password
-        self.email_ttask_template = email_ttask_template
-        self.email_ptask_template = email_ptask_template
         self.plugit_api_url = plugit_api_url
-        self.sites_available_path = sites_available_path
-        self.site_directory = site_directory
+        self.celery_template_file = celery_template_file
+        self.email_ptask_template = email_ptask_template
+        self.email_ttask_template = email_ttask_template
+        self.htaccess_template_file = htaccess_template_file
         self.site_template_file = site_template_file
+        self.mongo_config_file = mongo_config_file
+        self.sites_available_path = sites_available_path
+        self.sites_directory = sites_directory
+
+    @property
+    def site_directory(self):
+        return join(self.sites_directory, u'api')
+
+    @property
+    def juju_config_file(self):
+        return join(self.sites_directory, u'.juju/environments.yaml')
+
+    @property
+    def ssh_config_path(self):
+        return join(self.sites_directory, u'.ssh')
 
     @property
     def api_wsgi(self):
@@ -94,6 +108,10 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
         return join(self.charms_repository, self.charms_release)
 
     @property
+    def htaccess_config_file(self):
+        return join(dirname(self.site_directory), u'.htaccess')
+
+    @property
     def juju_template_path(self):
         return join(self.site_directory, u'juju/')
 
@@ -102,9 +120,12 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
         return join(self.site_directory, u'ssh')
 
     @property
-    def transform_queues(self):
-        # FIXME ideally the orchestrator will known what are the queues (https://github.com/ebu/OSCIED/issues/56)
-        return (u'transform', )
+    def orchestra_service(self):
+        return u'oscied-orchestra'
+
+    @property
+    def publisher_config(self):
+        return join(self.charms_release_path, self.publisher_service, u'config.yaml')
 
     @property
     def publisher_queues(self):
@@ -112,28 +133,25 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
         return (u'publisher', )
 
     @property
-    def orchestra_service(self):
-        return u'oscied-orchestra'
+    def publisher_service(self):
+        return u'oscied-publisher'
 
     @property
     def storage_service(self):
         return u'oscied-storage'
 
     @property
-    def transform_service(self):
-        return u'oscied-transform'
-
-    @property
     def transform_config(self):
         return join(self.charms_release_path, self.transform_service, u'config.yaml')
 
     @property
-    def publisher_service(self):
-        return u'oscied-publisher'
+    def transform_queues(self):
+        # FIXME ideally the orchestrator will known what are the queues (https://github.com/ebu/OSCIED/issues/56)
+        return (u'transform', )
 
     @property
-    def publisher_config(self):
-        return join(self.charms_release_path, self.publisher_service, u'config.yaml')
+    def transform_service(self):
+        return u'oscied-transform'
 
 
 class PublisherLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinate):

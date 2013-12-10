@@ -744,7 +744,8 @@ class OrchestraAPICore(object):
 # Main -----------------------------------------------------------------------------------------------------------------
 
 if __name__ == u'__main__':
+    from os.path import abspath, dirname, join
     from pytoolbox.encoding import configure_unicode
     from .utils import get_test_api_core
     configure_unicode()
-    get_test_api_core()
+    get_test_api_core(abspath(join(dirname(__file__), u'../../../charms/oscied-orchestra/api/mock')), add_tasks=True)

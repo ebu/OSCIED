@@ -27,7 +27,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os, random, string, time
 from pytoolbox.flask import json_response2dict, map_exceptions
-from library.oscied_lib.models import Media
+from oscied_lib.models import Media
 from werkzeug import secure_filename
 
 from plugit.utils import action, json_only, only_logged_user, user_info, PlugItSendFile

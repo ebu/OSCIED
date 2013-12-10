@@ -28,7 +28,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import flask
 from pytoolbox.encoding import to_bytes
 from pytoolbox.flask import get_request_data
-from library.oscied_lib.models import Media
+from oscied_lib.models import Media
 
 from server import app, api_method_decorator, api_core, ok_200
 
