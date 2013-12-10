@@ -25,7 +25,7 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os, pymongo.uri_parser, shutil, time
+import os, pymongo.uri_parser, shlex, shutil, time
 from codecs import open
 from pytoolbox.encoding import to_bytes
 from pytoolbox.filesystem import chown, try_makedirs
@@ -37,6 +37,13 @@ class OsciedCharmHooks(CharmHooks):
 
     daemon_user = u'www-data'
     daemon_group = u'www-data'
+
+    @property
+    def paya_config_string(self):
+        # Read the charm's config.yaml file and try to get the paya config string
+        if hasattr(self.config, u'paya_config_string'):
+            return self.config.paya_config_string
+        return u''
 
     def __init__(self, metadata, default_config, default_os_env, local_config_filename, local_config_cls):
         super(OsciedCharmHooks, self).__init__(metadata, default_config, default_os_env)
@@ -66,6 +73,24 @@ class OsciedCharmHooks(CharmHooks):
     def restart_ntp(self):
         self.info(u'Restart network time protocol service')
         self.cmd(u'service ntp restart')
+
+    def start_paya(self, retry_count=15, retry_delay=1):
+        if self.paya_config_string:
+            config_list = shlex.split(to_bytes(self.paya_config_string))
+            if screen_list(u'paya', log=self.debug, user=self.daemon_user) == []:            
+                screen_launch(u'paya', [u'paya-monitor'] + config_list, user=self.daemon_user)
+            for start_delay in xrange(retry_count):
+                time.sleep(retry_delay)
+                if screen_list(u'paya', log=self.debug, user=self.daemon_user) != []:
+                    start_time = start_delay * retry_delay
+                    self.remark(u'{0} successfully started in {1} seconds'.format(u'paya', start_time))
+                    return
+            raise RuntimeError(u'Monitor damon is not ready')
+        else:
+            self.remark(u'paya config string is not configured')
+
+    def stop_paya(self):
+        screen_kill(u'paya', log=self.debug, user=self.daemon_user)
 
 
 class CharmHooks_Storage(OsciedCharmHooks):
@@ -283,8 +308,6 @@ class CharmHooks_Website(OsciedCharmHooks):
 
     PACKAGES = ()
 
-    # ------------------------------------------------------------------------------------------------------------------
-
     @property
     def proxy_ips_string(self):
         # Read the charm's config.yaml file proxy_ips option only if it does exist
@@ -296,8 +319,6 @@ class CharmHooks_Website(OsciedCharmHooks):
         else:
             proxy_ips = []
         return u','.join(list(filter(None, self.local_config.proxy_ips + proxy_ips)))
-
-    # ------------------------------------------------------------------------------------------------------------------
 
     def hook_website_relation_joined(self):
         self.relation_set(port=u'80', hostname=self.cmd(u'hostname -f'))

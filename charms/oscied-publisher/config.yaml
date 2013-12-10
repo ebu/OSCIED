@@ -87,3 +87,7 @@ options:
     description: |
         Set the root path where the published medias are (/mnt -> /mnt/www/medias/).
         This option is useful to allow you using the attached EBS storage (or whatsoever).
+  paya_config_string:
+    type: string
+    default: ""
+    description: Configuration flags used to configure paya monitoring daemon.

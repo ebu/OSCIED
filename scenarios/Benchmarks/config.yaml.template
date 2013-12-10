@@ -17,12 +17,14 @@ oscied-orchestra:
   storage_mountpoint: ""
   storage_options: ""
   plugit_api_url: ""
+  paya_config_string: "--cpu_times --history=file://{{storage_mountpoint}}/{{name_slug}}.paya"
 oscied-storage:
   verbose: true
   cleanup: true
   allowed_ips: "*"
   replica_count: 1
   bricks_root_path: "/mnt"
+  paya_config_string: "--cpu_times --history=file:///tmp/history.paya"
 oscied-transform:
   verbose: true
   cleanup: false

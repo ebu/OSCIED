@@ -189,6 +189,7 @@ class WebuiHooks(CharmHooks_Storage, CharmHooks_Website):
         elif not self.local_config.api_url:
             self.remark(u'Do not start web user interface : No orchestrator api')
         else:
+            self.start_paya()  # Start paya monitoring (if paya_config_string set in config.yaml)
             self.cmd(u'service mysql start')
             self.cmd(u'service apache2 start')
             self.remark(u'Web user interface successfully started')

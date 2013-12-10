@@ -173,6 +173,7 @@ class StorageHooks(OsciedCharmHooks):
     def hook_start(self):
         if self.cmd(u'pgrep glusterd', fail=False)[u'returncode'] != 0:
             self.cmd(u'service glusterfs-server start')
+        self.start_paya()  # Start paya monitoring (if paya_config_string set in config.yaml)
 
     def hook_stop(self):
         if self.cmd(u'pgrep glusterd', fail=False)[u'returncode'] == 0:

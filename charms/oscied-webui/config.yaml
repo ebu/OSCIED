@@ -67,3 +67,7 @@ options:
     type: string
     default: ""
     description: Shared storage options (e.g. for nfs - rw,sync,no_subtree_check).
+  paya_config_string:
+    type: string
+    default: ""
+    description: Configuration flags used to configure paya monitoring daemon.

@@ -116,6 +116,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
             self.remark(u'Do not start publisher daemon : No RabbitMQ queues declared')
         else:
             self.save_local_config()  # Update local configuration file for publisher daemon
+            self.start_paya()  # Start paya monitoring (if paya_config_string set in config.yaml)
             self.cmd(u'service apache2 start')
             self.start_celeryd()
 

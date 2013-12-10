@@ -89,3 +89,7 @@ options:
     description: |
         The URL of your running EBU's PlugIt authentication API.
         If set, the orchestrator will switch from standalone users management to EBU's PlugIt-based users management.
+  paya_config_string:
+    type: string
+    default: ""
+    description: Configuration flags used to configure paya monitoring daemon.

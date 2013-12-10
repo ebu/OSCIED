@@ -122,6 +122,7 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
             self.remark(u'Do not start transform daemon : No RabbitMQ queues declared')
         else:
             self.save_local_config()  # Update local configuration file for transform daemon
+            self.start_paya()  # Start paya monitoring (if paya_config_string set in config.yaml)
             self.start_celeryd()
 
     def hook_stop(self):

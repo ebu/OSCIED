@@ -226,6 +226,8 @@ class OrchestraHooks(CharmHooks_Storage):
             self.remark(u'Do not start orchestra daemon : No celery configuration file')
         else:
             self.save_local_config()  # Update local configuration file for orchestra daemon
+            self.start_paya()  # Start paya monitoring (if paya_config_string set in config.yaml)
+
             # do not check status after all, orchestra can do it for us !
             self.cmd(u'service mongodb start',         fail=False)
             self.cmd(u'service rabbitmq-server start', fail=False)
@@ -243,6 +245,7 @@ class OrchestraHooks(CharmHooks_Storage):
         self.cmd(u'service apache2 stop',         fail=False)
         self.cmd(u'service rabbitmq-server stop', fail=False)
         self.cmd(u'service mongodb stop',         fail=False)
+        self.stop_paya()
 
     def hook_api_relation_joined(self):
         self.relation_set(api_url=self.api_url(local=False))
