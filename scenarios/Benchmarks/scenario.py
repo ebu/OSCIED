@@ -5,8 +5,7 @@
 #              OPEN-SOURCE CLOUD INFRASTRUCTURE FOR ENCODING AND DISTRIBUTION : SCENARIOS
 #
 #  Project Manager : Bram Tullemans (tullemans@ebu.ch)
-#  Main Developer  : David Fischer (david.fischer.ch@gmail.com)
-#  Co-Developer    : Dimitri Racordon (dimitri.racordon@gmail.com)
+#  Main Developer  : Dimitri Racordon (dimitri.racordon@gmail.com)
 #  Copyright       : Copyright (c) 2012-2013 EBU. All rights reserved.
 #
 #**********************************************************************************************************************#
@@ -25,10 +24,11 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import benchmark_one
-import benchmark_two
+import bmk_one
+import bmk_two
 import sys
 
+from library.oscied_lib.juju import OsciedEnvironment
 from pytoolbox.console import choice
 from pytoolbox.encoding import configure_unicode
 
@@ -41,15 +41,13 @@ if __name__ == '__main__':
     try:
         idx = sys.argv.index(u'--benchmark') + 1
         bmk = sys.argv[idx]
-    except ValueError:
-        bmk = choice(u'Which scenario would you like to deploy?', [u'one', u'two'])
     except:
-        bmk = None
+        bmk = choice(u'Which scenario would you like to deploy?', [u'one', u'two'])
 
     # deploy the selected benchmark
     if bmk == u'one':
-        bmk_one.Benchmark(environments=[OsciedEnvironment(u'benchmark', config=CONFIG)]).run()
+        bmk_one.Benchmark(environments=[OsciedEnvironment(u'benchmark', config=bmk_one.CONFIG)]).run()
     elif bmk == u'two':
-        bmk_two.Benchmark(environments=[OsciedEnvironment(u'benchmark', config=CONFIG)]).run()
+        bmk_two.Benchmark(environments=[OsciedEnvironment(u'benchmark', config=bmk_two.CONFIG)]).run()
     else:
-        print(u'unknown benchmark name: %s', % bmk)
+        print(u'unknown benchmark name: {0}'.format(bmk))
