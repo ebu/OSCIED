@@ -75,23 +75,8 @@ keywords = [
     'amazon', 'api', 'cloud', 'distribution', 'mpeg-dash', 'juju', 'hybrid cloud', 'maas', 'restful', 'transcoding'
 ]
 
-install_requires=[
-      'configobj',  # FIXME version
-      'celery',     # FIXME version
-      'flask',      # FIXME version
-      'mongomock',  # FIXME version
-      'nose',       # FIXME version
-      'passlib',    # FIXME version
-      #'pytoolbox>=v5.3.13-beta',  # installed by setup.sh
-      'pyaml',      # FIXME version
-      'pymongo',    # FIXME version
-      #'pytoolbox>=v5.3.13-beta',  # installed by setup.sh
-      'requests',   # FIXME version
-      'six'         # FIXME version
-]
-
 setup(name=u'oscied-lib',
-      version='2.30.40',
+      version='3.0.0',
       packages=find_packages(exclude=['tests', 'tests.*']),
       description='Library of EBU/UER OSCIED Project',
       long_description=open('README.rst', 'r', encoding='utf-8').read(),
