@@ -198,11 +198,6 @@ class StorageHooks(OsciedCharmHooks):
             self.local_config.allowed_ips.remove(client_address)
             self.hook_config_changed()
 
-    def hook_storage_relation_broken(self):
-        self.info(u'Cleanup allowed clients IPs')
-        self.local_config.allowed_ips = []
-        self.hook_config_changed()
-
     def hook_peer_relation_joined(self):
         if not self.is_leader:
             self.info(u'As slave, stop and delete my own volume {0}'.format(self.volume))
@@ -234,7 +229,7 @@ class StorageHooks(OsciedCharmHooks):
             self.peer_probe(peer_address)
             self.volume_create_or_expand(bricks=bricks)
 
-    def hook_peer_relation_broken(self):
+    def hook_peer_relation_departed(self):
         self.remark(u'FIXME NOT IMPLEMENTED')
 
 # Main -----------------------------------------------------------------------------------------------------------------
