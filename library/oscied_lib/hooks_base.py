@@ -25,7 +25,7 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os, pymongo.uri_parser, shutil, time
+import os, pymongo.uri_parser, shutil, socket, time
 from codecs import open
 from pytoolbox.encoding import to_bytes
 from pytoolbox.filesystem import chown, try_makedirs
@@ -161,7 +161,7 @@ class CharmHooks_Storage(OsciedCharmHooks):
 
     def hook_storage_relation_changed(self):
         self.storage_hook_bypass()
-        address = self.relation_get(u'private-address')
+        address = socket.getfqdn(self.relation_get(u'private-address'))
         fstype = self.relation_get(u'fstype')
         mountpoint = self.relation_get(u'mountpoint')
         options = self.relation_get(u'options')
@@ -261,7 +261,7 @@ class CharmHooks_Subordinate(OsciedCharmHooks):
 
     def hook_subordinate_relation_changed(self):
         self.subordinate_hook_bypass()
-        address = self.relation_get(u'private-address')
+        address = socket.getfqdn(self.relation_get(u'private-address'))
         mongo = self.relation_get(u'mongo_connection')
         rabbit = self.relation_get(u'rabbit_connection')
         self.debug(u'Orchestra address is {0}, MongoDB is {1}, RabbitMQ is {2}'.format(address, mongo, rabbit))
@@ -303,7 +303,7 @@ class CharmHooks_Website(OsciedCharmHooks):
 
     def hook_website_relation_changed(self):
         # Get configuration from the relation
-        proxy_address = self.relation_get(u'private-address')
+        proxy_address = socket.getfqdn(self.relation_get(u'private-address'))
         self.info(u'Proxy address is {0}'.format(proxy_address))
         if not proxy_address:
             self.remark(u'Waiting for complete setup')
@@ -317,7 +317,7 @@ class CharmHooks_Website(OsciedCharmHooks):
 
     def hook_website_relation_departed(self):
         # Get configuration from the relation
-        proxy_address = self.relation_get(u'private-address')
+        proxy_address = socket.getfqdn(self.relation_get(u'private-address'))
         if not proxy_address:
             self.remark(u'Waiting for complete setup')
         elif proxy_address in self.local_config.proxy_ips:

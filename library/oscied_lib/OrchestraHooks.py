@@ -26,7 +26,7 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os, re, shutil, time
+import os, re, shutil, socket, time
 from codecs import open
 from configobj import ConfigObj
 from os.path import abspath, dirname, exists, join
@@ -252,7 +252,7 @@ class OrchestraHooks(CharmHooks_Storage):
 
     def hook_api_relation_changed(self):
         # Get configuration from the relation
-        webui_address = self.relation_get(u'private-address')
+        webui_address = socket.getfqdn(self.relation_get(u'private-address'))
         self.info(u'Web UI address is {0}'.format(webui_address))
         if not webui_address:
             self.remark(u'Waiting for complete setup')
@@ -264,7 +264,7 @@ class OrchestraHooks(CharmHooks_Storage):
 
     def hook_publisher_relation_changed(self):
         # Get configuration from the relation
-        publisher_address = self.relation_get(u'private-address')
+        publisher_address = socket.getfqdn(self.relation_get(u'private-address'))
         self.info(u'Publisher address is {0}'.format(publisher_address))
         if not publisher_address:
             self.remark(u'Waiting for complete setup')
@@ -276,7 +276,7 @@ class OrchestraHooks(CharmHooks_Storage):
 
     def hook_transform_relation_changed(self):
         # Get configuration from the relation
-        transform_address = self.relation_get(u'private-address')
+        transform_address = socket.getfqdn(self.relation_get(u'private-address'))
         self.info(u'Transform address is {0}'.format(transform_address))
         if not transform_address:
             self.remark(u'Waiting for complete setup')

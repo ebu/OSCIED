@@ -26,7 +26,7 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os, re, shutil
+import os, re, shutil, socket
 from os.path import abspath, dirname, join
 from pytoolbox.encoding import to_bytes
 from pytoolbox.filesystem import first_that_exist
@@ -184,7 +184,7 @@ class StorageHooks(OsciedCharmHooks):
         if self.local_config.volume_flag:
             self.info(u'Send filesystem (volume {0}) configuration to remote client'.format(self.volume))
             self.relation_set(fstype=u'glusterfs', mountpoint=self.volume, options=u'')
-            client_address = self.relation_get('private-address')
+            client_address = socket.getfqdn(self.relation_get('private-address'))
             if not client_address in self.local_config.allowed_ips:
                 self.info(u'Add {0} to allowed clients IPs'.format(client_address))
                 self.local_config.allowed_ips.append(client_address)
@@ -192,7 +192,7 @@ class StorageHooks(OsciedCharmHooks):
 
     def hook_storage_relation_departed(self):
         # Get configuration from the relation
-        client_address = self.relation_get(u'private-address')
+        client_address = socket.getfqdn(self.relation_get(u'private-address'))
         if not client_address:
             self.remark(u'Waiting for complete setup')
         elif client_address in self.local_config.allowed_ips:
@@ -211,7 +211,7 @@ class StorageHooks(OsciedCharmHooks):
 
     def hook_peer_relation_changed(self):
         # Get configuration from the relation
-        peer_address = self.relation_get(u'private-address')
+        peer_address = socket.getfqdn(self.relation_get(u'private-address'))
         self.info(u'Peer address is {0}'.format(peer_address))
         if not peer_address:
             self.remark(u'Waiting for complete setup')
@@ -222,7 +222,7 @@ class StorageHooks(OsciedCharmHooks):
         port, bricks = 24010, [self.brick()]
         for peer in self.relation_list():
             self.open_port(port, u'TCP')  # Open required
-            bricks.append(self.brick(self.relation_get(u'private-address', peer)))
+            bricks.append(self.brick(socket.getfqdn(self.relation_get(u'private-address', peer))))
             port += 1
 
         if self.is_leader:
