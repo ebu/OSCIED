@@ -25,7 +25,7 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os, string
+import os, random, string
 from pytoolbox.filesystem import from_template
 from pytoolbox.juju import Environment
 

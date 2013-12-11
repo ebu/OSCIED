@@ -30,7 +30,7 @@ from oscied_lib.config import TransformLocalConfig
 from oscied_lib.TransformHooks import TransformHooks
 
 CONFIG_DEFAULT = {
-    u'verbose': False, u'concurrency': 1, u'rabbit_queues': u'transform_private', u'mongo_connection': u'',
+    u'verbose': False, u'concurrency': 1, u'rabbit_queues': u'transform', u'mongo_connection': u'',
     u'rabbit_connection': u'', u'api_nat_socket': u'', u'storage_address': u'', u'storage_nat_address': u'',
     u'storage_fstype': u'', u'storage_mountpoint': u'', u'storage_options': u''
 }

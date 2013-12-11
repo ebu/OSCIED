@@ -53,7 +53,7 @@ if __name__ == u'__main__':
     print(u'Launch the transformation task')
     result = lib.Transform.transform_task.apply_async(
         args=(user.json(), media_in.json(), media_out.json(), profile.json(),),
-        queue=u'transform_private')
+        queue=u'transform')
     print(result.state)
     print(result)
     i = inspect()

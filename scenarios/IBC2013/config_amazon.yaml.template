@@ -22,7 +22,7 @@ oscied-publisher:
   verbose: true
   cleanup: false
   concurrency: 2
-  rabbit_queues: "publisher_private"
+  rabbit_queues: "publisher"
   mod_streaming: false
   max_upload_size: 17179869184
   max_execution_time: 600
@@ -45,7 +45,7 @@ oscied-transform:
   verbose: true
   cleanup: false
   concurrency: 1
-  rabbit_queues: "transform_private"
+  rabbit_queues: "transform"
   mongo_connection: ""
   rabbit_connection: ""
   api_nat_socket: ""

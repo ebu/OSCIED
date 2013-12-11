@@ -33,7 +33,7 @@ from os.path import dirname, exists
 from pytoolbox.datetime import datetime_now, total_seconds
 from pytoolbox.encoding import configure_unicode, to_bytes
 from pytoolbox.ffmpeg import get_media_duration, get_media_tracks
-from pytoolbox.filesystem import chown, get_size, recursive_copy, try_makedirs, try_remove
+from pytoolbox.filesystem import get_size, recursive_copy, try_makedirs, try_remove
 from pytoolbox.serialization import object2json
 from pytoolbox.subprocess import make_async, read_async
 from subprocess import Popen, PIPE
@@ -274,7 +274,6 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
         # Here all seem okay -------------------------------------------------------------------------------------------
         media_out_size = get_size(media_out_root)
         media_out_duration = get_media_duration(media_out_path)
-        chown(media_out_root, DAEMON_USER, DAEMON_GROUP, recursive=True)
         print(u'{0} Transformation task successful, output media asset {1}'.format(request.id, media_out.filename))
         transform_callback(TransformTask.SUCCESS)
         return {u'hostname': request.hostname, u'start_date': start_date, u'elapsed_time': elapsed_time,

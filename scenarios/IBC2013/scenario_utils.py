@@ -362,7 +362,7 @@ class TasksThread(IBCEnvironmentThread):
         return api_client.transform_tasks.add({
             u'filename': profile.output_filename(media_in.filename, suffix=filename_suffix),
             u'media_in_id': media_in._id, u'profile_id': profile._id, u'send_email': False,
-            u'queue': u'transform_private', u'metadata': metadata
+            u'queue': u'transform', u'metadata': metadata
         })
 
     def transform(self, api_client):

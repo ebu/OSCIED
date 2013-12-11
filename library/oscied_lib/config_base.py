@@ -68,7 +68,7 @@ class CharmLocalConfig(JsoneableObject):
 
 class CharmLocalConfig_Storage(CharmLocalConfig):
 
-    def __init__(self, verbose=None, storage_address=u'', storage_nat_address=u'', storage_fstype=u'',
+    def __init__(self, verbose=False, storage_address=u'', storage_nat_address=u'', storage_fstype=u'',
                  storage_mountpoint=u'', storage_options=u'', storage_path=u'/mnt/storage', storage_mount_max_retry=5,
                  storage_mount_sleep_delay=5, hosts_file=u'/etc/hosts', **kwargs):
         super(CharmLocalConfig_Storage, self).__init__(verbose=verbose)
@@ -175,9 +175,26 @@ class CharmLocalConfig_Storage(CharmLocalConfig):
 
 class CharmLocalConfig_Subordinate(CharmLocalConfig):
 
-    def __init__(self, verbose=None, api_nat_socket=u'', celery_config_file=u'celeryconfig.py',
-                 celery_template_file=u'templates/celeryconfig.py.template', **kwargs):
+    def __init__(self, verbose=False, api_nat_socket=u'',
+                 celery_config_file=u'celeryconfig.py',
+                 celery_config_template_file=u'templates/celeryconfig.py.template',
+                 celery_default_template_file=u'templates/celeryd.default.template',
+                 celery_init_template_file=u'templates/celeryd.init.template', **kwargs):
         super(CharmLocalConfig_Subordinate, self).__init__(verbose=verbose)
         self.api_nat_socket = api_nat_socket
         self.celery_config_file = celery_config_file
-        self.celery_template_file = celery_template_file
+        self.celery_config_template_file = celery_config_template_file
+        self.celery_default_template_file = celery_default_template_file
+        self.celery_init_template_file = celery_init_template_file
+
+    @property
+    def worker_name(self):
+        return self.__class__.__name__.lower().replace(u'localconfig', u'')
+
+    @property
+    def celery_default_file(self):
+        return join(u'/etc/default', self.worker_name)
+
+    @property
+    def celery_init_file(self):
+        return join(u'/etc/init.d', self.worker_name)
