@@ -98,9 +98,9 @@ def publisher_task(media_json, callback_json):
         publish_path, publish_uri = local_config.publish_point(media)
         media_root, publish_root = dirname(media_path), dirname(publish_path)
 
+        infos = recursive_copy(media_root, publish_root, copy_callback, RATIO_DELTA, TIME_DELTA)
         if not valid_uri(publish_uri, check_404=True):
             raise IOError(to_bytes(u'Media asset is unreachable from publication URI {0}'.format(publish_uri)))
-        infos = recursive_copy(media_root, publish_root, copy_callback, RATIO_DELTA, TIME_DELTA)
 
         # Here all seem okay
         print(u'{0} Publication task successful, media asset published as {1}'.format(request.id, publish_uri))
