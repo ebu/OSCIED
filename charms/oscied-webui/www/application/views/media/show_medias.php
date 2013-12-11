@@ -54,7 +54,7 @@
             <!--<?php if (count((array)$media->public_uris) > 0): ?><i class="icon-ok"></i><?php endif; ?>i-->
          </td>
          <td>
-            <?php if (($media->user->_id == $this->user->id()) and ($status == 'READY')): ?>
+            <?php if (isset($media->user) and ($media->user->_id == $this->user->id()) and ($status == 'READY')): ?>
             <a class="delete" title="<?= $media->metadata->title ?>" href="<?= site_url('media/delete/'.$media->_id) ?>"><button class="btn btn-mini btn-danger">Delete</button></a>
             <?php endif; ?>
          </td>
