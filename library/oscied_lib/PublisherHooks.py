@@ -118,10 +118,10 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
         else:
             self.save_local_config()  # Update local configuration file for publisher daemon
             self.cmd(u'service apache2 start')
-            self.start_celeryd()
+            self.start_celery_worker()
 
     def hook_stop(self):
-        self.stop_celeryd()
+        self.stop_celery_worker()
         self.cmd(u'service apache2 stop', fail=False)
 
 # Main -----------------------------------------------------------------------------------------------------------------

@@ -31,12 +31,12 @@ from celery.decorators import task
 from os.path import dirname
 from pytoolbox.datetime import datetime_now
 from pytoolbox.encoding import configure_unicode, to_bytes
-from pytoolbox.filesystem import chown, recursive_copy
+from pytoolbox.filesystem import recursive_copy
 from pytoolbox.serialization import object2json
 from pytoolbox.validation import valid_uri
 
 from .config import PublisherLocalConfig
-from .constants import DAEMON_GROUP, DAEMON_USER, LOCAL_CONFIG_FILENAME
+from .constants import LOCAL_CONFIG_FILENAME
 from .models import Media, PublisherTask
 from .utils import Callback
 
@@ -101,7 +101,6 @@ def publisher_task(media_json, callback_json):
         if not valid_uri(publish_uri, check_404=True):
             raise IOError(to_bytes(u'Media asset is unreachable from publication URI {0}'.format(publish_uri)))
         infos = recursive_copy(media_root, publish_root, copy_callback, RATIO_DELTA, TIME_DELTA)
-        chown(publish_root, DAEMON_USER, DAEMON_GROUP, recursive=True)
 
         # Here all seem okay
         print(u'{0} Publication task successful, media asset published as {1}'.format(request.id, publish_uri))

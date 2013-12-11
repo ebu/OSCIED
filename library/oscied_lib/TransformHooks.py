@@ -123,10 +123,10 @@ class TransformHooks(CharmHooks_Storage, CharmHooks_Subordinate):
             self.remark(u'Do not start transform daemon : No RabbitMQ queues declared')
         else:
             self.save_local_config()  # Update local configuration file for transform daemon
-            self.start_celeryd()
+            self.start_celery_worker()
 
     def hook_stop(self):
-        self.stop_celeryd()
+        self.stop_celery_worker()
 
 # Main -----------------------------------------------------------------------------------------------------------------
 

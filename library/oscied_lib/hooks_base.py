@@ -25,12 +25,11 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os, pymongo.uri_parser, shutil, socket, time
+import os, pymongo.uri_parser, socket, time
 from codecs import open
 from pytoolbox.encoding import to_bytes
-from pytoolbox.filesystem import chown, try_makedirs
+from pytoolbox.filesystem import chown, try_makedirs, try_remove
 from pytoolbox.juju import CharmHooks
-from pytoolbox.subprocess import screen_launch, screen_list, screen_kill
 
 from .constants import DAEMON_GROUP, DAEMON_USER, LOCAL_CONFIG_FILENAME
 
@@ -187,12 +186,8 @@ class CharmHooks_Subordinate(OsciedCharmHooks):
     # ------------------------------------------------------------------------------------------------------------------
 
     @property
-    def screen_name(self):
-        return self.__class__.__name__.lower().replace(u'hooks', u'')
-
-    @property
     def rabbit_hostname(self):
-        return u'{0}_{1}'.format(self.screen_name, self.public_address)
+        return u'{0}_{1}'.format(self.local_config.worker_name, self.public_address)
 
     @property
     def rabbit_queues(self):
@@ -205,6 +200,7 @@ class CharmHooks_Subordinate(OsciedCharmHooks):
     # ------------------------------------------------------------------------------------------------------------------
 
     def subordinate_register(self, mongo=None, rabbit=None):
+        local_cfg = self.local_config
         if self.subordinate_config_is_enabled:
             self.info(u'Override subordinate parameters with charm configuration')
             mongo = self.config.mongo_connection
@@ -216,43 +212,61 @@ class CharmHooks_Subordinate(OsciedCharmHooks):
         else:
             return
         self.info(u'Register the Orchestrator')
-        self.local_config.api_nat_socket = socket
+        local_cfg.api_nat_socket = socket
         try:
             infos = pymongo.uri_parser.parse_uri(mongo)
-            assert(len(infos[u'nodelist']) == 1)
-            infos[u'host'], infos[u'port'] = infos[u'nodelist'][0]
-            infos[u'rabbit'], infos[u'concurrency'] = rabbit, self.config.concurrency
+            assert len(infos[u'nodelist']) == 1
+            infos.update({
+                u'concurrency': self.config.concurrency, u'directory': self.directory,
+                u'host': infos[u'nodelist'][0][0], u'port': infos[u'nodelist'][0][1],
+                u'group': DAEMON_GROUP, u'name': local_cfg.worker_name, u'queues': self.rabbit_queues,
+                u'rabbit': rabbit, u'user': DAEMON_USER
+            })
             del infos[u'nodelist']
-            assert(infos[u'host'] and infos[u'port'] and infos[u'username'] and infos[u'password'] and
-                   infos[u'database'])
+            self.info(u'{0}'.format(infos))
+            for name in (u'concurrency', u'group', u'host', u'name', u'port', u'queues', u'rabbit', u'user'):
+                assert infos[name], u'Info {0} is empty'.format(name)
         except:
             raise ValueError(to_bytes(u'Unable to parse MongoDB connection {0}'.format(mongo)))
-        self.template2config(self.local_config.celery_template_file, self.local_config.celery_config_file, infos)
+        self.template2config(local_cfg.celery_init_template_file,    local_cfg.celery_init_file, {})
+        self.template2config(local_cfg.celery_default_template_file, local_cfg.celery_default_file, infos)
+        self.template2config(local_cfg.celery_config_template_file,  local_cfg.celery_config_file,  infos)
+        os.chmod(local_cfg.celery_init_file, 755)
+        self.cmd(u'update-rc.d {0} defaults'.format(local_cfg.worker_name))
         self.remark(u'Orchestrator successfully registered')
 
     def subordinate_unregister(self):
         self.info(u'Unregister the Orchestrator')
         self.local_config.api_nat_socket = u''
-        shutil.rmtree(self.local_config.celery_config_file, ignore_errors=True)
+        try_remove(self.local_config.celery_config_file)
+        self.cmd(u'update-rc.d -f {0} remove'.format(self.local_config.worker_name))
 
     def subordinate_hook_bypass(self):
         if self.subordinate_config_is_enabled:
             raise RuntimeError(to_bytes(u'Orchestrator is set in config, subordinate relation is disabled'))
 
-    def start_celeryd(self, retry_count=15, retry_delay=1):
-        if screen_list(self.screen_name, log=self.debug) == []:
-            screen_launch(self.screen_name, [u'celeryd', u'--config', u'celeryconfig', u'--hostname',
-                          self.rabbit_hostname, u'-Q', self.rabbit_queues])
-        for start_delay in xrange(retry_count):
-            time.sleep(retry_delay)
-            if screen_list(self.screen_name, log=self.debug) != []:
-                start_time = start_delay * retry_delay
-                self.remark(u'{0} successfully started in {1} seconds'.format(self.screen_name, start_time))
-                return
-        raise RuntimeError(to_bytes(u'Worker {0} is not ready'.format(self.screen_name)))
+    def start_celery_worker(self, retries=5, delay=2):
+        worker_name = self.local_config.worker_name
+        self.info(u'Start the {0} worker'.format(worker_name))
 
-    def stop_celeryd(self):
-        screen_kill(self.screen_name, log=self.debug)
+        self.info(u"Ensure that the worker's directory is owned by the right user")
+        chown(self.directory, DAEMON_USER, DAEMON_GROUP, recursive=True)
+
+        start_time = time.time()
+        for start_delay in xrange(retries):
+            if self.cmd(u'service {0} status'.format(worker_name), fail=False)[u'returncode'] == 0:
+                delta_time = time.time() - start_time
+                self.remark(u'Worker {0} successfully started in {1:0.1f} seconds'.format(worker_name, delta_time))
+                return
+            else:
+                self.cmd(u'service {0} start'.format(worker_name))
+                time.sleep(delay)
+        # FIXME maybe the latest attempt was successful and we do not check ... hum
+        raise RuntimeError(to_bytes(u'Worker {0} is not ready'.format(worker_name)))
+
+    def stop_celery_worker(self):
+        self.info(u'Stop the {0} worker'.format(self.local_config.worker_name))
+        self.cmd(u'service {0} stop'.format(self.local_config.worker_name), fail=False)
 
     # ------------------------------------------------------------------------------------------------------------------
 

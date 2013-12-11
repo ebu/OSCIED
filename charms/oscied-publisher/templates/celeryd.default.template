@@ -1,0 +1,17 @@
+
+# http://www.arruda.blog.br/programacao/django-celery-in-daemon/
+
+CELERY_BIN="celery"
+CELERYD_CHDIR="{directory}"
+CELERYD_NODES="{name}"
+CELERYD_OPTS="--queues={queues}"
+CELERYD_LOG_FILE="/var/log/celery/%N.log"
+CELERYD_PID_FILE="/var/run/celery/%N.pid"
+CELERYD_USER="{user}"
+CELERYD_GROUP="{group}"
+CELERY_CREATE_DIRS=1
+CELERY_CREATE_RUNDIR=1
+CELERY_CREATE_LOGDIR=1
+
+# Name of the celery config module, don't change this.
+CELERY_CONFIG_MODULE="celeryconfig"
