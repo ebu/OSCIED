@@ -24,11 +24,14 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
-import os, time
+import os, threading, time
 
 from pytoolbox import juju as py_juju
-from pytoolbox.subprocess import cmd
+from pytoolbox.console import confirm
 from pytoolbox.juju import DeploymentScenario
+from pytoolbox.subprocess import cmd
+
+from datetime import datetime
 
 try:
     import paya.history
@@ -39,8 +42,18 @@ except:
 SCENARIO_PATH = os.path.dirname(__file__)
 CONFIG = os.path.join(SCENARIO_PATH, u'config.yaml')
 
-STORAGE_UNITS = 5
+STORAGE_UNITS = 1
 TRANSFORM_UNITS = 5
+
+def monitor_unit_status(environment, history, interval=5):
+    while True:
+        units    = {}
+        services = environment.status[u'services']
+        for _,service in services.iteritems():
+            units.update({k:v for k,v[u'agent-state'] in service['units'].iteritems()})
+        history.append(units)
+
+        time.sleep(interval)
 
 class Benchmark(DeploymentScenario):
 
@@ -53,45 +66,59 @@ class Benchmark(DeploymentScenario):
         overwrite_config -- overwrite previously generated configuration file (default False)
         """
 
+        # get configuration parameters
         overwrite   = kwargs.get('overwrite_config', False)
         concurrency = kwargs.get('concurrency', 1)
 
+        # initialize environment configuration and bootstrap it
         self.benchmark.symlink_local_charms()
         self.benchmark.generate_config_from_template(overwrite=overwrite, concurrency=concurrency)
         self.benchmark.bootstrap(wait_started=True)
 
-        self.benchmark.auto = True
-        ensure_num_units = self.benchmark.ensure_num_units
-        #ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, num_units=1)
-        ensure_num_units(u'oscied-orchestra', u'oscied-orchestra', local=True, expose=True)
-        ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, num_units=STORAGE_UNITS)
-        ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, num_units=TRANSFORM_UNITS)
+        # deploy juju units
+        if confirm(u'Deploy OSCIED units'):
+            self.benchmark.auto = True
+            ensure_num_units = self.benchmark.ensure_num_units
+            #ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, num_units=1)
+            ensure_num_units(u'oscied-orchestra', u'oscied-orchestra', local=True, expose=True)
+            ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, num_units=STORAGE_UNITS)
+            ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, num_units=TRANSFORM_UNITS)
 
-        for peer in (u'orchestra', u'transform')
-            self.benchmark.add_relation(u'oscied-storage', u'oscied-{0}'.format(peer))
-        self.benchmark.add_relation(u'oscied-orchestra:transform', u'oscied-transform:transform')
-        self.benchmark.auto = False
+            # setup units relations
+            for peer in (u'orchestra', u'transform'):
+                self.benchmark.add_relation(u'oscied-storage', u'oscied-{0}'.format(peer))
+            self.benchmark.add_relation(u'oscied-orchestra:transform', u'oscied-transform:transform')
+            self.benchmark.auto = False
+
+        print(u'start monitoring the units status')
+        history = paya.history.FileHistory(u'{0}/units-status.paya'.format(SCENARIO_PATH))
+        threading.Thread(target=monitor_unit_status, args=[self.benchmark, history]).start()
 
         # wait for orchestra to be STARTED
-        # while True:
-        #    units = self.bechmark.get_units(u'oscied-orchestra')
-        #    state = units[0].get(u'agent-state', u'unknown')
-        #    if state in py_juju.STARTED_STATES: break
-        #    elif state in py_juju.ERROR_STATES: raise Exception(u'oscied-orchestra failed while starting')
-        #    else:                               time.sleep(0.5)
+        time_zero = datetime.now()
         while True:
-            units = self.benchmark.get_units(u'oscied-storage')
+            units = self.benchmark.get_units(u'oscied-orchestra')
             state = units['0'].get(u'agent-state', u'unknown')
-            print(u'waiting {0} to be started: current status: {1}'.format(u'oscied-storage', state))
+            print(u'wait for orchestra to start, ellapsed: {0}'.format((datetime.now() - time_zero)))
+
             if state in py_juju.STARTED_STATES: break
-            elif state in py_juju.ERROR_STATES: raise Exception(u'oscied-storage failed while starting')
-            else:                               time.sleep(0.5)
+            elif state in py_juju.ERROR_STATES: raise Exception(u'oscied-orchestra failed while starting')
+            else:                               time.sleep(1)
+        
+        # while True:
+        #     units = self.benchmark.get_units(u'oscied-storage')
+        #     state = units['0'].get(u'agent-state', u'unknown')
+        #     print(u'waiting {0} to be started: current status: {1}'.format(u'oscied-storage', state))
+        #     if state in py_juju.STARTED_STATES: break
+        #     elif state in py_juju.ERROR_STATES: raise Exception(u'oscied-storage failed while starting')
+        #     else:                               time.sleep(0.5)
 
         time.sleep(30)
-        #for
-        cmd(u'juju scp oscied-storage/0:/tmp/history.paya {0}/.'.format(SCENARIO_PATH))
-        if not os.path.exists(u'history.paya'):
-            print(u'failed to download paya history')
+
+        # TODO: for each unit
+        #    cmd(u'juju scp oscied-storage/0:/tmp/history.paya {0}/.'.format(SCENARIO_PATH))
+        #    if not os.path.exists(u'history.paya'):
+        #        print(u'failed to download paya history')
 
         # TODO: oscied_lib/api/utils.py:58
         #       wait_started blocks until oscied-orchestra is up and running;
