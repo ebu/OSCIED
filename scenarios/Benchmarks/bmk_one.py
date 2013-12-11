@@ -50,7 +50,7 @@ def monitor_unit_status(environment, history, interval=5):
         units    = {}
         services = environment.status[u'services']
         for _,service in services.iteritems():
-            units.update({k:v for k,v[u'agent-state'] in service['units'].iteritems()})
+            units.update({k:v[u'agent-state'] for k,v in service['units'].iteritems()})
         history.append(units)
 
         time.sleep(interval)
