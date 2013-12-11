@@ -30,6 +30,12 @@ from pytoolbox import juju as py_juju
 from pytoolbox.subprocess import cmd
 from pytoolbox.juju import DeploymentScenario
 
+try:
+    import paya.history
+except:
+    cmd(u'pip install git+git://github.com/kyouko-taiga/paya.git#egg=paya')
+    import paya.history
+
 SCENARIO_PATH = os.path.dirname(__file__)
 CONFIG = os.path.join(SCENARIO_PATH, u'config.yaml')
 
@@ -49,22 +55,22 @@ class Benchmark(DeploymentScenario):
 
         overwrite   = kwargs.get('overwrite_config', False)
         concurrency = kwargs.get('concurrency', 1)
-        
+
         self.benchmark.symlink_local_charms()
         self.benchmark.generate_config_from_template(overwrite=overwrite, concurrency=concurrency)
         self.benchmark.bootstrap(wait_started=True)
-        
+
         self.benchmark.auto = True
         ensure_num_units = self.benchmark.ensure_num_units
-        ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, num_units=1)
-        #ensure_num_units(u'oscied-orchestra', u'oscied-orchestra', local=True, expose=True)
-        #ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, num_units=STORAGE_UNITS)
-        #ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, num_units=TRANSFORM_UNITS)
+        #ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, num_units=1)
+        ensure_num_units(u'oscied-orchestra', u'oscied-orchestra', local=True, expose=True)
+        ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, num_units=STORAGE_UNITS)
+        ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, num_units=TRANSFORM_UNITS)
 
-        # for peer in (u'orchestra', u'transform')
-        #     self.benchmark.add_relation(u'oscied-storage', u'oscied-{0}'.format(peer))
-        # self.benchmark.add_relation(u'oscied-orchestra:transform', u'oscied-transform:transform')
-        # self.benchmark.auto = False
+        for peer in (u'orchestra', u'transform')
+            self.benchmark.add_relation(u'oscied-storage', u'oscied-{0}'.format(peer))
+        self.benchmark.add_relation(u'oscied-orchestra:transform', u'oscied-transform:transform')
+        self.benchmark.auto = False
 
         # wait for orchestra to be STARTED
         # while True:
