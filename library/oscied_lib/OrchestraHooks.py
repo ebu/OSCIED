@@ -26,17 +26,18 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os, re, shutil, time
+import os, re, shutil, socket, time
 from codecs import open
 from configobj import ConfigObj
 from os.path import abspath, dirname, exists, join
 from pytoolbox.encoding import to_bytes
 from pytoolbox.filesystem import chown, first_that_exist, try_makedirs, try_symlink
-from pytoolbox.juju import DEFAULT_OS_ENV
+from pytoolbox.juju import CONFIG_FILENAME, METADATA_FILENAME, DEFAULT_OS_ENV
 from pytoolbox.subprocess import rsync
 
 from .api import VERSION
 from .config import OrchestraLocalConfig
+from .constants import DAEMON_GROUP, DAEMON_USER, LOCAL_CONFIG_FILENAME
 from .hooks_base import CharmHooks_Storage
 
 
@@ -53,14 +54,14 @@ class OrchestraHooks(CharmHooks_Storage):
                                              OrchestraLocalConfig)
         self.rsync_kwargs = {
             u'archive': True, u'delete': True, u'exclude_vcs': True, u'makedest': True, u'recursive': True,
-            u'log': self.log
+            u'extra_args': [u'--copy-links'], u'log': self.log
         }
 
     def save_local_config(self):
         u"""Save or update local configuration in charm's and api's path and ensure that is owned by the right user."""
         super(OrchestraHooks, self).save_local_config()
         self.local_config.write(self.local_config.site_local_config_file, makedirs=True)
-        chown(self.local_config.site_local_config_file, self.daemon_user, self.daemon_group)
+        chown(self.local_config.site_local_config_file, DAEMON_USER, DAEMON_GROUP)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -110,13 +111,15 @@ class OrchestraHooks(CharmHooks_Storage):
     # ------------------------------------------------------------------------------------------------------------------
 
     def hook_install(self):
+        local_cfg = self.local_config
+
         self.hook_uninstall()
         self.generate_locales((u'fr_CH.UTF-8',))
         self.install_packages(OrchestraHooks.PACKAGES + OrchestraHooks.JUJU_PACKAGES, ppas=OrchestraHooks.PPAS)
         self.restart_ntp()
         self.info(u'Copy Orchestra and the local charms repository of OSCIED')
-        rsync(u'api/', self.local_config.site_directory, **self.rsync_kwargs)
-        chown(self.local_config.site_directory, self.daemon_user, self.daemon_group, recursive=True)
+        rsync(local_cfg.api_path, local_cfg.site_directory, **self.rsync_kwargs)
+        chown(local_cfg.site_directory, DAEMON_USER, DAEMON_GROUP, recursive=True)
         self.info(u'Expose RESTful API, MongoDB & RabbitMQ service')
         self.open_port(80,    u'TCP')  # Orchestra RESTful API
         self.open_port(27017, u'TCP')  # MongoDB port mongod and mongos instances
@@ -135,11 +138,11 @@ class OrchestraHooks(CharmHooks_Storage):
         self.info(u'Configure JuJu Service Orchestrator')
         juju_config_path = dirname(local_cfg.juju_config_file)
         rsync(local_cfg.juju_template_path, juju_config_path, **self.rsync_kwargs)
-        chown(juju_config_path, self.daemon_user, self.daemon_group, recursive=True)
+        chown(juju_config_path, DAEMON_USER, DAEMON_GROUP, recursive=True)
 
         self.info(u'Configure Secure Shell')
         rsync(local_cfg.ssh_template_path, local_cfg.ssh_config_path, **self.rsync_kwargs)
-        chown(local_cfg.ssh_config_path, self.daemon_user, self.daemon_group, recursive=True)
+        chown(local_cfg.ssh_config_path, DAEMON_USER, DAEMON_GROUP, recursive=True)
 
         self.info(u'Configure Apache 2')
         self.template2config(local_cfg.htaccess_template_file, local_cfg.htaccess_config_file, {})
@@ -196,7 +199,7 @@ class OrchestraHooks(CharmHooks_Storage):
         try_symlink(abspath(local_cfg.charms_default_path), abspath(local_cfg.charms_release_path))
 
         self.info(u'Ensure that the Apache sites directory is owned by the right user')
-        chown(local_cfg.sites_directory, self.daemon_user, self.daemon_group, recursive=True)
+        chown(local_cfg.sites_directory, DAEMON_USER, DAEMON_GROUP, recursive=True)
 
         self.storage_remount()
 
@@ -252,7 +255,7 @@ class OrchestraHooks(CharmHooks_Storage):
 
     def hook_api_relation_changed(self):
         # Get configuration from the relation
-        webui_address = self.relation_get(u'private-address')
+        webui_address = socket.getfqdn(self.relation_get(u'private-address'))
         self.info(u'Web UI address is {0}'.format(webui_address))
         if not webui_address:
             self.remark(u'Waiting for complete setup')
@@ -264,7 +267,7 @@ class OrchestraHooks(CharmHooks_Storage):
 
     def hook_publisher_relation_changed(self):
         # Get configuration from the relation
-        publisher_address = self.relation_get(u'private-address')
+        publisher_address = socket.getfqdn(self.relation_get(u'private-address'))
         self.info(u'Publisher address is {0}'.format(publisher_address))
         if not publisher_address:
             self.remark(u'Waiting for complete setup')
@@ -276,7 +279,7 @@ class OrchestraHooks(CharmHooks_Storage):
 
     def hook_transform_relation_changed(self):
         # Get configuration from the relation
-        transform_address = self.relation_get(u'private-address')
+        transform_address = socket.getfqdn(self.relation_get(u'private-address'))
         self.info(u'Transform address is {0}'.format(transform_address))
         if not transform_address:
             self.remark(u'Waiting for complete setup')
@@ -288,7 +291,8 @@ class OrchestraHooks(CharmHooks_Storage):
 if __name__ == u'__main__':
     from pytoolbox.encoding import configure_unicode
     configure_unicode()
-    OrchestraHooks(first_that_exist(u'metadata.yaml',     u'../../charms/oscied-orchestra/metadata.yaml'),
-                   first_that_exist(u'config.yaml',       u'../../charms/oscied-orchestra/config.yaml'),
-                   first_that_exist(u'local_config.json', u'../../charms/oscied-orchestra/local_config.json'),
+    orchestra_path = abspath(join(dirname(__file__), u'../../charms/oscied-orchestra'))
+    OrchestraHooks(first_that_exist(METADATA_FILENAME,     join(orchestra_path, METADATA_FILENAME)),
+                   first_that_exist(CONFIG_FILENAME,       join(orchestra_path, CONFIG_FILENAME)),
+                   first_that_exist(LOCAL_CONFIG_FILENAME, join(orchestra_path, LOCAL_CONFIG_FILENAME)),
                    DEFAULT_OS_ENV).trigger()

@@ -25,16 +25,18 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os, shutil, time
+import shutil, time
 from celery import current_task
 from celery.decorators import task
+from os.path import dirname
 from pytoolbox.datetime import datetime_now
 from pytoolbox.encoding import configure_unicode, to_bytes
-from pytoolbox.filesystem import recursive_copy
+from pytoolbox.filesystem import chown, recursive_copy
 from pytoolbox.serialization import object2json
 from pytoolbox.validation import valid_uri
 
 from .config import PublisherLocalConfig
+from .constants import DAEMON_GROUP, DAEMON_USER, LOCAL_CONFIG_FILENAME
 from .models import Media, PublisherTask
 from .utils import Callback
 
@@ -74,7 +76,7 @@ def publisher_task(media_json, callback_json):
         print(u'{0} Publication task started'.format(request.id))
 
         # Read current configuration to translate files URIs to local paths
-        local_config = PublisherLocalConfig.read(u'local_config.json', inspect_constructor=False)
+        local_config = PublisherLocalConfig.read(LOCAL_CONFIG_FILENAME, inspect_constructor=False)
         print(object2json(local_config, include_properties=True))
 
         # Load and check task parameters
@@ -94,11 +96,12 @@ def publisher_task(media_json, callback_json):
             raise NotImplementedError(to_bytes(u'Media asset will not be readed from shared storage : {0}'.format(
                                       media.uri)))
         publish_path, publish_uri = local_config.publish_point(media)
-        media_root, publish_root = os.path.dirname(media_path), os.path.dirname(publish_path)
+        media_root, publish_root = dirname(media_path), dirname(publish_path)
 
-        infos = recursive_copy(media_root, publish_root, copy_callback, RATIO_DELTA, TIME_DELTA)
         if not valid_uri(publish_uri, check_404=True):
             raise IOError(to_bytes(u'Media asset is unreachable from publication URI {0}'.format(publish_uri)))
+        infos = recursive_copy(media_root, publish_root, copy_callback, RATIO_DELTA, TIME_DELTA)
+        chown(publish_root, DAEMON_USER, DAEMON_GROUP, recursive=True)
 
         # Here all seem okay
         print(u'{0} Publication task successful, media asset published as {1}'.format(request.id, publish_uri))
@@ -141,7 +144,7 @@ def revoke_publisher_task(publish_uri, callback_json):
         print(u'{0} Revoke publication task started'.format(request.id))
 
         # Read current configuration to translate files URIs to local paths
-        local_config = PublisherLocalConfig.read(u'local_config.json', inspect_constructor=False)
+        local_config = PublisherLocalConfig.read(LOCAL_CONFIG_FILENAME, inspect_constructor=False)
         print(object2json(local_config, True))
 
         # Load and check task parameters
@@ -152,7 +155,7 @@ def revoke_publisher_task(publish_uri, callback_json):
         if local_config.api_nat_socket and len(local_config.api_nat_socket) > 0:
             callback.replace_netloc(local_config.api_nat_socket)
 
-        publish_root = os.path.dirname(local_config.publish_uri_to_path(publish_uri))
+        publish_root = dirname(local_config.publish_uri_to_path(publish_uri))
         if not publish_root:
             raise ValueError(to_bytes(u'Media asset is not hosted on this publication point.'))
 

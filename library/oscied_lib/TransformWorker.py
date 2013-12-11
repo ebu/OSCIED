@@ -29,15 +29,17 @@ import os, re, select, shlex, time, uuid
 from celery import current_task
 from celery.decorators import task
 from codecs import open
+from os.path import dirname, exists
 from pytoolbox.datetime import datetime_now, total_seconds
 from pytoolbox.encoding import configure_unicode, to_bytes
 from pytoolbox.ffmpeg import get_media_duration, get_media_tracks
-from pytoolbox.filesystem import get_size, recursive_copy, try_makedirs, try_remove
+from pytoolbox.filesystem import chown, get_size, recursive_copy, try_makedirs, try_remove
 from pytoolbox.serialization import object2json
 from pytoolbox.subprocess import make_async, read_async
 from subprocess import Popen, PIPE
 
 from .config import TransformLocalConfig
+from .constants import DAEMON_GROUP, DAEMON_USER, LOCAL_CONFIG_FILENAME
 from .models import Media, TransformProfile, TransformTask
 from .utils import Callback
 
@@ -94,7 +96,7 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
         print(u'{0} Transformation task started'.format(request.id))
 
         # Read current configuration to translate files uri to local paths
-        local_config = TransformLocalConfig.read(u'local_config.json', inspect_constructor=False)
+        local_config = TransformLocalConfig.read(LOCAL_CONFIG_FILENAME, inspect_constructor=False)
         print(object2json(local_config, include_properties=True))
 
         # Load and check task parameters
@@ -121,8 +123,8 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
         if not media_out_path:
             raise NotImplementedError(to_bytes(u'Output media asset will not be written to shared storage : {0}'.format(
                                       media_out.uri)))
-        media_in_root = os.path.dirname(media_in_path)
-        media_out_root = os.path.dirname(media_out_path)
+        media_in_root = dirname(media_in_path)
+        media_out_root = dirname(media_out_path)
         try_makedirs(media_out_root)
 
         # Get input media duration and frames to be able to estimate ETA
@@ -263,7 +265,7 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
                     raise OSError(to_bytes(u'DashCast does not output frame number, encoding probably failed.'))
 
             # DashCast output sanity check
-            if not os.path.exists(media_out_path):
+            if not exists(media_out_path):
                 raise OSError(to_bytes(u'Output media asset not found, DashCast encoding probably failed.'))
             if returncode != 0:
                 raise OSError(to_bytes(u'DashCast return code is {0}, encoding probably failed.'.format(returncode)))
@@ -272,6 +274,7 @@ def transform_task(media_in_json, media_out_json, profile_json, callback_json):
         # Here all seem okay -------------------------------------------------------------------------------------------
         media_out_size = get_size(media_out_root)
         media_out_duration = get_media_duration(media_out_path)
+        chown(media_out_root, DAEMON_USER, DAEMON_GROUP, recursive=True)
         print(u'{0} Transformation task successful, output media asset {1}'.format(request.id, media_out.filename))
         transform_callback(TransformTask.SUCCESS)
         return {u'hostname': request.hostname, u'start_date': start_date, u'elapsed_time': elapsed_time,

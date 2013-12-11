@@ -28,10 +28,11 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import re
 from os.path import dirname, join
+from pytoolbox.juju import CONFIG_FILENAME
 from urlparse import urlparse
 
 from .config_base import CharmLocalConfig, CharmLocalConfig_Subordinate, CharmLocalConfig_Storage
-from .constants import MEDIAS_PATH, UPLOADS_PATH
+from .constants import MEDIAS_PATH, UPLOADS_PATH, LOCAL_CONFIG_FILENAME
 
 
 class OrchestraLocalConfig(CharmLocalConfig_Storage):
@@ -39,6 +40,7 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
     def __init__(self, api_url=u'',node_secret=u'', root_secret=u'', mongo_admin_connection=u'',
                  mongo_node_connection=u'', rabbit_connection=u'', charms_release=u'raring', email_server=u'',
                  email_tls=False, email_address=u'', email_username=u'', email_password=u'', plugit_api_url=u'',
+                 api_path=u'api/', juju_template_path=u'juju/', ssh_template_path=u'ssh/',
                  celery_template_file=u'templates/celeryconfig.py.template',
                  email_ptask_template=u'templates/ptask_mail.template',
                  email_ttask_template=u'templates/ttask_mail.template',
@@ -62,6 +64,9 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
         self.email_username = email_username
         self.email_password = email_password
         self.plugit_api_url = plugit_api_url
+        self.api_path = api_path
+        self.juju_template_path = juju_template_path
+        self.ssh_template_path = ssh_template_path
         self.celery_template_file = celery_template_file
         self.email_ptask_template = email_ptask_template
         self.email_ttask_template = email_ttask_template
@@ -81,7 +86,7 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
 
     @property
     def site_local_config_file(self):
-        return join(self.site_directory, u'local_config.json')
+        return join(self.site_directory, LOCAL_CONFIG_FILENAME)
 
     @property
     def ssh_config_path(self):
@@ -101,7 +106,7 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
 
     @property
     def charms_config(self):
-        return join(self.site_directory, u'config.yaml')
+        return join(self.site_directory, CONFIG_FILENAME)
 
     @property
     def charms_default_path(self):
@@ -116,20 +121,12 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
         return join(dirname(self.site_directory), u'.htaccess')
 
     @property
-    def juju_template_path(self):
-        return join(self.site_directory, u'juju/')
-
-    @property
-    def ssh_template_path(self):
-        return join(self.site_directory, u'ssh')
-
-    @property
     def orchestra_service(self):
         return u'oscied-orchestra'
 
     @property
     def publisher_config(self):
-        return join(self.charms_release_path, self.publisher_service, u'config.yaml')
+        return join(self.charms_release_path, self.publisher_service, CONFIG_FILENAME)
 
     @property
     def publisher_queues(self):
@@ -146,7 +143,7 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
 
     @property
     def transform_config(self):
-        return join(self.charms_release_path, self.transform_service, u'config.yaml')
+        return join(self.charms_release_path, self.transform_service, CONFIG_FILENAME)
 
     @property
     def transform_queues(self):

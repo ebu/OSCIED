@@ -505,7 +505,7 @@ browse_webui()
   _config_helper
 
   _get_unit_public_url $true 'oscied-webui'
-  xdg-open "http://$REPLY"
+  xdg-open "http://$REPLY/webui"
 }
 
 rsync_orchestra()

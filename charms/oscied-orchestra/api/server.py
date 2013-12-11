@@ -26,13 +26,15 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import logging, os, sys
+import logging, sys
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from os.path import abspath, dirname, join
 from pytoolbox.encoding import configure_unicode
 from pytoolbox.logging import setup_logging
 from oscied_lib.api import ABOUT, get_test_api_core, OrchestraAPICore
 from oscied_lib.config import OrchestraLocalConfig
 from oscied_lib.config_test import ORCHESTRA_CONFIG_TEST
+from oscied_lib.constants import LOCAL_CONFIG_FILENAME
 
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -97,8 +99,8 @@ def configure_plugit_mode():
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-CONFIG_FILENAME = os.path.join(os.path.abspath(os.path.dirname(__file__)), u'local_config.json')
-CSV_DIRECTORY = os.path.join(os.path.abspath(os.path.dirname(__file__)), u'mock')
+CONFIG_FILENAME = join(abspath(dirname(__file__)), LOCAL_CONFIG_FILENAME)
+CSV_DIRECTORY = join(abspath(dirname(__file__)), u'mock')
 HELP_MOCK = u'Mock the MongoDB driver with MongoMock ([WARNING] Still not a perfect mock of the real-one)'
 
 try:

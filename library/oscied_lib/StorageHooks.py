@@ -26,12 +26,14 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os, re, shutil
+import os, re, shutil, socket
+from os.path import abspath, dirname, join
 from pytoolbox.encoding import to_bytes
 from pytoolbox.filesystem import first_that_exist
-from pytoolbox.juju import DEFAULT_OS_ENV
+from pytoolbox.juju import  CONFIG_FILENAME, METADATA_FILENAME, DEFAULT_OS_ENV
 
 from .config import StorageLocalConfig
+from .constants import LOCAL_CONFIG_FILENAME
 from .hooks_base import OsciedCharmHooks
 
 
@@ -59,7 +61,7 @@ class StorageHooks(OsciedCharmHooks):
 
     @property
     def bricks_path(self):
-        return os.path.join(self.config.bricks_root_path, u'bricks')
+        return join(self.config.bricks_root_path, u'bricks')
 
     @property
     def volume(self):
@@ -183,7 +185,7 @@ class StorageHooks(OsciedCharmHooks):
         if self.local_config.volume_flag:
             self.info(u'Send filesystem (volume {0}) configuration to remote client'.format(self.volume))
             self.relation_set(fstype=u'glusterfs', mountpoint=self.volume, options=u'')
-            client_address = self.relation_get('private-address')
+            client_address = socket.getfqdn(self.relation_get('private-address'))
             if not client_address in self.local_config.allowed_ips:
                 self.info(u'Add {0} to allowed clients IPs'.format(client_address))
                 self.local_config.allowed_ips.append(client_address)
@@ -191,18 +193,13 @@ class StorageHooks(OsciedCharmHooks):
 
     def hook_storage_relation_departed(self):
         # Get configuration from the relation
-        client_address = self.relation_get(u'private-address')
+        client_address = socket.getfqdn(self.relation_get(u'private-address'))
         if not client_address:
             self.remark(u'Waiting for complete setup')
         elif client_address in self.local_config.allowed_ips:
             self.info(u'Remove {0} from allowed clients IPs'.format(client_address))
             self.local_config.allowed_ips.remove(client_address)
             self.hook_config_changed()
-
-    def hook_storage_relation_broken(self):
-        self.info(u'Cleanup allowed clients IPs')
-        self.local_config.allowed_ips = []
-        self.hook_config_changed()
 
     def hook_peer_relation_joined(self):
         if not self.is_leader:
@@ -215,7 +212,7 @@ class StorageHooks(OsciedCharmHooks):
 
     def hook_peer_relation_changed(self):
         # Get configuration from the relation
-        peer_address = self.relation_get(u'private-address')
+        peer_address = socket.getfqdn(self.relation_get(u'private-address'))
         self.info(u'Peer address is {0}'.format(peer_address))
         if not peer_address:
             self.remark(u'Waiting for complete setup')
@@ -226,7 +223,7 @@ class StorageHooks(OsciedCharmHooks):
         port, bricks = 24010, [self.brick()]
         for peer in self.relation_list():
             self.open_port(port, u'TCP')  # Open required
-            bricks.append(self.brick(self.relation_get(u'private-address', peer)))
+            bricks.append(self.brick(socket.getfqdn(self.relation_get(u'private-address', peer))))
             port += 1
 
         if self.is_leader:
@@ -235,7 +232,7 @@ class StorageHooks(OsciedCharmHooks):
             self.peer_probe(peer_address)
             self.volume_create_or_expand(bricks=bricks)
 
-    def hook_peer_relation_broken(self):
+    def hook_peer_relation_departed(self):
         self.remark(u'FIXME NOT IMPLEMENTED')
 
 # Main -----------------------------------------------------------------------------------------------------------------
@@ -243,7 +240,8 @@ class StorageHooks(OsciedCharmHooks):
 if __name__ == u'__main__':
     from pytoolbox.encoding import configure_unicode
     configure_unicode()
-    StorageHooks(first_that_exist(u'metadata.yaml',     u'../../charms/oscied-storage/metadata.yaml'),
-                 first_that_exist(u'config.yaml',       u'../../charms/oscied-storage/config.yaml'),
-                 first_that_exist(u'local_config.json', u'../../charms/oscied-storage/local_config.json'),
+    storage_hooks = abspath(join(dirname(__file__), u'../../charms/oscied-storage'))
+    StorageHooks(first_that_exist(METADATA_FILENAME,     join(storage_hooks, METADATA_FILENAME)),
+                 first_that_exist(CONFIG_FILENAME,       join(storage_hooks, CONFIG_FILENAME)),
+                 first_that_exist(LOCAL_CONFIG_FILENAME, join(storage_hooks, LOCAL_CONFIG_FILENAME)),
                  DEFAULT_OS_ENV).trigger()

@@ -28,13 +28,14 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os, shutil
 from codecs import open
+from os.path import abspath, dirname, exists, join
 from pytoolbox.filesystem import chown, first_that_exist
-from pytoolbox.juju import DEFAULT_OS_ENV
+from pytoolbox.juju import  CONFIG_FILENAME, METADATA_FILENAME, DEFAULT_OS_ENV
 from pytoolbox.subprocess import make
 
 from .config import PublisherLocalConfig
+from .constants import DAEMON_GROUP, DAEMON_USER, LOCAL_CONFIG_FILENAME
 from .hooks_base import CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Website
-
 
 class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Website):
 
@@ -52,7 +53,7 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
 
     @property
     def publish_path(self):
-        return os.path.join(self.config.www_root_path, u'www')
+        return join(self.config.www_root_path, u'www')
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -103,14 +104,14 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
             shutil.rmtree(u'/var/log/apache2/', ignore_errors=True)
         shutil.rmtree(self.publish_path, ignore_errors=True)
         os.makedirs(self.publish_path)
-        chown(self.publish_path, self.daemon_user, self.daemon_group, recursive=True)
+        chown(self.publish_path, DAEMON_USER, DAEMON_GROUP, recursive=True)
         self.local_config.reset()
         self.local_config.update_publish_uri(self.public_address)
 
     def hook_start(self):
         if not self.storage_is_mounted:
             self.remark(u'Do not start publisher daemon : No shared storage')
-        elif not os.path.exists(self.local_config.celery_config_file):
+        elif not exists(self.local_config.celery_config_file):
             self.remark(u'Do not start publisher daemon : No celery configuration file')
         elif len(self.rabbit_queues) == 0:
             self.remark(u'Do not start publisher daemon : No RabbitMQ queues declared')
@@ -129,7 +130,8 @@ class PublisherHooks(CharmHooks_Storage, CharmHooks_Subordinate, CharmHooks_Webs
 if __name__ == u'__main__':
     from pytoolbox.encoding import configure_unicode
     configure_unicode()
-    PublisherHooks(first_that_exist(u'metadata.yaml',     u'../../charms/oscied-publisher/metadata.yaml'),
-                   first_that_exist(u'config.yaml',       u'../../charms/oscied-publisher/config.yaml'),
-                   first_that_exist(u'local_config.json', u'../../charms/oscied-publisher/local_config.json'),
+    publisher_path = abspath(join(dirname(__file__), u'../../charms/oscied-publisher'))
+    PublisherHooks(first_that_exist(METADATA_FILENAME,     join(publisher_path, METADATA_FILENAME)),
+                   first_that_exist(CONFIG_FILENAME,       join(publisher_path, CONFIG_FILENAME)),
+                   first_that_exist(LOCAL_CONFIG_FILENAME, join(publisher_path, LOCAL_CONFIG_FILENAME)),
                    DEFAULT_OS_ENV).trigger()
