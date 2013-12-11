@@ -55,6 +55,7 @@ SCENARIO_JUJU_LOG_FILE="$SCENARIO_CURRENT_PATH/juju-debug.log"
 ID_RSA="$HOME/.ssh/id_rsa"
 ID_RSA_PUB="$HOME/.ssh/id_rsa.pub"
 JUJU_PATH="$HOME/.juju"
+JUJU_ENVS_PATH="$HOME/.juju/environments"
 JUJU_STORAGE_PATH="$JUJU_PATH/local/"
 JUJU_ENVS_FILE="$JUJU_PATH/environments.yaml"
 
@@ -187,6 +188,7 @@ _deploy_helper()
   pecho "Copy JuJu environments file & SSH keys to Orchestra charm's deployment path"
   cp -f "$ID_RSA"         "$SCENARIO_CHARMS_PATH/oscied-orchestra/ssh/"
   cp -f "$ID_RSA_PUB"     "$SCENARIO_CHARMS_PATH/oscied-orchestra/ssh/"
+  rsync "$JUJU_ENVS_PATH/" "$SCENARIO_CHARMS_PATH/oscied-orchestra/juju/environments/" -a --delete
   cp -f "$JUJU_ENVS_FILE" "$SCENARIO_CHARMS_PATH/oscied-orchestra/juju/"
   find "$JUJU_PATH" -mindepth 1 -maxdepth 1 -type f -name '*.pem' \
     -exec sudo chown $USER:$USER {} \; \
