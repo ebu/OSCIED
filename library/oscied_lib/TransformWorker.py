@@ -39,7 +39,7 @@ from pytoolbox.subprocess import make_async, read_async
 from subprocess import Popen, PIPE
 
 from .config import TransformLocalConfig
-from .constants import DAEMON_GROUP, DAEMON_USER, LOCAL_CONFIG_FILENAME
+from .constants import LOCAL_CONFIG_FILENAME
 from .models import Media, TransformProfile, TransformTask
 from .utils import Callback
 
