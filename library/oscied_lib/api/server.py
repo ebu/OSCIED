@@ -277,6 +277,10 @@ class OrchestraAPICore(object):
 
     # ------------------------------------------------------------------------------------------------------------------
 
+    def _get_environment(self, name):
+        u"""Return an instance of the environment class to control environment ``name``."""
+        return juju.Environment(name, config=self.config.charms_config, release=self.config.charms_release, auto=True)
+
     def add_environment(self, name, type, region, access_key, secret_key, control_bucket, test=False):
         if not test:
             raise NotImplementedError(u'This method is in development, set test to True to disable this warning.')
@@ -287,8 +291,8 @@ class OrchestraAPICore(object):
         u"""
         .. warning:: TODO test & debug of environment methods, especially delete !
         """
-        return juju.destroy_environment(name, remove_default=False, remove=remove,
-                                        environments=self.config.juju_config_file)
+        return self._get_environment(name).destroy(remove_default=False, remove=remove,
+                                                   environments=self.config.juju_config_file)
 
     def get_environment(self, name, get_status=False):
         return juju.get_environment(name, get_status=get_status, environments=self.config.juju_config_file)
@@ -364,39 +368,39 @@ class OrchestraAPICore(object):
             config[u'storage_mountpoint'] = self.config.storage_mountpoint
             config[u'storage_options'] = self.config.storage_options
         juju.save_unit_config(self.config.charms_config, self.config.transform_service, config)
-        juju.ensure_num_units(environment, self.config.transform_service, num_units=num_units, terminate=terminate,
-                              config=self.config.charms_config, local=True, release=self.config.charms_release,
-                              repository=self.config.charms_repository)
+        the_environment = self._get_environment(environment)
+        the_environment.ensure_num_units(self.config.transform_service, local=True, num_units=num_units,
+                                         terminate=terminate, repository=self.config.charms_repository)
         if same_environment and num_units:
             try:
                 try:
-                    juju.add_relation(environment, self.config.orchestra_service, self.config.transform_service,
-                                      u'transform', u'transform')
+                    the_environment.add_relation(self.config.orchestra_service, self.config.transform_service,
+                                                 u'transform', u'transform')
                 except RuntimeError as e:
                     raise NotImplementedError(to_bytes(u'Orchestra service must be available and running on default '
                                               'environment {0}, reason : {1}'.format(default, e)))
                 try:
-                    juju.add_relation(environment, self.config.storage_service, self.config.transform_service)
+                    the_environment.add_relation(self.config.storage_service, self.config.transform_service)
                 except RuntimeError as e:
                     raise NotImplementedError(to_bytes(u'Storage service must be available and running on default '
                                               'environment {0}, reason : {1}'.format(default, e)))
             except NotImplementedError:
-                juju.destroy_service(environment, self.config.transform_service)
+                the_environment.destroy_service(self.config.transform_service)
                 raise
 
     def get_transform_unit(self, environment, number):
-        return juju.get_unit(environment, self.config.transform_service, number)
+        return self._get_environment(environment).get_unit(self.config.transform_service, number)
 
     def get_transform_units(self, environment):
-        return juju.get_units(environment, self.config.transform_service)
+        return self._get_environment(environment).get_units(self.config.transform_service)
 
     def get_transform_units_count(self, environment):
-        return juju.get_units_count(environment, self.config.transform_service)
+        return self._get_environment(environment).get_units_count(self.config.transform_service)
 
     def destroy_transform_unit(self, environment, number, terminate, test=False):
         if not test:
             raise NotImplementedError(u'This method is in development, set test to True to disable this warning.')
-        juju.destroy_unit(environment, self.config.transform_service, number, terminate)
+        self._get_environment(environment).destroy_unit(self.config.transform_service, number, terminate)
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -534,39 +538,39 @@ class OrchestraAPICore(object):
             config[u'storage_mountpoint'] = self.config.storage_mountpoint
             config[u'storage_options'] = self.config.storage_options
         juju.save_unit_config(self.config.charms_config, self.config.publisher_service, config)
-        juju.ensure_num_units(environment, self.config.publisher_service, num_units, terminate=terminate,
-                              config=self.config.charms_config, local=True, release=self.config.charms_release,
-                              repository=self.config.charms_repository)
+        the_environment = self._get_environment(environment)
+        the_environment.ensure_num_units(self.config.publisher_service, local=True, num_units=num_units,
+                                         terminate=terminate, repository=self.config.charms_repository)
         if same_environment and num_units:
             try:
                 try:
-                    juju.add_relation(environment, self.config.orchestra_service, self.config.publisher_service,
-                                      u'publisher', u'publisher')
+                    the_environment.add_relation(self.config.orchestra_service, self.config.publisher_service,
+                                                 u'publisher', u'publisher')
                 except RuntimeError as e:
                     raise NotImplementedError(to_bytes(u'Orchestra service must be available and running on default '
                                               'environment {0}, reason : {1}'.format(default, e)))
                 try:
-                    juju.add_relation(environment, self.config.storage_service, self.config.publisher_service)
+                    the_environment.add_relation(self.config.storage_service, self.config.publisher_service)
                 except RuntimeError as e:
                     raise NotImplementedError(to_bytes(u'Storage service must be available and running on default '
                                               'environment {0}, reason : {1}'.format(default, e)))
             except NotImplementedError:
-                juju.destroy_service(environment, self.config.publisher_service)
+                the_environment.destroy_service(self.config.publisher_service)
                 raise
 
     def get_publisher_unit(self, environment, number):
-        return juju.get_unit(environment, self.config.publisher_service, number)
+        return self._get_environment(environment).get_unit(self.config.publisher_service, number)
 
     def get_publisher_units(self, environment):
-        return juju.get_units(environment, self.config.publisher_service)
+        return self._get_environment(environment).get_units(self.config.publisher_service)
 
     def get_publisher_units_count(self, environment):
-        return juju.get_units_count(environment, self.config.publisher_service)
+        return self._get_environment(environment).get_units_count(self.config.publisher_service)
 
     def destroy_publisher_unit(self, environment, number, terminate, test=False):
         if not test:
             raise NotImplementedError(u'This method is in development, set test to True to disable this warning.')
-        juju.destroy_unit(environment, self.config.publisher_service, number, terminate)
+        self._get_environment(environment).destroy_unit(self.config.publisher_service, number, terminate)
 
     # ------------------------------------------------------------------------------------------------------------------
 
