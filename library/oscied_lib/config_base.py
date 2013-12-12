@@ -117,6 +117,8 @@ class CharmLocalConfig_Storage(CharmLocalConfig):
         if media is None:
             return join(self.storage_path, MEDIAS_PATH)
         if generate:
+            if getattr(media, u'user_id', None):
+               raise ValueError(u"user_id not defined within media attributes (maybe you've got it with head=False)") 
             return join(self.storage_path, MEDIAS_PATH, media.user_id, media._id, media.filename)
         if media.uri and media.uri.startswith(uri):
             return join(self.storage_path, media.uri.replace(uri + sep, u'', 1))
