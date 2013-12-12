@@ -26,6 +26,7 @@
 
 import os, threading, time
 
+from library.oscied_lib.models import TransformTask
 from pytoolbox import juju as py_juju
 from pytoolbox.console import confirm
 from pytoolbox.juju import DeploymentScenario
@@ -45,15 +46,21 @@ CONFIG = os.path.join(SCENARIO_PATH, u'config.yaml')
 STORAGE_UNITS = 1
 TRANSFORM_UNITS = 5
 
-def monitor_unit_status(environment, history, interval=5):
+def monitor_unit_status(environment, history, interval=15):
     while True:
         units    = {}
         services = environment.status[u'services']
         for _,service in services.iteritems():
             units.update({k:v[u'agent-state'] for k,v in service['units'].iteritems()})
         history.append(units)
-
         time.sleep(interval)
+
+def monitor_task_status(api, task_ids, history, interval=15):
+    _extract_info = lambda task: {u'status': task.status, u'statistic': task.statistic}
+    while True:
+        time_zero = time.time()
+        history.append({_id: _extract_info(api.transform_tasks[_id]) for _id in task_ids})
+        time.sleep(max(interval - (time.time() - time_zero), 0))
 
 class Benchmark(DeploymentScenario):
 
@@ -69,51 +76,81 @@ class Benchmark(DeploymentScenario):
         # get configuration parameters
         overwrite   = kwargs.get('overwrite_config', False)
         concurrency = kwargs.get('concurrency', 1)
+        benchmark   = self.dev
 
-        # initialize environment configuration and bootstrap it
-        self.benchmark.symlink_local_charms()
-        self.benchmark.generate_config_from_template(overwrite=overwrite, concurrency=concurrency)
-        self.benchmark.bootstrap(wait_started=True)
+        if False:
+            # initialize environment configuration and bootstrap it
+            benchmark.symlink_local_charms()
+            benchmark.generate_config_from_template(overwrite=overwrite, concurrency=concurrency)
+            benchmark.bootstrap(wait_started=True)
 
-        # deploy juju units
-        if confirm(u'Deploy OSCIED units'):
-            self.benchmark.auto = True
-            ensure_num_units = self.benchmark.ensure_num_units
-            #ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, num_units=1)
-            ensure_num_units(u'oscied-orchestra', u'oscied-orchestra', local=True, expose=True)
-            ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, num_units=STORAGE_UNITS)
-            ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, num_units=TRANSFORM_UNITS)
+            # deploy juju units
+            if confirm(u'Deploy OSCIED units'):
+                benchmark.auto = True
+                ensure_num_units = benchmark.ensure_num_units
+                #ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, num_units=1)
+                ensure_num_units(u'oscied-orchestra', u'oscied-orchestra', local=True, expose=True)
+                ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, num_units=STORAGE_UNITS)
+                ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, num_units=TRANSFORM_UNITS)
 
-            # setup units relations
-            for peer in (u'orchestra', u'transform'):
-                self.benchmark.add_relation(u'oscied-storage', u'oscied-{0}'.format(peer))
-            self.benchmark.add_relation(u'oscied-orchestra:transform', u'oscied-transform:transform')
-            self.benchmark.auto = False
+                # setup units relations
+                for peer in (u'orchestra', u'transform'):
+                    benchmark.add_relation(u'oscied-storage', u'oscied-{0}'.format(peer))
+                benchmark.add_relation(u'oscied-orchestra:transform', u'oscied-transform:transform')
+                benchmark.auto = False
 
-        print(u'start monitoring the units status')
-        history = paya.history.FileHistory(u'{0}/units-status.paya'.format(SCENARIO_PATH))
-        threading.Thread(target=monitor_unit_status, args=[self.benchmark, history]).start()
+            print(u'start monitoring the units status')
+            history = paya.history.FileHistory(u'{0}/units-status.paya'.format(SCENARIO_PATH))
+            threading.Thread(target=monitor_unit_status, args=[benchmark, history]).start()
 
         # wait for orchestra to be STARTED
         time_zero = datetime.now()
         while True:
-            units = self.benchmark.get_units(u'oscied-orchestra')
-            state = units['0'].get(u'agent-state', u'unknown')
             print(u'wait for orchestra to start, ellapsed: {0}'.format((datetime.now() - time_zero)))
+            break
+
+            units = benchmark.get_units(u'oscied-orchestra')
+            state = units['0'].get(u'agent-state', u'unknown')
 
             if state in py_juju.STARTED_STATES: break
             elif state in py_juju.ERROR_STATES: raise Exception(u'oscied-orchestra failed while starting')
             else:                               time.sleep(1)
-        
-        # while True:
-        #     units = self.benchmark.get_units(u'oscied-storage')
-        #     state = units['0'].get(u'agent-state', u'unknown')
-        #     print(u'waiting {0} to be started: current status: {1}'.format(u'oscied-storage', state))
-        #     if state in py_juju.STARTED_STATES: break
-        #     elif state in py_juju.ERROR_STATES: raise Exception(u'oscied-storage failed while starting')
-        #     else:                               time.sleep(0.5)
 
-        time.sleep(30)
+        # TODO: read tasks config file
+        config = {
+            u'task_sets': [{
+                u'input':    u'Extremes_CHSRF-Lausanne_Mens_200m-50368e4c43ca3.mxf',
+                u'output':   u'mxf_to_mp4.mp4',
+                u'profile':  u'Tablet 480p/25',
+                u'metadata': {u'title': u'mxf_to_mp4'},
+                u'count':    0
+            }]
+        }
+
+        # get client API object
+        api_client = benchmark.api_client
+        api_client.login('d@f.com', 'oscied3D1')
+
+        print(u'send task sets to the API')
+        scheduled_tasks = []
+        for ts in config['task_sets']:
+            scheduled_tasks += self.send_task_set(api_client, ts)
+
+        print(u'start monitoring the tasks status')
+        history = paya.history.FileHistory(u'{0}/task-status.paya'.format(SCENARIO_PATH))
+        t = threading.Thread(target=monitor_task_status,
+                             args=[api_client, [t._id for t in scheduled_tasks], history])
+        t.daemon = True
+        t.start()
+
+        print(u'wait for tasks completion')
+        while True:
+            for st in scheduled_tasks:
+                status = api_client.transform_tasks[st._id].status
+                if status not in TransformTask.FINAL_STATUS:
+                    break
+            else: break
+            time.sleep(30)
 
         # TODO: for each unit
         #    cmd(u'juju scp oscied-storage/0:/tmp/history.paya {0}/.'.format(SCENARIO_PATH))
@@ -123,17 +160,25 @@ class Benchmark(DeploymentScenario):
         # TODO: oscied_lib/api/utils.py:58
         #       wait_started blocks until oscied-orchestra is up and running;
         #       this functionality should be tested
-        # self.benchmark.init_api(SCENARIO_PATH, flush=True, add_tasks=False, wait_started=True)
+        # benchmark.init_api(SCENARIO_PATH, flush=True, add_tasks=False, wait_started=True)
+        # benchmark.check_status(raise_if_errors=True, wait_all_started=True)
 
-        # TODO self.benchmark.check_status(raise_if_errors=True, wait_all_started=True)
-
-    def send_tasks(self):
-        api_client = self.benchmark.api_client()
-
-        # retrieves medias list
-        medias = api_client.medias.list(head=True)
-
-        # read tasks configuration file
+    def send_task_set(self, api, task_set):
+        # retrieve media and profile objects from api
+        media   = api.medias.list(spec={u'filename': task_set[u'input']})[0]
+        profile = api.transform_profiles.list(spec={u'title': task_set[u'profile']})[0]
+        
+        # start transform task
+        scheduled_tasks = []
+        for i in xrange(task_set['count']):
+            scheduled_tasks.append(api.transform_tasks.add({
+                u'filename': task_set['output'],
+                u'media_in_id': media._id,
+                u'profile_id': profile._id,
+                u'send_email': False,
+                u'queue': u'transform',
+                u'metadata': task_set['metadata']
+            }))
         
         # schedule tasks
-        return []
+        return scheduled_tasks

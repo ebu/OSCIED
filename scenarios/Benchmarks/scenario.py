@@ -46,8 +46,8 @@ if __name__ == '__main__':
 
     # deploy the selected benchmark
     if bmk == u'one':
-        bmk_one.Benchmark(environments=[OsciedEnvironment(u'benchmark', config=bmk_one.CONFIG)]).run()
+        bmk_one.Benchmark(environments=[OsciedEnvironment(u'dev', config=bmk_one.CONFIG)]).run()
     elif bmk == u'two':
-        bmk_two.Benchmark(environments=[OsciedEnvironment(u'benchmark', config=bmk_two.CONFIG)]).run()
+        bmk_two.Benchmark(environments=[OsciedEnvironment(u'dev', config=bmk_two.CONFIG)]).run()
     else:
         print(u'unknown benchmark name: {0}'.format(bmk))
