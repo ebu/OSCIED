@@ -7,56 +7,56 @@
 {% else %}
 
 <table class="table table-bordered table-condensed table-striped">
-   <thead>
-      <tr>
-         <th class="span2">Media</th>
-         <th>Added by</th>
-         <th class="span2">Added / Started on</th>
-         <th>Publication point</th>
-         <th>Elapsed</th>
-         <th class="span3">Progress</th>
-         <th>Error</th>
-         <th>Status</th>
-         <th></th>
-      </tr>
-   </thead>
-   <tbody>
-      {% for task in tasks %}
-      {% with status=task.status|default:'UNKNOWN'|upper %}
-      <tr>
-         <td>{% if task.publish_uri %}<a href="{{task.publish_uri}}">{{task.media.filename}}</a>
-            {% else %}{{task.media.filename}}{% endif %}
-         </td>
-         <td>{% plugitGetUser task.user_id as auth_user %}{{auth_user.username}}</td>
-         <td>{{task.statistic.add_date}}<br/>{{task.statistic.start_date}}</td>
-         <td>{{task.statistic.hostname}}</td>
-         <td>{{task.statistic.elapsed_time|time:"H:i:s"}}<br/>{{task.statistic.eta_time|time:"H:i:s"}}</td>
-         <td>
-            <div class="progress progress-striped progress-{% if status == 'PENDING' or status == 'REVOKED' %}info{% elif status == 'PROGRESS' %}info active{% elif status == 'RETRY' %}warning{% elif status == 'SUCCESS' %}success{% elif status == 'FAILURE' or status == 'UNKOWN' %}danger{% else %}info{% endif %}">
-               <div class="bar" style="width: {{task.statistic.percent|default:0}}%;"></div>
-            </div>
-         </td>
-         <td>{{task.statistic.error}}</td>
-         <td>
-            <span class="label {% if status == 'PENDING' or status == 'RETRY' %}label-warning{% elif status == 'PROGRESS' %}label-info{% elif status == 'SUCCESS'%}label-success{% elif status == 'FAILURE' %}label-important{% elif status == 'REVOKED' or status != 'UNKOWN' %}label-inverse{% endif %}" title="{{task.statistic.error_details}}">{{status}}</span>
-         </td>
-         <td>
-            {% if ebuio_u.id == task.user_id %}
-            {% if status != 'SUCCESS' and status != 'FAILURE' and status != 'REVOKED' %}
-            <a class="revoke" title="{{task.id}}" href="{{ebuio_baseUrl}}publisher/tasks/revoke/{{task.id}}">
-               <button class="btn btn-mini btn-danger">Revoke</button>
-            </a>
-            {% endif %}
-            {% endif %}
-         </td>
-      </tr>
-      {% endwith %}
-      {% endfor %}
-   </tbody>
+    <thead>
+        <tr>
+            <th class="span2">Media</th>
+            <th>Added by</th>
+            <th class="span2">Added / Started on</th>
+            <th>Publication point</th>
+            <th>Elapsed</th>
+            <th class="span3">Progress</th>
+            <th>Error</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for task in tasks %}
+        {% with status=task.status|default:'UNKNOWN'|upper %}
+        <tr>
+            <td>{% if task.publish_uri %}<a href="{{ task.publish_uri }}">{{ task.media.filename }}</a>
+                {% else %}{{ task.media.filename }}{% endif %}
+            </td>
+            <td>{% plugitGetUser task.user_id as auth_user %}{{ auth_user.username }}</td>
+            <td>{{ task.statistic.add_date }}<br/>{{ task.statistic.start_date }}</td>
+            <td>{{ task.statistic.hostname }}</td>
+            <td>{{ task.statistic.elapsed_time|time:"H:i:s" }}<br/>{{task.statistic.eta_time|time:"H:i:s"}}</td>
+            <td>
+                <div class="progress progress-striped progress-{% if status == 'PENDING' or status == 'REVOKED' %}info{% elif status == 'PROGRESS' %}info active{% elif status == 'RETRY' %}warning{% elif status == 'SUCCESS' %}success{% elif status == 'FAILURE' or status == 'UNKOWN' %}danger{% else %}info{% endif %}">
+                    <div class="bar" style="width: {{ task.statistic.percent|default:0 }}%;"></div>
+                </div>
+            </td>
+            <td>{{task.statistic.error}}</td>
+            <td>
+                <span class="label {% if status == 'PENDING' or status == 'RETRY' %}label-warning{% elif status == 'PROGRESS' %}label-info{% elif status == 'SUCCESS'%}label-success{% elif status == 'FAILURE' %}label-important{% elif status == 'REVOKED' or status != 'UNKOWN' %}label-inverse{% endif %}" title="{{ task.statistic.error_details }}">{{ status }}</span>
+            </td>
+            <td>
+                {% if ebuio_u.id == task.user_id %}
+                {% if status != 'SUCCESS' and status != 'FAILURE' and status != 'REVOKED' %}
+                <a class="revoke" title="{{ task.id }}" href="{{ ebuio_baseUrl }}publisher/tasks/revoke/{{ task.id }}">
+                    <button class="btn btn-mini btn-danger">Revoke</button>
+                </a>
+                {% endif %}
+                {% endif %}
+            </td>
+        </tr>
+        {% endwith %}
+        {% endfor %}
+    </tbody>
 </table>
 
 {% endif %}
 
-<script type="text/javascript">
-$(document).ready(function() { setTimeout(function() { loadTasks(); }, {{refresh_rate}} * 1000); });
+<script>
+$(document).ready(function(){ setTimeout(function(){ loadTasks(); }, {{ refresh_rate }} * 1000); });
 </script>

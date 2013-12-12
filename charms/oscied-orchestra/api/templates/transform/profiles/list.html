@@ -5,34 +5,34 @@
 {% else %}
 
 <table class="table table-bordered table-condensed table-striped">
-   <thead>
-      <tr>
-         <th>Title</th>
-         <th>Description</th>
-         <th>Encoder</th>
-         <th>Encoder string</th>
-         <th></th>
-      </tr>
-   </thead>
-   <tbody>
-      {% for profile in profiles %}
-      <tr>
-         <td>{{profile.title}}</td>
-         <td>{{profile.description}}</td>
-         <td>{{profile.encoder_name}}</td>
-         <td>{{profile.encoder_string}}</td>
-         <td>
-            <a class="delete" title="{{profile.title}}" href="{{ebuio_baseUrl}}transform/profiles/delete/{{profile.id}}">
-               <button class="btn btn-mini btn-danger">Delete</button>
-            </a>
-         </td>
-      </tr>
-      {% endfor %}
-   </tbody>
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Encoder</th>
+            <th>Encoder string</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for profile in profiles %}
+        <tr>
+            <td>{{ profile.title }}</td>
+            <td>{{ profile.description }}</td>
+            <td>{{ profile.encoder_name }}</td>
+            <td>{{ profile.encoder_string }}</td>
+            <td>
+                <a class="delete" title="{{ profile.title }}" href="{{ ebuio_baseUrl }}transform/profiles/delete/{{ profile.id }}">
+                    <button class="btn btn-mini btn-danger">Delete</button>
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 
 {% endif %}
 
-<script type="text/javascript">
-$(document).ready(function() { setTimeout(function() { loadProfiles(); }, {{refresh_rate}} * 1000); });
+<script>
+$(document).ready(function(){ setTimeout(function(){ loadProfiles(); }, {{ refresh_rate }} * 1000); });
 </script>
