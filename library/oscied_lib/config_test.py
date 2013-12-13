@@ -37,7 +37,7 @@ PUBLISHER_CONFIG_TEST = PublisherLocalConfig(
     api_nat_socket=u'129.194.185.47', storage_address=u'10.1.1.2', storage_fstype=u'glusterfs',
     storage_mountpoint=u'medias_volume')
 
-STORAGE_CONFIG_TEST = StorageLocalConfig(u'*', False)
+STORAGE_CONFIG_TEST = StorageLocalConfig(allowed_ips=u'*')
 
 TRANSFORM_CONFIG_TEST = TransformLocalConfig(
     api_nat_socket=u'129.194.185.47', storage_address=u'10.1.1.2', storage_fstype=u'glusterfs',

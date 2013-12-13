@@ -68,6 +68,10 @@ class StorageHooks(OsciedCharmHooks):
         return u'medias_volume_{0}'.format(self.id)
 
     @property
+    def volume_exist(self):
+        return self.volume in self.volumes
+
+    @property
     def volumes(self):
         return re.findall(u'Name:\s*(\S*)', self.volume_do(u'info', volume=u'all')[u'stdout'])
 
@@ -76,7 +80,12 @@ class StorageHooks(OsciedCharmHooks):
     def peer_probe(self, peer_address, tries=5):
         return self.cmd(u'gluster peer probe {0}'.format(peer_address), tries=tries)
 
+    def volume_do(self, action, volume=None, options=u'', tries=5, **kwargs):
+        volume = volume or self.volume
+        return self.cmd(u'gluster volume {0} {1} {2}'.format(action, volume, options), tries=tries, **kwargs)
+
     def volume_create_or_expand(self, volume=None, bricks=None, replica=None):
+        # FIXME this implementation do not handle shrinking of a volume, only the expansion
         volume = volume or self.volume
         bricks = bricks or [self.brick()]
         replica = replica or self.config.replica_count
@@ -90,9 +99,8 @@ class StorageHooks(OsciedCharmHooks):
             self.volume_do(u'create', volume=volume, options=extra)
             self.volume_do(u'start', volume=volume)
             self.volume_set_allowed_ips()
-            self.local_config.volume_flag = True
         else:
-            vol_bricks = self.volume_infos(volume=volume)['bricks']
+            vol_bricks = self.volume_infos(volume=volume)[u'bricks']
             self.debug(u'Volume bricks: {0}'.format(vol_bricks))
             new_bricks = [b for b in bricks if b not in vol_bricks]
             if len(new_bricks) == replica:
@@ -107,12 +115,9 @@ class StorageHooks(OsciedCharmHooks):
             else:
                 self.remark(u'Waiting for {0} peers to expand replica={1} volume {2}'.format(
                             replica - len(new_bricks), replica, volume))
-        self.info(self.volume_infos(volume=volume))
-        self.info(self.volume_do(u'rebalance', volume=volume, options=u'status', fail=False)[u'stdout'])
-
-    def volume_do(self, action, volume=None, options=u'', tries=5, **kwargs):
-        volume = volume or self.volume
-        return self.cmd(u'gluster volume {0} {1} {2}'.format(action, volume, options), tries=tries, **kwargs)
+        if self.volume_exist:
+            self.info(self.volume_infos(volume=volume))
+            self.info(self.volume_do(u'rebalance', volume=volume, options=u'status', fail=False, tries=1)[u'stdout'])
 
     def volume_set_allowed_ips(self, volume=None):
         volume, ips = volume or self.volume, self.allowed_ips_string
@@ -160,7 +165,7 @@ class StorageHooks(OsciedCharmHooks):
         #self.open_port(38467, u'TCP')  # For NFS (not used)
 
     def hook_config_changed(self):
-        if self.local_config.volume_flag:
+        if self.volume_exist:
             self.volume_set_allowed_ips()
 
     def hook_uninstall(self):
@@ -185,15 +190,17 @@ class StorageHooks(OsciedCharmHooks):
 
     def hook_storage_relation_joined(self):
         # Create medias volume if it is already possible to do so
-        self.volume_create_or_expand()
-        if self.local_config.volume_flag:
-            self.info(u'Send filesystem (volume {0}) configuration to remote client'.format(self.volume))
-            self.relation_set(fstype=u'glusterfs', mountpoint=self.volume, options=u'')
-            client_address = socket.getfqdn(self.relation_get('private-address'))
-            if not client_address in self.local_config.allowed_ips:
-                self.info(u'Add {0} to allowed clients IPs'.format(client_address))
-                self.local_config.allowed_ips.append(client_address)
-                self.hook_config_changed()
+        if self.is_leader:
+            self.volume_create_or_expand()
+            # Send informations to the requirer only if the volume exist !
+            if self.volume_exist:
+                self.info(u'Send filesystem (volume {0}) configuration to remote client'.format(self.volume))
+                self.relation_set(fstype=u'glusterfs', mountpoint=self.volume, options=u'')
+                client_address = socket.getfqdn(self.relation_get('private-address'))
+                if not client_address in self.local_config.allowed_ips:
+                    self.info(u'Add {0} to allowed clients IPs'.format(client_address))
+                    self.local_config.allowed_ips.append(client_address)
+                    self.hook_config_changed()
 
     def hook_storage_relation_departed(self):
         # Get configuration from the relation
@@ -206,13 +213,11 @@ class StorageHooks(OsciedCharmHooks):
             self.hook_config_changed()
 
     def hook_peer_relation_joined(self):
-        if not self.is_leader:
+        if not self.is_leader and self.volume_exist:
             self.info(u'As slave, stop and delete my own volume {0}'.format(self.volume))
-            if self.volume in self.volumes:
-                self.debug(self.volume_infos())
-                self.volume_do(u'stop', options=u'force', cli_input=u'y\n')
-                self.volume_do(u'delete', cli_input=u'y\n', fail=False)  # FIXME temporary hack
-                self.local_config.volume_flag = False
+            self.debug(self.volume_infos())
+            self.volume_do(u'stop', options=u'force', cli_input=u'y\n')
+            self.volume_do(u'delete', cli_input=u'y\n', fail=False)  # FIXME temporary hack
 
     def hook_peer_relation_changed(self):
         # Get configuration from the relation
