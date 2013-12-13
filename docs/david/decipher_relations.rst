@@ -9,27 +9,32 @@ Step-by step deployment
 One unit connected to a requirer after the started state.
 
 ::
+
     juju deploy oscied-storage storage
     juju deploy oscied-publisher publisher
 
 unit storage/0 : install, config changed, start
 
 ::
+
     juju add-relation publisher storage
 
 unit storage/0: storage joined
 
 ::
+
     juju remove-relation publisher storage
 
 unit storage/0: storage departed, config changed
 
 ::
+
     juju add-relation publisher storage
 
 unit storage/0: storage joined
 
 ::
+
     juju add-unit storage
 
 ==== ================
@@ -48,6 +53,7 @@ Unit State
 ==== ================
 
 ::
+
     juju remove-relation publisher storage
 
 ==== ================
@@ -76,6 +82,7 @@ The logging method::
 
 
 ::
+
     juju deploy oscied-storage -n 2 storage
     juju deploy oscied-publisher publisher
     juju add-relation publisher storage
@@ -83,22 +90,22 @@ The logging method::
 
 Remark: err = error: no relation name specified
 
-==== ================  =============  ========================  ============================
-Unit State             list default   list(id) id in ids[peer]  list(id) id in ids[storage]
-==== ================  =============  ========================  ============================
-1    install           err            []                        []
-1    config changed    err            []                        []
-1    start             err            []                        []
-0    install           err            []                        []
-0    config changed    err            []                        []
-0    start             err            []                        []
-1    peer joined       [storage/0]    [peer:0] -> [storage/0]   [storage:1] -> []
-0    peer joined       [storage/1]    [peer:0] -> [storage/1]   [storage:1] -> []
-0    peer changed      [storage/1]    [peer:0] -> [storage/1]   [storage:1] -> []
-1    peer changed      [storage/0]    [peer:0] -> [storage/0]   [storage:1] -> []
-1    storage joined    [publisher/0]  [peer:0] -> [storage/0]   [storage:1] -> [publisher/0]
-0    storage joined    [publisher/0]  [peer:0] -> [storage/1]   [storage:1] -> [publisher/0]
-==== ================  =============  =======================   ============================
+====  ================  =============  ========================  ============================
+Unit  State             list default   list(id) id in ids[peer]  list(id) id in ids[storage]
+====  ================  =============  ========================  ============================
+1     install           err            []                        []
+1     config changed    err            []                        []
+1     start             err            []                        []
+0     install           err            []                        []
+0     config changed    err            []                        []
+0     start             err            []                        []
+1     peer joined       [storage/0]    [peer:0] -> [storage/0]   [storage:1] -> []
+0     peer joined       [storage/1]    [peer:0] -> [storage/1]   [storage:1] -> []
+0     peer changed      [storage/1]    [peer:0] -> [storage/1]   [storage:1] -> []
+1     peer changed      [storage/0]    [peer:0] -> [storage/0]   [storage:1] -> []
+1     storage joined    [publisher/0]  [peer:0] -> [storage/0]   [storage:1] -> [publisher/0]
+0     storage joined    [publisher/0]  [peer:0] -> [storage/1]   [storage:1] -> [publisher/0]
+====  ================  =============  ========================  ============================
 
 The log
 =======
@@ -106,6 +113,7 @@ The log
 With some cleanup.
 
 ::
+
     in the rest of the log replaced by replaced by "..." :
     oscied-storage/1: [DEBUG] Execute unit-get private-address
     oscied-storage/1: [DEBUG] Execute unit-get public-address
