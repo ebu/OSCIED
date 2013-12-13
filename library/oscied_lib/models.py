@@ -31,7 +31,7 @@ from passlib.utils import consteq
 from pytoolbox.encoding import to_bytes
 from pytoolbox.serialization import dict2object
 from pytoolbox.mongo import Model, TaskModel
-from pytoolbox.validation import valid_email, valid_filename, valid_secret, valid_uuid
+from pytoolbox.validation import valid_email, valid_filename, valid_int, valid_secret, valid_uuid
 
 ENCODERS_NAMES = (u'copy', u'ffmpeg', u'dashcast')
 
@@ -85,8 +85,9 @@ class Media(Model):
         if (hasattr(self, u'user') and self.user is not None and
             (not isinstance(self.user, User) or not self.user.is_valid(False))):
             self._E(raise_exception, u'user is not a valid instance of user')
-        if hasattr(self, u'user_id') and not valid_uuid(self.user_id, none_allowed=False):
-            self._E(raise_exception, u'user_id is not a valid uuid string')
+        # Remark: An integer is also considered as a valid user id to simplify the integration with EBU-io
+        if hasattr(self, u'user_id') and not (valid_uuid(self.user_id, none_allowed=False) or valid_int(self.user_id)):
+            self._E(raise_exception, u'user_id is not a valid uuid string neither a valid integer')
         if (hasattr(self, u'parent') and self.parent is not None and
             (not isinstance(self.parent, Media) or not self.parent.is_valid(False))):
             self._E(raise_exception, u'parent is not a valid instance of media')
@@ -328,8 +329,9 @@ class PublisherTask(TaskModel):
         if (hasattr(self, u'user') and self.user is not None and
             (not isinstance(self.user, User) or not self.user.is_valid(False))):
             self._E(raise_exception, u'user is not a valid instance of user')
-        if hasattr(self, u'user_id') and not valid_uuid(self.user_id, none_allowed=False):
-            self._E(raise_exception, u'user_id is not a valid uuid string')
+        # Remark: An integer is also considered as a valid user id to simplify the integration with EBU-io
+        if hasattr(self, u'user_id') and not (valid_uuid(self.user_id, none_allowed=False) or valid_int(self.user_id)):
+            self._E(raise_exception, u'user_id is not a valid uuid string neither a valid integer')
         if (hasattr(self, u'media') and self.media is not None and
             (not isinstance(self.media, Media) or not self.media.is_valid(False))):
             self._E(raise_exception, u'media is not a valid instance of media')
@@ -378,8 +380,9 @@ class TransformTask(TaskModel):
         if (hasattr(self, u'user') and self.user is not None and
             (not isinstance(self.user, User) or not self.user.is_valid(False))):
             self._E(raise_exception, u'user is not a valid instance of user')
-        if hasattr(self, u'user_id') and not valid_uuid(self.user_id, none_allowed=False):
-            self._E(raise_exception, u'user_id is not a valid uuid string')
+        # Remark: An integer is also considered as a valid user id to simplify the integration with EBU-io
+        if hasattr(self, u'user_id') and not (valid_uuid(self.user_id, none_allowed=False) or valid_int(self.user_id)):
+            self._E(raise_exception, u'user_id is not a valid uuid string neither a valid integer')
         if (hasattr(self, u'media_in') and self.media_in is not None and
             (not isinstance(self.media_in, Media) or not self.media_in.is_valid(False))):
             self._E(raise_exception, u'media_in is not a valid instance of media')

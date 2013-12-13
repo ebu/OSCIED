@@ -84,16 +84,11 @@ def configure_standalone_mode():
 def configure_plugit_mode():
 
     import plugit
-    #import flask, functools, logging
-    #from pytoolbox.flask import check_id, map_exceptions
-
-    def api_method_decorator(api_core, authenticate=True, allow_root=False, allow_node=False, allow_any=False,
-                             role=None, allow_same_id=False):
-        raise NotImplementedError()
+    from pytoolbox.flask import json_response
+    from server_plugit import api_method_decorator
 
     def ok_200(value, include_properties):
-        # FIXME include_properties not yet handled
-        return {u'status': 200, u'value': value}
+        return json_response(200, value=value, include_properties=include_properties)
 
     return (plugit.app, api_method_decorator, ok_200)
 
@@ -140,7 +135,7 @@ try:
     from api_transform import *
     from api_user import *
     if not api_core.is_standalone:
-        import views
+        import plugit, views
         plugit.load_actions(views)
 
     #print(u'Flask URLs Map :\n{0}'.format(app.url_map))
@@ -149,7 +144,7 @@ try:
         if api_core.is_standalone:
             app.run(host=u'0.0.0.0', debug=api_core.config.verbose)
         else:
-            plugit.app.run(debug=api_core.config.verbose)
+            app.run(debug=api_core.config.verbose)
 
 except Exception as error:
     logging.exception(error)

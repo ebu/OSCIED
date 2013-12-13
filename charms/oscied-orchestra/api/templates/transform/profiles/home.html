@@ -16,74 +16,76 @@
 <div id="add_profile_errors" class="alert alert-error hidden"></div>
 
 <form name="form_add_profile" action="{{ebuio_baseUrl}}transform/profiles/add" method="post" accept-charset="utf-8" id="form_add_profile" enctype="multipart/form-data">
-   {% csrf_token %}
-   <table class="table table-bordered table-condensed">
-      <thead>
-         <tr>
-            <th>Title</th>
-            <th>Description</th>
-            <th>Encoder name</th>
-            <th>Encoder string</th>
-         </tr>
-      </thead>
-      <tbody>
-         <tr>
-            <td><input type="text" name="title" value="" class="title input-medium" /></td>
-            <td><input type="text" name="description" value="" class="description input-medium" /></td>
-            <td><select name="encoder_name">
-               {% for encoder in encoders %}
-               <option value="{{encoder}}">{{encoder}}</option>
-               {% endfor %}
-            </td>
-            <td><input type="text" name="encoder_string" value="" class="encoder_string input-large" /></td>
-         </tr>
-      </tbody>
-   </table>
-   <input type="submit" name="submit" value="Add profile" id="add_profile_submit" class="btn btn-primary" />
+    {% csrf_token %}
+    <table class="table table-bordered table-condensed">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Encoder name</th>
+                <th>Encoder string</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><input type="text" name="title" value="" class="title input-medium" /></td>
+                <td><input type="text" name="description" value="" class="description input-medium" /></td>
+                <td><select name="encoder_name">
+                    {% for encoder in encoders %}
+                    <option value="{{encoder}}">{{encoder}}</option>
+                    {% endfor %}
+                </td>
+                <td><input type="text" name="encoder_string" value="" class="encoder_string input-large" /></td>
+            </tr>
+        </tbody>
+    </table>
+    <input type="submit" name="submit" value="Add profile" id="add_profile_submit" class="btn btn-primary" />
 </form>
-
-<script type="text/javascript">
-/*<!-- Post data with AJAX -->*/
-$('#add_profile_submit').click(function() {
-   $.post(
-      $('#form_add_profile').attr('action'),
-      $('#form_add_profile').serialize(),
-      function(data) {
-         if (data.errors) {
-            $('#add_profile_errors').empty();
-            $('#add_profile_errors').removeClass('hidden');
-            $('#add_profile_errors').append(data.errors);
-         }
-         else {
-            if (data.profile) {
-               loadProfiles();
-               $('#ptitMessage').html("Profile '" + data.profile[0].title + "' was created successfully.");
-            } else {
-               alert(data.ebuio_abort);
-            }
-         }
-      },
-      'json'
-   );
-   return false;
-});
-</script>
 
 <div id="profiles"></div>
 
-<script type="text/javascript">
+<script>
 function loadProfiles() {
-   $.get('{{ebuio_baseUrl}}transform/profiles/list', function(data) { $('#profiles').html(data); });
+    $.get('{{ebuio_baseUrl}}transform/profiles/list', function(data){ $('#profiles').html(data); });
 }
 
 loadProfiles();
 
+/*<!-- Post data with AJAX -->*/
+$('#add_profile_submit').click(function(){
+    $.post(
+        $('#form_add_profile').attr('action'),
+        $('#form_add_profile').serialize(),
+        function(data){
+            if (data.errors){
+                $('#add_profile_errors').empty();
+                $('#add_profile_errors').removeClass('hidden');
+                $('#add_profile_errors').append(data.errors);
+            }else{
+                if (data.profile){
+                    loadProfiles();
+                    $('#ptitMessage').html("Profile '" + data.profile[0].title + "' was created successfully.");
+                }else{
+                    alert(data.ebuio_abort);
+                }
+            }
+        },
+        'json'
+    );
+    return false;
+});
+
 /*<!-- Set the action for file deletion -->*/
-$('body').on('click', '.delete', function() {
-   if (confirm('Do you really want to delete the profile "' + $(this).attr('title') + '"?')) {
-      $.get($(this).attr('href'), function(data) { loadProfiles(); $('#ptitMessage').html(data.msg); }, 'json');
-   }
-   return false;
+$('body').on('click', '.delete', function(){
+     if(confirm('Do you really want to delete the profile "' + $(this).attr('title') + '"?')) {
+          $.ajax($(this).attr('href'), {
+              dataType: 'json',
+              type: 'DELETE',
+              headers: {'X-CSRFToken': '{{ csrf_token }}'},
+              succes: function(data){ window.location = data.redirect; }
+          });
+     }
+     return false;
 });
 </script>
 
