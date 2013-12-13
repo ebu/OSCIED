@@ -205,10 +205,9 @@ class PublisherLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinat
 
 class StorageLocalConfig(CharmLocalConfig):
 
-    def __init__(self, allowed_ips=None, volume_flag=False, **kwargs):
+    def __init__(self, allowed_ips=None, **kwargs):
         super(StorageLocalConfig, self).__init__(**kwargs)
         self.allowed_ips = allowed_ips or []
-        self.volume_flag = volume_flag
 
     @property
     def volume_infos_regex(self):

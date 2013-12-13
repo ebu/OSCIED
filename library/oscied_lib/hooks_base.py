@@ -25,11 +25,12 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os, pymongo.uri_parser, shutil, shlex, socket, time
+import os, pymongo.uri_parser, shlex, socket, time
 from codecs import open
 from pytoolbox.encoding import to_bytes
 from pytoolbox.filesystem import chown, try_makedirs, try_remove
 from pytoolbox.juju import CharmHooks
+from pytoolbox.subprocess import screen_kill, screen_launch, screen_list
 
 from .constants import DAEMON_GROUP, DAEMON_USER, LOCAL_CONFIG_FILENAME
 
@@ -75,7 +76,7 @@ class OsciedCharmHooks(CharmHooks):
     def start_paya(self, retry_count=15, retry_delay=1):
         if self.paya_config_string:
             config_list = shlex.split(to_bytes(self.paya_config_string))
-            if screen_list(u'paya', log=self.debug, user=self.daemon_user) == []:            
+            if screen_list(u'paya', log=self.debug, user=self.daemon_user) == []:
                 screen_launch(u'paya', [u'paya-monitor'] + config_list, user=self.daemon_user)
             for start_delay in xrange(retry_count):
                 time.sleep(retry_delay)
