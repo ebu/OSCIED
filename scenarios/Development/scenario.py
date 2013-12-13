@@ -48,19 +48,18 @@ class Dev(DeploymentScenario):
         env.generate_config_from_template()
 
         if confirm(u'Deploy the platform now', default=True):
-            do_merge = confirm(u'Merge services (takes more time to setup, cost less if running for hours)', default=False)
+            do_merge = confirm(u'Merge services (takes more time to setup, cost less if running for hours)')
 
             print(u'')
             env.bootstrap(wait_started=True)
 
             env.auto = True
-            ensure = env.ensure_num_units
-            ensure = partial(env.ensure_num_units, local=True)
-            ensure(u'oscied-orchestra', u'oscied-orchestra', constraints=C1_MEDIUM, expose=True)
-            ensure(u'oscied-storage',   u'oscied-storage',   constraints=C1_MEDIUM)
-            ensure(u'oscied-transform', u'oscied-transform', constraints=C1_MEDIUM)
-            ensure(u'oscied-webui',     u'oscied-webui',     constraints=C1_MEDIUM, to=1 if do_merge else None, expose=True)
-            ensure(u'oscied-publisher', u'oscied-publisher', constraints=C1_MEDIUM, to=2 if do_merge else None, expose=True)
+            ensure = partial(env.ensure_num_units, constraints=C1_MEDIUM, local=True)
+            ensure(u'oscied-orchestra', u'oscied-orchestra', expose=True)
+            ensure(u'oscied-storage',   u'oscied-storage')
+            ensure(u'oscied-transform', u'oscied-transform')
+            ensure(u'oscied-webui',     u'oscied-webui',     to=1 if do_merge else None, expose=True)
+            ensure(u'oscied-publisher', u'oscied-publisher', to=2 if do_merge else None, expose=True)
 
             for peer in (u'orchestra', u'webui', u'transform', u'publisher'):
                 env.add_relation(u'oscied-storage', u'oscied-{0}'.format(peer))
