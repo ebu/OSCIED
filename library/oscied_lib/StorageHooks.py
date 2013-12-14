@@ -26,7 +26,7 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os, re, shutil, socket
+import os, re, shutil, socket, time
 from os.path import abspath, dirname, join
 from pytoolbox.encoding import to_bytes
 from pytoolbox.filesystem import first_that_exist
@@ -119,12 +119,16 @@ class StorageHooks(OsciedCharmHooks):
             self.info(self.volume_infos(volume=volume))
             self.info(self.volume_do(u'rebalance', volume=volume, options=u'status', fail=False, tries=1)[u'stdout'])
 
-    def volume_set_allowed_ips(self, volume=None):
+    def volume_set_allowed_ips(self, volume=None, tries=5, delay=1.0):
         volume, ips = volume or self.volume, self.allowed_ips_string
-        self.info(u'Set volume {0} allowed clients IP list to {1}'.format(volume, ips))
-        self.volume_do(u'set', volume=volume, options=u'auth.allow "{0}"'.format(ips), fail=False)
-        auth_allow = self.volume_infos(volume=volume)[u'auth_allow']
-        if auth_allow != ips:
+        for i in xrange(tries):
+            auth_allow = self.volume_infos(volume=volume)[u'auth_allow']
+            if auth_allow == ips:
+                break
+            self.info(u'({0} of {1}) Set volume {2} allowed clients IP list to {3}'.format(i+1, tries, volume, ips))
+            self.volume_do(u'set', volume=volume, options=u'auth.allow "{0}"'.format(ips), fail=False, tries=1)
+            time.sleep(delay)
+        else:
             raise ValueError(to_bytes(u'Volume {0} auth.allow={1} (expected {2})'.format(volume, ips, auth_allow)))
         self.info(self.volume_infos(volume=volume))
 
