@@ -146,7 +146,7 @@ class OrchestraAPIClient(object):
                               u'sudo cat {0}'.format(get_unit_path(service, number, local_config))])
         return dict2object(cls, config_dict, inspect_constructor=False) if cls else config_dict
 
-    def upload_media(self, filename, backup_in_remote=True):
+    def upload_media(self, filepath, backup_in_remote=True):
         u"""Upload a media asset by rsync-ing the local file to the shared storage mount point of the orchestrator !"""
         # FIXME detect name based on hostname ?
         os.chmod(self.id_rsa, 0600)
@@ -157,17 +157,17 @@ class OrchestraAPIClient(object):
             raise ValueError(to_bytes(u'Unable to retrieve shared storage uploads directory.'))
         if backup_in_remote:
             # Mirror the local file into a 'backup' directory on the shared storage, then into the destination directory
-            rsync(filename, u'{0}:{1}'.format(api_host, bkp_path), cli_output=True, makedest=True, archive=True,
+            rsync(filepath, u'{0}:{1}'.format(api_host, bkp_path), cli_output=True, makedest=True, archive=True,
                   progress=True, rsync_path=u'sudo rsync', extra='ssh -i {0}'.format(self.id_rsa))
             sync_bkp_to_upload = u'sudo rsync -ah --progress {0} {1}'.format(bkp_path, dst_path)
             ssh(api_host, cli_output=True, id=self.id_rsa, remote_cmd=sync_bkp_to_upload)
         else:
             # Mirror the local file into the destination directory of the shared storage
-            rsync(filename, u'{0}:{1}'.format(api_host, dst_path), cli_output=True, makedest=True, archive=True,
+            rsync(filepath, u'{0}:{1}'.format(api_host, dst_path), cli_output=True, makedest=True, archive=True,
                   progress=True, rsync_path=u'sudo rsync', extra='ssh -i {0}'.format(self.id_rsa))
         ssh(api_host, id=self.id_rsa, remote_cmd=u'sudo chown www-data:www-data {0} -R'.format(dst_path))
         return u'{0}://{1}/{2}/uploads/{3}'.format(u'glusterfs', local_cfg.storage_address,
-                                                   local_cfg.storage_mountpoint, os.path.basename(filename))
+                                                   local_cfg.storage_mountpoint, os.path.basename(filepath))
 
     def download_media(self, media, destination_path):
         u"""

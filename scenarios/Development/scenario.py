@@ -24,6 +24,7 @@
 #
 # Retrieved from https://github.com/ebu/OSCIED
 
+from functools import partial
 from os.path import dirname, join
 from pytoolbox.console import confirm
 from pytoolbox.encoding import configure_unicode
@@ -42,35 +43,36 @@ class Dev(DeploymentScenario):
     def run(self):
         print(description)
 
-        self.dev.symlink_local_charms()
-        self.dev.generate_config_from_template()
+        env = self.dev
+        env.symlink_local_charms()
+        env.generate_config_from_template()
 
         if confirm(u'Deploy the platform now', default=True):
-            do_merge = confirm(u'Merge services (takes more time to setup, cost less if running for hours)', default=False)
+            do_merge = confirm(u'Merge services (takes more time to setup, cost less if running for hours)')
 
             print(u'')
-            self.dev.bootstrap(wait_started=True)
+            env.bootstrap(wait_started=True)
 
-            self.dev.auto = True
-            ensure_num_units = self.dev.ensure_num_units
-            ensure_num_units(u'oscied-orchestra', u'oscied-orchestra', local=True, constraints=C1_MEDIUM, expose=True)
-            ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, constraints=C1_MEDIUM)
-            ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, constraints=C1_MEDIUM)
-            ensure_num_units(u'oscied-webui',     u'oscied-webui',     local=True, constraints=C1_MEDIUM, to=1 if do_merge else None, expose=True)
-            ensure_num_units(u'oscied-publisher', u'oscied-publisher', local=True, constraints=C1_MEDIUM, to=2 if do_merge else None, expose=True)
+            env.auto = True
+            ensure = partial(env.ensure_num_units, constraints=C1_MEDIUM, local=True)
+            ensure(u'oscied-orchestra', u'oscied-orchestra', expose=True)
+            ensure(u'oscied-storage',   u'oscied-storage')
+            ensure(u'oscied-transform', u'oscied-transform')
+            ensure(u'oscied-webui',     u'oscied-webui',     to=1 if do_merge else None, expose=True)
+            ensure(u'oscied-publisher', u'oscied-publisher', to=2 if do_merge else None, expose=True)
 
             for peer in (u'orchestra', u'webui', u'transform', u'publisher'):
-                self.dev.add_relation(u'oscied-storage', u'oscied-{0}'.format(peer))
-            self.dev.add_relation(u'oscied-orchestra:transform', u'oscied-transform:transform')
-            self.dev.add_relation(u'oscied-orchestra:publisher', u'oscied-publisher:publisher')
-            self.dev.add_relation(u'oscied-orchestra:api',       u'oscied-webui:api')
-            self.dev.auto = False
+                env.add_relation(u'oscied-storage', u'oscied-{0}'.format(peer))
+            env.add_relation(u'oscied-orchestra:transform', u'oscied-transform:transform')
+            env.add_relation(u'oscied-orchestra:publisher', u'oscied-publisher:publisher')
+            env.add_relation(u'oscied-orchestra:api',       u'oscied-webui:api')
+            env.auto = False
 
         #self.dev.check_status(raise_if_errors=True, wait_all_started=True)
 
         if confirm(u'Initialize orchestra (will wait until orchestra is ready)', default=True):
-            self.dev.init_api(SCENARIO_PATH, flush=True)#, wait_started=True)
+            env.init_api(SCENARIO_PATH, flush=True)#, wait_started=True)
 
 if __name__ == u'__main__':
     configure_unicode()
-    Dev(environments=[OsciedEnvironment(u'dev', config=CONFIG, release=u'raring')]).run()
+    Dev(environments=[OsciedEnvironment(u'david', config=CONFIG, release=u'raring')]).run()

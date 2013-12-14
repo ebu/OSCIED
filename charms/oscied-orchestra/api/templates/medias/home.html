@@ -5,95 +5,55 @@
 
 {% block content %}
 
+<link rel="stylesheet" href="{{ ebuio_baseUrl }}media/css/fileupload/jquery-ui.css" id="theme">
+<link rel="stylesheet" href="{{ ebuio_baseUrl }}media/css/fileupload/jquery.fileupload-ui.css">
+
 {% plugitInclude "menuBar" %}
 
+<div id="ptitMessage"></div>
+
+<div class="alert alert-info">
+  <a class="close" data-dismiss="alert">×</a>
+  <strong>Info!</strong> Watch this, but you may forget.
+</div>
+
 <h2 class="page-header">Available media assets</h2>
-
-<div id="medias"></div>
-
-<script type="text/javascript">
-function loadMedias() {
-   $.get('{{ebuio_baseUrl}}medias/list', function(data) { $('#medias').html(data); });
-}
-
-loadMedias();
-
-/*<!-- Set the action for file deletion -->*/
-$('body').on('click', '.delete', function() {
-   if (confirm('Do you really want to delete the media "' + $(this).attr('title') + '"?')) {
-      $.ajax($(this).attr('href'), {dataType: 'json', succes: function(data) { window.location = data.redirect; }, type: 'DELETE', headers: {'X-CSRFToken': '{{csrf_token}}'}});
-   }
-   return false;
-});
-</script>
-
-<!-- Add a media -->
- <link rel="stylesheet" href="{{ebuio_baseUrl}}media/css/fileupload/jquery-ui.css" id="theme">
- <link rel="stylesheet" href="{{ebuio_baseUrl}}media/css/fileupload/jquery.fileupload-ui.css">
 
 <h3>Add a media</h3>
 
 <div id="add_media_errors" class="alert alert-error hidden"></div>
 
- <form name="fileupload" action="{{ebuio_baseUrl}}upload_files/upload_video" id="fileupload" data-upload-template-id="template-upload" data-download-templateid="template_download" enctype="multipart/form-data" method="post">
-   {% csrf_token %}
-   <label for="title">Title</label>
-   <input name="title" id="title" class="input-large">
-<!--   <label for="filename">Filename</label>
-<input name="filename" id="filename" class="input-large">-->
-
-
-   <label for="file">File</label>
-   <input name="file" id="file" type="file" class="input-large">
-
-   <br id="space" class="hide" />
-   <input type="submit" name="submit" value="Add media" id="add_media_submit" class="btn btn-primary" />
+<form name="fileupload" action="{{ ebuio_baseUrl }}upload_files/upload_video" id="fileupload" data-upload-template-id="template-upload" data-download-templateid="template_download" enctype="multipart/form-data" method="post">
+     {% csrf_token %}
+     <label for="title">Title</label>
+     <input name="title" id="title" class="input-large">
+     <label for="file">File</label>
+     <input name="file" id="file" type="file" class="input-large">
+     <br id="space" class="hide" />
+<input type="submit" name="submit" value="Add media" id="add_media_submit" class="btn btn-primary" />
 </form>
 
-<script type="text/javascript">
-/*<!-- Post data with AJAX -->*/
-/*$('#add_media_submit').click(function() {
-   $.post(
-      "{{ebuio_baseUrl}}medias/add_media') ?>",
-      $('#fileupload').serialize(),
-      function(data) {
-         if (data.errors) {
-            $('#add_media_errors').empty();
-            $('#add_media_errors').removeClass('hidden');
-            $('#add_media_errors').append(data.errors);
-         }
-         else {
-            window.location = data.redirect;
-         }
-      },
-      'json'
-   );
-   return false;
-});*/
-/*<!-- Toggle submit button during upload -->*/
-/*$('#fileupload')
-   .bind('fileuploadstart', function(e, data) { $('#add_media_submit').attr('disabled', true); })
-   .bind('fileuploadstop', function(e) { $('#add_media_submit').attr('disabled', false); })
-;*/
+<div id="medias"></div>
+
+<script>
+function loadMedias(){
+     $.get('{{ ebuio_baseUrl }}medias/list', function(data){ $('#medias').html(data); });
+}
+
+loadMedias();
+
 /*<!-- Set the action for file deletion -->*/
-/*$('body').on('click', '.template_download button', function() {
-   if ($(this).is('.btn-warning')) {
-      $(this).closest('tr').remove();
-   }
-   else {
-      if (confirm('Do you really want to delete the file "' + $(this).attr('title') + '"?')) {
-         var row = $(this).closest('tr');
-         $.get(
-            '{{ebuio_baseUrl}}medias/delete_file/' + $(this).attr('file_id') + '/tmp',
-            function (data) {
-               row.remove();
-               $('#fileupload').fileupload('option', 'maxNumberOfFiles', 1);
-            }
-         );
-      }
-   }
-   return false;
-});*/
+$('body').on('click', '.delete', function(){
+     if(confirm('Do you really want to delete the media "' + $(this).attr('title') + '"?')) {
+          $.ajax($(this).attr('href'), {
+              dataType: 'json',
+              type: 'DELETE',
+              headers: {'X-CSRFToken': '{{ csrf_token }}'},
+              succes: function(data){ window.location = data.redirect; }
+          });
+     }
+     return false;
+});
 </script>
 
 {% endblock %}
