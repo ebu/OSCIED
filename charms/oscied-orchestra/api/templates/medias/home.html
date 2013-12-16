@@ -10,18 +10,9 @@
 
 {% plugitInclude "menuBar" %}
 
-<div id="ptitMessage"></div>
-
-<div class="alert alert-info">
-  <a class="close" data-dismiss="alert">×</a>
-  <strong>Info!</strong> Watch this, but you may forget.
-</div>
-
 <h2 class="page-header">Available media assets</h2>
 
 <h3>Add a media</h3>
-
-<div id="add_media_errors" class="alert alert-error hidden"></div>
 
 <form name="fileupload" action="{{ ebuio_baseUrl }}upload_files/upload_video" id="fileupload" data-upload-template-id="template-upload" data-download-templateid="template_download" enctype="multipart/form-data" method="post">
      {% csrf_token %}

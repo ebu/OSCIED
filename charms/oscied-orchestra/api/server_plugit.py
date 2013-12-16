@@ -46,7 +46,7 @@ def api_method_decorator(api_core, authenticate=True, allow_root=False, allow_no
                 # Get request from API method's arguments, set it to Flask's request if not present
                 request = kwargs[u'request'] = kwargs.get(u'request', flask.request)
                 # Authenticate the request with the security rules if enabled
-                if authenticate and False:
+                if authenticate:
                     auth = request.authorization
                     if not auth or auth.username is None or auth.password is None:
                         flask.abort(401, u'Authenticate.')  # Testing for None is maybe overkill
@@ -54,27 +54,14 @@ def api_method_decorator(api_core, authenticate=True, allow_root=False, allow_no
                     password = auth.password
                     root = (username == u'root' and password == api_core.config.root_secret)
                     node = (username == u'node' and password == api_core.config.node_secret)
-                    user = None
                     if not root and not node:
-                        user = api_core.get_user({u'mail': username}, secret=password)
-                        username = user.name if user else None
-                    if not root and not user and not node:
                         flask.abort(401, u'Authentication Failed.')
-                    if root and allow_root:
+                    if root:
                         logging.info(u'Allowed authenticated root')
                         kwargs[u'auth_user'] = api_core.root_user
                     elif node and allow_node:
                         logging.info(u'Allowed authenticated worker/node')
                         kwargs[u'auth_user'] = api_core.node_user
-                    elif user and allow_any:
-                        logging.info(u'Allowed authenticated user {0}'.format(user.name))
-                        kwargs[u'auth_user'] = user
-                    elif allow_same_id and user._id == id:
-                        logging.info(u'Allowed authenticated user {0} with id {1}'.format(user.name, id))
-                        kwargs[u'auth_user'] = user
-                    elif role and hasattr(user, role) and getattr(user, role):
-                        logging.info(u'Allowed authenticated user {0} with role {1}'.format(user.name, role))
-                        kwargs[u'auth_user'] = user
                     else:
                         flask.abort(403, username)
                 # Return the API method with some arguments updated
