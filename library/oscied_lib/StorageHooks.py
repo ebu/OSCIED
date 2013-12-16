@@ -94,11 +94,14 @@ class StorageHooks(OsciedCharmHooks):
             self.remark(u'Waiting for {0} peers to create and start a replica={1} volume {2}'.format(
                         replica - len(bricks), replica, volume))
         elif len(bricks) == replica:
-            self.info(u'Create and start a replica={0} volume {1} with {2} brick{3}'.format(
-                      replica, volume, len(bricks), u's' if len(bricks) > 1 else u''))
-            self.volume_do(u'create', volume=volume, options=extra)
-            self.volume_do(u'start', volume=volume)
-            self.volume_set_allowed_ips()
+            if volume in self.volumes:
+                self.info(u'Volume {0} already created.'.format(volume))
+            else:
+                self.info(u'Create and start a replica={0} volume {1} with {2} brick{3}'.format(
+                          replica, volume, len(bricks), u's' if len(bricks) > 1 else u''))
+                self.volume_do(u'create', volume=volume, options=extra)
+                self.volume_do(u'start', volume=volume)
+                self.volume_set_allowed_ips()
         else:
             vol_bricks = self.volume_infos(volume=volume)[u'bricks']
             self.debug(u'Volume bricks: {0}'.format(vol_bricks))
