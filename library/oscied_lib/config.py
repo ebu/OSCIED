@@ -181,7 +181,7 @@ class PublisherLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinat
         return join(self.www_root_path, u'www')
 
     def publish_point(self, media):
-        common = join(MEDIAS_PATH, media.user_id, media._id, media.filename)
+        common = join(MEDIAS_PATH, media._id, media.filename)
         return (join(self.publish_path, common), join(self.publish_uri, common))
 
     def publish_uri_to_path(self, uri):
