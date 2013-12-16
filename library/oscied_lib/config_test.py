@@ -26,7 +26,9 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from .config import (
-    OrchestraLocalConfig, PublisherLocalConfig, StorageLocalConfig, TransformLocalConfig, WebuiLocalConfig)
+    OrchestraLocalConfig, PublisherLocalConfig, StorageLocalConfig, TransformLocalConfig, WebuiLocalConfig
+)
+
 
 ORCHESTRA_CONFIG_TEST = OrchestraLocalConfig(
     storage_address=u'127.0.0.1', storage_fstype=u'glusterfs', storage_mountpoint=u'medias_volume_0',
