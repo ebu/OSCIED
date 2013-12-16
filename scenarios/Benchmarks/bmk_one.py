@@ -118,11 +118,12 @@ class Benchmark(DeploymentScenario):
 
             if state in py_juju.STARTED_STATES: break
             elif state in py_juju.ERROR_STATES: raise Exception(u'oscied-orchestra failed while starting')
-            else:                               time.sleep(1)
+            else:                               time.sleep(10)
 
         # initialize client API (add users and transform profiles)
-        benchmark.init_api(SCENARIO_PATH, flush=True, add_tasks=False, wait_started=True,
-                           backup_medias_in_remote=False)
+        if confirm(u'Initialize OSCIED API'):
+            benchmark.init_api(SCENARIO_PATH, flush=True, add_tasks=False, wait_started=True,
+                               backup_medias_in_remote=False)
 
         # setup missing units relations (orchestra-transform)
         # we put the relation between orchestra and transform after we could successfully
@@ -136,7 +137,7 @@ class Benchmark(DeploymentScenario):
                 u'output':   u'chsrf.mp4',
                 u'profile':  u'Tablet 480p/25',
                 u'metadata': {u'title': u'task-mxf-mp4'},
-                u'count':    1
+                u'count':    100
             }]
         }
 
@@ -158,12 +159,13 @@ class Benchmark(DeploymentScenario):
         while True:
             for st in scheduled_tasks:
                 api_client.transform_tasks[st._id]
+                undef   = st.status in TransformTask.UNDEF_STATUS
                 running = st.status in TransformTask.RUNNING_STATUS
                 pending = st.status in TransformTask.PENDING_STATUS
-                if running or pending:
+                if running or pending or undef:
                     break
-                time.sleep(10)
             else: break
+            time.sleep(10)
 
         # download media test
         # api_client.download_media(iter(api_client.medias.list(head=True)).next(), '/tmp/media')
@@ -173,15 +175,15 @@ class Benchmark(DeploymentScenario):
         # media.uri = api_client.upload_media(u'/tmp/monogatari-01.mkv', backup_in_remote=False)
         # api_client.medias.add(media)
 
-        # TODO: for each unit
-        #    cmd(u'juju scp oscied-storage/0:/tmp/history.paya {0}/.'.format(SCENARIO_PATH))
-        #    if not os.path.exists(u'history.paya'):
-        #        print(u'failed to download paya history')
-
-        # TODO: oscied_lib/api/utils.py:58
-        #       wait_started blocks until oscied-orchestra is up and running;
-        #       this functionality should be tested
-        # benchmark.init_api(SCENARIO_PATH, flush=True, add_tasks=False, wait_started=True)
+        print(u'retrieve paya histories')
+        for unit_type in ['orchestra', 'storage', 'transform']:
+            units = benchmark.get_units(u'oscied-{0}'.format(unit_type))
+            for unit_no in units:
+                src = u'oscied-{0}/{1}:/tmp/{0}.paya'.format(unit_type, unit_no)
+                dst = u'{0}/{1}-{2}.paya'.format(SCENARIO_PATH, unit_type, unit_no)
+                cmd(u'juju scp {0} {1}'.format(src, dst))
+                if not os.path.exists(dst):
+                    print(u'failed to download {0}'.format(src))
 
         # TODO: benchmark.check_status(raise_if_errors=True, wait_all_started=True)
 
