@@ -89,3 +89,12 @@ options:
     description: |
         The URL of your running EBU's PlugIt authentication API.
         If set, the orchestrator will switch from standalone users management to EBU's PlugIt-based users management.
+  plugit_allowed_networks:
+    type: string
+    default: "127.0.0.1/32"
+    description: |
+        Comma-delimited networks allowed to access the API, e.g. '129.194.0.0/16,4.4.4.4/32'.
+        Defaults means anyone can mount the storage.
+        This option is useful to grant an access to this service to your clients that are running
+        outside of the storage's JuJu environment.
+        This option can be changed while the service is running.

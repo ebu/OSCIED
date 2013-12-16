@@ -17,9 +17,10 @@ oscied-orchestra:
   storage_fstype: ""
   storage_mountpoint: ""
   storage_options: ""
-  plugit_api_url: ""
+  plugit_api_url: "kk"
+  plugit_allowed_networks: "0.0.0.0/0"
 oscied-publisher:
-  verbose: true
+  verbose: false
   cleanup: false
   concurrency: 2
   rabbit_queues: "publisher"
@@ -36,13 +37,13 @@ oscied-publisher:
   storage_mountpoint: ""
   storage_options: ""
 oscied-storage:
-  verbose: true
+  verbose: false
   cleanup: false
   allowed_ips: "*"
   replica_count: 1
   bricks_root_path: "/mnt"
 oscied-transform:
-  verbose: true
+  verbose: false
   cleanup: false
   concurrency: 2
   rabbit_queues: "transform"
@@ -59,7 +60,7 @@ oscied-transform:
   ffmpeg_origin: "ppa:jon-severinsson/ffmpeg"
   gpac_origin: "gpac_0.5.1.DEV-r4939_amd64.deb"
 oscied-webui:
-  verbose: true
+  verbose: false
   cleanup: false
   max_upload_size: 17179869184
   max_execution_time: 600
