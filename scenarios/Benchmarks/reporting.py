@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 #**********************************************************************************************************************#
@@ -27,12 +28,12 @@ from library.oscied_lib.models import TransformTask
 
 try:
     import paya.history, paya.reporting
-    import pygal
+    import argparse, os, pygal, yaml
 except:
     cmd(u'pip install git+git://github.com/kyouko-taiga/paya.git[chart]#egg=paya')
     import paya.history, paya.reporting
 
-class TaskReport(object):
+class TaskStatusReport(object):
 
     def __init__(self, history):
         self.history = history
@@ -51,12 +52,61 @@ class TaskReport(object):
                 status_count[unicode(task['status'])][i] += 1
 
         # create graph
-        chart = pygal.Line()
-        chart.title = 'Number of tasks per status every {0} second(s)'.format(interval)
+        chart = pygal.StackedBar()
+        chart.title = 'Number of tasks per status every 2 minutes'
         chart.x_labels = [t0.strftime('%y/%m/%d, %H:%m:%S')]
         for status, chart_data in status_count.iteritems():
             if sum(chart_data):
-                chart.add(status, chart_data)
+                chart.add(status, [c for i,c in enumerate(chart_data) if i % (120 // interval) == 0])
 
         if file: chart.render_to_file(file)
         else:    return chart.render()
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Generate a chart reports for tasks monitoring.')
+    parser.add_argument('--status-history', help='a task status history')
+    parser.add_argument('--activity-history', action='append', help='an activity history')
+    parser.add_argument('--activity-profile', help='a yaml file with an activity profile')
+    parser.add_argument('--outdir', default=os.getcwd(), help='output directory of generated charts')
+    parser.add_argument('--prefix', help='filename prefix of generated charts')
+    args = parser.parse_args()
+
+    def _filename(name):
+        return args.outdir + args.prefix + name if args.prefix else args.outdir + name
+
+    if args.status_history:
+        print('generating chart for tasks status...')
+        tsr = TaskStatusReport(paya.history.FileHistory(args.status_history))
+        tsr.chart_task_status(file=_filename('status.svg'))
+
+    if args.activity_history:
+        if args.activity_profile:
+            with open(args.activity_profile, 'r') as f:
+                profile = paya.reporting.ActivityProfile(yaml.load(f))
+        else: profile = paya.reporting.ActivityProfile()
+
+        mac = paya.reporting.MultiActivityReport(profile=profile)
+        for h in args.activity_history:
+            mac.add(os.path.basename(h), paya.history.FileHistory(h))
+
+        #if profile['process.number']:
+        #    print('generating chart for process number...')
+        #    mac.chart_process_number(file=_filename('process-number.svg'))
+        #if profile['cpu.times']:
+        #    print('generating chart for cpu times..')
+        #    mac.chart_cpu_times(file=_filename('cpu-times.svg'))
+        #if profile['vmem']:
+        #    print('generating chart for virtual memory...')
+        #    mac.chart_vmem(file=_filename('vmem.svg'))
+        #if profile['swap']:
+        #    print('generating chart for swap memory...')
+        #    mac.chart_swap(file=_filename('swap.svg'))
+        #if profile['disk.usage']:
+        #    print('generating chart for disk usage...')
+        #    mac.chart_disk_usage(file=_filename('disk-usage.svg'), mount='/')
+        if profile['disk.io_counters']:
+            print('generating chart for disk io counters...')
+            mac.chart_disk_io_counters(file=_filename('disk-io-counters.svg'), counter='write_bytes')
+        if profile['network.io_counters']:
+            print('generating chart for network io counters...')
+            mac.chart_network_io_counters(file=_filename('network-io-counters.svg'), counter='bytes_sent')

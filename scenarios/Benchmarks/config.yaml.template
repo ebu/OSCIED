@@ -1,5 +1,5 @@
 oscied-orchestra:
-  verbose: true
+  verbose: false
   cleanup: true
   root_secret: "{root_secret}"
   node_secret: "{node_secret}"
@@ -17,16 +17,16 @@ oscied-orchestra:
   storage_mountpoint: ""
   storage_options: ""
   plugit_api_url: ""
-  paya_config_string: "--cpu_times --history=file://{{storage_mountpoint}}/{{name_slug}}.paya"
+  paya_config_string: "--process_number --cpu_times --vmem --swap --disk_usage=/ --disk_counters --network_counters --history=file:///tmp/orchestra.paya"
 oscied-storage:
-  verbose: true
+  verbose: false
   cleanup: true
   allowed_ips: "*"
   replica_count: 1
   bricks_root_path: "/mnt"
-  paya_config_string: "--cpu_times --history=file:///tmp/history.paya"
+  paya_config_string: "--process_number --cpu_times --vmem --swap --disk_usage=/ --disk_counters --network_counters --history=file:///tmp/storage.paya"
 oscied-transform:
-  verbose: true
+  verbose: false
   cleanup: false
   concurrency: {concurrency}
   rabbit_queues: "transform"
@@ -41,4 +41,5 @@ oscied-transform:
   open_hevc_origin: ""
   x264_origin: ""
   ffmpeg_origin: "ppa:jon-severinsson/ffmpeg"
-  gpac_origin: "gpac_0.5.1.DEV-r4939_amd64.deb"
+  gpac_origin: "gpac_0.5.1.DEV-r4944_amd64.deb"
+  paya_config_string: "--process_number --cpu_times --vmem --swap --disk_usage=/ --disk_counters --network_counters --history=file:///tmp/transform.paya"
