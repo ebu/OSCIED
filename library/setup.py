@@ -76,7 +76,7 @@ keywords = [
 ]
 
 setup(name=u'oscied-lib',
-      version='3.0.0',
+      version='3.2.0',
       packages=find_packages(exclude=['tests', 'tests.*']),
       description='Library of EBU/UER OSCIED Project',
       long_description=open('README.rst', 'r', encoding='utf-8').read(),
