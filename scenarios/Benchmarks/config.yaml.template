@@ -1,6 +1,6 @@
 oscied-orchestra:
   verbose: false
-  cleanup: true
+  cleanup: false
   root_secret: "{root_secret}"
   node_secret: "{node_secret}"
   mongo_admin_password: "{mongo_admin_password}"
@@ -21,7 +21,7 @@ oscied-orchestra:
   plugit_allowed_networks: "0.0.0.0/0"
 oscied-storage:
   verbose: false
-  cleanup: true
+  cleanup: false
   allowed_ips: "*"
   replica_count: 1
   bricks_root_path: "/mnt"

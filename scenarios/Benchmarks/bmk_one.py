@@ -43,7 +43,7 @@ except:
 SCENARIO_PATH = os.path.dirname(__file__)
 CONFIG = os.path.join(SCENARIO_PATH, u'config.yaml')
 
-STORAGE_UNITS = 5
+STORAGE_UNITS = 4
 TRANSFORM_UNITS = 5
 
 def start_monitor(target, args=[], daemon=True):
@@ -107,7 +107,7 @@ class Benchmark(DeploymentScenario):
 
         # get configuration parameters
         overwrite   = kwargs.get('overwrite_config', False)
-        concurrency = kwargs.get('concurrency', 1)
+        concurrency = kwargs.get('concurrency', 4)
         benchmark   = self.dev
 
         # initialize environment configuration and bootstrap it
@@ -117,7 +117,7 @@ class Benchmark(DeploymentScenario):
 
         # deploy juju units
         if confirm(u'Deploy OSCIED units'):
-            benchmark.auto   = True
+            benchmark.auto   = False
             ensure_num_units = partial(benchmark.ensure_num_units, constraints=C1_MEDIUM, local=True)
             ensure_num_units(u'oscied-orchestra', u'oscied-orchestra', expose=True)
             ensure_num_units(u'oscied-storage',   u'oscied-storage',   num_units=STORAGE_UNITS)
