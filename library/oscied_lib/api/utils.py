@@ -64,7 +64,8 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False, add_users=
             try:
                 print(api_client.about)  # wait for orchestra to answer to HTTP requests
                 break
-            except:
+            except Exception as e:
+                print(repr(e))
                 elapsed = time.time() - time_start
                 print('\telapsed: {0}:{1}:{2}'.format(int(elapsed // 3600),       # hours
                                                       int(elapsed % 3600 // 60),  # minutes
