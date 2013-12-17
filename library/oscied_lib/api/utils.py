@@ -25,7 +25,7 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import datetime, os, time, uuid
+import os, time, uuid
 from pytoolbox.encoding import csv_reader, to_bytes
 
 from ..config_test import ORCHESTRA_CONFIG_TEST
@@ -57,15 +57,19 @@ def init_api(api_core_or_client, api_init_csv_directory, flush=False, add_users=
     is_standalone = not is_core or orchestra.is_standalone
 
     if api_client and wait_started:
-        t = time.time()
+        time_start = time.time()
         print(u'wait for API to be accessible, timeout {0}'.format(timeout))
-        while (timeout == 0) or (time.time() - t < timeout):
-            time_zero = datetime.datetime.now()
+        while (timeout == 0) or (time.time() - time_start < timeout):
+            time_zero = time.time()
             try:
-                api_client.about  # wait for orchestra to answer to HTTP requests
+                print(api_client.about)  # wait for orchestra to answer to HTTP requests
                 break
             except:
-                time.sleep(max(0, min_polling_delay - (datetime.datetime.now() - time_zero).total_seconds()))
+                elapsed = time.time() - time_start
+                print('\telapsed: {0}:{1}:{2}'.format(int(elapsed // 3600),       # hours
+                                                      int(elapsed % 3600 // 60),  # minutes
+                                                      int(elapsed % 3600 % 60)))  # seconds
+                time.sleep(max(0, min_polling_delay - (time.time() - time_zero)))
 
     if flush:
         if is_core:
