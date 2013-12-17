@@ -18,6 +18,7 @@ oscied-orchestra:
   storage_mountpoint: ""
   storage_options: ""
   plugit_api_url: ""
+  plugit_allowed_networks: "0.0.0.0/0"
 oscied-publisher:
   verbose: true
   cleanup: false

@@ -1,6 +1,8 @@
-from flask       import jsonify, request, make_response, send_from_directory, send_file
-from flask.views import View
+
 from datetime    import datetime, timedelta
+from flask       import request, make_response, send_from_directory, send_file
+from flask.views import View
+from pytoolbox.serialization import object2json
 
 from utils import check_ip, md5Checksum, PlugItRedirect, PlugItSendFile
 
@@ -23,7 +25,7 @@ class MetaView(View):
         # Template information
         objResponse['template_tag'] = ("" if self.action.pi_api_template == "" else
                                        md5Checksum('templates/' + self.action.pi_api_template))
-        
+
         for attribute in (u'only_logged_user', u'only_member_user', u'only_admin_user',
                           u'only_orga_member_user', u'only_orga_admin_user',  # User restrictions
                           u'cache_time', u'cache_by_user',                    # Cache information
@@ -32,7 +34,7 @@ class MetaView(View):
                 objResponse[attribute] = getattr(self.action, u'pi_api_' + attribute)
 
         # Add the cache headers
-        response = make_response(jsonify(objResponse))
+        response = make_response(object2json(objResponse, include_properties=False))
 
         expires = datetime.utcnow() + timedelta(seconds=PI_META_CACHE)
         expires = expires.strftime("%a, %d %b %Y %H:%M:%S GMT")
@@ -85,4 +87,4 @@ class ActionView(View):
             response.headers['EbuIo-PlugIt-ItAFile'] = 'True'
             return response
 
-        return jsonify(result)
+        return object2json(result, include_properties=False)

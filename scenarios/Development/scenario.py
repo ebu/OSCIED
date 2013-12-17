@@ -75,4 +75,4 @@ class Dev(DeploymentScenario):
 
 if __name__ == u'__main__':
     configure_unicode()
-    Dev(environments=[OsciedEnvironment(u'david', config=CONFIG, release=u'raring')]).run()
+    Dev(environments=[OsciedEnvironment(u'dev', config=CONFIG, release=u'raring')]).run()

@@ -7,13 +7,12 @@
 
 {% plugitInclude "menuBar" %}
 
-<div id="ptitMessage"></div>
-
 <h2 class="page-header">Available transform profiles</h2>
 
 <h3>Add a transform profile</h3>
 
-<div id="add_profile_errors" class="alert alert-error hidden"></div>
+<span id="infos"></span>
+<span id="errors"></span>
 
 <form name="form_add_profile" action="{{ebuio_baseUrl}}transform/profiles/add" method="post" accept-charset="utf-8" id="form_add_profile" enctype="multipart/form-data">
     {% csrf_token %}
@@ -57,17 +56,28 @@ $('#add_profile_submit').click(function(){
         $('#form_add_profile').attr('action'),
         $('#form_add_profile').serialize(),
         function(data){
-            if (data.errors){
-                $('#add_profile_errors').empty();
-                $('#add_profile_errors').removeClass('hidden');
-                $('#add_profile_errors').append(data.errors);
-            }else{
-                if (data.profile){
-                    loadProfiles();
-                    $('#ptitMessage').html("Profile '" + data.profile[0].title + "' was created successfully.");
-                }else{
-                    alert(data.ebuio_abort);
+            if (data.infos){
+                loadProfiles();
+                $('#infos').empty();
+                $('#infos').removeClass('hidden');
+                var content = ''
+                for (var i = 0; i < data.infos.length; i++){
+                    content = content + '<div class="alert alert-info"><a class="close" data-dismiss="alert">×</a>' + data.infos[i] + '</div>';
                 }
+                $('#infos').html(content);
+            }else{
+                $('#infos').addClass('hidden');
+            }
+            if (data.errors){
+                $('#errors').empty();
+                $('#errors').removeClass('hidden');
+                var content = ''
+                for (var i = 0; i < data.errors.length; i++){
+                    content = content + '<div class="alert alert-error"><a class="close" data-dismiss="alert">×</a>' + data.errors[i] + '</div>';
+                }
+                $('#errors').html(content);
+            }else{
+                $('#errors').addClass('hidden');
             }
         },
         'json'
