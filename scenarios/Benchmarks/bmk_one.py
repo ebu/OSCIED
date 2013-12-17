@@ -43,7 +43,7 @@ except:
 SCENARIO_PATH = os.path.dirname(__file__)
 CONFIG = os.path.join(SCENARIO_PATH, u'config.yaml')
 
-STORAGE_UNITS = 1  # 5
+STORAGE_UNITS = 5
 TRANSFORM_UNITS = 5
 
 def start_monitor(target, args=[], daemon=True):
@@ -55,10 +55,12 @@ def monitor_unit_status(environment, history, interval=15):
     while True:
         time_zero = time.time()
         units     = {}
-        services  = environment.status[u'services']
-        for _,service in services.iteritems():
-            units.update({k:v[u'agent-state'] for k,v in service['units'].iteritems()})
-        history.append(units)
+        status    = environment.status(fail=False)
+        if status:
+            services = status.get(u'services', {})
+            for service in services.itervalues():
+                units.update({k:v[u'agent-state'] for k,v in service['units'].iteritems()})
+            history.append(units)
         time.sleep(max(0, interval - (time.time() - time_zero)))
 
 def monitor_task_status(api, task_ids, history, interval=15):
@@ -75,7 +77,7 @@ def send_task_set(api, task_set):
     # retrieve media and profile objects from api
     media   = api.medias.list(spec={u'filename': task_set[u'input']})[0]
     profile = api.transform_profiles.list(spec={u'title': task_set[u'profile']})[0]
-    
+
     # start transform task
     scheduled_tasks = []
     for i in xrange(task_set['count']):
@@ -87,7 +89,8 @@ def send_task_set(api, task_set):
             u'queue': u'transform',
             u'metadata': task_set['metadata']
         }))
-    
+        time.sleep(3)
+
     # schedule tasks
     return scheduled_tasks
 
@@ -160,7 +163,7 @@ class Benchmark(DeploymentScenario):
                 u'output':   u'chsrf.mp4',
                 u'profile':  u'Tablet 480p/25',
                 u'metadata': {u'title': u'task-mxf-mp4'},
-                u'count':    3
+                u'count':    25
             }]
         }
 
@@ -168,10 +171,17 @@ class Benchmark(DeploymentScenario):
         api_client = benchmark.api_client
         api_client.login('d@r.com', 'passw0rd')
 
-        print(u'send task sets to the API')
-        scheduled_tasks = []
-        for ts in config['task_sets']:
-            scheduled_tasks += send_task_set(api_client, ts)
+        if confirm(u'revoke previous tasks'):
+            for task in api_client.transform_tasks.list():
+                try:
+                    del api_client.transform_tasks[task._id]
+                except Exception as e:
+                    print(repr(e))
+
+        if confirm(u'send task sets to the API'):
+            scheduled_tasks = []
+            for ts in config['task_sets']:
+                scheduled_tasks += send_task_set(api_client, ts)
 
         print(u'start tasks status monitoring')
         history = paya.history.FileHistory(u'{0}/task-status.paya'.format(SCENARIO_PATH))
@@ -188,12 +198,12 @@ class Benchmark(DeploymentScenario):
                     task = api_client.transform_tasks[st._id]
                     states[task.status] = states.get(task.status, 0) + 1
                     percent += task.statistic.get('percent', 0)
-                
+
                     undef   = task.status in TransformTask.UNDEF_STATUS
                     running = task.status in TransformTask.RUNNING_STATUS
                     pending = task.status in TransformTask.PENDING_STATUS
                     loop = running or pending or undef
-                
+
                 print(u'\tstates:   ' + u', '.join(['{0}: {1}'.format(k, v) for k,v in states.iteritems()]))
                 print(u'\tprogress: ' + str(percent / len(scheduled_tasks)) + '%')
                 time.sleep(10)
