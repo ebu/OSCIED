@@ -29,7 +29,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import os, re, shutil, socket, time
 from os.path import abspath, dirname, join
 from pytoolbox.encoding import to_bytes
-from pytoolbox.filesystem import first_that_exist
+from pytoolbox.filesystem import first_that_exist, try_makedirs
 from pytoolbox.juju import  CONFIG_FILENAME, METADATA_FILENAME, DEFAULT_OS_ENV
 
 from .config import StorageLocalConfig
@@ -39,7 +39,7 @@ from .hooks_base import OsciedCharmHooks
 
 class StorageHooks(OsciedCharmHooks):
 
-    PACKAGES = (u'ntp', u'glusterfs-server', u'nfs-common')
+    PACKAGES = (u'ntp', u'glusterfs-server', u'nfs-common', u'xfsprogs')
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(StorageHooks, self).__init__(metadata, default_config, default_os_env, local_config_filename,
@@ -157,11 +157,17 @@ class StorageHooks(OsciedCharmHooks):
         self.generate_locales((u'fr_CH.UTF-8',))
         self.install_packages(StorageHooks.PACKAGES)
         self.restart_ntp()
+        self.info(u'Replace ext3 by xfs (to fix https://github.com/ebu/OSCIED/issues/136)')
+        self.cmd(u'umount {0}'.format(self.config.bricks_root_path), fail=False)
+        self.cmd(u'mkfs.xfs /dev/xvdb -f')
+        self.cmd(u'mount /dev/xvdb {0}'.format(self.config.bricks_root_path))
+        try_makedirs(self.bricks_path)
         self.info(u'Expose GlusterFS Server service')
-        self.open_port(111,   u'TCP')   # For portmapper, and should have both TCP and UDP open
-        self.open_port(24007, u'TCP')   # For the Gluster Daemon
+        self.open_port(111,   u'TCP')  # For portmapper, and should have both TCP and UDP open
+        self.open_port(111,   u'UDP')
+        self.open_port(24007, u'TCP')  # For the Gluster Daemon
         #self.open_port(24008, u'TCP')  # Infiniband management (optional unless you are using IB)
-        self.open_port(24009, u'TCP')   # We have only 1 storage brick (24009-24009)
+        self.open_port(24009, u'TCP')  # We have only 1 storage brick (24009-24009)
         #self.open_port(38465, u'TCP')  # For NFS (not used)
         #self.open_port(38466, u'TCP')  # For NFS (not used)
         #self.open_port(38467, u'TCP')  # For NFS (not used)
