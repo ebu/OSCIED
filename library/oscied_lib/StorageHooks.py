@@ -153,14 +153,17 @@ class StorageHooks(OsciedCharmHooks):
     # ------------------------------------------------------------------------------------------------------------------
 
     def hook_install(self):
+        cfg = self.config
         self.hook_uninstall()
         self.generate_locales((u'fr_CH.UTF-8',))
         self.install_packages(StorageHooks.PACKAGES)
         self.restart_ntp()
-        self.info(u'Replace ext3 by xfs (to fix https://github.com/ebu/OSCIED/issues/136)')
-        self.cmd(u'umount {0}'.format(self.config.bricks_root_path), fail=False)
-        self.cmd(u'mkfs.xfs /dev/xvdb -f')
-        self.cmd(u'mount /dev/xvdb {0}'.format(self.config.bricks_root_path))
+        self.info(u'Configure storage bricks root')
+        if cfg.bricks_root_device:
+            self.cmd(u'umount {0}'.format(cfg.bricks_root_path), fail=False)
+            if cfg.format_bricks_root:
+                self.cmd(u'mkfs.xfs {0} -f'.format(cfg.bricks_root_device))  # FIXME detect based on the mount point
+            self.cmd(u'mount {0} {1}'.format(cfg.bricks_root_device, cfg.bricks_root_path))  # FIXME add mdadm support?
         try_makedirs(self.bricks_path)
         self.info(u'Expose GlusterFS Server service')
         self.open_port(111,   u'TCP')  # For portmapper, and should have both TCP and UDP open

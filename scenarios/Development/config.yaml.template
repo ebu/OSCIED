@@ -41,7 +41,9 @@ oscied-storage:
   cleanup: false
   allowed_ips: "*"
   replica_count: 1
+  bricks_root_device: "/dev/xvdb"
   bricks_root_path: "/mnt"
+  format_bricks_root: true
 oscied-transform:
   verbose: false
   cleanup: false

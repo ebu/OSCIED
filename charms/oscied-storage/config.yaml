@@ -27,12 +27,25 @@ options:
         Medias volume is not created (and started) until N nodes are connected.
         Then, the volume will be expanded of N bricks every time you'll add exactly N new nodes.
         Default means no redundancy at all.
+  bricks_root_device:
+    type: string
+    default: '/dev/xvdb'
+    description: |
+        Set the root device where bricks are stored (/mnt -> /mnt/bricks/expN).
+        This option is useful to allow you using the attached EBS storage (or whatsoever).
   bricks_root_path:
     type: string
     default: '/mnt'
     description: |
         Set the root path where bricks are stored (/mnt -> /mnt/bricks/expN).
         This option is useful to allow you using the attached EBS storage (or whatsoever).
+  format_bricks_root:
+    type: boolean
+    default: true
+    description: |
+        Toggle formatting (xfs) of the device where bricks are stored.
+        This operation requires that the option 'bricks root device' is not empty.
+        This help to fix issues like "Certain operations like 'ls' hang in 4-node gluster setup".
   paya_config_string:
     type: string
     default: ""
