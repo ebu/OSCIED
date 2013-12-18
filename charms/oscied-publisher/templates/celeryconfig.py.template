@@ -40,7 +40,7 @@ CELERY_MONGODB_BACKEND_SETTINGS = {{
     'taskmeta_collection': 'taskmeta',
 }}
 
-CELERY_IMPORTS = ('oscied_lib.PublisherWorker',)
+CELERY_IMPORTS = ('library.oscied_lib.PublisherWorker',)
 CELERYD_CONCURRENCY = {concurrency}
 CELERY_IGNORE_RESULT = False
 CELERY_SEND_EVENTS = True
