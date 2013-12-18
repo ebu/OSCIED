@@ -89,6 +89,10 @@ options:
     description: |
         The URL of your running EBU's PlugIt authentication API.
         If set, the orchestrator will switch from standalone users management to EBU's PlugIt-based users management.
+  plugit_base_url:
+    type: string
+    default: "/"
+    description: Prefix for the methods of the API when running in EBU's PlugIt mode.
   paya_config_string:
     type: string
     default: ""

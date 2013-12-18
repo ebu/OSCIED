@@ -174,7 +174,7 @@ class OrchestraHooks(CharmHooks_Storage):
         if cfg.plugit_api_url:
             self.info(u'Configure PlugIt server')
             infos = {
-                u'api_url': cfg.plugit_api_url, u'debug': cfg.verbose,
+                u'api_url': cfg.plugit_api_url, u'debug': cfg.verbose, u'base_url': cfg.plugit_base_url,
                 u'allowed_networks': u'", "'.join(cfg.plugit_allowed_networks.split(u','))
             }
             self.template2config(local_cfg.plugit_template_file, local_cfg.plugit_config_file, infos)
