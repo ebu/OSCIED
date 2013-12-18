@@ -78,10 +78,12 @@ class StorageHooks(OsciedCharmHooks):
     # ------------------------------------------------------------------------------------------------------------------
 
     def peer_probe(self, peer_address, tries=5):
+        # FIXME start if glusterfs-server service not ready <- not implemented, maybe unexpected behavior : needs tests!
         return self.cmd(u'gluster peer probe {0}'.format(peer_address), tries=tries)
 
     def volume_do(self, action, volume=None, options=u'', tries=5, **kwargs):
         volume = volume or self.volume
+        # FIXME start if glusterfs-server service not ready <- not implemented, maybe unexpected behavior : needs tests!
         return self.cmd(u'gluster volume {0} {1} {2}'.format(action, volume, options), tries=tries, **kwargs)
 
     def volume_create_or_expand(self, volume=None, bricks=None, replica=None):
