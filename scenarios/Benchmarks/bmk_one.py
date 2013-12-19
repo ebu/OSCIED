@@ -163,7 +163,7 @@ class Benchmark(DeploymentScenario):
                 u'output':   u'chsrf.mp4',
                 u'profile':  u'Tablet 480p/25',
                 u'metadata': {u'title': u'task-mxf-mp4'},
-                u'count':    25
+                u'count':    50
             }]
         }
 
@@ -182,13 +182,14 @@ class Benchmark(DeploymentScenario):
             scheduled_tasks = []
             for ts in config['task_sets']:
                 scheduled_tasks += send_task_set(api_client, ts)
+        else: exit(0)
 
         print(u'start tasks status monitoring')
         history = paya.history.FileHistory(u'{0}/task-status.paya'.format(SCENARIO_PATH))
         start_monitor(target=monitor_task_status,
                       args=[api_client, [t._id for t in scheduled_tasks], history])
 
-        loop = True
+        loop = len(scheduled_tasks) > 0
         while loop:
             print(u'wait for tasks completion')
             states  = {}
@@ -208,7 +209,7 @@ class Benchmark(DeploymentScenario):
                 print(u'\tprogress: ' + str(percent / len(scheduled_tasks)) + '%')
                 time.sleep(10)
 
-            except (ConnectionError, Timeout) as e:
+            except Exception as e:  # except (ConnectionError, Timeout) as e:
                 print(u'WARNING! Communication error, details: {1}.'.format(e))
 
         print(u'retrieve paya histories')
