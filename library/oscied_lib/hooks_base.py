@@ -76,11 +76,11 @@ class OsciedCharmHooks(CharmHooks):
     def start_paya(self, retry_count=15, retry_delay=1):
         if self.paya_config_string:
             config_list = shlex.split(to_bytes(self.paya_config_string))
-            if screen_list(u'paya', log=self.debug, user=self.daemon_user) == []:
-                screen_launch(u'paya', [u'paya-monitor'] + config_list, user=self.daemon_user)
+            if screen_list(u'paya', log=self.debug) == []:
+                screen_launch(u'paya', [u'paya-monitor'] + config_list)
             for start_delay in xrange(retry_count):
                 time.sleep(retry_delay)
-                if screen_list(u'paya', log=self.debug, user=self.daemon_user) != []:
+                if screen_list(u'paya', log=self.debug) != []:
                     start_time = start_delay * retry_delay
                     self.remark(u'{0} successfully started in {1} seconds'.format(u'paya', start_time))
                     return
@@ -89,7 +89,7 @@ class OsciedCharmHooks(CharmHooks):
             self.remark(u'paya config string is not configured')
 
     def stop_paya(self):
-        screen_kill(u'paya', log=self.debug, user=self.daemon_user)
+        screen_kill(u'paya', log=self.debug)
 
 
 class CharmHooks_Storage(OsciedCharmHooks):

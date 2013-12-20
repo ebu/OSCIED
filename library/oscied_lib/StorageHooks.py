@@ -29,7 +29,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import os, re, shutil, socket, time
 from os.path import abspath, dirname, join
 from pytoolbox.encoding import to_bytes
-from pytoolbox.filesystem import first_that_exist
+from pytoolbox.filesystem import first_that_exist, try_makedirs
 from pytoolbox.juju import  CONFIG_FILENAME, METADATA_FILENAME, DEFAULT_OS_ENV
 
 from .config import StorageLocalConfig
@@ -39,7 +39,7 @@ from .hooks_base import OsciedCharmHooks
 
 class StorageHooks(OsciedCharmHooks):
 
-    PACKAGES = (u'ntp', u'glusterfs-server', u'nfs-common')
+    PACKAGES = (u'ntp', u'glusterfs-server', u'nfs-common', u'xfsprogs')
 
     def __init__(self, metadata, default_config, local_config_filename, default_os_env):
         super(StorageHooks, self).__init__(metadata, default_config, default_os_env, local_config_filename,
@@ -89,38 +89,33 @@ class StorageHooks(OsciedCharmHooks):
         volume = volume or self.volume
         bricks = bricks or [self.brick()]
         replica = replica or self.config.replica_count
-        extra = (u' ' if replica == 1 else u' replica {0} transport tcp '.format(replica)) + u' '.join(bricks)
         if len(bricks) < replica:
             self.remark(u'Waiting for {0} peers to create and start a replica={1} volume {2}'.format(
                         replica - len(bricks), replica, volume))
-        elif len(bricks) == replica:
+        else:
             if volume in self.volumes:
-                self.info(u'Volume {0} already created.'.format(volume))
+                vol_bricks = self.volume_infos(volume=volume)[u'bricks']
+                self.debug(u'Volume bricks: {0}'.format(vol_bricks))
+                new_bricks = [b for b in bricks if b not in vol_bricks]
+                new_bricks_count = len(new_bricks)
+                # Pick-up the greatest number of new bricks based on number of replica
+                new_bricks = new_bricks[:(int(len(new_bricks) / replica) * replica)]
+                if len(new_bricks) >= replica:
+                    assert len(new_bricks) % replica == 0, u'Number of new bricks is not a multiple of replica'
+                    self.info(u'Expand replica={0} volume {1} with new bricks'.format(replica, volume))
+                    self.volume_do(u'add-brick', volume=volume, options=u' '.join(new_bricks), fail=False)
+                else:
+                    self.remark(u'Waiting for {0} peers to expand replica={1} volume {2}'.format(
+                                replica - new_bricks_count, replica, volume))
             else:
+                # Pick-up the greatest number of bricks based on number of replica
+                bricks = bricks[:(int(len(bricks) / replica) * replica)]
+                extra = (u' ' if replica == 1 else u' replica {0} transport tcp '.format(replica)) + u' '.join(bricks)
                 self.info(u'Create and start a replica={0} volume {1} with {2} brick{3}'.format(
                           replica, volume, len(bricks), u's' if len(bricks) > 1 else u''))
                 self.volume_do(u'create', volume=volume, options=extra)
                 self.volume_do(u'start', volume=volume)
                 self.volume_set_allowed_ips()
-        else:
-            vol_bricks = self.volume_infos(volume=volume)[u'bricks']
-            self.debug(u'Volume bricks: {0}'.format(vol_bricks))
-            new_bricks = [b for b in bricks if b not in vol_bricks]
-            if len(new_bricks) == replica:
-                self.info(u'Expand replica={0} volume {1} with new bricks'.format(replica, volume))
-                result = self.volume_do(u'add-brick', volume=volume, options=u' '.join(new_bricks), fail=False)
-                if result[u'returncode'] != 0:
-                    self.remark(u'Failover, stop re-balance operation, restart glusterfs daemon and retry')
-                    self.volume_do(u'rebalance', volume=volume, options=u'stop')
-                    self.cmd(u'service glusterfs-server restart')
-                    self.volume_do(u'add-brick', volume=volume, options=u' '.join(new_bricks))
-                self.volume_do(u'rebalance', volume=volume, options=u'start', fail=False)
-            else:
-                self.remark(u'Waiting for {0} peers to expand replica={1} volume {2}'.format(
-                            replica - len(new_bricks), replica, volume))
-        if self.volume_exist:
-            self.info(self.volume_infos(volume=volume))
-            self.info(self.volume_do(u'rebalance', volume=volume, options=u'status', fail=False, tries=1)[u'stdout'])
 
     def volume_set_allowed_ips(self, volume=None, tries=5, delay=1.0):
         volume, ips = volume or self.volume, self.allowed_ips_string
@@ -162,11 +157,17 @@ class StorageHooks(OsciedCharmHooks):
         self.generate_locales((u'fr_CH.UTF-8',))
         self.install_packages(StorageHooks.PACKAGES)
         self.restart_ntp()
+        self.info(u'Replace ext3 by xfs (to fix https://github.com/ebu/OSCIED/issues/136)')
+        self.cmd(u'umount {0}'.format(self.config.bricks_root_path), fail=False)
+        self.cmd(u'mkfs.xfs /dev/xvdb -f')
+        self.cmd(u'mount /dev/xvdb {0}'.format(self.config.bricks_root_path))
+        try_makedirs(self.bricks_path)
         self.info(u'Expose GlusterFS Server service')
-        self.open_port(111,   u'TCP')   # For portmapper, and should have both TCP and UDP open
-        self.open_port(24007, u'TCP')   # For the Gluster Daemon
+        self.open_port(111,   u'TCP')  # For portmapper, and should have both TCP and UDP open
+        self.open_port(111,   u'UDP')
+        self.open_port(24007, u'TCP')  # For the Gluster Daemon
         #self.open_port(24008, u'TCP')  # Infiniband management (optional unless you are using IB)
-        self.open_port(24009, u'TCP')   # We have only 1 storage brick (24009-24009)
+        self.open_port(24009, u'TCP')  # We have only 1 storage brick (24009-24009)
         #self.open_port(38465, u'TCP')  # For NFS (not used)
         #self.open_port(38466, u'TCP')  # For NFS (not used)
         #self.open_port(38467, u'TCP')  # For NFS (not used)

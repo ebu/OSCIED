@@ -45,6 +45,7 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
                  email_ptask_template=u'templates/ptask_mail.template',
                  email_ttask_template=u'templates/ttask_mail.template',
                  htaccess_template_file=u'templates/htaccess.template',
+                 plugit_template_file=u'templates/config.py.template',
                  site_template_file=u'templates/apache_site.template',
                  mongo_config_file=u'/etc/mongodb.conf',
                  sites_available_path=u'/etc/apache2/sites-available',
@@ -71,6 +72,7 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
         self.email_ptask_template = email_ptask_template
         self.email_ttask_template = email_ttask_template
         self.htaccess_template_file = htaccess_template_file
+        self.plugit_template_file = plugit_template_file
         self.site_template_file = site_template_file
         self.mongo_config_file = mongo_config_file
         self.sites_available_path = sites_available_path
@@ -119,6 +121,10 @@ class OrchestraLocalConfig(CharmLocalConfig_Storage):
     @property
     def htaccess_config_file(self):
         return join(dirname(self.site_directory), u'.htaccess')
+
+    @property
+    def plugit_config_file(self):
+        return join(self.site_directory, u'config.py')
 
     @property
     def orchestra_service(self):
@@ -175,7 +181,7 @@ class PublisherLocalConfig(CharmLocalConfig_Storage, CharmLocalConfig_Subordinat
         return join(self.www_root_path, u'www')
 
     def publish_point(self, media):
-        common = join(MEDIAS_PATH, media.user_id, media._id, media.filename)
+        common = join(MEDIAS_PATH, media._id, media.filename)
         return (join(self.publish_path, common), join(self.publish_uri, common))
 
     def publish_uri_to_path(self, uri):

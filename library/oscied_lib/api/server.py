@@ -239,8 +239,9 @@ class OrchestraAPICore(object):
             media.load_fields(self.get_user({u'_id': media.user_id}, {u'secret': 0}),
                               self.get_media({u'_id': media.parent_id}))
 
-        # Add read path to the media asset
-        media.api_uri = self.config.storage_medias_path(media, generate=False)
+        if not self.is_standalone:
+            # Add read path to the media asset
+            media.api_uri = self.config.storage_medias_path(media, generate=False)
 
         return media
 
@@ -409,9 +410,10 @@ class OrchestraAPICore(object):
 
     def launch_transform_task(self, user_id, media_in_id, profile_id, filename, metadata, send_email, queue,
                               callback_url):
-        user = self.get_user({u'_id': user_id}, {u'secret': 0})
-        if not user:
-            raise IndexError(to_bytes(u'No user with id {0}.'.format(user_id)))
+        if self.is_standalone:
+            user = self.get_user({u'_id': user_id}, {u'secret': 0})
+            if not user:
+                raise IndexError(to_bytes(u'No user with id {0}.'.format(user_id)))
         media_in = self.get_media({u'_id': media_in_id})
         if not media_in:  # FIXME maybe a media access control here
             raise IndexError(to_bytes(u'No media asset with id {0}.'.format(media_in_id)))
@@ -437,7 +439,7 @@ class OrchestraAPICore(object):
         if not result_id:
             raise ValueError(to_bytes(u'Unable to transmit task to workers of queue {0}.'.format(queue)))
         logging.info(u'New transformation task {0} -> queue {1}.'.format(result_id, queue))
-        task = TransformTask(user_id=user._id, media_in_id=media_in._id, media_out_id=media_out._id,
+        task = TransformTask(user_id=user_id, media_in_id=media_in._id, media_out_id=media_out._id,
                              profile_id=profile._id, send_email=send_email, _id=result_id)
         task.statistic[u'add_date'] = datetime_now()
         self._db.transform_tasks.save(task.__dict__, safe=True)
@@ -578,9 +580,10 @@ class OrchestraAPICore(object):
         return self.config.publisher_queues
 
     def launch_publisher_task(self, user_id, media_id, send_email, queue, callback_url):
-        user = self.get_user({u'_id': user_id}, {u'secret': 0})
-        if not user:
-            raise IndexError(to_bytes(u'No user with id {0}.'.format(user_id)))
+        if self.is_standalone:
+            user = self.get_user({u'_id': user_id}, {u'secret': 0})
+            if not user:
+                raise IndexError(to_bytes(u'No user with id {0}.'.format(user_id)))
         media = self.get_media({u'_id': media_id})
         if not media:  # FIXME maybe a media access control here
             raise IndexError(to_bytes(u'No media asset with id {0}.'.format(media_id)))
@@ -606,7 +609,7 @@ class OrchestraAPICore(object):
         if not result_id:
             raise ValueError(to_bytes(u'Unable to transmit task to workers of queue {0}.'.format(queue)))
         logging.info(u'New publication task {0} -> queue {1}.'.format(result_id, queue))
-        task = PublisherTask(user_id=user._id, media_id=media._id, send_email=send_email, _id=result_id)
+        task = PublisherTask(user_id=user_id, media_id=media._id, send_email=send_email, _id=result_id)
         task.statistic[u'add_date'] = datetime_now()
         self._db.publisher_tasks.save(task.__dict__, safe=True)
         return task

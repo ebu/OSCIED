@@ -32,10 +32,10 @@
                 {{ media.filename|default:"Untitled" }}
                 {% endif %}
             </td>
-            <td>{{ media.metadata.size|filesizeformat}}</td>
+            <td>{{ media.metadata.size|filesizeformat }}</td>
             <td>{{ media.metadata.duration }}</td>
             <td>{{ media.metadata.add_date }}</td>
-            <td>{% plugitGetUser media.user_id as auth_user %}{{auth_user.username}}</td>
+            <td>{% plugitGetUser media.user_id as auth_user %}{{ auth_user.username }}</td>
             <td>
                 <span class="label {% if status == 'PENDING' %}label-warning{% elif status == 'READY' %}label-success{% elif status != 'UNKNOWN' %}label-inverse{% endif %}">{{ status }}</span>
             </td>

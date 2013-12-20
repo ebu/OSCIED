@@ -39,13 +39,23 @@ class OsciedEnvironment(Environment):
         self.api_unit = api_unit
         self._api_client = None
 
+    def get_unit_public_address(self, service, number):
+        # FIXME move this in pytoolbox !
+        u"""Return the public address of a unit. Use the most reliable value available (dns-name of the machine)."""
+        #host = self.get_unit(service, number)[u'public-address']  <- may report a private address (172.x.x.x) see #132
+        machine_number = self.get_unit(service, number)[u'machine']
+        status_dict = self.status()
+        if status_dict:
+            return status_dict[u'machines'][machine_number][u'dns-name']
+        raise ValueError('Unable to get public address of unit {0}/{1}'.format(service, number))
+
     @property
     def api_client(self):
         if not self._api_client:
             service, number = self.api_unit.split(u'/')
             settings = self.get_service_config(service)[u'settings']
             root_auth = (u'root', settings[u'root_secret'][u'value'])
-            host = self.get_unit(service, number)[u'public-address']
+            host = self.get_unit_public_address(service, number)
             self._api_client = OrchestraAPIClient(host, api_unit=self.api_unit, auth=root_auth, environment=self.name)
         return self._api_client
 

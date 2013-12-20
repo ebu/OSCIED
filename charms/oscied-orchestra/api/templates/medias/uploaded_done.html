@@ -10,6 +10,9 @@
     {% if success %}
         Media uploaded !
     {% else %}
+        {% for error in errors %}
+        <div id="add_profile_errors" class="alert alert-error">{{ error }}</div>
+        {% endfor %}
         {{ ebuio_abort }}
     {% endif %}
 

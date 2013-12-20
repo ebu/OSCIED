@@ -7,13 +7,12 @@
 
 {% plugitInclude "menuBar" %}
 
-<div id="ptitMessage"></div>
-
 <h2 class="page-header">Publication tasks</h2>
 
 <h3>Launch a publication task</h3>
 
-<div id="launch_task_errors" class="alert alert-error hidden"></div>
+<span id="infos"></span>
+<span id="errors"></span>
 
 <form name="form_launch_task" action="{{ ebuio_baseUrl }}publisher/tasks/launch" method="post" accept-charset="utf-8" id="form_launch_task" enctype="multipart/form-data">
     {% csrf_token %}
@@ -58,16 +57,28 @@ $('#launch_task_submit').click(function(){
         $('#form_launch_task').attr('action'),
         $('#form_launch_task').serialize(),
         function(data){
-            if(data.errors){
-                $('#launch_task_errors').empty();
-                $('#launch_task_errors').removeClass('hidden');
-                $('#launch_task_errors').append(data.errors);
-            }else{
-                if(data.task_id){
-                    $('#ptitMessage').html("Publication task '" + data.profile[0].title + "' was launched successfully.");
-                }else{
-                    alert(data.ebuio_abort);
+            if (data.infos){
+                loadTasks();
+                $('#infos').empty();
+                $('#infos').removeClass('hidden');
+                var content = ''
+                for (var i = 0; i < data.infos.length; i++){
+                    content = content + '<div class="alert alert-info"><a class="close" data-dismiss="alert">×</a>' + data.infos[i] + '</div>';
                 }
+                $('#infos').html(content);
+            }else{
+                $('#infos').addClass('hidden');
+            }
+            if (data.errors){
+                $('#errors').empty();
+                $('#errors').removeClass('hidden');
+                var content = ''
+                for (var i = 0; i < data.errors.length; i++){
+                    content = content + '<div class="alert alert-error"><a class="close" data-dismiss="alert">×</a>' + data.errors[i] + '</div>';
+                }
+                $('#errors').html(content);
+            }else{
+                $('#errors').addClass('hidden');
             }
         },
         'json'

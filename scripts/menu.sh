@@ -383,6 +383,7 @@ install()
   ok=$true
 
   autoInstall git-core git
+  autoInstall subversion svn
 
   pecho 'Update submodules'
   cd "$BASE_PATH" || xecho "Unable to find path $BASE_PATH"

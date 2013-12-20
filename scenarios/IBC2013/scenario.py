@@ -34,6 +34,7 @@ TODO
 # http://docs.mongodb.org/manual/reference/operator/
 # http://pygal.org/custom_styles/
 
+from functools import partial
 from pytoolbox.console import confirm
 from pytoolbox.encoding import configure_unicode
 from pytoolbox.juju import DeploymentScenario, M1_SMALL, C1_MEDIUM
@@ -84,22 +85,22 @@ class IBC2013(DeploymentScenario):
         self.maas.symlink_local_charms()
         self.maas.generate_config_from_template()
         self.maas.bootstrap(wait_started=True, timeout=1200, polling_delay=30, synchronize_tools=True)
-        ensure_num_units = self.maas.ensure_num_units
-        ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, num_units=3, expose=True) # 1,2,3
+        ensure = partial(self.maas.ensure_num_units, local=True)
+        ensure(u'oscied-storage',   u'oscied-storage',   num_units=3, expose=True) # 1,2,3
         # WAIT
-        ensure_num_units(u'oscied-orchestra', u'oscied-orchestra', local=True, to=1, expose=True)
+        ensure(u'oscied-orchestra', u'oscied-orchestra', to=1, expose=True)
         # WAIT
-        ensure_num_units(u'oscied-webui',     u'oscied-webui',     local=True, to=1, expose=True)
-        ensure_num_units(u'oscied-publisher', u'oscied-publisher', local=True, to=2, expose=True)
-        ensure_num_units(u'oscied-publisher', u'oscied-publisher', local=True, to=3, expose=True) #3=5
+        ensure(u'oscied-webui',     u'oscied-webui',     to=1, expose=True)
+        ensure(u'oscied-publisher', u'oscied-publisher', to=2, expose=True)
+        ensure(u'oscied-publisher', u'oscied-publisher', to=3, expose=True) #3=5
         # WAIT
-        ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, to=1)
-        ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, to=2)
-        ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, to=3) #3=5
+        ensure(u'oscied-transform', u'oscied-transform', to=1)
+        ensure(u'oscied-transform', u'oscied-transform', to=2)
+        ensure(u'oscied-transform', u'oscied-transform', to=3) #3=5
         # WAIT -> Makes juju crazy (/var/log/juju/all-machines.log -> growing to GB)
-        ensure_num_units(u'oscied-storage',   u'oscied-storage',   local=True, to=0, expose=True)
+        ensure(u'oscied-storage',   u'oscied-storage',   to=0, expose=True)
         # WAIT -> Makes juju crazy (/var/log/juju/all-machines.log -> growing to GB)
-        ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, to=0, expose=True)
+        ensure(u'oscied-transform', u'oscied-transform', to=0, expose=True)
 
         if confirm(u'Disconnect all services [DEBUG PURPOSE ONLY] (with juju remove-relation)'):
             for peer in (u'orchestra', u'webui', u'transform', u'publisher'):
@@ -119,13 +120,13 @@ class IBC2013(DeploymentScenario):
         self.amazon.symlink_local_charms()
         self.amazon.generate_config_from_template()
         self.amazon.bootstrap(wait_started=True)
-        ensure_num_units = self.amazon.ensure_num_units
-        ensure_num_units(u'oscied-transform', u'oscied-transform', local=True, constraints=C1_MEDIUM)
-        ensure_num_units(u'oscied-publisher', u'oscied-publisher', local=True, constraints=M1_SMALL,  expose=True)
-        ensure_num_units(u'oscied-orchestra', u'oscied-orchestra', local=True, constraints=C1_MEDIUM, expose=True)
+        ensure = partial(self.amazon.ensure_num_units, local=True)
+        ensure(u'oscied-transform', u'oscied-transform', constraints=C1_MEDIUM)
+        ensure(u'oscied-publisher', u'oscied-publisher', constraints=M1_SMALL,  expose=True)
+        ensure(u'oscied-orchestra', u'oscied-orchestra', constraints=C1_MEDIUM, expose=True)
         # WAIT
-        ensure_num_units(u'oscied-storage',   u'oscied-storage', local=True, to=3)
-        ensure_num_units(u'oscied-webui',     u'oscied-webui',   local=True, to=3, expose=True)
+        ensure(u'oscied-storage',   u'oscied-storage', to=3)
+        ensure(u'oscied-webui',     u'oscied-webui',   to=3, expose=True)
         for peer in (u'orchestra', u'webui', u'transform', u'publisher'):
             self.amazon.add_relation(u'oscied-storage', u'oscied-{0}'.format(peer))
         self.amazon.add_relation(u'oscied-orchestra:transform', u'oscied-transform:transform')
