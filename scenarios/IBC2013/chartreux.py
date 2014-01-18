@@ -33,9 +33,7 @@ from datetime import timedelta
 from pytoolbox.datetime import datetime_now
 from pytoolbox.encoding import configure_unicode
 from library.oscied_lib.juju import ServiceStatistics
-from scenario_config import (
-    DAEMONS_CHECKS_PER_HOUR, AMAZON, MAAS, ENVIRONMENTS, EVENTS, SERVICES, STATS, STATISTICS_MAXLEN
-)
+from scenario_config import DAEMONS_CHECKS_PER_HOUR, AMAZON, MAAS, EVENTS, SERVICES, STATS, STATISTICS_MAXLEN
 
 HOUR_SHIFT = 1
 
