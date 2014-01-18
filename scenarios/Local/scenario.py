@@ -66,4 +66,4 @@ class Local(DeploymentScenario):
 
 if __name__ == u'__main__':
     configure_unicode()
-    Local(environments=[OsciedEnvironment(u'local', config=CONFIG, release=u'raring')]).main()
+    Local(environments=[OsciedEnvironment(u'local', config=CONFIG, release=u'raring')]).run()
