@@ -71,6 +71,7 @@ def view_medias_list(request):
     u"""Show the media assets list page."""
     try:
         data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, fail=False)
+        data.setdefault(u'skip', 50)  # ask for the last 50 media assets if skip is not provided
         return {u'medias': remove_underscores(api_core.get_medias(**data)), u'refresh_rate': 5}
     except Exception as e:
         logging.exception(e)
@@ -197,8 +198,11 @@ def view_transform_tasks(request):
     u"""Show the transformation tasks home page."""
     try:
         data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, fail=False)
-        medias = remove_underscores(api_core.get_medias(**data))
         profiles = remove_underscores(api_core.get_transform_profiles(**data))
+        data.setdefault(u'skip', 50)  # ask for the last 50 media assets if skip is not provided
+        data.setdefault(u'spec', {u'status': Media.READY})  # filter the media assets that cannot be transformed
+        # FIXME add more filters
+        medias = remove_underscores(api_core.get_medias(**data))
         queues = remove_underscores(api_core.get_transform_queues())
         return {u'medias': medias, u'profiles': profiles, u'queues': queues}
     except Exception as e:
@@ -213,6 +217,7 @@ def view_transform_tasks_list(request):
     try:
         data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, fail=False)
         tasks = remove_underscores(api_core.get_transform_tasks(**data))
+        data.setdefault(u'skip', 50)  # ask for the last 50 media assets if skip is not provided
         for task in tasks:
             task.profile = remove_underscores(api_core.get_transform_profile(spec={u'_id': task.profile_id}))
             task.media_in = remove_underscores(api_core.get_media(spec={u'_id': task.media_in_id}))
@@ -271,6 +276,9 @@ def view_publisher_tasks(request):
     u"""Show the publication tasks home page."""
     try:
         data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, fail=False)
+        data.setdefault(u'skip', 50)  # ask for the last 50 media assets if skip is not provided
+        data.setdefault(u'spec', {u'status': Media.READY})  # filter the media assets that cannot be published
+        # FIXME add more filters
         medias = remove_underscores(api_core.get_medias(**data))
         queues = remove_underscores(api_core.get_publisher_queues())
         return {u'medias': medias, u'queues': queues}
@@ -285,6 +293,7 @@ def view_publisher_tasks_list(request):
     u"""Show the publication tasks list page."""
     try:
         data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, fail=False)
+        data.setdefault(u'skip', 50)  # ask for the last 50 media assets if skip is not provided
         tasks = remove_underscores(api_core.get_publisher_tasks(**data))
         for task in tasks:
             task.media = remove_underscores(api_core.get_media(spec={u'_id': task.media_id}))
@@ -333,6 +342,13 @@ def view_publisher_tasks_revoke(request, id):
     except Exception as e:
         logging.exception(e)
         return {u'errors': [unicode(e)]}
+
+
+@action(route=u'/status', template=u'status/home.html', methods=[u'GET'])
+@only_logged_user()
+def view_status(request):
+    u"""Show the status home page."""
+    return {}
 
 
 @action(route=u'/menuBar', template=u'menuBar.html')

@@ -1,0 +1,41 @@
+{% extends "plugIt/base.html" %}
+{% load plugit_tags %}
+
+{% block title %}OSCIED :: Transformation tasks{% endblock %}
+
+{% block content %}
+
+<meta http-equiv="refresh" content="60">
+<!-- <style type="text/css">
+    h2    { float: center; color: #FFFFFF; font: 24px ubuntu mono, helvetica, sans-serif; }
+    body  { background: black; }
+    tr    { margin: 0; padding: 0; }
+    table { float: left; margin: 0; border-collapse: collapse; }
+    svg   { display: block; }
+</style> -->
+
+{% plugitInclude "menuBar" %}
+
+<h2 class="page-header">System status</h2>
+
+<h3>Status of the system</h3>
+
+<table class="table">
+    <tr>
+        <th class="span12"><h2>Scheduling of encoding tasks</h2></th>
+    </tr>
+    <tr>
+        <th class="span12"><embed type="image/svg+xml" src="{{ ebuio_baseUrl }}media/charts/line_tasks_amazon_encoding.svg" /></th>
+    </tr>
+    <tr>
+        <th class="span12"><embed type="image/svg+xml" src="{{ ebuio_baseUrl }}media/charts/line_tasks_maas_encoding.svg" /></th>
+    </tr>
+    <tr>
+        <th class="span12"><h2>Public Cloud: Active and planned amout of nodes during the day</h2></th>
+    </tr>
+    <tr>
+        <th class="span12"><embed type="image/svg+xml" id="re" src="{{ ebuio_baseUrl }}media/charts/line_units_amazon_encoding.svg" /></th>
+    </tr>
+</table>
+
+{% endblock %}
