@@ -1,0 +1,17 @@
+oscied-transform:
+  verbose: false
+  cleanup: false
+  concurrency: 4
+  rabbit_queues: "transform"
+  mongo_connection: "{mongo_connection}"
+  rabbit_connection: "{rabbit_connection}"
+  api_nat_socket: "{api_nat_socket}"
+  storage_address: "{storage_address}"
+  storage_nat_address: "{storage_nat_address}"
+  storage_fstype: "{storage_fstype}"
+  storage_mountpoint: "{storage_mountpoint}"
+  storage_options: ""
+  open_hevc_origin: ""
+  x264_origin: ""
+  ffmpeg_origin: "ppa:jon-severinsson/ffmpeg"
+  gpac_origin: "gpac_0.5.1.DEV-r4944_amd64.deb"
