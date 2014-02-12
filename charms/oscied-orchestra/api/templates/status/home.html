@@ -5,14 +5,14 @@
 
 {% block content %}
 
-<!-- <meta http-equiv="refresh" content="15"> -->
-<style type="text/css">
+<meta http-equiv="refresh" content="60">
+<!-- <style type="text/css">
     h2    { float: center; color: #FFFFFF; font: 24px ubuntu mono, helvetica, sans-serif; }
     body  { background: black; }
     tr    { margin: 0; padding: 0; }
     table { float: left; margin: 0; border-collapse: collapse; }
     svg   { display: block; }
-</style>
+</style> -->
 
 {% plugitInclude "menuBar" %}
 
@@ -22,19 +22,19 @@
 
 <table class="table">
     <tr>
-        <th class="span12"><h2>SCHEDULING OF ENCODING TASKS</h2></th>
+        <th class="span12"><h2>Scheduling of encoding tasks</h2></th>
     </tr>
     <tr>
-        <th class="span12"><embed type="image/svg+xml" src="charts/line_tasks_amazon_encoding.svg" /></th>
+        <th class="span12"><embed type="image/svg+xml" src="{{ ebuio_baseUrl }}media/charts/line_tasks_amazon_encoding.svg" /></th>
     </tr>
     <tr>
-        <th class="span12"><embed type="image/svg+xml" src="charts/line_tasks_maas_encoding.svg" /></th>
+        <th class="span12"><embed type="image/svg+xml" src="{{ ebuio_baseUrl }}media/charts/line_tasks_maas_encoding.svg" /></th>
     </tr>
     <tr>
-        <th class="span12"><h2>PUBLIC CLOUD: ACTIVE AND PLANNED AMOUNT OF NODES DURING THE DAY</h2></th>
+        <th class="span12"><h2>Public Cloud: Active and planned amout of nodes during the day</h2></th>
     </tr>
     <tr>
-        <th class="span12"><embed type="image/svg+xml" id="re" src="charts/line_units_amazon_encoding.svg" /></th>
+        <th class="span12"><embed type="image/svg+xml" id="re" src="{{ ebuio_baseUrl }}media/charts/line_units_amazon_encoding.svg" /></th>
     </tr>
 </table>
 
