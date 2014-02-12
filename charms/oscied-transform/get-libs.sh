@@ -23,5 +23,5 @@ get_from_svn()
 #get_from_git 'openHEVC'       'git://github.com/OpenHEVC/openHEVC.git'         4
 #get_from_git 'x264'           'git://git.videolan.org/x264.git'                5
 
-wget -N http://download.tsi.telecom-paristech.fr/gpac/latest_builds/linux64/gpac/gpac_0.5.1.DEV-r4944_amd64.deb
-#wget -N http://download.tsi.telecom-paristech.fr/gpac/latest_builds/linux32/gpac/gpac_0.5.1.DEV-r4944_i386.deb
+wget -N http://download.tsi.telecom-paristech.fr/gpac/latest_builds/linux64/gpac/gpac_0.5.1.DEV-r4990_amd64.deb
+#wget -N http://download.tsi.telecom-paristech.fr/gpac/latest_builds/linux32/gpac/gpac_0.5.1.DEV-r4990_i386.deb

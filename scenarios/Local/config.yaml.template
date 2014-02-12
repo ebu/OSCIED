@@ -60,7 +60,7 @@ oscied-transform:
   open_hevc_origin: ""
   x264_origin: ""
   ffmpeg_origin: "ppa:jon-severinsson/ffmpeg"
-  gpac_origin: "gpac_0.5.1.DEV-r4939_amd64.deb"
+  gpac_origin: "gpac_0.5.1.DEV-r4990_amd64.deb"
 oscied-webui:
   verbose: true
   cleanup: true
