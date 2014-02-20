@@ -27,7 +27,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import flask
 from pytoolbox.encoding import to_bytes
-from pytoolbox.flask import get_request_data
+from pytoolbox.network.http import get_request_data
 
 from server import app, api_method_decorator, api_core, ok_200
 
@@ -97,7 +97,7 @@ def api_publisher_queue(auth_user=None, api_core=None, request=None):
 @api_method_decorator(api_core, allow_any=True)
 def api_publisher_task_count(auth_user=None, api_core=None, request=None):
     u"""Return the number of publication tasks."""
-    data = get_request_data(request, accepted_keys=api_core.db_count_keys, qs_only_first_value=True, fail=False)
+    data = get_request_data(request, accepted_keys=api_core.db_count_keys, qs_only_first_value=True, optional=True)
     return ok_200(api_core.get_publisher_tasks_count(**data), include_properties=False)
 
 
@@ -109,7 +109,7 @@ def api_publisher_task_head(auth_user=None, api_core=None, request=None):
 
     The publication tasks attributes are appended with the Celery's ``async result`` of the tasks.
     """
-    data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, fail=False)
+    data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, optional=True)
     return ok_200(api_core.get_publisher_tasks(**data), include_properties=True)
 
 
@@ -124,7 +124,7 @@ def api_publisher_task_get(auth_user=None, api_core=None, request=None):
     All ``thing_id`` fields are replaced by corresponding ``thing``.
     For example ``user_id`` is replaced by ``user``'s data.
     """
-    data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, fail=False)
+    data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, optional=True)
     return ok_200(api_core.get_publisher_tasks(load_fields=True, **data), include_properties=True)
 
 

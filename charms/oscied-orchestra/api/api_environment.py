@@ -25,7 +25,7 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from pytoolbox.flask import get_request_data
+from pytoolbox.network.http import get_request_data
 
 from server import app, api_method_decorator, api_core, ok_200
 

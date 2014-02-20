@@ -26,7 +26,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from pytoolbox.encoding import to_bytes
-from pytoolbox.flask import get_request_data
+from pytoolbox.network.http import get_request_data
 from oscied_lib.models import User
 
 from server import app, api_method_decorator, api_core, ok_200
@@ -54,7 +54,7 @@ def api_user_login(auth_user=None, api_core=None, request=None):
 @api_method_decorator(api_core, allow_root=True, allow_any=True)
 def api_user_count(auth_user=None, api_core=None, request=None):
     u"""Return the number of users."""
-    data = get_request_data(request, accepted_keys=api_core.db_count_keys, qs_only_first_value=True, fail=False)
+    data = get_request_data(request, accepted_keys=api_core.db_count_keys, qs_only_first_value=True, optional=True)
     return ok_200(api_core.get_users_count(**data), include_properties=False)
 
 
@@ -62,7 +62,7 @@ def api_user_count(auth_user=None, api_core=None, request=None):
 @api_method_decorator(api_core, allow_root=True, role=u'admin_platform')
 def api_user_get(auth_user=None, api_core=None, request=None):
     u"""Return an array containing the users serialized to JSON (without ``secret`` fields)."""
-    data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, fail=False)
+    data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, optional=True)
     return ok_200(api_core.get_users(**data), include_properties=True)
 
 

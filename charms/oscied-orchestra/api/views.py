@@ -26,7 +26,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import datetime, logging, os, random, string, time
-from pytoolbox.flask import get_request_data
+from pytoolbox.network.http import get_request_data
 from werkzeug import secure_filename
 
 from oscied_lib.models import Media, TransformProfile
@@ -70,7 +70,7 @@ def view_medias(request):
 def view_medias_list(request):
     u"""Show the media assets list page."""
     try:
-        data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, fail=False)
+        data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, optional=True)
         data.setdefault(u'skip', 50)  # ask for the last 50 media assets if skip is not provided
         return {u'medias': remove_underscores(api_core.get_medias(**data)), u'refresh_rate': 5}
     except Exception as e:
@@ -152,7 +152,7 @@ def view_transform_profiles(request):
 def view_transform_profiles_list(request):
     u"""Show the transformation profiles list page."""
     try:
-        data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, fail=False)
+        data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, optional=True)
         return {u'profiles': remove_underscores(api_core.get_transform_profiles(**data)), u'refresh_rate': 5}
     except Exception as e:
         logging.exception(e)
@@ -197,7 +197,7 @@ def view_transform_profiles_delete(request, id):
 def view_transform_tasks(request):
     u"""Show the transformation tasks home page."""
     try:
-        data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, fail=False)
+        data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, optional=True)
         profiles = remove_underscores(api_core.get_transform_profiles(**data))
         data.setdefault(u'skip', 50)  # ask for the last 50 media assets if skip is not provided
         data.setdefault(u'spec', {u'status': Media.READY})  # filter the media assets that cannot be transformed
@@ -215,7 +215,7 @@ def view_transform_tasks(request):
 def view_transform_tasks_list(request):
     u"""Show the transformation tasks list page."""
     try:
-        data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, fail=False)
+        data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, optional=True)
         tasks = remove_underscores(api_core.get_transform_tasks(**data))
         data.setdefault(u'skip', 50)  # ask for the last 50 media assets if skip is not provided
         for task in tasks:
@@ -275,7 +275,7 @@ def api_transform_tasks_revoke(request, id):
 def view_publisher_tasks(request):
     u"""Show the publication tasks home page."""
     try:
-        data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, fail=False)
+        data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, optional=True)
         data.setdefault(u'skip', 50)  # ask for the last 50 media assets if skip is not provided
         data.setdefault(u'spec', {u'status': Media.READY})  # filter the media assets that cannot be published
         # FIXME add more filters
@@ -292,7 +292,7 @@ def view_publisher_tasks(request):
 def view_publisher_tasks_list(request):
     u"""Show the publication tasks list page."""
     try:
-        data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, fail=False)
+        data = get_request_data(request, accepted_keys=api_core.db_find_keys, qs_only_first_value=True, optional=True)
         data.setdefault(u'skip', 50)  # ask for the last 50 media assets if skip is not provided
         tasks = remove_underscores(api_core.get_publisher_tasks(**data))
         for task in tasks:
