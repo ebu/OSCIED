@@ -7,6 +7,6 @@ passlib
 git+git://github.com/kyouko-taiga/paya.git#egg=paya
 pyaml
 pymongo
-pytoolbox[flask,mongo]
+pytoolbox[flask,mongo]>dev
 requests
-six
+six==1.5.2
