@@ -9,4 +9,4 @@ pyaml
 pymongo
 pytoolbox[flask,mongo]>dev
 requests
-six
+six==1.5.2
