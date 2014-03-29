@@ -50,14 +50,14 @@ class Local(DeploymentScenario):
         ensure(u'oscied-orchestra', u'oscied-orchestra', local=True, expose=True)
         ensure(u'oscied-webui',     u'oscied-webui',     local=True, expose=True)
         ensure(u'oscied-storage',   u'oscied-storage',   local=True)
-        has_proxy = ensure(u'haproxy', u'haproxy', expose=True, local=False, release=u'precise', required=False)[0]
+        ensure(u'haproxy', u'haproxy', expose=True, local=False, release=u'precise', required=False)
 
         for peer in (u'orchestra', u'webui', u'transform', u'publisher'):
             self.local.add_relation(u'oscied-storage', u'oscied-{0}'.format(peer))
         self.local.add_relation(u'oscied-orchestra:transform', u'oscied-transform:transform')
         self.local.add_relation(u'oscied-orchestra:publisher', u'oscied-publisher:publisher')
         self.local.add_relation(u'oscied-orchestra:api',       u'oscied-webui:api')
-        if has_proxy:
+        if get_service(u'haproxy', fail=False):
             if self.local.add_relation(u'haproxy', u'oscied-webui'):
                 self.local.unexpose_service(u'oscied-webui')
 

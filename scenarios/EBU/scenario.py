@@ -111,8 +111,8 @@ class EBU(DeploymentScenario):
             u'storage_address': orchestra_local_cfg[u'storage_address'],
             u'storage_fstype': orchestra_local_cfg[u'storage_fstype'],
             u'storage_mountpoint': orchestra_local_cfg[u'storage_mountpoint'],
-            u'api_nat_socket': self.api_nat_socket,
-            u'storage_nat_address': self.storage_nat_address
+            u'api_nat_socket': self.args.api_nat_socket,
+            u'storage_nat_address': self.args.storage_nat_address
         }
         self.amazon.symlink_local_charms()
         self.amazon.generate_config_from_template(**infos)
@@ -129,15 +129,15 @@ class EBU(DeploymentScenario):
         self.maas.enable_units_status = False
         self.maas.daemons_auth = self.amazon.daemons_auth = self.maas.api_client.auth  # this is the root account
         # start the statistics thread in both environments
-        if self.statistics:
+        if self.args.statistics:
             self.maas.statistics_thread.start()
             self.amazon.statistics_thread.start()
         # start the tasks scheduling thread in the environment in which orchestra is deployed
         # amazon transformation units will also receive tasks because the jobs are added to a common transform queue
-        if self.tasks:
+        if self.args.tasks:
             self.maas.tasks_thread.start()
         # start the units scaling thread in the cloud environment
-        if self.scaling:
+        if self.args.scaling:
             self.amazon.scaling_thread.start()
         # wait until the threads are killed
         for environment in self.environments:
