@@ -50,14 +50,14 @@ class Amazon(DeploymentScenario):
         ensure(u'oscied-transform', u'oscied-transform', local=True, to=2)
         ensure(u'oscied-webui',     u'oscied-webui',     local=True, to=1, expose=True)
         ensure(u'oscied-publisher', u'oscied-publisher', local=True, to=2, expose=True)
-        has_proxy = ensure(u'haproxy', u'haproxy', expose=True, local=False, release=u'precise', required=False)[0]
+        ensure(u'haproxy', u'haproxy', expose=True, local=False, release=u'precise', required=False)
 
         for peer in (u'orchestra', u'webui', u'transform', u'publisher'):
             self.amazon.add_relation(u'oscied-storage', u'oscied-{0}'.format(peer))
         self.amazon.add_relation(u'oscied-orchestra:transform', u'oscied-transform:transform')
         self.amazon.add_relation(u'oscied-orchestra:publisher', u'oscied-publisher:publisher')
         self.amazon.add_relation(u'oscied-orchestra:api',       u'oscied-webui:api')
-        if has_proxy:
+        if get_service(u'haproxy', fail=False):
             if self.amazon.add_relation(u'haproxy', u'oscied-webui'):
                 self.amazon.unexpose_service(u'oscied-webui')
 
